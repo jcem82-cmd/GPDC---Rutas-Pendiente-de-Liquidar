@@ -290,8 +290,9 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
   font-family:inherit;font-size:.72rem;font-weight:700;
   padding:5px 13px;cursor:pointer;letter-spacing:.04em;
   transition:transform .15s,box-shadow .15s;
-  display:flex;align-items:center;gap:5px;white-space:nowrap;
+  display:none;align-items:center;gap:5px;white-space:nowrap;
 }
+.hdr-dl-btn.admin-visible{display:flex;}
 .hdr-dl-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(14,165,233,.4);}
 </style>
 </head>
@@ -303,6 +304,11 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
   document.addEventListener('DOMContentLoaded',function(){
     var sub=document.querySelector('.hdr-sub');
     if(sub) sub.textContent='Dashboard Operativo · Bienvenido, '+data.nombre;
+    // Show download button only for admin
+    if(data.role === 'admin'){
+      var btn=document.querySelector('.hdr-dl-btn');
+      if(btn) btn.classList.add('admin-visible');
+    }
   });
 })();
 </script>
