@@ -2723,7 +2723,7 @@ document.querySelectorAll('.panel').forEach((p,i)=>{if(i>0)p.style.display='none
 </div>
 
 <!-- Chat FAB -->
-<button class="chat-fab" id="chatFab" title="Chat con Admin PDC">
+<button class="chat-fab" id="chatFab" onclick="PDCChat && PDCChat.toggle()" title="Chat con Admin PDC">
   <span id="chatFabIco">💬</span>
   <span class="chat-notif" id="chatNotif">0</span>
 </button>
@@ -2748,6 +2748,7 @@ document.querySelectorAll('.panel').forEach((p,i)=>{if(i>0)p.style.display='none
     <button class="chat-send" id="chatSendBtn">↑</button>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var SUPA_URL = 'https://pytsrgtcjytjztwdlvux.supabase.co';
 var SUPA_KEY = 'sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj';
@@ -2763,8 +2764,8 @@ window.PDCChat = (function() {
   var lastMsgId   = 0;
   var lastAdminId = 0;
 
-  // Init on DOM ready
-  document.addEventListener('DOMContentLoaded', function() {
+  // Init immediately (script is at end of body, DOM is ready)
+  (function initChat() {
     var uStr = sessionStorage.getItem('pdc_user');
     if(!uStr) return;
     currentUser = JSON.parse(uStr);
@@ -2774,26 +2775,21 @@ window.PDCChat = (function() {
     var btn = document.getElementById('chatSendBtn');
 
     if(currentUser.role === 'admin') {
-      // Admin: FAB opens admin panel
-      fab.innerHTML = '👑';
-      fab.title = 'Panel Administrador';
-      fab.onclick = function() { window.open('admin.html','_blank'); };
-      document.getElementById('chatBox').style.display = 'none';
-      // Admin background poll for new user messages
+      if(fab) { fab.innerHTML = '👑'; fab.title = 'Panel Administrador';
+        fab.onclick = function() { window.open('admin.html','_blank'); }; }
+      var box = document.getElementById('chatBox');
+      if(box) box.style.display = 'none';
       bgPoll = setInterval(function() { checkNewUserMsgs(); }, 3000);
       return;
     }
 
-    // User: setup chat
-    fab.onclick = function() { toggle(); };
-    inp.addEventListener('keydown', function(e) {
+    // User bindings
+    if(inp) inp.addEventListener('keydown', function(e) {
       if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
     });
-    btn.onclick = function() { sendMsg(); };
-
-    // Background poll every 3s for admin replies (even when chat closed)
+    if(btn) btn.onclick = function() { sendMsg(); };
     bgPoll = setInterval(function() { checkNewAdminReply(); }, 3000);
-  });
+  })();
 
   // ── Toggle chat open/close ────────────────────────────────
   function toggle() {
