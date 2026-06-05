@@ -2947,27 +2947,45 @@ window.PDCChat = (function() {
 </script>
 
 <script>
-function downloadDashboard() {
-  // Get current date/report info from header
-  var fecha = document.getElementById('hdr-fecha') ? document.getElementById('hdr-fecha').textContent : new Date().toLocaleDateString('es-GT');
-  var fechaClean = fecha.replace(/\//g,'-');
+async function downloadDashboard() {
+  var btn = document.querySelector('.hdr-dl-btn');
+  var origText = btn.innerHTML;
+  btn.innerHTML = '⏳ Descargando...';
+  btn.disabled = true;
 
-  // Clone the full HTML with current state
-  var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  try {
+    // Fetch the raw source directly from GitHub Pages (clean, self-contained)
+    var sourceUrl = window.location.href.split('?')[0].split('#')[0];
+    if(!sourceUrl.endsWith('.html') && !sourceUrl.endsWith('/')) sourceUrl = sourceUrl;
+    // Use the index.html from same origin
+    var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/') + 'index.html';
 
-  // Add snapshot watermark
-  html = html.replace('</title>', ' [Snapshot ' + fecha + ']</title>');
+    var resp = await fetch(baseUrl);
+    var html  = await resp.text();
 
-  // Create blob and download
-  var blob = new Blob([html], {type: 'text/html;charset=utf-8'});
-  var url  = URL.createObjectURL(blob);
-  var a    = document.createElement('a');
-  a.href     = url;
-  a.download = 'Dashboard_PDC_' + fechaClean + '.html';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+    // Stamp with current report date
+    var fecha = document.getElementById('hdr-fecha') ? document.getElementById('hdr-fecha').textContent : new Date().toLocaleDateString('es-GT');
+    var fechaClean = fecha.replace(/\//g,'-');
+    html = html.replace(/<title>([^<]*)<\/title>/, '<title>$1 [Snapshot ' + fecha + ']</title>');
+
+    // Download
+    var blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'Dashboard_PDC_' + fechaClean + '.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+
+    btn.innerHTML = '✅ Descargado';
+    setTimeout(function(){ btn.innerHTML = origText; btn.disabled = false; }, 2000);
+  } catch(e) {
+    btn.innerHTML = origText;
+    btn.disabled = false;
+    alert('Error al descargar: ' + e.message);
+  }
 }
 </script>
 
