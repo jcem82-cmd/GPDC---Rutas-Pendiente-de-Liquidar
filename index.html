@@ -2954,21 +2954,27 @@ async function downloadDashboard() {
   btn.disabled = true;
 
   try {
-    // Fetch the raw source directly from GitHub Pages (clean, self-contained)
-    var sourceUrl = window.location.href.split('?')[0].split('#')[0];
-    if(!sourceUrl.endsWith('.html') && !sourceUrl.endsWith('/')) sourceUrl = sourceUrl;
-    // Use the index.html from same origin
     var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/') + 'index.html';
-
     var resp = await fetch(baseUrl);
     var html  = await resp.text();
 
     // Stamp with current report date
     var fecha = document.getElementById('hdr-fecha') ? document.getElementById('hdr-fecha').textContent : new Date().toLocaleDateString('es-GT');
     var fechaClean = fecha.replace(/\//g,'-');
-    html = html.replace(/<title>([^<]*)<\/title>/, '<title>$1 [Snapshot ' + fecha + ']</title>');
+    html = html.replace(/<title>([^<]*)<\/title>/, '<title>Snapshot PDC ' + fecha + '</title>');
 
-    // Download
+    // REMOVE session guard so snapshot opens without login
+    html = html.replace(/<script>\s*\(function\(\)\{[\s\S]*?login\.html[\s\S]*?\}\)\(\);\s*<\/script>/, 
+      '<script>/* snapshot - sin login requerido */<\/script>');
+
+    // Add visible snapshot watermark in header
+    html = html.replace('id="hdr-fecha">', 'id="hdr-fecha">');
+    html = html.replace('<header class="hdr">', 
+      '<div style="background:#f59e0b;color:#000;text-align:center;padding:4px;font-size:.75rem;font-weight:700;letter-spacing:.05em;">📸 SNAPSHOT · ' + fecha + ' · Solo lectura</div><header class="hdr">');
+
+    // Remove download button from snapshot (not needed in archive)
+    html = html.replace(/<button class="hdr-dl-btn"[^>]*>.*?<\/button>/s, '');
+
     var blob = new Blob([html], {type: 'text/html;charset=utf-8'});
     var url  = URL.createObjectURL(blob);
     var a    = document.createElement('a');
@@ -2984,7 +2990,7 @@ async function downloadDashboard() {
   } catch(e) {
     btn.innerHTML = origText;
     btn.disabled = false;
-    alert('Error al descargar: ' + e.message);
+    alert('Error: ' + e.message);
   }
 }
 </script>
