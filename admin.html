@@ -201,13 +201,20 @@ async function loadMessages(email) {
     .order('created_at', {ascending:true});
 
   // Get all messages in this conversation
-  const { data: allData } = await sb.from('chat_messages')
+  const { data: userMsgs } = await sb.from('chat_messages')
     .select('*')
+    .eq('sender_email', email)
+    .neq('sender_role','admin')
     .order('created_at', {ascending:true});
 
-  const msgs = (allData||[]).filter(m =>
-    m.sender_email === email || (m.sender_role === 'admin' && m.message.startsWith('[To:'+email+']'))
-  );
+  const { data: adminReplies } = await sb.from('chat_messages')
+    .select('*')
+    .eq('sender_role','admin')
+    .ilike('message', '[To:'+email+']%')
+    .order('created_at', {ascending:true});
+
+  const msgs = [...(userMsgs||[]), ...(adminReplies||[])]
+    .sort((a,b)=> new Date(a.created_at)-new Date(b.created_at));
 
   const list = document.getElementById('msgList');
   if(!list) return;
