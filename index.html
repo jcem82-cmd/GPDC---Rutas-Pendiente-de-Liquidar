@@ -283,6 +283,16 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
 .sec-ttl{font-size:.78rem;font-weight:800;color:var(--navy);text-transform:uppercase;
   letter-spacing:.05em;display:flex;align-items:center;gap:7px;margin-bottom:11px}
 .sec-ttl::before{content:"";display:block;width:4px;height:15px;background:var(--navy);border-radius:2px}
+
+.hdr-dl-btn{
+  background:linear-gradient(135deg,#0ea5e9,#4f46e5);
+  border:none;border-radius:7px;color:#fff;
+  font-family:inherit;font-size:.72rem;font-weight:700;
+  padding:5px 13px;cursor:pointer;letter-spacing:.04em;
+  transition:transform .15s,box-shadow .15s;
+  display:flex;align-items:center;gap:5px;white-space:nowrap;
+}
+.hdr-dl-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(14,165,233,.4);}
 </style>
 </head>
 <body><script>
@@ -309,6 +319,9 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
     <div class="hbadge">Vencidas Fact.: <strong id="hdr-vf" style="color:#ffbdbd">61</strong></div>
     <div class="hbadge">Vencidas Desp.: <strong id="hdr-vd" style="color:#ffe08a">57</strong></div>
   </div>
+  <button class="hdr-dl-btn" onclick="downloadDashboard()" title="Descargar snapshot del dashboard actual">
+    ⬇ Guardar Snapshot
+  </button>
 </header>
 
 <nav class="tabs">
@@ -2932,4 +2945,30 @@ window.PDCChat = (function() {
   return { toggle: toggle, send: sendMsg };
 })();
 </script>
+
+<script>
+function downloadDashboard() {
+  // Get current date/report info from header
+  var fecha = document.getElementById('hdr-fecha') ? document.getElementById('hdr-fecha').textContent : new Date().toLocaleDateString('es-GT');
+  var fechaClean = fecha.replace(/\//g,'-');
+
+  // Clone the full HTML with current state
+  var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+  // Add snapshot watermark
+  html = html.replace('</title>', ' [Snapshot ' + fecha + ']</title>');
+
+  // Create blob and download
+  var blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'Dashboard_PDC_' + fechaClean + '.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+
 </body></html>
