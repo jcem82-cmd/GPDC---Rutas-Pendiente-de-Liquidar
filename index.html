@@ -2573,13 +2573,13 @@ function processWorkbook(wb, filename) {
   const reportMonth = maxMes ? (currY+'-'+String(currM+1).padStart(2,'0')) : '—';
 
   // ── Helper: serial Excel → Date (evita bug 1969/1970) ──────────
-  function xlSerialToDate(s){const u=(s-25569)*86400000;const d=new Date(u);return new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate());}
+  function xlSerialToDate(s){if(!s||s<1000)return null;const u=(s-25569)*86400000;const d=new Date(u);if(d.getFullYear()<2000||d.getFullYear()>2100)return null;return new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate());}
   function pXlDate(v){if(!v)return null;if(v instanceof Date)return v;if(typeof v==='number')return xlSerialToDate(v);const d=new Date(v);return isNaN(d)?null:d;}
 
   // ── KPI History ───────────────────────────────────────
   const wsKPI = wb.Sheets['KPI'];
-  const kpiRaw = XLSX.utils.sheet_to_json(wsKPI, {header:1, defval:null});
-  const kpiData = [];
+  const kpiRaw = wsKPI ? XLSX.utils.sheet_to_json(wsKPI, {header:1, defval:null, cellDates:true}) : [];
+  const kpiData = []; // Will use efData if KPI sheet missing
   for (let i=22; i<82; i++) {
     try {
       const row = kpiRaw[i];
@@ -2597,7 +2597,7 @@ function processWorkbook(wb, filename) {
 
   // ── Efectividad ───────────────────────────────────────
   const wsEf = wb.Sheets['Efectividad'];
-  const efRaw = XLSX.utils.sheet_to_json(wsEf, {header:1, defval:null});
+  const efRaw = XLSX.utils.sheet_to_json(wsEf, {header:1, defval:null, cellDates:true});
   const efData = [];
   for (let i=3; i<71; i++) {
     try {
@@ -2614,8 +2614,13 @@ function processWorkbook(wb, filename) {
     } catch(e){}
   }
 
+  // If KPI sheet missing, use efData for kpiData (Efectividad has same structure)
+  const finalKpiData = kpiData.length > 0 ? kpiData : efData.map(r=>({
+    mes: r.mes, vencidas: r.mas15, total: r.total, pct: r.mas15/r.total||0
+  }));
+
   return {
-    routes, kpiData, efData,
+    routes, kpiData: finalKpiData, efData,
     kpiTotals: {
       report_date:      reportDate,
       report_month:     reportMonth,
