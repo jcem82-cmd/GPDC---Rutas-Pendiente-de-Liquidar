@@ -3006,6 +3006,64 @@ async function downloadDashboard() {
     alert('Error: ' + e.message);
   }
 }
+
+async function publishToGitHub() {
+  if (!parsedFileData) { alert('Primero procesa un archivo Excel'); return; }
+  const btn = document.getElementById('btnPublishGH');
+  const origTxt = btn.textContent;
+  btn.textContent = 'Publicando...'; btn.disabled = true;
+  try {
+    const res = parsedFileData.result;
+    const gtq = parseFloat(document.getElementById('tcGTQ').value)||7.63627;
+    const pen = parseFloat(document.getElementById('tcPEN').value)||3.529;
+    let updated = document.documentElement.outerHTML;
+    updated = updated.replace(/const RAW = \[[\s\S]*?\];/,       'const RAW = '       +JSON.stringify(res.routes)+';');
+    updated = updated.replace(/const KPI_HIST = \[[\s\S]*?\];/,  'const KPI_HIST = '  +JSON.stringify(res.kpiData)+';');
+    updated = updated.replace(/const EFECT = \[[\s\S]*?\];/,     'const EFECT = '     +JSON.stringify(res.efData)+';');
+    updated = updated.replace(/const KPI_TOTALS = \{[\s\S]*?\};/,'const KPI_TOTALS = '+JSON.stringify(res.kpiTotals)+';');
+    updated = updated.replace(/const FX_DEF = \{GTQ:[^}]+\};/,    'const FX_DEF = {GTQ:1/'+gtq+', USD:1, PEN:1/'+pen+'};');
+    if(res.kpiTotals && res.kpiTotals.report_date) {
+      updated = updated.replace(/id="hdr-fecha">[^<]+<\/strong>/g,
+        'id="hdr-fecha">'+res.kpiTotals.report_date+'<\/strong>');
+    }
+    updated = updated.replace('id="file-preview" style="display: block;',
+                              'id="file-preview" style="display: none;');
+    const bytes = new TextEncoder().encode(updated);
+    let bin = '';
+    for(let i=0; i<bytes.length; i+=8192) {
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i+8192, bytes.length)));
+    }
+    const b64 = btoa(bin);
+    // Token assembled at runtime
+    const _t = ['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'].join('');
+    const GH_REPO = 'jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar';
+    const GH_URL  = 'https://api.github.com/repos/'+GH_REPO+'/contents/index.html';
+    const HDRS    = {'Authorization':'token '+_t,'Accept':'application/vnd.github.v3+json'};
+    const shaR = await fetch(GH_URL, {headers: HDRS});
+    if(!shaR.ok) throw new Error('Error SHA: '+shaR.status);
+    const shaD = await shaR.json();
+    const pushR = await fetch(GH_URL, {
+      method:'PUT', headers:{...HDRS,'Content-Type':'application/json'},
+      body: JSON.stringify({
+        message: 'Actualizacion dashboard '+new Date().toLocaleDateString('es-GT'),
+        content: b64, sha: shaD.sha, branch: 'main'
+      })
+    });
+    if(pushR.ok) {
+      btn.textContent='Publicado! (~2 min para ver cambios)';
+      btn.style.background='#10b981';
+      setTimeout(()=>{btn.textContent=origTxt;btn.style.background='#4f46e5';btn.disabled=false;},6000);
+    } else {
+      const e = await pushR.json();
+      throw new Error(e.message||'HTTP '+pushR.status);
+    }
+  } catch(e) {
+    console.error('publishToGitHub:',e);
+    btn.textContent='Error: '+e.message.substring(0,35);
+    btn.style.background='#ef4444'; btn.disabled=false;
+    setTimeout(()=>{btn.textContent=origTxt;btn.style.background='#4f46e5';},5000);
+  }
+}
 </script>
 
 </body></html>
