@@ -1345,8 +1345,7 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
         </div>
         <div id="parse-progress" style="display: none; font-size: 0.72rem; color: var(--t3); margin-bottom: 8px; text-align: center;">⏳ Procesando archivo...</div>
         <div style="display:flex;gap:8px">
-          <button class="tc-btn" id="btnDownloadHTML" onclick="downloadUpdatedHTML()" style="background:var(--gb);flex:1" disabled="">⬇️ Descargar Dashboard</button>
-          <button class="tc-btn" id="btnPublishGH" onclick="publishToGitHub()" style="background:#4f46e5;flex:1;display:none">🚀 Publicar en GitHub</button>
+          <button class="tc-btn" id="btnPublishGH" onclick="publishToGitHub()" style="background:#4f46e5;flex:1;display:none;font-weight:800">🚀 Publicar en GitHub</button>
           <button class="tc-btn" onclick="clearFile()" style="background:var(--t3)">✕ Cancelar</button>
         </div>
       </div>
@@ -2424,9 +2423,11 @@ function handleFile(file) {
       const liq = result.routes.filter(r=>r['Estado (Facturación)']==='Liquidada').length;
       document.getElementById('prev-count').innerHTML = tot+' rutas<br><small style="color:var(--rb)">'+vf+' vencidas</small>';
       document.getElementById('file-preview').style.display = 'block';
-      // Enable download button
-      const dlBtn = document.getElementById('btnDownloadHTML') || document.querySelector('[onclick="downloadUpdatedHTML()"]');
-      if(dlBtn) { dlBtn.disabled = false; dlBtn.textContent = '⬇️ Descargar Dashboard'; }
+      // Show publish button directly
+      const ghBtn = document.getElementById('btnPublishGH');
+      if(ghBtn) { ghBtn.style.display = 'inline-flex'; }
+      const dlBtn = document.getElementById('btnDownloadHTML');
+      if(dlBtn) { dlBtn.style.display = 'none'; }
 
     } catch(err) {
       showParseError('Error al procesar: ' + err.message);
