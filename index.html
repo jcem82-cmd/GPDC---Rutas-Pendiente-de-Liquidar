@@ -2599,6 +2599,18 @@ function processWorkbook(wb, filename) {
     } catch(e){}
   }
 
+  // ── Fix de regla de negocio: si el mes activo en Efectividad muestra
+  // mas15=0 pero General (seguimiento) tiene rutas con Estado Real='Vencidas',
+  // usar el conteo real para ese mes en EFECT.mas15 y KPI_HIST.vencidas ──
+  const vencidasRealCount = routes.filter(r => r['Estado Real']==='Vencidas').length;
+  if (efData.length) {
+    const last = efData[efData.length-1];
+    if (last.mas15===0 && vencidasRealCount>0) {
+      last.mas15 = vencidasRealCount;
+      last.pct   = last.total ? vencidasRealCount/last.total : 0;
+    }
+  }
+
   // Always derive kpiData from efData (same source, correct dates)
   const finalKpiData = efData.map(r=>({
     mes: r.mes, vencidas: r.mas15, total: r.total, pct: r.pct
