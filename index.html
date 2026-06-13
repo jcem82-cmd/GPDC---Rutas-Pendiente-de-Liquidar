@@ -290,7 +290,7 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
   font-family:inherit;font-size:.72rem;font-weight:700;
   padding:5px 13px;cursor:pointer;letter-spacing:.04em;
   transition:transform .15s,box-shadow .15s;
-  display:flex;align-items:center;gap:5px;white-space:nowrap;
+  display:none;align-items:center;gap:5px;white-space:nowrap;
 }
 .hdr-dl-btn.admin-visible{display:flex;}
 .hdr-dl-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(14,165,233,.4);}
@@ -304,10 +304,12 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
   document.addEventListener('DOMContentLoaded',function(){
     var sub=document.querySelector('.hdr-sub');
     if(sub) sub.textContent='Dashboard Operativo · Bienvenido, '+data.nombre;
-    // Show download button only for admin
+    // Show download button and Tipos de Cambio tab only for admin
     if(data.role === 'admin'){
       var btn=document.querySelector('.hdr-dl-btn');
       if(btn) btn.classList.add('admin-visible');
+      var tc=document.getElementById('tabTC');
+      if(tc) tc.style.display='';
     }
   });
 })();
@@ -340,13 +342,13 @@ function pdcLogout(){
 </script>
 
 <nav class="tabs">
-  <button class="tb" onclick="ST('resumen')">📊 Resumen General</button>
+  <button class="tb act" onclick="ST('resumen')">📊 Resumen General</button>
   <button class="tb" onclick="ST('analisis')">🔍 Análisis por Área</button>
   <button class="tb" onclick="ST('transportistas')">🚛 Transportistas</button>
   <button class="tb" onclick="ST('tendencias')">📈 Tendencias KPI</button>
   <button class="tb" onclick="ST('detalle')">📋 Detalle de Rutas</button>
   <button class="tb" onclick="ST('tableros')">📊 Tableros</button>
-  <button class="tb act" onclick="ST('tiposcambio')">💱 Tipos de Cambio</button>
+  <button class="tb admin-visible" id="tabTC" onclick="ST('tiposcambio')" style="display:none">💱 Tipos de Cambio</button>
 </nav>
 
 <div class="fb" id="fb">
@@ -382,7 +384,7 @@ function pdcLogout(){
 <div class="cnt">
 
 <!-- ═══════════ RESUMEN ═══════════ -->
-<div id="tab-resumen" class="panel" style="display: none;">
+<div id="tab-resumen" class="panel act" style="display: block;">
   <div class="kgrid" id="kgrid">
     <div class="kpi "><div class="kico n">📦</div>
     <div class="klbl">Total Rutas Pendientes</div><div class="kval">550</div><div class="ksub">Sin liquidar</div></div>
@@ -1288,7 +1290,7 @@ function pdcLogout(){
 </div>
 
 <!-- ═══════════ TIPOS DE CAMBIO ═══════════ -->
-<div id="tab-tiposcambio" class="panel act" style="display: block;">
+<div id="tab-tiposcambio" class="panel" style="display: none;">
   <div style="max-width:680px">
     <div class="tc-panel">
       <h5>💱 Tipos de Cambio — Editable</h5>
