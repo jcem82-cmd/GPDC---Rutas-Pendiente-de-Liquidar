@@ -120,7 +120,20 @@ input:focus{border-color:#38bdf8;background:rgba(56,189,248,0.07);box-shadow:0 0
 </div>
 
 <script>
-const USERS = [{"email": "juancarlos.escobar@grupopdc.com", "nombre": "Juan Carlos Escobar", "pass": "PDC@Admin2026!", "role": "admin"}, {"email": "erwin.soto@grupopdc.com", "nombre": "Erwin Soto", "pass": "Es#Rut4s26", "role": "user"}, {"email": "liquidaciones.cda@grupopdc.com", "nombre": "TEAM", "pass": "Lq#Team826", "role": "user"}, {"email": "edy.lopez@grupopdc.com", "nombre": "Edy Lopez", "pass": "El#Rutas26", "role": "user"}, {"email": "francisco.aguilar@grupopdc.com", "nombre": "Francisco Aguilar", "pass": "Fa#Liq2026", "role": "user"}, {"email": "invitado.pdc@grupopdc.com", "nombre": "Invitado", "pass": "Inv#PDC826", "role": "user"}];
+const USERS = [
+  {email:"juancarlos.escobar@grupopdc.com",nombre:"Juan Carlos Escobar",pass:"PDC@Admin2026!",role:"admin"},
+  {email:"erwin.soto@grupopdc.com",nombre:"Erwin Soto",pass:"Es#Rut4s26",role:"supervisor"},
+  {email:"liquidaciones.cda@grupopdc.com",nombre:"TEAM GT",pass:"Lq#Team826",role:"consulta"},
+  {email:"edy.lopez@grupopdc.com",nombre:"Edy Lopez",pass:"El#Rutas26",role:"consulta"},
+  {email:"francisco.aguilar@grupopdc.com",nombre:"Francisco Aguilar",pass:"Fa#Liq2026",role:"supervisor"},
+  {email:"joaquin.palma@grupopdc.com",nombre:"Joaquin Palma",pass:"Jp#Esv2026",role:"consulta"},
+  {email:"juancarlos.escobar@grupopdc.com",nombre:"Juan Carlos Escobar",pass:"PDC@Admin2026!",role:"admin"},
+  {email:"liquidaciones.esv@grupopdc.com",nombre:"TEAM ESV",pass:"Lq#Esv826",role:"consulta"},
+  {email:"claudio.rojas@grupopdc.com",nombre:"Claudio Rojas",pass:"Cr#Peru26",role:"consulta"},
+  {email:"jose.mallqui@grupopdc.com",nombre:"Jose Mallqui",pass:"Jm#Peru26",role:"consulta"},
+  {email:"transportes.peru@grupopdc.com",nombre:"TEAM Peru",pass:"Tp#Peru826",role:"consulta"},
+  {email:"vinicio.sanabria@grupopdc.com",nombre:"Vinicio Sanabria",pass:"Vs#Gt2026",role:"consulta"}
+];
 
 // Generate particles
 (function(){
@@ -164,10 +177,12 @@ function doLogin(){
 
   const ov=document.getElementById('wOverlay');
   document.getElementById('wName').textContent=user.nombre;
-  document.getElementById('wRole').textContent=user.role==='admin'?'👑 Administrador':'👤 Usuario';
+  document.getElementById('wRole').textContent=
+    user.role==='admin'?'👑 Administrador':
+    user.role==='supervisor'?'🔷 Supervisor':'👤 Consulta';
   ov.classList.add('show');
   setTimeout(()=>document.getElementById('wFill').style.width='100%',100);
-  setTimeout(()=>window.location.href='index.html',2600);
+  setTimeout(()=>window.location.href='hub.html',2600);
 }
 
 ['fEmail','fPass'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
