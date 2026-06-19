@@ -275,16 +275,14 @@ function pdcBridgeToTab(archivo, tab) {
 }
 
 function pdcDownload(archivo, nombre) {
-  /* URL absoluta hardcodeada — garantiza descarga desde GitHub Pages
-     sin activar guards de sesión del dashboard destino */
+  /* Solución definitiva: establecer sesión legacy y abrir en nueva pestaña.
+     El usuario guarda con Ctrl+S / Archivo → Guardar como */
+  var session = pdcGetSession();
+  if (!session) return;
+  /* Pasar sesión al formato legacy para que index.html no redireccione */
+  sessionStorage.setItem('pdc_user', pdcBuildLegacySession(session));
   var REPO = 'https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar';
-  var a = document.createElement('a');
-  a.href     = REPO + '/' + archivo;
-  a.download = nombre;
-  a.target   = '_blank';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  window.open(REPO + '/' + archivo, '_blank');
 }
 
 (function(){
