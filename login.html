@@ -1,859 +1,263 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Acceso Seguro — PDC Analytics Center</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    /* ── Reset ── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    /* ── Variables PDC (Style Guide v1.0) ── */
-    :root {
-      --navy:    #002060;
-      --navy2:   #003090;
-      --navy3:   #001540;
-      --sky:     #CFEEFC;
-      --white:   #FFFFFF;
-      --bg:      #F0F4F8;
-      --text:    #0F1729;
-      --text2:   #5A6480;
-      --border:  #E2E8F0;
-      --red2:    #CC0000;
-      --radius:  12px;
-      --shadow:  0 2px 16px rgba(0,32,96,.08);
-      --shadow-lg: 0 8px 40px rgba(0,32,96,.16);
-    }
-
-    /* ── Layout de pantalla completa ── */
-    html, body {
-      height: 100%;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: var(--navy3);
-      color: var(--text);
-      overflow: hidden;
-    }
-
-    /* ── Fondo con patrón geométrico sutil ── */
-    .bg-pattern {
-      position: fixed;
-      inset: 0;
-      background:
-        linear-gradient(135deg, var(--navy3) 0%, #001d5c 50%, var(--navy3) 100%);
-      z-index: 0;
-    }
-
-    /* Grid decorativo de puntos */
-    .bg-pattern::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle, rgba(207,238,252,.08) 1px, transparent 1px);
-      background-size: 32px 32px;
-    }
-
-    /* Línea diagonal de acento corporativo */
-    .bg-pattern::after {
-      content: '';
-      position: absolute;
-      top: -20%;
-      right: -10%;
-      width: 60%;
-      height: 140%;
-      background: linear-gradient(180deg, rgba(0,48,144,.35) 0%, transparent 100%);
-      transform: skewX(-12deg);
-      pointer-events: none;
-    }
-
-    /* ── Contenedor principal ── */
-    .page {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-
-    /* ── Card de login ── */
-    .card {
-      background: var(--white);
-      border-radius: 20px;
-      box-shadow: var(--shadow-lg);
-      width: 100%;
-      max-width: 420px;
-      overflow: hidden;
-      animation: cardIn .4s cubic-bezier(.22,.68,0,1.2) both;
-    }
-
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(24px) scale(.97); }
-      to   { opacity: 1; transform: translateY(0)    scale(1); }
-    }
-
-    /* ── Header de la card (franja navy) ── */
-    .card-header {
-      background: var(--navy);
-      padding: 32px 36px 28px;
-      text-align: center;
-    }
-
-    /* Logo PDC — placeholder hasta tener el Base64 */
-    .logo-wrap {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--white);
-      border-radius: 10px;
-      padding: 8px 16px;
-      margin-bottom: 20px;
-      min-height: 52px;
-    }
-
-    .logo-text {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--navy);
-      letter-spacing: .04em;
-    }
-
-    .card-title {
-      color: var(--white);
-      font-size: 1.15rem;
-      font-weight: 600;
-      letter-spacing: .02em;
-      line-height: 1.3;
-    }
-
-    .card-subtitle {
-      color: rgba(207,238,252,.75);
-      font-size: .78rem;
-      font-weight: 400;
-      margin-top: 4px;
-      letter-spacing: .03em;
-    }
-
-    /* ── Cuerpo de la card ── */
-    .card-body {
-      padding: 32px 36px 36px;
-    }
-
-    /* ── Campos del formulario ── */
-    .field {
-      margin-bottom: 18px;
-    }
-
-    .field label {
-      display: block;
-      font-size: .78rem;
-      font-weight: 600;
-      color: var(--text2);
-      text-transform: uppercase;
-      letter-spacing: .07em;
-      margin-bottom: 7px;
-    }
-
-    .field input {
-      width: 100%;
-      padding: 11px 14px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: .9rem;
-      font-family: inherit;
-      color: var(--text);
-      background: var(--bg);
-      transition: border-color .15s, box-shadow .15s;
-      outline: none;
-    }
-
-    .field input:focus {
-      border-color: var(--navy2);
-      box-shadow: 0 0 0 3px rgba(0,48,144,.1);
-      background: var(--white);
-    }
-
-    .field input::placeholder {
-      color: #b0b8cc;
-    }
-
-    /* ── Mensaje de error ── */
-    .error-msg {
-      display: none;
-      align-items: center;
-      gap: 8px;
-      background: #fff0f0;
-      border: 1px solid #fcc;
-      border-radius: 8px;
-      padding: 10px 14px;
-      margin-bottom: 18px;
-      font-size: .82rem;
-      color: var(--red2);
-      font-weight: 500;
-      animation: shake .3s ease;
-    }
-
-    .error-msg.visible { display: flex; }
-
-    @keyframes shake {
-      0%,100% { transform: translateX(0); }
-      25%      { transform: translateX(-6px); }
-      75%      { transform: translateX(6px); }
-    }
-
-    /* ── Botón de acceso ── */
-    .btn-login {
-      width: 100%;
-      padding: 13px;
-      background: var(--navy);
-      color: var(--white);
-      border: none;
-      border-radius: 8px;
-      font-size: .95rem;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      letter-spacing: .03em;
-      transition: background .15s, transform .1s, box-shadow .15s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .btn-login:hover:not(:disabled) {
-      background: var(--navy2);
-      box-shadow: 0 4px 16px rgba(0,32,96,.25);
-    }
-
-    .btn-login:active:not(:disabled) {
-      transform: scale(.98);
-    }
-
-    .btn-login:disabled {
-      opacity: .65;
-      cursor: not-allowed;
-    }
-
-    /* Spinner dentro del botón */
-    .btn-login .spinner {
-      display: none;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,.35);
-      border-top-color: var(--white);
-      border-radius: 50%;
-      animation: spin .6s linear infinite;
-      margin: 0 auto;
-    }
-
-    .btn-login.loading .btn-label { display: none; }
-    .btn-login.loading .spinner   { display: block; }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── Footer de la card ── */
-    .card-footer {
-      border-top: 1px solid var(--border);
-      padding: 14px 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .security-badge {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: .73rem;
-      color: var(--text2);
-      font-weight: 500;
-    }
-
-    .security-badge svg {
-      flex-shrink: 0;
-      opacity: .6;
-    }
-
-    /* ── Pie de página externo ── */
-    .page-footer {
-      margin-top: 24px;
-      text-align: center;
-      color: rgba(207,238,252,.4);
-      font-size: .72rem;
-      letter-spacing: .04em;
-    }
-
-    /* ── Responsive ── */
-    @media (max-width: 480px) {
-      .card-header  { padding: 24px 24px 20px; }
-      .card-body    { padding: 24px 24px 28px; }
-      .card-footer  { padding: 12px 24px; }
-    }
-
-    /* ── Reducir movimiento ── */
-    @media (prefers-reduced-motion: reduce) {
-      .card, .error-msg { animation: none; }
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Acceso Seguro — PDC Analytics Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#002060;--navy2:#003090;--navy3:#001540;--sky:#CFEEFC;--white:#FFFFFF;--bg:#F0F4F8;--text:#0F1729;--text2:#5A6480;--border:#E2E8F0;--red2:#CC0000;--radius:12px}
+html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--navy3);overflow:hidden}
+.bg{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy3) 0%,#001d5c 50%,var(--navy3) 100%);z-index:0}
+.bg::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(207,238,252,.08) 1px,transparent 1px);background-size:32px 32px}
+.bg::after{content:'';position:absolute;top:-20%;right:-10%;width:60%;height:140%;background:linear-gradient(180deg,rgba(0,48,144,.35) 0%,transparent 100%);transform:skewX(-12deg)}
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.card{background:var(--white);border-radius:20px;box-shadow:0 8px 40px rgba(0,32,96,.16);width:100%;max-width:420px;overflow:hidden;animation:cardIn .4s cubic-bezier(.22,.68,0,1.2) both}
+@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.card-header{background:var(--navy);padding:32px 36px 28px;text-align:center}
+.logo-wrap{display:inline-flex;align-items:center;justify-content:center;background:var(--white);border-radius:10px;padding:8px 16px;margin-bottom:20px;min-height:52px}
+.logo-text{font-size:1.25rem;font-weight:700;color:var(--navy);letter-spacing:.04em}
+.card-title{color:var(--white);font-size:1.15rem;font-weight:600;letter-spacing:.02em}
+.card-subtitle{color:rgba(207,238,252,.75);font-size:.78rem;margin-top:4px;letter-spacing:.03em}
+.card-body{padding:32px 36px 36px}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px}
+.field input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;font-family:inherit;color:var(--text);background:var(--bg);transition:border-color .15s,box-shadow .15s;outline:none}
+.field input:focus{border-color:var(--navy2);box-shadow:0 0 0 3px rgba(0,48,144,.1);background:var(--white)}
+.field input::placeholder{color:#b0b8cc}
+.error-msg{display:none;align-items:center;gap:8px;background:#fff0f0;border:1px solid #fcc;border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:.82rem;color:var(--red2);font-weight:500;animation:shake .3s ease}
+.error-msg.visible{display:flex}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.btn-login{width:100%;padding:13px;background:var(--navy);color:var(--white);border:none;border-radius:8px;font-size:.95rem;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:.03em;transition:background .15s,transform .1s}
+.btn-login:hover:not(:disabled){background:var(--navy2)}
+.btn-login:disabled{opacity:.65;cursor:not-allowed}
+.btn-login .spinner{display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:var(--white);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
+.btn-login.loading .btn-label{display:none}
+.btn-login.loading .spinner{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.card-footer{border-top:1px solid var(--border);padding:14px 36px;display:flex;align-items:center;justify-content:center}
+.security-badge{display:flex;align-items:center;gap:5px;font-size:.73rem;color:var(--text2);font-weight:500}
+.page-footer{margin-top:24px;text-align:center;color:rgba(207,238,252,.4);font-size:.72rem}
+@media(max-width:480px){.card-header{padding:24px 24px 20px}.card-body{padding:24px 24px 28px}}
+</style>
 </head>
 <body>
-
-  <div class="bg-pattern"></div>
-
-  <main class="page">
-    <div class="card" role="main">
-
-      <!-- Header -->
-      <div class="card-header">
-        <div class="logo-wrap">
-          <!--
-            NOTA DE IMPLEMENTACIÓN:
-            Reemplazar el contenido de .logo-wrap por:
-            <img src="assets/logo_pdc.png" alt="PDC" height="36" />
-            O bien usar el Base64 ya embebido en los dashboards existentes.
-          -->
-          <span class="logo-text">PDC</span>
-        </div>
-        <div class="card-title">PDC Analytics Center</div>
-        <div class="card-subtitle">Plataforma Corporativa de Business Intelligence</div>
-      </div>
-
-      <!-- Formulario -->
-      <div class="card-body">
-
-        <div class="error-msg" id="errorMsg" role="alert" aria-live="polite">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M8 4.5v4M8 10.5v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          <span id="errorText">Correo o contraseña incorrectos.</span>
-        </div>
-
-        <div class="field">
-          <label for="email">Correo electrónico</label>
-          <input
-            type="email"
-            id="email"
-            placeholder="usuario@grupopdc.com"
-            autocomplete="email"
-            spellcheck="false"
-            inputmode="email"
-          />
-        </div>
-
-        <div class="field">
-          <label for="pass">Contraseña</label>
-          <input
-            type="password"
-            id="pass"
-            placeholder="••••••••••••"
-            autocomplete="current-password"
-          />
-        </div>
-
-        <button class="btn-login" id="btnLogin" type="button">
-          <span class="btn-label">Ingresar</span>
-          <span class="spinner" aria-hidden="true"></span>
-        </button>
-
-      </div>
-
-      <!-- Footer de la card -->
-      <div class="card-footer">
-        <div class="security-badge">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M6 1L1.5 3v3.5C1.5 9.08 3.5 11 6 11s4.5-1.92 4.5-4.5V3L6 1z"
-                  stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
-          </svg>
-          Sesión segura · Acceso restringido a personal autorizado
-        </div>
-      </div>
-
+<div class="bg"></div>
+<main class="page">
+  <div class="card">
+    <div class="card-header">
+      <div class="logo-wrap"><span class="logo-text">PDC</span></div>
+      <div class="card-title">PDC Analytics Center</div>
+      <div class="card-subtitle">Plataforma Corporativa de Business Intelligence</div>
     </div>
-
-    <div class="page-footer">
-      Grupo PDC · Departamento Financiero · &copy; 2026
+    <div class="card-body">
+      <div class="error-msg" id="errorMsg" role="alert">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.5v4M8 10.5v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span id="errorText">Correo o contraseña incorrectos.</span>
+      </div>
+      <div class="field">
+        <label for="email">Correo electrónico</label>
+        <input type="email" id="email" placeholder="usuario@grupopdc.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label for="pass">Contraseña</label>
+        <input type="password" id="pass" placeholder="••••••••••••" autocomplete="current-password"/>
+      </div>
+      <button class="btn-login" id="btnLogin" type="button">
+        <span class="btn-label">Ingresar</span>
+        <span class="spinner"></span>
+      </button>
     </div>
-  </main>
+    <div class="card-footer">
+      <div class="security-badge">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1L1.5 3v3.5C1.5 9.08 3.5 11 6 11s4.5-1.92 4.5-4.5V3L6 1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        Sesión segura · Acceso restringido a personal autorizado
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">Grupo PDC · Departamento Financiero · © 2026</div>
+</main>
+<script>
 
-  <!-- Dependencias de autenticación -->
-  <script>
-'use strict';
+/* ═══════════════════════════════════════════════════════════════
+   PDC Analytics Center — Auth System v1.0
+   users.js + auth.js — Bloque unificado
+   ═══════════════════════════════════════════════════════════════ */
 
-/* ── PDC Analytics Center · Auth System v1.0 ── */
-/**
- * PDC Analytics Center — users.js
- * Matriz centralizada de usuarios, roles y permisos
- * Versión: 1.0 | Junio 2026
- *
- * INSTRUCCIONES DE MANTENIMIENTO:
- * - Para agregar un usuario: añadir entrada al array PDC_USERS
- * - Para agregar un dashboard: añadir entrada al array PDC_DASHBOARDS
- * - Para modificar permisos: editar el campo 'dashboards' y 'sedes' del usuario
- * - Cambiar contraseñas antes de cada deploy a producción
- */
+/* ── CONSTANTES ── */
+var PDC_SESSION_KEY = 'pdc_session';
+var PDC_LOGIN_PAGE  = 'login.html';
+var PDC_PORTAL_PAGE = 'analytics.html';
+var PDC_SESSION_TTL = 8 * 60 * 60 * 1000;
 
-
-// ─────────────────────────────────────────────────────────────
-// DASHBOARDS REGISTRADOS EN LA PLATAFORMA
-// Para agregar un nuevo dashboard: añadir una entrada aquí.
-// No se requiere modificar auth.js ni analytics.html.
-// ─────────────────────────────────────────────────────────────
-const PDC_DASHBOARDS = [
+/* ── DASHBOARDS REGISTRADOS ── */
+var PDC_DASHBOARDS = [
   {
-    id:          'rutas',
-    nombre:      'Liquidación de Rutas',
-    descripcion: 'Monitoreo en tiempo real del estado de liquidación de rutas de despacho. Incluye KPIs financieros, análisis por transportista y seguimiento de rutas vencidas.',
-    archivo:     'index.html',
-    icono:       '🚚',
-    paises:      ['GT', 'ESV', 'PE', 'HN'],
-    activo:      true
+    id: 'rutas', nombre: 'Liquidación de Rutas',
+    descripcion: 'Monitoreo en tiempo real del estado de liquidación de rutas de despacho. KPIs financieros, análisis por transportista, seguimiento de rutas vencidas y control de efectividad.',
+    archivo: 'index.html', icono: '🚚',
+    paises: { GT: '🇬🇹 Guatemala', ESV: '🇸🇻 El Salvador', PE: '🇵🇪 Perú', HN: '🇭🇳 Honduras' },
+    actualizacion: '11 jun 2026', activo: true
   },
   {
-    id:          'cashtoday',
-    nombre:      'Cash Today',
-    descripcion: 'Dashboard ejecutivo de recolección de efectivo ATM. Volumetría, costos de servicio, límites operativos y análisis de tráfico por sede.',
-    archivo:     'cash_today.html',
-    icono:       '💰',
-    paises:      ['GT', 'ESV'],
-    activo:      true
-  }
-  // Para agregar nuevos dashboards en el futuro, insertar aquí:
-  // {
-  //   id:          'nuevo_dashboard',
-  //   nombre:      'Nombre del Dashboard',
-  //   descripcion: 'Descripción ejecutiva.',
-  //   archivo:     'nombre_archivo.html',
-  //   icono:       '📊',
-  //   paises:      ['GT'],
-  //   activo:      true
-  // }
-];
-
-// ─────────────────────────────────────────────────────────────
-// SEDES POR PAÍS
-// Referencia para validación de acceso por sede
-// ─────────────────────────────────────────────────────────────
-const PDC_SEDES = {
-  GT:  ['CDA', 'XELA'],
-  ESV: ['Sta.Tecla', 'Sn.Miguel'],
-  PE:  ['Peru'],
-  HN:  ['Honduras']
-};
-
-// ─────────────────────────────────────────────────────────────
-// MATRIZ DE USUARIOS
-//
-// Campos:
-//   email      — identificador único (login)
-//   pass       — contraseña (texto plano, consistente con arquitectura actual)
-//   nombre     — nombre para mostrar en la UI
-//   rol        — 'admin' | 'supervisor' | 'consulta'
-//   dashboards — array de IDs de dashboards con acceso
-//   pais       — 'regional' | 'GT' | 'ESV' | 'PE' | 'HN'
-//   sedes      — array de sedes autorizadas ('todas' para acceso completo)
-//
-// Roles:
-//   admin      — acceso total: descarga, subida, actualización, admin panel
-//   supervisor — acceso a dashboards autorizados, sin descarga/subida/actualización
-//   consulta   — solo visualización de dashboards autorizados
-// ─────────────────────────────────────────────────────────────
-const PDC_USERS = [
-  {
-    email:      'juancarlos.escobar@grupopdc.com',
-    pass:       'PDC.Admin@2026',
-    nombre:     'Juan Carlos Escobar',
-    rol:        'admin',
-    dashboards: ['rutas', 'cashtoday'],
-    pais:       'regional',
-    sedes:      'todas'
-  },
-  {
-    email:      'erwin.soto@grupopdc.com',
-    pass:       'PDC.Sup.Reg@2026',
-    nombre:     'Erwin Soto',
-    rol:        'supervisor',
-    dashboards: ['rutas', 'cashtoday'],
-    pais:       'regional',
-    sedes:      'todas'
-  },
-  {
-    email:      'francisco.aguilar@grupopdc.com',
-    pass:       'PDC.Sup.GT@2026',
-    nombre:     'Francisco Aguilar',
-    rol:        'supervisor',
-    dashboards: ['rutas', 'cashtoday'],
-    pais:       'GT',
-    sedes:      ['CDA']
-  },
-  {
-    email:      'liquidaciones.cda@grupopdc.com',
-    pass:       'PDC.TeamGT@2026',
-    nombre:     'TEAM GT',
-    rol:        'consulta',
-    dashboards: ['rutas', 'cashtoday'],
-    pais:       'GT',
-    sedes:      ['CDA', 'XELA']
-  },
-  {
-    email:      'edy.lopez@grupopdc.com',
-    pass:       'PDC.Con.GT@2026',
-    nombre:     'Edy Lopez',
-    rol:        'consulta',
-    dashboards: ['rutas'],
-    pais:       'GT',
-    sedes:      ['CDA']
-  },
-  {
-    email:      'joaquin.palma@grupopdc.com',
-    pass:       'PDC.Con.ESV@2026',
-    nombre:     'Joaquin Palma',
-    rol:        'consulta',
-    dashboards: ['rutas', 'cashtoday'],
-    pais:       'ESV',
-    sedes:      ['Sta.Tecla', 'Sn.Miguel']
-  },
-  {
-    email:      'liquidaciones.esv@grupopdc.com',
-    pass:       'PDC.TeamESV@2026',
-    nombre:     'TEAM ESV',
-    rol:        'consulta',
-    dashboards: ['rutas', 'cashtoday'],
-    pais:       'ESV',
-    sedes:      ['Sta.Tecla', 'Sn.Miguel']
-  },
-  {
-    email:      'vinicio.sanabria@grupopdc.com',
-    pass:       'PDC.Con.GT2@2026',
-    nombre:     'Vinicio Sanabria',
-    rol:        'consulta',
-    dashboards: ['rutas'],
-    pais:       'GT',
-    sedes:      ['CDA']
-  },
-  {
-    email:      'claudio.rojas@grupopdc.com',
-    pass:       'PDC.Con.PE@2026',
-    nombre:     'Claudio Rojas',
-    rol:        'consulta',
-    dashboards: ['rutas'],
-    pais:       'PE',
-    sedes:      ['Peru']
-  },
-  {
-    email:      'jose.mallqui@grupopdc.com',
-    pass:       'PDC.Con.PE2@2026',
-    nombre:     'Jose Mallqui',
-    rol:        'consulta',
-    dashboards: ['rutas'],
-    pais:       'PE',
-    sedes:      ['Peru']
-  },
-  {
-    email:      'transportes.peru@grupopdc.com',
-    pass:       'PDC.TeamPE@2026',
-    nombre:     'TEAM Perú',
-    rol:        'consulta',
-    dashboards: ['rutas'],
-    pais:       'PE',
-    sedes:      ['Peru']
+    id: 'cashtoday', nombre: 'Cash Today',
+    descripcion: 'Dashboard ejecutivo de recolección de efectivo ATM. Volumetría por sede, costos de servicio, análisis de límites operativos y tráfico de recolección por hora y día.',
+    archivo: 'cash_today.html', icono: '💰',
+    paises: { GT: '🇬🇹 Guatemala', ESV: '🇸🇻 El Salvador' },
+    actualizacion: '11 jun 2026', activo: true
   }
 ];
 
-// ─────────────────────────────────────────────────────────────
-// FUNCIÓN DE AUTENTICACIÓN
-// Retorna el objeto de usuario si las credenciales son válidas,
-// null en caso contrario.
-// ─────────────────────────────────────────────────────────────
+/* ── USUARIOS ── */
+var PDC_USERS = [
+  { email:'juancarlos.escobar@grupopdc.com', pass:'PDC.Admin@2026',     nombre:'Juan Carlos Escobar', rol:'admin',      dashboards:['rutas','cashtoday'], pais:'regional', sedes:'todas' },
+  { email:'erwin.soto@grupopdc.com',         pass:'PDC.Sup.Reg@2026',   nombre:'Erwin Soto',          rol:'supervisor', dashboards:['rutas','cashtoday'], pais:'regional', sedes:'todas' },
+  { email:'francisco.aguilar@grupopdc.com',  pass:'PDC.Sup.GT@2026',    nombre:'Francisco Aguilar',   rol:'supervisor', dashboards:['rutas','cashtoday'], pais:'GT',       sedes:['CDA'] },
+  { email:'liquidaciones.cda@grupopdc.com',  pass:'PDC.TeamGT@2026',    nombre:'TEAM GT',             rol:'consulta',   dashboards:['rutas','cashtoday'], pais:'GT',       sedes:['CDA','XELA'] },
+  { email:'edy.lopez@grupopdc.com',          pass:'PDC.Con.GT@2026',    nombre:'Edy Lopez',           rol:'consulta',   dashboards:['rutas'],             pais:'GT',       sedes:['CDA'] },
+  { email:'joaquin.palma@grupopdc.com',      pass:'PDC.Con.ESV@2026',   nombre:'Joaquin Palma',       rol:'consulta',   dashboards:['rutas','cashtoday'], pais:'ESV',      sedes:['Sta.Tecla','Sn.Miguel'] },
+  { email:'liquidaciones.esv@grupopdc.com',  pass:'PDC.TeamESV@2026',   nombre:'TEAM ESV',            rol:'consulta',   dashboards:['rutas','cashtoday'], pais:'ESV',      sedes:['Sta.Tecla','Sn.Miguel'] },
+  { email:'vinicio.sanabria@grupopdc.com',   pass:'PDC.Con.GT2@2026',   nombre:'Vinicio Sanabria',    rol:'consulta',   dashboards:['rutas'],             pais:'GT',       sedes:['CDA'] },
+  { email:'claudio.rojas@grupopdc.com',      pass:'PDC.Con.PE@2026',    nombre:'Claudio Rojas',       rol:'consulta',   dashboards:['rutas'],             pais:'PE',       sedes:['Peru'] },
+  { email:'jose.mallqui@grupopdc.com',       pass:'PDC.Con.PE2@2026',   nombre:'Jose Mallqui',        rol:'consulta',   dashboards:['rutas'],             pais:'PE',       sedes:['Peru'] },
+  { email:'transportes.peru@grupopdc.com',   pass:'PDC.TeamPE@2026',    nombre:'TEAM Peru',           rol:'consulta',   dashboards:['rutas'],             pais:'PE',       sedes:['Peru'] }
+];
+
+/* ── FUNCIONES DE USUARIO ── */
 function pdcAuthenticate(email, pass) {
   if (!email || !pass) return null;
-  const user = PDC_USERS.find(
-    u => u.email.toLowerCase() === email.trim().toLowerCase()
-      && u.pass === pass
-  );
-  return user || null;
+  var user = null;
+  for (var i = 0; i < PDC_USERS.length; i++) {
+    if (PDC_USERS[i].email.toLowerCase() === email.trim().toLowerCase() && PDC_USERS[i].pass === pass) {
+      user = PDC_USERS[i]; break;
+    }
+  }
+  return user;
 }
 
-// ─────────────────────────────────────────────────────────────
-// FUNCIÓN: Obtener dashboards disponibles para un usuario
-// Retorna array de objetos dashboard con los metadatos completos
-// ─────────────────────────────────────────────────────────────
 function pdcGetUserDashboards(user) {
   if (!user) return [];
-  return PDC_DASHBOARDS.filter(
-    d => d.activo && user.dashboards.includes(d.id)
-  );
+  return PDC_DASHBOARDS.filter(function(d) {
+    return d.activo && user.dashboards.indexOf(d.id) > -1;
+  });
 }
 
-// ─────────────────────────────────────────────────────────────
-// FUNCIÓN: Verificar si el usuario tiene acceso a un dashboard
-// ─────────────────────────────────────────────────────────────
-function pdcCanAccess(user, dashboardId) {
-  if (!user || !dashboardId) return false;
-  return user.dashboards.includes(dashboardId);
-}
+function pdcIsAdmin(user) { return user && user.rol === 'admin'; }
+function pdcIsRegional(user) { return user && user.pais === 'regional'; }
 
-// ─────────────────────────────────────────────────────────────
-// FUNCIÓN: Verificar si el usuario tiene acceso de admin
-// ─────────────────────────────────────────────────────────────
-function pdcIsAdmin(user) {
-  return user && user.rol === 'admin';
-}
-
-// ─────────────────────────────────────────────────────────────
-// FUNCIÓN: Verificar si el usuario tiene acceso regional
-// (puede ver todos los países)
-// ─────────────────────────────────────────────────────────────
-function pdcIsRegional(user) {
-  return user && user.pais === 'regional';
-}
-
-/**
- * PDC Analytics Center — auth.js
- * Sistema centralizado de autenticación y control de acceso
- * Versión: 1.0 | Junio 2026
- *
- * DEPENDENCIA: Debe cargarse DESPUÉS de users.js
- *
- * USO EN DASHBOARDS: pdcRequireAuth(dashboardId) — ver documentación
- */
-
-
-// ─────────────────────────────────────────────────────────────
-// CONSTANTES
-// ─────────────────────────────────────────────────────────────
-const PDC_SESSION_KEY  = 'pdc_session';
-const PDC_LOGIN_PAGE   = 'login.html';
-const PDC_PORTAL_PAGE  = 'analytics.html';
-const PDC_SESSION_TTL  = 8 * 60 * 60 * 1000; // 8 horas en ms
-
-// ─────────────────────────────────────────────────────────────
-// CREAR SESIÓN
-// Construye y persiste el objeto de sesión tras login exitoso
-// ─────────────────────────────────────────────────────────────
+/* ── SESIÓN ── */
 function pdcCreateSession(user) {
-  const session = {
-    email:      user.email,
-    nombre:     user.nombre,
-    rol:        user.rol,
-    dashboards: user.dashboards,
-    pais:       user.pais,
-    sedes:      user.sedes,
-    ts:         Date.now()
+  var session = {
+    email: user.email, nombre: user.nombre, rol: user.rol,
+    dashboards: user.dashboards, pais: user.pais, sedes: user.sedes,
+    ts: Date.now()
   };
   sessionStorage.setItem(PDC_SESSION_KEY, JSON.stringify(session));
   return session;
 }
 
-// ─────────────────────────────────────────────────────────────
-// LEER SESIÓN
-// Retorna el objeto de sesión si existe y es válido, null si no
-// ─────────────────────────────────────────────────────────────
 function pdcGetSession() {
   try {
-    const raw = sessionStorage.getItem(PDC_SESSION_KEY);
+    var raw = sessionStorage.getItem(PDC_SESSION_KEY);
     if (!raw) return null;
-    const session = JSON.parse(raw);
-    // Validar TTL
-    if (Date.now() - session.ts > PDC_SESSION_TTL) {
-      pdcDestroySession();
-      return null;
-    }
+    var session = JSON.parse(raw);
+    if (Date.now() - session.ts > PDC_SESSION_TTL) { pdcDestroySession(); return null; }
     return session;
-  } catch (e) {
-    pdcDestroySession();
-    return null;
-  }
+  } catch(e) { pdcDestroySession(); return null; }
 }
 
-// ─────────────────────────────────────────────────────────────
-// DESTRUIR SESIÓN
-// Limpia sessionStorage y redirige al login
-// ─────────────────────────────────────────────────────────────
-function pdcDestroySession() {
-  sessionStorage.removeItem(PDC_SESSION_KEY);
-}
+function pdcDestroySession() { sessionStorage.removeItem(PDC_SESSION_KEY); }
 
-// ─────────────────────────────────────────────────────────────
-// LOGOUT
-// Destruye la sesión y redirige al login
-// ─────────────────────────────────────────────────────────────
 function pdcLogout() {
   pdcDestroySession();
-  // Resolver ruta relativa hacia login.html desde cualquier nivel
-  const depth = (window.location.pathname.match(/\//g) || []).length - 1;
-  const prefix = depth > 1 ? '../'.repeat(depth - 1) : '';
-  window.location.href = prefix + PDC_LOGIN_PAGE;
+  window.location.href = PDC_LOGIN_PAGE;
 }
 
-// ─────────────────────────────────────────────────────────────
-// GUARD PRINCIPAL — usar en todos los dashboards y el portal
-//
-// dashboardId: ID del dashboard a proteger (ej: 'rutas', 'cashtoday')
-//              Pasar null para proteger páginas generales (portal)
-//
-// Flujo:
-//   1. Sin sesión válida          → redirige a login.html
-//   2. Sin permiso al dashboard   → redirige a analytics.html
-//   3. Con sesión y permiso       → retorna objeto de sesión
-// ─────────────────────────────────────────────────────────────
+/* ── GUARDS ── */
 function pdcRequireAuth(dashboardId) {
-  const session = pdcGetSession();
-
-  if (!session) {
-    window.location.href = PDC_LOGIN_PAGE;
-    return null;
+  var session = pdcGetSession();
+  if (!session) { window.location.href = PDC_LOGIN_PAGE; return null; }
+  if (dashboardId && session.dashboards.indexOf(dashboardId) === -1) {
+    window.location.href = PDC_PORTAL_PAGE; return null;
   }
-
-  if (dashboardId && !session.dashboards.includes(dashboardId)) {
-    window.location.href = PDC_PORTAL_PAGE;
-    return null;
-  }
-
   return session;
 }
 
-// ─────────────────────────────────────────────────────────────
-// GUARD ADMIN — usar en páginas exclusivas de administrador
-// ─────────────────────────────────────────────────────────────
 function pdcRequireAdmin() {
-  const session = pdcRequireAuth(null);
+  var session = pdcRequireAuth(null);
   if (!session) return null;
-
-  if (session.rol !== 'admin') {
-    window.location.href = PDC_PORTAL_PAGE;
-    return null;
-  }
-
+  if (session.rol !== 'admin') { window.location.href = PDC_PORTAL_PAGE; return null; }
   return session;
 }
 
-// ─────────────────────────────────────────────────────────────
-// FILTRO DE SEDES — usar en Cash Today para usuarios restringidos
-//
-// Retorna array de sedes autorizadas para el usuario actual,
-// o 'todas' si el usuario tiene acceso regional.
-//
-// Uso en Cash Today:
-//   const sedesAuth = pdcGetSedesAutorizadas(session);
-//   if (sedesAuth !== 'todas') {
-//     // Aplicar filtro silencioso sobre los controles de sede
-//   }
-// ─────────────────────────────────────────────────────────────
-function pdcGetSedesAutorizadas(session) {
-  if (!session) return [];
-  if (session.sedes === 'todas') return 'todas';
-  return session.sedes;
+/* ── BRIDGE: pasar sesión a dashboards legacy ── */
+function pdcBuildLegacySession(session) {
+  return JSON.stringify({ nombre: session.nombre, email: session.email,
+    role: session.rol === 'admin' ? 'admin' : 'user' });
 }
 
-// ─────────────────────────────────────────────────────────────
-// VERIFICAR PERMISO DE ACCIÓN ESPECÍFICA
-//
-// Acciones disponibles:
-//   'descargar'   — descargar archivos de dashboard
-//   'subir'       — subir Excel de actualización
-//   'actualizar'  — acceder a Tipos de Cambio / Config
-//   'admin_panel' — acceso a admin.html
-// ─────────────────────────────────────────────────────────────
-function pdcCanDo(session, accion) {
-  if (!session) return false;
-  const accionesAdmin = ['descargar', 'subir', 'actualizar', 'admin_panel'];
-  if (accionesAdmin.includes(accion)) {
-    return session.rol === 'admin';
+function pdcNavigateToDash(archivo) {
+  var session = pdcGetSession();
+  if (!session) { window.location.href = PDC_LOGIN_PAGE; return; }
+  sessionStorage.setItem('pdc_user', pdcBuildLegacySession(session));
+  window.location.href = archivo;
+}
+
+function pdcBridgeToTab(archivo, tab) {
+  var session = pdcGetSession();
+  if (!session) { window.location.href = PDC_LOGIN_PAGE; return; }
+  sessionStorage.setItem('pdc_user', pdcBuildLegacySession(session));
+  window.location.href = archivo + '?tab=' + tab;
+}
+
+function pdcDownload(archivo, nombre) {
+  fetch(archivo)
+    .then(function(r) { return r.blob(); })
+    .then(function(blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = nombre;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+}
+
+(function(){
+  if(pdcGetSession()){window.location.href=PDC_PORTAL_PAGE;return;}
+  var emailEl=document.getElementById('email');
+  var passEl=document.getElementById('pass');
+  var btnEl=document.getElementById('btnLogin');
+  var errEl=document.getElementById('errorMsg');
+  var errTxt=document.getElementById('errorText');
+  emailEl.focus();
+  [emailEl,passEl].forEach(function(el){
+    el.addEventListener('input',function(){errEl.classList.remove('visible');});
+  });
+  emailEl.addEventListener('keydown',function(e){if(e.key==='Enter')passEl.focus();});
+  passEl.addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+  btnEl.addEventListener('click',doLogin);
+  function doLogin(){
+    var email=emailEl.value.trim();
+    var pass=passEl.value;
+    if(!email||!pass){showError('Ingrese su correo electrónico y contraseña.');return;}
+    btnEl.classList.add('loading');btnEl.disabled=true;
+    errEl.classList.remove('visible');
+    setTimeout(function(){
+      var user=pdcAuthenticate(email,pass);
+      if(!user){
+        btnEl.classList.remove('loading');btnEl.disabled=false;
+        showError('Correo o contraseña incorrectos.');
+        passEl.value='';passEl.focus();return;
+      }
+      pdcCreateSession(user);
+      window.location.href=PDC_PORTAL_PAGE;
+    },350);
   }
-  return false;
-}
-
-// ─────────────────────────────────────────────────────────────
-// HELPER: Resolver ruta base del repositorio
-// Necesario porque GitHub Pages sirve desde un subdirectorio
-// ─────────────────────────────────────────────────────────────
-function pdcBasePath() {
-  const path = window.location.pathname;
-  const repoMatch = path.match(/^(\/[^/]+\/)/);
-  return repoMatch ? repoMatch[1] : '/';
-}
-
-(function () {
-      
-
-      // Si ya existe sesión válida, redirigir directamente al portal
-      if (pdcGetSession()) {
-        window.location.href = PDC_PORTAL_PAGE;
-        return;
-      }
-
-      const emailEl = document.getElementById('email');
-      const passEl  = document.getElementById('pass');
-      const btnEl   = document.getElementById('btnLogin');
-      const errEl   = document.getElementById('errorMsg');
-      const errTxt  = document.getElementById('errorText');
-
-      // ── Foco inicial ──
-      emailEl.focus();
-
-      // ── Limpiar error al escribir ──
-      [emailEl, passEl].forEach(el => {
-        el.addEventListener('input', () => errEl.classList.remove('visible'));
-      });
-
-      // ── Enter para avanzar entre campos o hacer login ──
-      emailEl.addEventListener('keydown', e => {
-        if (e.key === 'Enter') passEl.focus();
-      });
-
-      passEl.addEventListener('keydown', e => {
-        if (e.key === 'Enter') doLogin();
-      });
-
-      btnEl.addEventListener('click', doLogin);
-
-      // ── Función de autenticación ──
-      function doLogin() {
-        const email = emailEl.value.trim();
-        const pass  = passEl.value;
-
-        // Validación básica de campos vacíos
-        if (!email || !pass) {
-          showError('Ingrese su correo electrónico y contraseña.');
-          return;
-        }
-
-        // Indicador de carga
-        btnEl.classList.add('loading');
-        btnEl.disabled = true;
-        errEl.classList.remove('visible');
-
-        // Micro-delay para UX (evita flash inmediato)
-        setTimeout(() => {
-          const user = pdcAuthenticate(email, pass);
-
-          if (!user) {
-            btnEl.classList.remove('loading');
-            btnEl.disabled = false;
-            showError('Correo o contraseña incorrectos.');
-            passEl.value = '';
-            passEl.focus();
-            return;
-          }
-
-          // Crear sesión y redirigir al portal
-          pdcCreateSession(user);
-          window.location.href = PDC_PORTAL_PAGE;
-
-        }, 350);
-      }
-
-      function showError(msg) {
-        errTxt.textContent = msg;
-        errEl.classList.add('visible');
-      }
-
-    })();
+  function showError(msg){errTxt.textContent=msg;errEl.classList.add('visible');}
+})();
 </script>
-
 </body>
 </html>
