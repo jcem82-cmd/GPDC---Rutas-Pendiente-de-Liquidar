@@ -298,15 +298,31 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
 </head>
 <body><script>
 (function(){
-  /* PDC Analytics Center — Auth Bridge v1.0 */
+ /* PDC Analytics Center — Auth Bridge v2.0 */
   var u = sessionStorage.getItem('pdc_user');
   if (!u) {
-    /* Intentar leer sesión unificada y convertir al formato legacy */
+    /* 1. Intentar leer sesión unificada */
     var unified = sessionStorage.getItem('pdc_session');
-    if (!unified) { window.location.replace('analytics.html'); return; }
-    var s = JSON.parse(unified);
-    u = JSON.stringify({ nombre: s.nombre, email: s.email, role: s.rol === 'admin' ? 'admin' : 'user' });
-    sessionStorage.setItem('pdc_user', u);
+    if (unified) {
+      var s = JSON.parse(unified);
+      u = JSON.stringify({ nombre: s.nombre, email: s.email, role: s.rol === 'admin' ? 'admin' : 'user' });
+      sessionStorage.setItem('pdc_user', u);
+    } else {
+      /* 2. Intentar leer token de URL (?pdc_token=...) — para acceso desde nueva pestaña */
+      var params = new URLSearchParams(window.location.search);
+      var token = params.get('pdc_token');
+      if (token) {
+        try {
+          var t = JSON.parse(atob(token));
+          u = JSON.stringify({ nombre: t.nombre, email: t.email, role: t.rol === 'admin' ? 'admin' : 'user' });
+          sessionStorage.setItem('pdc_user', u);
+          /* Limpiar token de la URL sin recargar */
+          var clean = window.location.pathname + (params.get('tab') ? '?tab=' + params.get('tab') : '');
+          history.replaceState(null, '', clean);
+        } catch(e) { token = null; }
+      }
+      if (!u) { window.location.replace('analytics.html'); return; }
+    }
   }
   var data = JSON.parse(u);
   /* Verificar tab solicitado via query param */
@@ -321,7 +337,6 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
       if (tc) tc.style.display = '';
     }
     if (urlTab) {
-      /* Navegar al tab solicitado */
       if (typeof ST === 'function') ST(urlTab);
       else setTimeout(function(){ if(typeof ST==='function') ST(urlTab); }, 500);
     }
