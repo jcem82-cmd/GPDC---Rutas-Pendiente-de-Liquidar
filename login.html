@@ -381,6 +381,8 @@
 
   <!-- Dependencias de autenticación -->
   <script>
+'use strict';
+
 /* ── PDC Analytics Center · Auth System v1.0 ── */
 /**
  * PDC Analytics Center — users.js
@@ -394,7 +396,6 @@
  * - Cambiar contraseñas antes de cada deploy a producción
  */
 
-'use strict';
 
 // ─────────────────────────────────────────────────────────────
 // DASHBOARDS REGISTRADOS EN LA PLATAFORMA
@@ -620,7 +621,6 @@ function pdcIsRegional(user) {
  * USO EN DASHBOARDS: pdcRequireAuth(dashboardId) — ver documentación
  */
 
-'use strict';
 
 // ─────────────────────────────────────────────────────────────
 // CONSTANTES
@@ -777,11 +777,8 @@ function pdcBasePath() {
   return repoMatch ? repoMatch[1] : '/';
 }
 
-</script>
-
-  <script>
-    (function () {
-      'use strict';
+(function () {
+      
 
       // Si ya existe sesión válida, redirigir directamente al portal
       if (pdcGetSession()) {
@@ -856,7 +853,7 @@ function pdcBasePath() {
       }
 
     })();
-  </script>
+</script>
 
 </body>
 </html>
