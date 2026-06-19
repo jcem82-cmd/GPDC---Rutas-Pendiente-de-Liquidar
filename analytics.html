@@ -1,1434 +1,369 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PDC Analytics Center</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    /* ── Reset ── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    /* ── Variables PDC (Style Guide v1.0) ── */
-    :root {
-      --navy:    #002060;
-      --navy2:   #003090;
-      --navy3:   #001540;
-      --sky:     #CFEEFC;
-      --silver:  #DBDBDB;
-      --white:   #FFFFFF;
-      --bg:      #F0F4F8;
-      --card:    #FFFFFF;
-      --text:    #0F1729;
-      --text2:   #5A6480;
-      --border:  #E2E8F0;
-      --green:   #DCF0C6;
-      --green2:  #2D9E2D;
-      --yellow:  #FFF4CC;
-      --yellow2: #C48A00;
-      --red:     #FFBDBD;
-      --red2:    #CC0000;
-      --radius:  12px;
-      --shadow:  0 2px 16px rgba(0,32,96,.08);
-      --shadow-md: 0 4px 24px rgba(0,32,96,.12);
-      --shadow-lg: 0 8px 40px rgba(0,32,96,.16);
-    }
-
-    /* ── Base ── */
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      font-size: 14px;
-      line-height: 1.5;
-      color: var(--text);
-      background: var(--bg);
-      min-height: 100vh;
-    }
-
-    /* ─────────────────────────────────────
-       HEADER PRINCIPAL
-    ───────────────────────────────────── */
-    .header {
-      background: var(--navy);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 12px rgba(0,0,0,.2);
-    }
-
-    .header-inner {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 0 28px;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    /* Logo PDC */
-    .logo-wrap {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--white);
-      border-radius: 8px;
-      padding: 4px 12px;
-      height: 44px;
-      flex-shrink: 0;
-    }
-
-    .logo-text {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--navy);
-      letter-spacing: .05em;
-    }
-
-    /* Separador vertical */
-    .header-divider {
-      width: 1px;
-      height: 28px;
-      background: rgba(255,255,255,.2);
-      flex-shrink: 0;
-    }
-
-    .header-brand {
-      flex: 1;
-    }
-
-    .header-title {
-      font-size: .95rem;
-      font-weight: 700;
-      color: var(--white);
-      letter-spacing: .04em;
-      line-height: 1.2;
-    }
-
-    .header-subtitle {
-      font-size: .72rem;
-      font-weight: 400;
-      color: rgba(207,238,252,.7);
-      letter-spacing: .03em;
-    }
-
-    /* Info de sesión + logout */
-    .header-session {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-shrink: 0;
-    }
-
-    .session-info {
-      text-align: right;
-    }
-
-    .session-name {
-      font-size: .82rem;
-      font-weight: 600;
-      color: var(--white);
-      line-height: 1.2;
-    }
-
-    .session-role {
-      font-size: .7rem;
-      font-weight: 400;
-      color: rgba(207,238,252,.65);
-    }
-
-    .btn-logout {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255,255,255,.1);
-      border: 1px solid rgba(255,255,255,.2);
-      color: rgba(255,255,255,.85);
-      border-radius: 8px;
-      padding: 7px 14px;
-      font-size: .78rem;
-      font-weight: 500;
-      font-family: inherit;
-      cursor: pointer;
-      transition: background .15s, color .15s;
-      white-space: nowrap;
-    }
-
-    .btn-logout:hover {
-      background: rgba(255,255,255,.18);
-      color: var(--white);
-    }
-
-    /* ─────────────────────────────────────
-       BARRA DE BIENVENIDA
-    ───────────────────────────────────── */
-    .welcome-bar {
-      background: linear-gradient(135deg, var(--navy) 0%, #001d5c 60%, #002878 100%);
-      padding: 36px 28px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Patrón de puntos decorativo */
-    .welcome-bar::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle, rgba(207,238,252,.06) 1px, transparent 1px);
-      background-size: 28px 28px;
-      pointer-events: none;
-    }
-
-    /* Acento diagonal */
-    .welcome-bar::after {
-      content: '';
-      position: absolute;
-      top: -40%;
-      right: -5%;
-      width: 35%;
-      height: 200%;
-      background: linear-gradient(180deg, rgba(0,48,144,.4) 0%, transparent 100%);
-      transform: skewX(-10deg);
-      pointer-events: none;
-    }
-
-    .welcome-inner {
-      max-width: 1280px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 1;
-    }
-
-    .welcome-greeting {
-      font-size: .78rem;
-      font-weight: 500;
-      color: rgba(207,238,252,.7);
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-
-    .welcome-title {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: var(--white);
-      line-height: 1.25;
-      margin-bottom: 6px;
-    }
-
-    .welcome-desc {
-      font-size: .85rem;
-      color: rgba(207,238,252,.65);
-      font-weight: 400;
-      max-width: 520px;
-    }
-
-    /* Chips de estadísticas rápidas */
-    .welcome-stats {
-      display: flex;
-      gap: 12px;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
-
-    .stat-chip {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      background: rgba(255,255,255,.1);
-      border: 1px solid rgba(255,255,255,.15);
-      border-radius: 20px;
-      padding: 5px 14px;
-      font-size: .75rem;
-      color: rgba(207,238,252,.85);
-      font-weight: 500;
-      backdrop-filter: blur(4px);
-    }
-
-    .stat-chip-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--green2);
-      flex-shrink: 0;
-      box-shadow: 0 0 6px var(--green2);
-    }
-
-    /* ─────────────────────────────────────
-       CONTENIDO PRINCIPAL
-    ───────────────────────────────────── */
-    .main {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 36px 28px 56px;
-    }
-
-    /* Sección de dashboards */
-    .section-header {
-      display: flex;
-      align-items: baseline;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .section-title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--navy);
-      letter-spacing: .02em;
-    }
-
-    .section-count {
-      font-size: .78rem;
-      font-weight: 500;
-      color: var(--text2);
-    }
-
-    /* Grid de cards */
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 20px;
-    }
-
-    /* ─────────────────────────────────────
-       DASHBOARD CARD
-    ───────────────────────────────────── */
-    .dash-card {
-      background: var(--card);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      transition: box-shadow .2s, transform .2s;
-      animation: cardIn .35s cubic-bezier(.22,.68,0,1.1) both;
-    }
-
-    .dash-card:hover {
-      box-shadow: var(--shadow-md);
-      transform: translateY(-2px);
-    }
-
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Delay escalonado por card */
-    .dash-card:nth-child(1) { animation-delay: .05s; }
-    .dash-card:nth-child(2) { animation-delay: .12s; }
-    .dash-card:nth-child(3) { animation-delay: .19s; }
-    .dash-card:nth-child(4) { animation-delay: .26s; }
-
-    /* Franja de color superior (accent) */
-    .card-accent {
-      height: 5px;
-      background: linear-gradient(90deg, var(--navy) 0%, var(--navy2) 100%);
-    }
-
-    .card-accent.rutas     { background: linear-gradient(90deg, #002060 0%, #00B8D9 100%); }
-    .card-accent.cashtoday { background: linear-gradient(90deg, #E6501E 0%, #FFAB00 100%); }
-
-    /* Cuerpo de la card */
-    .card-body {
-      padding: 22px 24px 18px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    /* Fila superior: ícono + título + badge estado */
-    .card-top {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-    }
-
-    .card-icon {
-      width: 46px;
-      height: 46px;
-      border-radius: 12px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    .card-title-group {
-      flex: 1;
-    }
-
-    .card-name {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--navy);
-      line-height: 1.25;
-      margin-bottom: 3px;
-    }
-
-    .card-category {
-      font-size: .72rem;
-      font-weight: 500;
-      color: var(--text2);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-
-    /* Badge de estado */
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: .7rem;
-      font-weight: 600;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    .badge-active {
-      background: var(--green);
-      color: var(--green2);
-    }
-
-    .badge-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: currentColor;
-    }
-
-    /* Descripción */
-    .card-desc {
-      font-size: .82rem;
-      color: var(--text2);
-      line-height: 1.55;
-      flex: 1;
-    }
-
-    /* Metadatos: países y última actualización */
-    .card-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-    }
-
-    .meta-row {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-size: .75rem;
-      color: var(--text2);
-    }
-
-    .meta-row svg {
-      flex-shrink: 0;
-      opacity: .55;
-    }
-
-    .country-chips {
-      display: flex;
-      gap: 5px;
-      flex-wrap: wrap;
-    }
-
-    .country-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: var(--sky);
-      color: var(--navy);
-      border-radius: 20px;
-      padding: 2px 8px;
-      font-size: .7rem;
-      font-weight: 600;
-    }
-
-    /* Separador */
-    .card-divider {
-      height: 1px;
-      background: var(--border);
-      margin: 0 -24px;
-      width: calc(100% + 48px);
-    }
-
-    /* Footer de la card: acciones */
-    .card-footer {
-      padding: 14px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .card-update {
-      font-size: .72rem;
-      color: var(--text2);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .card-update svg { opacity: .5; }
-
-    /* Botón Acceder */
-    .btn-acceder {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      background: var(--navy);
-      color: var(--white);
-      border: none;
-      border-radius: 8px;
-      padding: 9px 20px;
-      font-size: .82rem;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background .15s, box-shadow .15s, transform .1s;
-      white-space: nowrap;
-    }
-
-    .btn-acceder:hover {
-      background: var(--navy2);
-      box-shadow: 0 3px 12px rgba(0,32,96,.25);
-    }
-
-    .btn-acceder:active {
-      transform: scale(.97);
-    }
-
-    .btn-acceder svg {
-      transition: transform .15s;
-    }
-
-    .btn-acceder:hover svg {
-      transform: translateX(3px);
-    }
-
-    /* ─────────────────────────────────────
-       PANEL DE ADMINISTRACIÓN
-    ───────────────────────────────────── */
-    .admin-section {
-      margin-top: 40px;
-    }
-
-    .admin-panel {
-      background: var(--card);
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .admin-header {
-      padding: 18px 24px;
-      background: linear-gradient(90deg, #f8faff 0%, var(--card) 100%);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .admin-header-icon {
-      width: 36px;
-      height: 36px;
-      background: var(--sky);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--navy);
-    }
-
-    .admin-header-text .admin-title {
-      font-size: .9rem;
-      font-weight: 700;
-      color: var(--navy);
-    }
-
-    .admin-header-text .admin-subtitle {
-      font-size: .73rem;
-      color: var(--text2);
-    }
-
-    .admin-actions {
-      padding: 20px 24px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 12px;
-    }
-
-    .admin-btn {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 13px 16px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      cursor: pointer;
-      font-family: inherit;
-      text-align: left;
-      transition: background .15s, border-color .15s, box-shadow .15s;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .admin-btn:hover {
-      background: var(--sky);
-      border-color: var(--navy2);
-      box-shadow: 0 2px 8px rgba(0,32,96,.1);
-    }
-
-    .admin-btn-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-      background: var(--white);
-      border: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-
-    .admin-btn-label {
-      font-size: .8rem;
-      font-weight: 600;
-      color: var(--navy);
-      line-height: 1.3;
-    }
-
-    .admin-btn-desc {
-      font-size: .7rem;
-      color: var(--text2);
-      margin-top: 1px;
-    }
-
-    /* ─────────────────────────────────────
-       EMPTY STATE (sin dashboards)
-    ───────────────────────────────────── */
-    .empty-state {
-      text-align: center;
-      padding: 56px 24px;
-      color: var(--text2);
-    }
-
-    .empty-state-icon {
-      font-size: 2.5rem;
-      margin-bottom: 12px;
-      opacity: .5;
-    }
-
-    .empty-state-title {
-      font-size: .95rem;
-      font-weight: 600;
-      color: var(--navy);
-      margin-bottom: 6px;
-    }
-
-    .empty-state-desc {
-      font-size: .82rem;
-    }
-
-    /* ─────────────────────────────────────
-       FOOTER DE PÁGINA
-    ───────────────────────────────────── */
-    .page-footer {
-      border-top: 1px solid var(--border);
-      padding: 18px 28px;
-      background: var(--white);
-      max-width: 100%;
-    }
-
-    .page-footer-inner {
-      max-width: 1280px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .footer-brand {
-      font-size: .72rem;
-      color: var(--text2);
-    }
-
-    .footer-version {
-      font-size: .7rem;
-      color: var(--silver);
-    }
-
-    /* ─────────────────────────────────────
-       RESPONSIVE
-    ───────────────────────────────────── */
-    @media (max-width: 768px) {
-      .header-inner   { padding: 0 16px; height: 56px; }
-      .welcome-bar    { padding: 24px 16px; }
-      .main           { padding: 24px 16px 40px; }
-      .cards-grid     { grid-template-columns: 1fr; }
-      .session-info   { display: none; }
-      .welcome-title  { font-size: 1.3rem; }
-      .welcome-stats  { gap: 8px; }
-      .admin-actions  { grid-template-columns: 1fr; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .dash-card, .btn-acceder svg { animation: none; transition: none; }
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PDC Analytics Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#002060;--navy2:#003090;--sky:#CFEEFC;--white:#FFF;--bg:#F0F4F8;--card:#FFF;--text:#0F1729;--text2:#5A6480;--border:#E2E8F0;--green:#DCF0C6;--green2:#2D9E2D;--radius:12px;--shadow:0 2px 16px rgba(0,32,96,.08);--shadow-md:0 4px 24px rgba(0,32,96,.12)}
+body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg);min-height:100vh}
+/* HEADER */
+.header{background:var(--navy);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.header-inner{max-width:1280px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;gap:20px}
+.logo-wrap{display:flex;align-items:center;justify-content:center;background:var(--white);border-radius:8px;padding:4px 12px;height:44px;flex-shrink:0}
+.logo-text{font-size:1.1rem;font-weight:700;color:var(--navy);letter-spacing:.05em}
+.hdiv{width:1px;height:28px;background:rgba(255,255,255,.2);flex-shrink:0}
+.header-brand{flex:1}
+.header-title{font-size:.95rem;font-weight:700;color:var(--white);letter-spacing:.04em}
+.header-subtitle{font-size:.72rem;color:rgba(207,238,252,.7)}
+.header-session{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.session-info{text-align:right}
+.session-name{font-size:.82rem;font-weight:600;color:var(--white)}
+.session-role{font-size:.7rem;color:rgba(207,238,252,.65)}
+.btn-logout{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);border-radius:8px;padding:7px 14px;font-size:.78rem;font-weight:500;font-family:inherit;cursor:pointer;white-space:nowrap;transition:background .15s}
+.btn-logout:hover{background:rgba(255,255,255,.18);color:var(--white)}
+/* WELCOME */
+.welcome{background:linear-gradient(135deg,#002060 0%,#001d5c 60%,#002878 100%);padding:36px 28px;position:relative;overflow:hidden}
+.welcome::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(207,238,252,.06) 1px,transparent 1px);background-size:28px 28px}
+.welcome-inner{max-width:1280px;margin:0 auto;position:relative;z-index:1}
+.welcome-greeting{font-size:.78rem;font-weight:500;color:rgba(207,238,252,.7);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.welcome-title{font-size:1.6rem;font-weight:700;color:var(--white);margin-bottom:6px}
+.welcome-desc{font-size:.85rem;color:rgba(207,238,252,.65);max-width:520px}
+.chips{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:5px 14px;font-size:.75rem;color:rgba(207,238,252,.85);font-weight:500}
+.chip-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+/* MAIN */
+.main{max-width:1280px;margin:0 auto;padding:36px 28px 56px}
+.sec-header{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
+.sec-title{font-size:1rem;font-weight:700;color:var(--navy)}
+.sec-count{font-size:.78rem;color:var(--text2)}
+/* CARDS GRID */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px}
+.dash-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .2s,transform .2s;animation:cardIn .35s ease both}
+.dash-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.dash-card:nth-child(1){animation-delay:.05s}.dash-card:nth-child(2){animation-delay:.12s}
+@keyframes cardIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.card-accent{height:5px}
+.card-accent-rutas{background:linear-gradient(90deg,#002060,#00B8D9)}
+.card-accent-cashtoday{background:linear-gradient(90deg,#E6501E,#FFAB00)}
+.card-body{padding:22px 24px 18px;flex:1;display:flex;flex-direction:column;gap:12px}
+.card-top{display:flex;align-items:flex-start;gap:14px}
+.card-icon{width:46px;height:46px;border-radius:12px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.card-title-group{flex:1}
+.card-name{font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:3px}
+.card-category{font-size:.72rem;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;flex-shrink:0}
+.badge-active{background:var(--green);color:var(--green2)}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.card-desc{font-size:.82rem;color:var(--text2);line-height:1.55;flex:1}
+.card-meta{display:flex;flex-direction:column;gap:7px}
+.meta-row{display:flex;align-items:center;gap:7px;font-size:.75rem;color:var(--text2)}
+.country-chips{display:flex;gap:5px;flex-wrap:wrap}
+.country-chip{display:inline-flex;align-items:center;gap:4px;background:var(--sky);color:var(--navy);border-radius:20px;padding:2px 8px;font-size:.7rem;font-weight:600}
+.divider{height:1px;background:var(--border);margin:0 -24px;width:calc(100% + 48px)}
+.card-footer{padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-update{font-size:.72rem;color:var(--text2);display:flex;align-items:center;gap:5px}
+.btn-acceder{display:inline-flex;align-items:center;gap:7px;background:var(--navy);color:var(--white);border:none;border-radius:8px;padding:9px 20px;font-size:.82rem;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s;white-space:nowrap}
+.btn-acceder:hover{background:var(--navy2)}
+/* ADMIN */
+.admin-section{margin-top:40px}
+.admin-panel{background:var(--card);border-radius:16px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
+.admin-hdr{padding:18px 24px;background:#f8faff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.admin-hdr-icon{width:36px;height:36px;background:var(--sky);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--navy);font-size:1rem}
+.admin-hdr-title{font-size:.9rem;font-weight:700;color:var(--navy)}
+.admin-hdr-sub{font-size:.73rem;color:var(--text2)}
+.admin-actions{padding:20px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.admin-btn{display:flex;align-items:center;gap:10px;padding:13px 16px;background:var(--bg);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-family:inherit;text-align:left;transition:background .15s,border-color .15s;text-decoration:none;color:inherit}
+.admin-btn:hover{background:var(--sky);border-color:var(--navy2)}
+.admin-btn-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;background:var(--white);border:1px solid var(--border);flex-shrink:0}
+.admin-btn-label{font-size:.8rem;font-weight:600;color:var(--navy)}
+.admin-btn-desc{font-size:.7rem;color:var(--text2);margin-top:1px}
+/* FOOTER */
+.page-footer{border-top:1px solid var(--border);padding:18px 28px;background:var(--white)}
+.page-footer-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.footer-brand{font-size:.72rem;color:var(--text2)}
+.footer-ver{font-size:.7rem;color:#ccc}
+@media(max-width:768px){.header-inner{padding:0 16px;height:56px}.welcome{padding:24px 16px}.main{padding:24px 16px 40px}.cards-grid{grid-template-columns:1fr}.session-info{display:none}.admin-actions{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-
-  <!-- ── HEADER ── -->
-  <header class="header">
-    <div class="header-inner">
-      <div class="logo-wrap">
-        <!--
-          NOTA: Reemplazar por Base64 del logo PDC en Fase 5.
-          <img src="assets/logo_pdc.png" alt="PDC" height="36" />
-        -->
-        <span class="logo-text">PDC</span>
-      </div>
-      <div class="header-divider"></div>
-      <div class="header-brand">
-        <div class="header-title">PDC Analytics Center</div>
-        <div class="header-subtitle">Plataforma Corporativa de Business Intelligence</div>
-      </div>
-      <div class="header-session">
-        <div class="session-info">
-          <div class="session-name" id="sessionName">—</div>
-          <div class="session-role" id="sessionRole">—</div>
-        </div>
-        <button class="btn-logout" id="btnLogout" type="button">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-            <path d="M5 2H2.5A1 1 0 0 0 1.5 3v7a1 1 0 0 0 1 1H5M8.5 9.5L11.5 6.5M11.5 6.5L8.5 3.5M11.5 6.5H5"
-                  stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Cerrar sesión
-        </button>
-      </div>
+<header class="header">
+  <div class="header-inner">
+    <div class="logo-wrap"><span class="logo-text">PDC</span></div>
+    <div class="hdiv"></div>
+    <div class="header-brand">
+      <div class="header-title">PDC Analytics Center</div>
+      <div class="header-subtitle">Plataforma Corporativa de Business Intelligence</div>
     </div>
-  </header>
-
-  <!-- ── BARRA DE BIENVENIDA ── -->
-  <div class="welcome-bar">
-    <div class="welcome-inner">
-      <div class="welcome-greeting">Panel de control</div>
-      <div class="welcome-title" id="welcomeTitle">Bienvenido al Analytics Center</div>
-      <div class="welcome-desc">
-        Acceda a los dashboards corporativos autorizados. Toda la información se actualiza en tiempo real desde los sistemas de gestión del Grupo PDC.
+    <div class="header-session">
+      <div class="session-info">
+        <div class="session-name" id="sName"></div>
+        <div class="session-role" id="sRole"></div>
       </div>
-      <div class="welcome-stats" id="welcomeStats"></div>
+      <button class="btn-logout" id="btnLogout" type="button">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M5 2H2.5A1 1 0 0 0 1.5 3v7a1 1 0 0 0 1 1H5M8.5 9.5L11.5 6.5M11.5 6.5L8.5 3.5M11.5 6.5H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Cerrar sesión
+      </button>
     </div>
   </div>
-
-  <!-- ── CONTENIDO PRINCIPAL ── -->
-  <main class="main">
-
-    <!-- Sección: Mis Dashboards -->
-    <div class="section-header">
-      <span class="section-title">Mis Dashboards</span>
-      <span class="section-count" id="dashCount"></span>
-    </div>
-
-    <div class="cards-grid" id="cardsGrid">
-      <!-- Las cards se generan dinámicamente según los permisos del usuario -->
-    </div>
-
-    <!-- Panel de Administración (solo Admin) -->
-    <div class="admin-section" id="adminSection" style="display:none">
-      <div class="section-header" style="margin-top:0">
-        <span class="section-title">Administración</span>
+</header>
+<div class="welcome">
+  <div class="welcome-inner">
+    <div class="welcome-greeting">Panel de control</div>
+    <div class="welcome-title" id="wTitle">Bienvenido</div>
+    <div class="welcome-desc">Acceda a los dashboards corporativos autorizados para su perfil.</div>
+    <div class="chips" id="wChips"></div>
+  </div>
+</div>
+<main class="main">
+  <div class="sec-header">
+    <span class="sec-title">Mis Dashboards</span>
+    <span class="sec-count" id="dashCount"></span>
+  </div>
+  <div class="cards-grid" id="cardsGrid"></div>
+  <div class="admin-section" id="adminSection" style="display:none">
+    <div class="sec-header"><span class="sec-title">Administración</span></div>
+    <div class="admin-panel">
+      <div class="admin-hdr">
+        <div class="admin-hdr-icon">⚙️</div>
+        <div><div class="admin-hdr-title">Panel de Administración</div><div class="admin-hdr-sub">Acciones disponibles para Administrador</div></div>
       </div>
-      <div class="admin-panel">
-        <div class="admin-header">
-          <div class="admin-header-icon">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="9" r="2.5" stroke="currentColor" stroke-width="1.4"/>
-              <path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.22 3.22l1.41 1.41M13.37 13.37l1.41 1.41M3.22 14.78l1.41-1.41M13.37 4.63l1.41-1.41"
-                    stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div class="admin-header-text">
-            <div class="admin-title">Panel de Administración</div>
-            <div class="admin-subtitle">Acciones disponibles para Administrador</div>
-          </div>
-        </div>
-        <div class="admin-actions" id="adminActions">
-          <!-- Generado dinámicamente -->
-        </div>
-      </div>
+      <div class="admin-actions" id="adminActions"></div>
     </div>
+  </div>
+</main>
+<footer class="page-footer">
+  <div class="page-footer-inner">
+    <div class="footer-brand">Grupo PDC · Departamento Financiero · © 2026</div>
+    <div class="footer-ver">PDC Analytics Center v1.0</div>
+  </div>
+</footer>
+<script>
 
-  </main>
+/* ═══════════════════════════════════════════════════════════════
+   PDC Analytics Center — Auth System v1.0
+   users.js + auth.js — Bloque unificado
+   ═══════════════════════════════════════════════════════════════ */
 
-  <!-- ── FOOTER ── -->
-  <footer class="page-footer">
-    <div class="page-footer-inner">
-      <div class="footer-brand">Grupo PDC · Departamento Financiero · &copy; 2026</div>
-      <div class="footer-version">PDC Analytics Center v1.0</div>
-    </div>
-  </footer>
+/* ── CONSTANTES ── */
+var PDC_SESSION_KEY = 'pdc_session';
+var PDC_LOGIN_PAGE  = 'login.html';
+var PDC_PORTAL_PAGE = 'analytics.html';
+var PDC_SESSION_TTL = 8 * 60 * 60 * 1000;
 
-  <!-- ── Scripts ── -->
-  <script>
-'use strict';
-
-/* ── PDC Analytics Center · Auth System v1.0 ── */
-/**
- * PDC Analytics Center — users.js
- * Matriz centralizada de usuarios, roles y permisos
- * Versión: 1.0 | Junio 2026
- *
- * INSTRUCCIONES DE MANTENIMIENTO:
- * - Para agregar un usuario: añadir entrada al array PDC_USERS
- * - Para agregar un dashboard: añadir entrada al array PDC_DASHBOARDS
- * - Para modificar permisos: editar el campo 'dashboards' y 'sedes' del usuario
- * - Cambiar contraseñas antes de cada deploy a producción
- */
-
-
-// ─────────────────────────────────────────────────────────────
-// DASHBOARDS REGISTRADOS EN LA PLATAFORMA
-// Para agregar un nuevo dashboard: añadir una entrada aquí.
-// No se requiere modificar auth.js ni analytics.html.
-// ─────────────────────────────────────────────────────────────
-const PDC_DASHBOARDS = [
+/* ── DASHBOARDS REGISTRADOS ── */
+var PDC_DASHBOARDS = [
   {
-    id:          'rutas',
-    nombre:      'Liquidación de Rutas',
-    descripcion: 'Monitoreo en tiempo real del estado de liquidación de rutas de despacho. Incluye KPIs financieros, análisis por transportista y seguimiento de rutas vencidas.',
-    archivo:     'index.html',
-    icono:       '🚚',
-    paises:      ['GT', 'ESV', 'PE', 'HN'],
-    activo:      true
+    id: 'rutas', nombre: 'Liquidación de Rutas',
+    descripcion: 'Monitoreo en tiempo real del estado de liquidación de rutas de despacho. KPIs financieros, análisis por transportista, seguimiento de rutas vencidas y control de efectividad.',
+    archivo: 'index.html', icono: '🚚',
+    paises: { GT: '🇬🇹 Guatemala', ESV: '🇸🇻 El Salvador', PE: '🇵🇪 Perú', HN: '🇭🇳 Honduras' },
+    actualizacion: '11 jun 2026', activo: true
   },
   {
-    id:          'cashtoday',
-    nombre:      'Cash Today',
-    descripcion: 'Dashboard ejecutivo de recolección de efectivo ATM. Volumetría, costos de servicio, límites operativos y análisis de tráfico por sede.',
-    archivo:     'cash_today.html',
-    icono:       '💰',
-    paises:      ['GT', 'ESV'],
-    activo:      true
-  }
-  // Para agregar nuevos dashboards en el futuro, insertar aquí:
-  // {
-  //   id:          'nuevo_dashboard',
-  //   nombre:      'Nombre del Dashboard',
-  //   descripcion: 'Descripción ejecutiva.',
-  //   archivo:     'nombre_archivo.html',
-  //   icono:       '📊',
-  //   paises:      ['GT'],
-  //   activo:      true
-  // }
-];
-
-// ─────────────────────────────────────────────────────────────
-// SEDES POR PAÍS
-// Referencia para validación de acceso por sede
-// ─────────────────────────────────────────────────────────────
-const PDC_SEDES = {
-  GT:  ['CDA', 'XELA'],
-  ESV: ['Sta.Tecla', 'Sn.Miguel'],
-  PE:  ['Peru'],
-  HN:  ['Honduras']
-};
-
-// ─────────────────────────────────────────────────────────────
-// MATRIZ DE USUARIOS
-//
-// Campos:
-//   email      — identificador único (login)
-//   pass       — contraseña (texto plano, consistente con arquitectura actual)
-//   nombre     — nombre para mostrar en la UI
-//   rol        — 'admin' | 'supervisor' | 'consulta'
-//   dashboards — array de IDs de dashboards con acceso
-//   pais       — 'regional' | 'GT' | 'ESV' | 'PE' | 'HN'
-//   sedes      — array de sedes autorizadas ('todas' para acceso completo)
-//
-// Roles:
-//   admin      — acceso total: descarga, subida, actualización, admin panel
-//   supervisor — acceso a dashboards autorizados, sin descarga/subida/actualización
-//   consulta   — solo visualización de dashboards autorizados
-// ─────────────────────────────────────────────────────────────
-const PDC_USERS = [
-  {
-    email:      'juancarlos.escobar@grupopdc.com',
-    pass:       'PDC.Admin@2026',
-    nombre:     'Juan Carlos Escobar',
-    rol:        'admin',
-    dashboards: ['rutas', 'cashtoday'],
-    pais:       'regional',
-    sedes:      'todas'
-  },
-  {
-    email:      'erwin.soto@grupopdc.com',
-    pass:       'PDC.Sup.Reg@2026',
-    nombre:     'Erwin Soto',
-    rol:        'supervisor',
-    dashboards: ['rutas', 'cashtoday'],
-    pais:       'regional',
-    sedes:      'todas'
-  },
-  {
-    email:      'francisco.aguilar@grupopdc.com',
-    pass:       'PDC.Sup.GT@2026',
-    nombre:     'Francisco Aguilar',
-    rol:        'supervisor',
-    dashboards: ['rutas', 'cashtoday'],
-    pais:       'GT',
-    sedes:      ['CDA']
-  },
-  {
-    email:      'liquidaciones.cda@grupopdc.com',
-    pass:       'PDC.TeamGT@2026',
-    nombre:     'TEAM GT',
-    rol:        'consulta',
-    dashboards: ['rutas', 'cashtoday'],
-    pais:       'GT',
-    sedes:      ['CDA', 'XELA']
-  },
-  {
-    email:      'edy.lopez@grupopdc.com',
-    pass:       'PDC.Con.GT@2026',
-    nombre:     'Edy Lopez',
-    rol:        'consulta',
-    dashboards: ['rutas'],
-    pais:       'GT',
-    sedes:      ['CDA']
-  },
-  {
-    email:      'joaquin.palma@grupopdc.com',
-    pass:       'PDC.Con.ESV@2026',
-    nombre:     'Joaquin Palma',
-    rol:        'consulta',
-    dashboards: ['rutas', 'cashtoday'],
-    pais:       'ESV',
-    sedes:      ['Sta.Tecla', 'Sn.Miguel']
-  },
-  {
-    email:      'liquidaciones.esv@grupopdc.com',
-    pass:       'PDC.TeamESV@2026',
-    nombre:     'TEAM ESV',
-    rol:        'consulta',
-    dashboards: ['rutas', 'cashtoday'],
-    pais:       'ESV',
-    sedes:      ['Sta.Tecla', 'Sn.Miguel']
-  },
-  {
-    email:      'vinicio.sanabria@grupopdc.com',
-    pass:       'PDC.Con.GT2@2026',
-    nombre:     'Vinicio Sanabria',
-    rol:        'consulta',
-    dashboards: ['rutas'],
-    pais:       'GT',
-    sedes:      ['CDA']
-  },
-  {
-    email:      'claudio.rojas@grupopdc.com',
-    pass:       'PDC.Con.PE@2026',
-    nombre:     'Claudio Rojas',
-    rol:        'consulta',
-    dashboards: ['rutas'],
-    pais:       'PE',
-    sedes:      ['Peru']
-  },
-  {
-    email:      'jose.mallqui@grupopdc.com',
-    pass:       'PDC.Con.PE2@2026',
-    nombre:     'Jose Mallqui',
-    rol:        'consulta',
-    dashboards: ['rutas'],
-    pais:       'PE',
-    sedes:      ['Peru']
-  },
-  {
-    email:      'transportes.peru@grupopdc.com',
-    pass:       'PDC.TeamPE@2026',
-    nombre:     'TEAM Perú',
-    rol:        'consulta',
-    dashboards: ['rutas'],
-    pais:       'PE',
-    sedes:      ['Peru']
+    id: 'cashtoday', nombre: 'Cash Today',
+    descripcion: 'Dashboard ejecutivo de recolección de efectivo ATM. Volumetría por sede, costos de servicio, análisis de límites operativos y tráfico de recolección por hora y día.',
+    archivo: 'cash_today.html', icono: '💰',
+    paises: { GT: '🇬🇹 Guatemala', ESV: '🇸🇻 El Salvador' },
+    actualizacion: '11 jun 2026', activo: true
   }
 ];
 
-// ─────────────────────────────────────────────────────────────
-// FUNCIÓN DE AUTENTICACIÓN
-// Retorna el objeto de usuario si las credenciales son válidas,
-// null en caso contrario.
-// ─────────────────────────────────────────────────────────────
+/* ── USUARIOS ── */
+var PDC_USERS = [
+  { email:'juancarlos.escobar@grupopdc.com', pass:'PDC.Admin@2026',     nombre:'Juan Carlos Escobar', rol:'admin',      dashboards:['rutas','cashtoday'], pais:'regional', sedes:'todas' },
+  { email:'erwin.soto@grupopdc.com',         pass:'PDC.Sup.Reg@2026',   nombre:'Erwin Soto',          rol:'supervisor', dashboards:['rutas','cashtoday'], pais:'regional', sedes:'todas' },
+  { email:'francisco.aguilar@grupopdc.com',  pass:'PDC.Sup.GT@2026',    nombre:'Francisco Aguilar',   rol:'supervisor', dashboards:['rutas','cashtoday'], pais:'GT',       sedes:['CDA'] },
+  { email:'liquidaciones.cda@grupopdc.com',  pass:'PDC.TeamGT@2026',    nombre:'TEAM GT',             rol:'consulta',   dashboards:['rutas','cashtoday'], pais:'GT',       sedes:['CDA','XELA'] },
+  { email:'edy.lopez@grupopdc.com',          pass:'PDC.Con.GT@2026',    nombre:'Edy Lopez',           rol:'consulta',   dashboards:['rutas'],             pais:'GT',       sedes:['CDA'] },
+  { email:'joaquin.palma@grupopdc.com',      pass:'PDC.Con.ESV@2026',   nombre:'Joaquin Palma',       rol:'consulta',   dashboards:['rutas','cashtoday'], pais:'ESV',      sedes:['Sta.Tecla','Sn.Miguel'] },
+  { email:'liquidaciones.esv@grupopdc.com',  pass:'PDC.TeamESV@2026',   nombre:'TEAM ESV',            rol:'consulta',   dashboards:['rutas','cashtoday'], pais:'ESV',      sedes:['Sta.Tecla','Sn.Miguel'] },
+  { email:'vinicio.sanabria@grupopdc.com',   pass:'PDC.Con.GT2@2026',   nombre:'Vinicio Sanabria',    rol:'consulta',   dashboards:['rutas'],             pais:'GT',       sedes:['CDA'] },
+  { email:'claudio.rojas@grupopdc.com',      pass:'PDC.Con.PE@2026',    nombre:'Claudio Rojas',       rol:'consulta',   dashboards:['rutas'],             pais:'PE',       sedes:['Peru'] },
+  { email:'jose.mallqui@grupopdc.com',       pass:'PDC.Con.PE2@2026',   nombre:'Jose Mallqui',        rol:'consulta',   dashboards:['rutas'],             pais:'PE',       sedes:['Peru'] },
+  { email:'transportes.peru@grupopdc.com',   pass:'PDC.TeamPE@2026',    nombre:'TEAM Peru',           rol:'consulta',   dashboards:['rutas'],             pais:'PE',       sedes:['Peru'] }
+];
+
+/* ── FUNCIONES DE USUARIO ── */
 function pdcAuthenticate(email, pass) {
   if (!email || !pass) return null;
-  const user = PDC_USERS.find(
-    u => u.email.toLowerCase() === email.trim().toLowerCase()
-      && u.pass === pass
-  );
-  return user || null;
+  var user = null;
+  for (var i = 0; i < PDC_USERS.length; i++) {
+    if (PDC_USERS[i].email.toLowerCase() === email.trim().toLowerCase() && PDC_USERS[i].pass === pass) {
+      user = PDC_USERS[i]; break;
+    }
+  }
+  return user;
 }
 
-// ─────────────────────────────────────────────────────────────
-// FUNCIÓN: Obtener dashboards disponibles para un usuario
-// Retorna array de objetos dashboard con los metadatos completos
-// ─────────────────────────────────────────────────────────────
 function pdcGetUserDashboards(user) {
   if (!user) return [];
-  return PDC_DASHBOARDS.filter(
-    d => d.activo && user.dashboards.includes(d.id)
-  );
+  return PDC_DASHBOARDS.filter(function(d) {
+    return d.activo && user.dashboards.indexOf(d.id) > -1;
+  });
 }
 
-// ─────────────────────────────────────────────────────────────
-// FUNCIÓN: Verificar si el usuario tiene acceso a un dashboard
-// ─────────────────────────────────────────────────────────────
-function pdcCanAccess(user, dashboardId) {
-  if (!user || !dashboardId) return false;
-  return user.dashboards.includes(dashboardId);
-}
+function pdcIsAdmin(user) { return user && user.rol === 'admin'; }
+function pdcIsRegional(user) { return user && user.pais === 'regional'; }
 
-// ─────────────────────────────────────────────────────────────
-// FUNCIÓN: Verificar si el usuario tiene acceso de admin
-// ─────────────────────────────────────────────────────────────
-function pdcIsAdmin(user) {
-  return user && user.rol === 'admin';
-}
-
-// ─────────────────────────────────────────────────────────────
-// FUNCIÓN: Verificar si el usuario tiene acceso regional
-// (puede ver todos los países)
-// ─────────────────────────────────────────────────────────────
-function pdcIsRegional(user) {
-  return user && user.pais === 'regional';
-}
-
-/**
- * PDC Analytics Center — auth.js
- * Sistema centralizado de autenticación y control de acceso
- * Versión: 1.0 | Junio 2026
- *
- * DEPENDENCIA: Debe cargarse DESPUÉS de users.js
- *
- * USO EN DASHBOARDS: pdcRequireAuth(dashboardId) — ver documentación
- */
-
-
-// ─────────────────────────────────────────────────────────────
-// CONSTANTES
-// ─────────────────────────────────────────────────────────────
-const PDC_SESSION_KEY  = 'pdc_session';
-const PDC_LOGIN_PAGE   = 'login.html';
-const PDC_PORTAL_PAGE  = 'analytics.html';
-const PDC_SESSION_TTL  = 8 * 60 * 60 * 1000; // 8 horas en ms
-
-// ─────────────────────────────────────────────────────────────
-// CREAR SESIÓN
-// Construye y persiste el objeto de sesión tras login exitoso
-// ─────────────────────────────────────────────────────────────
+/* ── SESIÓN ── */
 function pdcCreateSession(user) {
-  const session = {
-    email:      user.email,
-    nombre:     user.nombre,
-    rol:        user.rol,
-    dashboards: user.dashboards,
-    pais:       user.pais,
-    sedes:      user.sedes,
-    ts:         Date.now()
+  var session = {
+    email: user.email, nombre: user.nombre, rol: user.rol,
+    dashboards: user.dashboards, pais: user.pais, sedes: user.sedes,
+    ts: Date.now()
   };
   sessionStorage.setItem(PDC_SESSION_KEY, JSON.stringify(session));
   return session;
 }
 
-// ─────────────────────────────────────────────────────────────
-// LEER SESIÓN
-// Retorna el objeto de sesión si existe y es válido, null si no
-// ─────────────────────────────────────────────────────────────
 function pdcGetSession() {
   try {
-    const raw = sessionStorage.getItem(PDC_SESSION_KEY);
+    var raw = sessionStorage.getItem(PDC_SESSION_KEY);
     if (!raw) return null;
-    const session = JSON.parse(raw);
-    // Validar TTL
-    if (Date.now() - session.ts > PDC_SESSION_TTL) {
-      pdcDestroySession();
-      return null;
-    }
+    var session = JSON.parse(raw);
+    if (Date.now() - session.ts > PDC_SESSION_TTL) { pdcDestroySession(); return null; }
     return session;
-  } catch (e) {
-    pdcDestroySession();
-    return null;
-  }
+  } catch(e) { pdcDestroySession(); return null; }
 }
 
-// ─────────────────────────────────────────────────────────────
-// DESTRUIR SESIÓN
-// Limpia sessionStorage y redirige al login
-// ─────────────────────────────────────────────────────────────
-function pdcDestroySession() {
-  sessionStorage.removeItem(PDC_SESSION_KEY);
-}
+function pdcDestroySession() { sessionStorage.removeItem(PDC_SESSION_KEY); }
 
-// ─────────────────────────────────────────────────────────────
-// LOGOUT
-// Destruye la sesión y redirige al login
-// ─────────────────────────────────────────────────────────────
 function pdcLogout() {
   pdcDestroySession();
-  // Resolver ruta relativa hacia login.html desde cualquier nivel
-  const depth = (window.location.pathname.match(/\//g) || []).length - 1;
-  const prefix = depth > 1 ? '../'.repeat(depth - 1) : '';
-  window.location.href = prefix + PDC_LOGIN_PAGE;
+  window.location.href = PDC_LOGIN_PAGE;
 }
 
-// ─────────────────────────────────────────────────────────────
-// GUARD PRINCIPAL — usar en todos los dashboards y el portal
-//
-// dashboardId: ID del dashboard a proteger (ej: 'rutas', 'cashtoday')
-//              Pasar null para proteger páginas generales (portal)
-//
-// Flujo:
-//   1. Sin sesión válida          → redirige a login.html
-//   2. Sin permiso al dashboard   → redirige a analytics.html
-//   3. Con sesión y permiso       → retorna objeto de sesión
-// ─────────────────────────────────────────────────────────────
+/* ── GUARDS ── */
 function pdcRequireAuth(dashboardId) {
-  const session = pdcGetSession();
-
-  if (!session) {
-    window.location.href = PDC_LOGIN_PAGE;
-    return null;
+  var session = pdcGetSession();
+  if (!session) { window.location.href = PDC_LOGIN_PAGE; return null; }
+  if (dashboardId && session.dashboards.indexOf(dashboardId) === -1) {
+    window.location.href = PDC_PORTAL_PAGE; return null;
   }
-
-  if (dashboardId && !session.dashboards.includes(dashboardId)) {
-    window.location.href = PDC_PORTAL_PAGE;
-    return null;
-  }
-
   return session;
 }
 
-// ─────────────────────────────────────────────────────────────
-// GUARD ADMIN — usar en páginas exclusivas de administrador
-// ─────────────────────────────────────────────────────────────
 function pdcRequireAdmin() {
-  const session = pdcRequireAuth(null);
+  var session = pdcRequireAuth(null);
   if (!session) return null;
-
-  if (session.rol !== 'admin') {
-    window.location.href = PDC_PORTAL_PAGE;
-    return null;
-  }
-
+  if (session.rol !== 'admin') { window.location.href = PDC_PORTAL_PAGE; return null; }
   return session;
 }
 
-// ─────────────────────────────────────────────────────────────
-// FILTRO DE SEDES — usar en Cash Today para usuarios restringidos
-//
-// Retorna array de sedes autorizadas para el usuario actual,
-// o 'todas' si el usuario tiene acceso regional.
-//
-// Uso en Cash Today:
-//   const sedesAuth = pdcGetSedesAutorizadas(session);
-//   if (sedesAuth !== 'todas') {
-//     // Aplicar filtro silencioso sobre los controles de sede
-//   }
-// ─────────────────────────────────────────────────────────────
-function pdcGetSedesAutorizadas(session) {
-  if (!session) return [];
-  if (session.sedes === 'todas') return 'todas';
-  return session.sedes;
+/* ── BRIDGE: pasar sesión a dashboards legacy ── */
+function pdcBuildLegacySession(session) {
+  return JSON.stringify({ nombre: session.nombre, email: session.email,
+    role: session.rol === 'admin' ? 'admin' : 'user' });
 }
 
-// ─────────────────────────────────────────────────────────────
-// VERIFICAR PERMISO DE ACCIÓN ESPECÍFICA
-//
-// Acciones disponibles:
-//   'descargar'   — descargar archivos de dashboard
-//   'subir'       — subir Excel de actualización
-//   'actualizar'  — acceder a Tipos de Cambio / Config
-//   'admin_panel' — acceso a admin.html
-// ─────────────────────────────────────────────────────────────
-function pdcCanDo(session, accion) {
-  if (!session) return false;
-  const accionesAdmin = ['descargar', 'subir', 'actualizar', 'admin_panel'];
-  if (accionesAdmin.includes(accion)) {
-    return session.rol === 'admin';
-  }
-  return false;
+function pdcNavigateToDash(archivo) {
+  var session = pdcGetSession();
+  if (!session) { window.location.href = PDC_LOGIN_PAGE; return; }
+  sessionStorage.setItem('pdc_user', pdcBuildLegacySession(session));
+  window.location.href = archivo;
 }
 
-// ─────────────────────────────────────────────────────────────
-// HELPER: Resolver ruta base del repositorio
-// Necesario porque GitHub Pages sirve desde un subdirectorio
-// ─────────────────────────────────────────────────────────────
-function pdcBasePath() {
-  const path = window.location.pathname;
-  const repoMatch = path.match(/^(\/[^/]+\/)/);
-  return repoMatch ? repoMatch[1] : '/';
+function pdcBridgeToTab(archivo, tab) {
+  var session = pdcGetSession();
+  if (!session) { window.location.href = PDC_LOGIN_PAGE; return; }
+  sessionStorage.setItem('pdc_user', pdcBuildLegacySession(session));
+  window.location.href = archivo + '?tab=' + tab;
 }
 
-(function () {
-    
-
-    /* ── 1. Verificar sesión ── */
-    const session = pdcRequireAuth(null);
-    if (!session) return; // guard redirige automáticamente
-
-    /* ── 2. Configuración de metadatos de dashboards ── */
-    const DASH_META = {
-      rutas: {
-        accentClass:  'rutas',
-        icono:        '🚚',
-        categoria:    'Operaciones · Financiero',
-        descripcion:  'Monitoreo en tiempo real del estado de liquidación de rutas de despacho. KPIs financieros, análisis por transportista, seguimiento de rutas vencidas y control de efectividad.',
-        paises:       { GT: '🇬🇹 Guatemala', ESV: '🇸🇻 El Salvador', PE: '🇵🇪 Perú', HN: '🇭🇳 Honduras' },
-        actualizacion:'11 jun 2026',
-        archivo:      'index.html'
-      },
-      cashtoday: {
-        accentClass:  'cashtoday',
-        icono:        '💰',
-        categoria:    'Tesorería · Cash Management',
-        descripcion:  'Dashboard ejecutivo de recolección de efectivo ATM. Volumetría por sede, costos de servicio, análisis de límites operativos y tráfico de recolección por hora y día.',
-        paises:       { GT: '🇬🇹 Guatemala', ESV: '🇸🇻 El Salvador' },
-        actualizacion:'11 jun 2026',
-        archivo:      'cash_today.html'
-      }
-    };
-
-    /* ── 3. Renderizar header de sesión ── */
-    document.getElementById('sessionName').textContent = session.nombre;
-    const roleLabel = { admin: 'Administrador', supervisor: 'Supervisor', consulta: 'Consulta' };
-    document.getElementById('sessionRole').textContent = roleLabel[session.rol] || session.rol;
-
-    /* ── 4. Saludo personalizado ── */
-    const hora = new Date().getHours();
-    const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
-    const nombreCorto = session.nombre.split(' ').slice(0,2).join(' ');
-    document.getElementById('welcomeTitle').textContent = `${saludo}, ${nombreCorto}`;
-
-    /* ── 5. Chips de estadísticas en welcome bar ── */
-    const statsEl = document.getElementById('welcomeStats');
-    const dashsDisp = pdcGetUserDashboards(session);
-    const paisLabel = session.pais === 'regional' ? 'Acceso Regional' : `País: ${session.pais}`;
-
-    statsEl.innerHTML = `
-      <div class="stat-chip">
-        <span class="stat-chip-dot"></span>
-        ${dashsDisp.length} dashboard${dashsDisp.length !== 1 ? 's' : ''} disponible${dashsDisp.length !== 1 ? 's' : ''}
-      </div>
-      <div class="stat-chip">
-        <span class="stat-chip-dot" style="background:#FFAB00;box-shadow:0 0 6px #FFAB00"></span>
-        ${paisLabel}
-      </div>
-      <div class="stat-chip">
-        <span class="stat-chip-dot" style="background:#CFEEFC;box-shadow:0 0 6px rgba(207,238,252,.8)"></span>
-        ${roleLabel[session.rol] || session.rol}
-      </div>
-    `;
-
-    /* ── 6. Generar cards de dashboards ── */
-    const grid = document.getElementById('cardsGrid');
-    const countEl = document.getElementById('dashCount');
-
-    if (dashsDisp.length === 0) {
-      grid.innerHTML = `
-        <div class="empty-state" style="grid-column:1/-1">
-          <div class="empty-state-icon">📊</div>
-          <div class="empty-state-title">Sin dashboards disponibles</div>
-          <div class="empty-state-desc">Contacte al administrador para solicitar acceso.</div>
-        </div>`;
-    } else {
-      countEl.textContent = `${dashsDisp.length} disponible${dashsDisp.length !== 1 ? 's' : ''}`;
-
-      dashsDisp.forEach(dash => {
-        const meta = DASH_META[dash.id];
-        if (!meta) return;
-
-        // Determinar países visibles para este usuario en este dashboard
-        const paisesUsuario = session.pais === 'regional'
-          ? Object.keys(meta.paises)
-          : [session.pais].filter(p => meta.paises[p]);
-
-        const paisChips = paisesUsuario
-          .filter(p => meta.paises[p])
-          .map(p => `<span class="country-chip">${meta.paises[p]}</span>`)
-          .join('');
-
-        const card = document.createElement('div');
-        card.className = 'dash-card';
-        card.innerHTML = `
-          <div class="card-accent ${meta.accentClass}"></div>
-          <div class="card-body">
-            <div class="card-top">
-              <div class="card-icon">${meta.icono}</div>
-              <div class="card-title-group">
-                <div class="card-name">${dash.nombre}</div>
-                <div class="card-category">${meta.categoria}</div>
-              </div>
-              <span class="badge badge-active">
-                <span class="badge-dot"></span>
-                Activo
-              </span>
-            </div>
-
-            <p class="card-desc">${meta.descripcion}</p>
-
-            <div class="card-meta">
-              <div class="meta-row">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                  <circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/>
-                  <path d="M4 6.5h5M6.5 4v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                </svg>
-                <div class="country-chips">${paisChips || '<span style="font-size:.72rem;color:var(--text2)">Sin país asignado</span>'}</div>
-              </div>
-            </div>
-
-            <div class="card-divider"></div>
-          </div>
-
-          <div class="card-footer">
-            <div class="card-update">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.1"/>
-                <path d="M6 3.5V6l1.5 1.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
-              </svg>
-              Actualizado: ${meta.actualizacion}
-            </div>
-            <a href="javascript:void(0)" onclick="pdcNavigateToDash('${dash.id}','${meta.archivo}')" class="btn-acceder">
-              Acceder
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                <path d="M2.5 6.5h8M7 3l3.5 3.5L7 10"
-                      stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </a>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    /* ── 7. Panel de Administración ── */
-    if (pdcIsAdmin(session)) {
-      document.getElementById('adminSection').style.display = '';
-
-      const adminActions = [
-        {
-          icono: '📂',
-          label: 'Actualizar Rutas',
-          desc:  'Tipos de Cambio · Subir Excel',
-          href:  'javascript:void(0)', onclick: 'pdcBridgeToRutas("tiposcambio")'
-        },
-        {
-          icono: '📊',
-          label: 'Actualizar Cash Today',
-          desc:  'Config · Cargar nuevo Excel',
-          href:  'javascript:void(0)', onclick: 'pdcBridgeToCashToday("config")'
-        },
-        {
-          icono: '⚙️',
-          label: 'Panel Administrativo',
-          desc:  'Chat de soporte · Gestión',
-          href:  'admin.html'
-        },
-        {
-          icono: '⬇️',
-          label: 'Descargar Rutas',
-          desc:  'Exportar Dashboard actual',
-          href:  'javascript:void(0)', onclick: 'pdcDownload("index.html","Dashboard_Rutas.html")'
-        },
-        {
-          icono: '⬇️',
-          label: 'Descargar Cash Today',
-          desc:  'Exportar Dashboard actual',
-          href:  'javascript:void(0)', onclick: 'pdcDownload("cash_today.html","Dashboard_CashToday.html")'
-        }
-      ];
-
-      const actionsEl = document.getElementById('adminActions');
-      adminActions.forEach(action => {
-        const btn = document.createElement('a');
-        btn.href = action.href;
-        btn.className = 'admin-btn';
-        if (action.download) btn.setAttribute('download', '');
-        btn.innerHTML = `
-          <div class="admin-btn-icon">${action.icono}</div>
-          <div>
-            <div class="admin-btn-label">${action.label}</div>
-            <div class="admin-btn-desc">${action.desc}</div>
-          </div>
-        `;
-        actionsEl.appendChild(btn);
-      });
-    }
-
-
-    /* ── Bridge: pasar sesión al formato que esperan los dashboards ── */
-    function pdcBuildLegacySession(session) {
-      // index.html de Rutas lee 'pdc_user' con campos: nombre, role
-      return JSON.stringify({
-        nombre: session.nombre,
-        email:  session.email,
-        role:   session.rol === 'admin' ? 'admin' : 'user'
-      });
-    }
-
-    function pdcNavigateToDash(dashId, archivo) {
-      const session = pdcGetSession();
-      if (!session) { window.location.href = 'login.html'; return; }
-      // Establecer sesión en formato legacy para dashboards existentes
-      sessionStorage.setItem('pdc_user', pdcBuildLegacySession(session));
-      window.location.href = archivo;
-    }
-
-    function pdcBridgeToRutas(tab) {
-      const session = pdcGetSession();
-      if (!session) { window.location.href = 'login.html'; return; }
-      sessionStorage.setItem('pdc_user', pdcBuildLegacySession(session));
-      window.location.href = 'index.html?tab=' + tab;
-    }
-
-    function pdcBridgeToCashToday(tab) {
-      const session = pdcGetSession();
-      if (!session) { window.location.href = 'login.html'; return; }
-      sessionStorage.setItem('pdc_user', pdcBuildLegacySession(session));
-      window.location.href = 'cash_today.html?tab=' + tab;
-    }
-
-    function pdcDownload(archivo, nombreDescarga) {
-      // Fetch el archivo y descargarlo sin activar el guard de sesión
-      const a = document.createElement('a');
-      a.href = archivo;
-      a.download = nombreDescarga;
-      document.body.appendChild(a);
-      a.click();
+function pdcDownload(archivo, nombre) {
+  fetch(archivo)
+    .then(function(r) { return r.blob(); })
+    .then(function(blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = nombre;
+      document.body.appendChild(a); a.click();
       document.body.removeChild(a);
-    }
-
-    /* ── 8. Logout ── */
-    document.getElementById('btnLogout').addEventListener('click', () => {
-      if (confirm('¿Desea cerrar la sesión?')) pdcLogout();
+      URL.revokeObjectURL(url);
     });
+}
 
-  })();
+(function(){
+  var session = pdcRequireAuth(null);
+  if(!session) return;
+
+  var roleLabel = {admin:'Administrador', supervisor:'Supervisor', consulta:'Consulta'};
+  var h = new Date().getHours();
+  var saludo = h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches';
+  var nombre2 = session.nombre.split(' ').slice(0,2).join(' ');
+
+  document.getElementById('sName').textContent = session.nombre;
+  document.getElementById('sRole').textContent = roleLabel[session.rol] || session.rol;
+  document.getElementById('wTitle').textContent = saludo + ', ' + nombre2;
+
+  var dashs = pdcGetUserDashboards(session);
+  document.getElementById('dashCount').textContent = dashs.length + ' disponible' + (dashs.length!==1?'s':'');
+
+  var chipsEl = document.getElementById('wChips');
+  var paisLabel = session.pais==='regional'?'Acceso Regional':'País: '+session.pais;
+  chipsEl.innerHTML =
+    '<div class="chip"><span class="chip-dot" style="background:#2D9E2D;box-shadow:0 0 6px #2D9E2D"></span>'+dashs.length+' dashboard'+(dashs.length!==1?'s':'')+' disponible'+(dashs.length!==1?'s':'')+'</div>'+
+    '<div class="chip"><span class="chip-dot" style="background:#FFAB00;box-shadow:0 0 6px #FFAB00"></span>'+paisLabel+'</div>'+
+    '<div class="chip"><span class="chip-dot" style="background:#CFEEFC;box-shadow:0 0 6px rgba(207,238,252,.8)"></span>'+(roleLabel[session.rol]||session.rol)+'</div>';
+
+  var grid = document.getElementById('cardsGrid');
+  if(dashs.length===0){
+    grid.innerHTML='<div style="text-align:center;padding:56px;color:var(--text2);grid-column:1/-1"><div style="font-size:2rem;margin-bottom:12px;opacity:.4">📊</div><div style="font-size:.95rem;font-weight:600;color:var(--navy);margin-bottom:6px">Sin dashboards disponibles</div><div style="font-size:.82rem">Contacte al administrador para solicitar acceso.</div></div>';
+  } else {
+    dashs.forEach(function(dash){
+      var paisesUsuario = session.pais==='regional' ? Object.keys(dash.paises) : [session.pais].filter(function(p){return dash.paises[p];});
+      var paisChips = paisesUsuario.map(function(p){return '<span class="country-chip">'+dash.paises[p]+'</span>';}).join('');
+      var accentClass = 'card-accent-' + dash.id;
+      var card = document.createElement('div');
+      card.className = 'dash-card';
+      card.innerHTML =
+        '<div class="card-accent '+accentClass+'"></div>'+
+        '<div class="card-body">'+
+          '<div class="card-top">'+
+            '<div class="card-icon">'+dash.icono+'</div>'+
+            '<div class="card-title-group"><div class="card-name">'+dash.nombre+'</div><div class="card-category">'+dash.id+'</div></div>'+
+            '<span class="badge badge-active"><span class="badge-dot"></span>Activo</span>'+
+          '</div>'+
+          '<p class="card-desc">'+dash.descripcion+'</p>'+
+          '<div class="card-meta"><div class="meta-row"><div class="country-chips">'+paisChips+'</div></div></div>'+
+          '<div class="divider"></div>'+
+        '</div>'+
+        '<div class="card-footer">'+
+          '<div class="card-update">⏱ Actualizado: '+dash.actualizacion+'</div>'+
+          '<button class="btn-acceder" onclick="pdcNavigateToDash(\''+dash.archivo+'\')">Acceder →</button>'+
+        '</div>';
+      grid.appendChild(card);
+    });
+  }
+
+  if(pdcIsAdmin(session)){
+    document.getElementById('adminSection').style.display='';
+    var actionsEl = document.getElementById('adminActions');
+    var adminBtns = [
+      {icono:'📂', label:'Actualizar Rutas',      desc:'Tipos de Cambio · Subir Excel',   action:"pdcBridgeToTab('index.html','tiposcambio')"},
+      {icono:'📊', label:'Actualizar Cash Today',  desc:'Config · Cargar nuevo Excel',     action:"pdcBridgeToTab('cash_today.html','config')"},
+      {icono:'⚙️', label:'Panel Administrativo',   desc:'Chat de soporte · Gestión',       action:"pdcNavigateToDash('admin.html')"},
+      {icono:'⬇️', label:'Descargar Rutas',        desc:'Exportar Dashboard actual',       action:"pdcDownload('index.html','Dashboard_Rutas.html')"},
+      {icono:'⬇️', label:'Descargar Cash Today',   desc:'Exportar Dashboard actual',       action:"pdcDownload('cash_today.html','Dashboard_CashToday.html')"}
+    ];
+    adminBtns.forEach(function(b){
+      var el = document.createElement('button');
+      el.className = 'admin-btn';
+      el.type = 'button';
+      el.setAttribute('onclick', b.action);
+      el.innerHTML = '<div class="admin-btn-icon">'+b.icono+'</div><div><div class="admin-btn-label">'+b.label+'</div><div class="admin-btn-desc">'+b.desc+'</div></div>';
+      actionsEl.appendChild(el);
+    });
+  }
+
+  document.getElementById('btnLogout').addEventListener('click',function(){
+    if(confirm('¿Desea cerrar la sesión?')) pdcLogout();
+  });
+})();
 </script>
-
 </body>
 </html>
