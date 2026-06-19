@@ -275,27 +275,16 @@ function pdcBridgeToTab(archivo, tab) {
 }
 
 function pdcDownload(archivo, nombre) {
-  /* Construir URL absoluta relativa a la raíz del sitio */
-  var base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-  var url  = base + archivo;
-  fetch(url)
-    .then(function(r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.blob();
-    })
-    .then(function(blob) {
-      var blobUrl = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = nombre;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(function(){ URL.revokeObjectURL(blobUrl); }, 1000);
-    })
-    .catch(function(e) {
-      alert('Error al descargar: ' + e.message + '\nIntente nuevamente.');
-    });
+  /* URL absoluta hardcodeada — garantiza descarga desde GitHub Pages
+     sin activar guards de sesión del dashboard destino */
+  var REPO = 'https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar';
+  var a = document.createElement('a');
+  a.href     = REPO + '/' + archivo;
+  a.download = nombre;
+  a.target   = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 (function(){
