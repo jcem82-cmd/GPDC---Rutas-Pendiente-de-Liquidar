@@ -298,18 +298,32 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
 </head>
 <body><script>
 (function(){
-  var u=sessionStorage.getItem('pdc_user');
-  if(!u){window.location.replace('login.html');return;}
-  var data=JSON.parse(u);
-  document.addEventListener('DOMContentLoaded',function(){
-    var sub=document.querySelector('.hdr-sub');
-    if(sub) sub.textContent='Dashboard Operativo · Bienvenido, '+data.nombre;
-    // Show download button and Tipos de Cambio tab only for admin
-    if(data.role === 'admin'){
-      var btn=document.querySelector('.hdr-dl-btn');
-      if(btn) btn.classList.add('admin-visible');
-      var tc=document.getElementById('tabTC');
-      if(tc) tc.style.display='';
+  /* PDC Analytics Center — Auth Bridge v1.0 */
+  var u = sessionStorage.getItem('pdc_user');
+  if (!u) {
+    /* Intentar leer sesión unificada y convertir al formato legacy */
+    var unified = sessionStorage.getItem('pdc_session');
+    if (!unified) { window.location.replace('analytics.html'); return; }
+    var s = JSON.parse(unified);
+    u = JSON.stringify({ nombre: s.nombre, email: s.email, role: s.rol === 'admin' ? 'admin' : 'user' });
+    sessionStorage.setItem('pdc_user', u);
+  }
+  var data = JSON.parse(u);
+  /* Verificar tab solicitado via query param */
+  var urlTab = new URLSearchParams(window.location.search).get('tab');
+  document.addEventListener('DOMContentLoaded', function(){
+    var sub = document.querySelector('.hdr-sub');
+    if (sub) sub.textContent = 'Dashboard Operativo · Bienvenido, ' + data.nombre;
+    if (data.role === 'admin') {
+      var btn = document.querySelector('.hdr-dl-btn');
+      if (btn) btn.classList.add('admin-visible');
+      var tc = document.getElementById('tabTC');
+      if (tc) tc.style.display = '';
+    }
+    if (urlTab) {
+      /* Navegar al tab solicitado */
+      if (typeof ST === 'function') ST(urlTab);
+      else setTimeout(function(){ if(typeof ST==='function') ST(urlTab); }, 500);
     }
   });
 })();
