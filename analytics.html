@@ -1224,7 +1224,7 @@ function pdcBasePath() {
     /* ── 4. Saludo personalizado ── */
     const hora = new Date().getHours();
     const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
-    const nombreCorto = session.nombre.split(' ')[0];
+    const nombreCorto = session.nombre.split(' ').slice(0,2).join(' ');
     document.getElementById('welcomeTitle').textContent = `${saludo}, ${nombreCorto}`;
 
     /* ── 5. Chips de estadísticas en welcome bar ── */
@@ -1315,7 +1315,7 @@ function pdcBasePath() {
               </svg>
               Actualizado: ${meta.actualizacion}
             </div>
-            <a href="${meta.archivo}" class="btn-acceder">
+            <a href="javascript:void(0)" onclick="pdcNavigateToDash('${dash.id}','${meta.archivo}')" class="btn-acceder">
               Acceder
               <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
                 <path d="M2.5 6.5h8M7 3l3.5 3.5L7 10"
@@ -1337,13 +1337,13 @@ function pdcBasePath() {
           icono: '📂',
           label: 'Actualizar Rutas',
           desc:  'Tipos de Cambio · Subir Excel',
-          href:  'index.html#tipos-cambio'
+          href:  'javascript:void(0)', onclick: 'pdcBridgeToRutas("tiposcambio")'
         },
         {
           icono: '📊',
           label: 'Actualizar Cash Today',
           desc:  'Config · Cargar nuevo Excel',
-          href:  'cash_today.html#config'
+          href:  'javascript:void(0)', onclick: 'pdcBridgeToCashToday("config")'
         },
         {
           icono: '⚙️',
@@ -1355,15 +1355,13 @@ function pdcBasePath() {
           icono: '⬇️',
           label: 'Descargar Rutas',
           desc:  'Exportar Dashboard actual',
-          href:  'index.html',
-          download: true
+          href:  'javascript:void(0)', onclick: 'pdcDownload("index.html","Dashboard_Rutas.html")'
         },
         {
           icono: '⬇️',
           label: 'Descargar Cash Today',
           desc:  'Exportar Dashboard actual',
-          href:  'cash_today.html',
-          download: true
+          href:  'javascript:void(0)', onclick: 'pdcDownload("cash_today.html","Dashboard_CashToday.html")'
         }
       ];
 
@@ -1382,6 +1380,49 @@ function pdcBasePath() {
         `;
         actionsEl.appendChild(btn);
       });
+    }
+
+
+    /* ── Bridge: pasar sesión al formato que esperan los dashboards ── */
+    function pdcBuildLegacySession(session) {
+      // index.html de Rutas lee 'pdc_user' con campos: nombre, role
+      return JSON.stringify({
+        nombre: session.nombre,
+        email:  session.email,
+        role:   session.rol === 'admin' ? 'admin' : 'user'
+      });
+    }
+
+    function pdcNavigateToDash(dashId, archivo) {
+      const session = pdcGetSession();
+      if (!session) { window.location.href = 'login.html'; return; }
+      // Establecer sesión en formato legacy para dashboards existentes
+      sessionStorage.setItem('pdc_user', pdcBuildLegacySession(session));
+      window.location.href = archivo;
+    }
+
+    function pdcBridgeToRutas(tab) {
+      const session = pdcGetSession();
+      if (!session) { window.location.href = 'login.html'; return; }
+      sessionStorage.setItem('pdc_user', pdcBuildLegacySession(session));
+      window.location.href = 'index.html?tab=' + tab;
+    }
+
+    function pdcBridgeToCashToday(tab) {
+      const session = pdcGetSession();
+      if (!session) { window.location.href = 'login.html'; return; }
+      sessionStorage.setItem('pdc_user', pdcBuildLegacySession(session));
+      window.location.href = 'cash_today.html?tab=' + tab;
+    }
+
+    function pdcDownload(archivo, nombreDescarga) {
+      // Fetch el archivo y descargarlo sin activar el guard de sesión
+      const a = document.createElement('a');
+      a.href = archivo;
+      a.download = nombreDescarga;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
 
     /* ── 8. Logout ── */
