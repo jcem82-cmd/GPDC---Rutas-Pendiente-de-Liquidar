@@ -275,27 +275,14 @@ function pdcBridgeToTab(archivo, tab) {
 }
 
 function pdcDownload(archivo, nombre) {
-  /* Descarga desde raw.githubusercontent.com — bypasea guards de sesión
-     porque sirve el archivo estático directamente sin ejecutar JS */
-  var RAW = 'https://raw.githubusercontent.com/jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar/main/';
-  fetch(RAW + archivo)
-    .then(function(r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.blob();
-    })
-    .then(function(blob) {
-      var blobUrl = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = nombre;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(function(){ URL.revokeObjectURL(blobUrl); }, 2000);
-    })
-    .catch(function(e) {
-      alert('Error al descargar: ' + e.message);
-    });
+  /* Abre el dashboard en nueva pestaña con token de sesión en URL */
+  var session = pdcGetSession();
+  if (!session) { window.location.href = PDC_LOGIN_PAGE; return; }
+  var token = btoa(JSON.stringify({
+    email: session.email, nombre: session.nombre, rol: session.rol
+  }));
+  var BASE = 'https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/';
+  window.open(BASE + archivo + '?pdc_token=' + encodeURIComponent(token), '_blank');
 }
 
 (function(){
