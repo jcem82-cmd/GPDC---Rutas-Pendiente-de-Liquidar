@@ -787,8 +787,404 @@
   </footer>
 
   <!-- ── Scripts ── -->
-  <script src="js/users.js"></script>
-  <script src="js/auth.js"></script>
+  <script>
+/* ── PDC Analytics Center · Auth System v1.0 ── */
+/**
+ * PDC Analytics Center — users.js
+ * Matriz centralizada de usuarios, roles y permisos
+ * Versión: 1.0 | Junio 2026
+ *
+ * INSTRUCCIONES DE MANTENIMIENTO:
+ * - Para agregar un usuario: añadir entrada al array PDC_USERS
+ * - Para agregar un dashboard: añadir entrada al array PDC_DASHBOARDS
+ * - Para modificar permisos: editar el campo 'dashboards' y 'sedes' del usuario
+ * - Cambiar contraseñas antes de cada deploy a producción
+ */
+
+'use strict';
+
+// ─────────────────────────────────────────────────────────────
+// DASHBOARDS REGISTRADOS EN LA PLATAFORMA
+// Para agregar un nuevo dashboard: añadir una entrada aquí.
+// No se requiere modificar auth.js ni analytics.html.
+// ─────────────────────────────────────────────────────────────
+const PDC_DASHBOARDS = [
+  {
+    id:          'rutas',
+    nombre:      'Liquidación de Rutas',
+    descripcion: 'Monitoreo en tiempo real del estado de liquidación de rutas de despacho. Incluye KPIs financieros, análisis por transportista y seguimiento de rutas vencidas.',
+    archivo:     'index.html',
+    icono:       '🚚',
+    paises:      ['GT', 'ESV', 'PE', 'HN'],
+    activo:      true
+  },
+  {
+    id:          'cashtoday',
+    nombre:      'Cash Today',
+    descripcion: 'Dashboard ejecutivo de recolección de efectivo ATM. Volumetría, costos de servicio, límites operativos y análisis de tráfico por sede.',
+    archivo:     'cash_today.html',
+    icono:       '💰',
+    paises:      ['GT', 'ESV'],
+    activo:      true
+  }
+  // Para agregar nuevos dashboards en el futuro, insertar aquí:
+  // {
+  //   id:          'nuevo_dashboard',
+  //   nombre:      'Nombre del Dashboard',
+  //   descripcion: 'Descripción ejecutiva.',
+  //   archivo:     'nombre_archivo.html',
+  //   icono:       '📊',
+  //   paises:      ['GT'],
+  //   activo:      true
+  // }
+];
+
+// ─────────────────────────────────────────────────────────────
+// SEDES POR PAÍS
+// Referencia para validación de acceso por sede
+// ─────────────────────────────────────────────────────────────
+const PDC_SEDES = {
+  GT:  ['CDA', 'XELA'],
+  ESV: ['Sta.Tecla', 'Sn.Miguel'],
+  PE:  ['Peru'],
+  HN:  ['Honduras']
+};
+
+// ─────────────────────────────────────────────────────────────
+// MATRIZ DE USUARIOS
+//
+// Campos:
+//   email      — identificador único (login)
+//   pass       — contraseña (texto plano, consistente con arquitectura actual)
+//   nombre     — nombre para mostrar en la UI
+//   rol        — 'admin' | 'supervisor' | 'consulta'
+//   dashboards — array de IDs de dashboards con acceso
+//   pais       — 'regional' | 'GT' | 'ESV' | 'PE' | 'HN'
+//   sedes      — array de sedes autorizadas ('todas' para acceso completo)
+//
+// Roles:
+//   admin      — acceso total: descarga, subida, actualización, admin panel
+//   supervisor — acceso a dashboards autorizados, sin descarga/subida/actualización
+//   consulta   — solo visualización de dashboards autorizados
+// ─────────────────────────────────────────────────────────────
+const PDC_USERS = [
+  {
+    email:      'juancarlos.escobar@grupopdc.com',
+    pass:       'PDC.Admin@2026',
+    nombre:     'Juan Carlos Escobar',
+    rol:        'admin',
+    dashboards: ['rutas', 'cashtoday'],
+    pais:       'regional',
+    sedes:      'todas'
+  },
+  {
+    email:      'erwin.soto@grupopdc.com',
+    pass:       'PDC.Sup.Reg@2026',
+    nombre:     'Erwin Soto',
+    rol:        'supervisor',
+    dashboards: ['rutas', 'cashtoday'],
+    pais:       'regional',
+    sedes:      'todas'
+  },
+  {
+    email:      'francisco.aguilar@grupopdc.com',
+    pass:       'PDC.Sup.GT@2026',
+    nombre:     'Francisco Aguilar',
+    rol:        'supervisor',
+    dashboards: ['rutas', 'cashtoday'],
+    pais:       'GT',
+    sedes:      ['CDA']
+  },
+  {
+    email:      'liquidaciones.cda@grupopdc.com',
+    pass:       'PDC.TeamGT@2026',
+    nombre:     'TEAM GT',
+    rol:        'consulta',
+    dashboards: ['rutas', 'cashtoday'],
+    pais:       'GT',
+    sedes:      ['CDA', 'XELA']
+  },
+  {
+    email:      'edy.lopez@grupopdc.com',
+    pass:       'PDC.Con.GT@2026',
+    nombre:     'Edy Lopez',
+    rol:        'consulta',
+    dashboards: ['rutas'],
+    pais:       'GT',
+    sedes:      ['CDA']
+  },
+  {
+    email:      'joaquin.palma@grupopdc.com',
+    pass:       'PDC.Con.ESV@2026',
+    nombre:     'Joaquin Palma',
+    rol:        'consulta',
+    dashboards: ['rutas', 'cashtoday'],
+    pais:       'ESV',
+    sedes:      ['Sta.Tecla', 'Sn.Miguel']
+  },
+  {
+    email:      'liquidaciones.esv@grupopdc.com',
+    pass:       'PDC.TeamESV@2026',
+    nombre:     'TEAM ESV',
+    rol:        'consulta',
+    dashboards: ['rutas', 'cashtoday'],
+    pais:       'ESV',
+    sedes:      ['Sta.Tecla', 'Sn.Miguel']
+  },
+  {
+    email:      'vinicio.sanabria@grupopdc.com',
+    pass:       'PDC.Con.GT2@2026',
+    nombre:     'Vinicio Sanabria',
+    rol:        'consulta',
+    dashboards: ['rutas'],
+    pais:       'GT',
+    sedes:      ['CDA']
+  },
+  {
+    email:      'claudio.rojas@grupopdc.com',
+    pass:       'PDC.Con.PE@2026',
+    nombre:     'Claudio Rojas',
+    rol:        'consulta',
+    dashboards: ['rutas'],
+    pais:       'PE',
+    sedes:      ['Peru']
+  },
+  {
+    email:      'jose.mallqui@grupopdc.com',
+    pass:       'PDC.Con.PE2@2026',
+    nombre:     'Jose Mallqui',
+    rol:        'consulta',
+    dashboards: ['rutas'],
+    pais:       'PE',
+    sedes:      ['Peru']
+  },
+  {
+    email:      'transportes.peru@grupopdc.com',
+    pass:       'PDC.TeamPE@2026',
+    nombre:     'TEAM Perú',
+    rol:        'consulta',
+    dashboards: ['rutas'],
+    pais:       'PE',
+    sedes:      ['Peru']
+  }
+];
+
+// ─────────────────────────────────────────────────────────────
+// FUNCIÓN DE AUTENTICACIÓN
+// Retorna el objeto de usuario si las credenciales son válidas,
+// null en caso contrario.
+// ─────────────────────────────────────────────────────────────
+function pdcAuthenticate(email, pass) {
+  if (!email || !pass) return null;
+  const user = PDC_USERS.find(
+    u => u.email.toLowerCase() === email.trim().toLowerCase()
+      && u.pass === pass
+  );
+  return user || null;
+}
+
+// ─────────────────────────────────────────────────────────────
+// FUNCIÓN: Obtener dashboards disponibles para un usuario
+// Retorna array de objetos dashboard con los metadatos completos
+// ─────────────────────────────────────────────────────────────
+function pdcGetUserDashboards(user) {
+  if (!user) return [];
+  return PDC_DASHBOARDS.filter(
+    d => d.activo && user.dashboards.includes(d.id)
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// FUNCIÓN: Verificar si el usuario tiene acceso a un dashboard
+// ─────────────────────────────────────────────────────────────
+function pdcCanAccess(user, dashboardId) {
+  if (!user || !dashboardId) return false;
+  return user.dashboards.includes(dashboardId);
+}
+
+// ─────────────────────────────────────────────────────────────
+// FUNCIÓN: Verificar si el usuario tiene acceso de admin
+// ─────────────────────────────────────────────────────────────
+function pdcIsAdmin(user) {
+  return user && user.rol === 'admin';
+}
+
+// ─────────────────────────────────────────────────────────────
+// FUNCIÓN: Verificar si el usuario tiene acceso regional
+// (puede ver todos los países)
+// ─────────────────────────────────────────────────────────────
+function pdcIsRegional(user) {
+  return user && user.pais === 'regional';
+}
+
+/**
+ * PDC Analytics Center — auth.js
+ * Sistema centralizado de autenticación y control de acceso
+ * Versión: 1.0 | Junio 2026
+ *
+ * DEPENDENCIA: Debe cargarse DESPUÉS de users.js
+ *
+ * USO EN DASHBOARDS: pdcRequireAuth(dashboardId) — ver documentación
+ */
+
+'use strict';
+
+// ─────────────────────────────────────────────────────────────
+// CONSTANTES
+// ─────────────────────────────────────────────────────────────
+const PDC_SESSION_KEY  = 'pdc_session';
+const PDC_LOGIN_PAGE   = 'login.html';
+const PDC_PORTAL_PAGE  = 'analytics.html';
+const PDC_SESSION_TTL  = 8 * 60 * 60 * 1000; // 8 horas en ms
+
+// ─────────────────────────────────────────────────────────────
+// CREAR SESIÓN
+// Construye y persiste el objeto de sesión tras login exitoso
+// ─────────────────────────────────────────────────────────────
+function pdcCreateSession(user) {
+  const session = {
+    email:      user.email,
+    nombre:     user.nombre,
+    rol:        user.rol,
+    dashboards: user.dashboards,
+    pais:       user.pais,
+    sedes:      user.sedes,
+    ts:         Date.now()
+  };
+  sessionStorage.setItem(PDC_SESSION_KEY, JSON.stringify(session));
+  return session;
+}
+
+// ─────────────────────────────────────────────────────────────
+// LEER SESIÓN
+// Retorna el objeto de sesión si existe y es válido, null si no
+// ─────────────────────────────────────────────────────────────
+function pdcGetSession() {
+  try {
+    const raw = sessionStorage.getItem(PDC_SESSION_KEY);
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    // Validar TTL
+    if (Date.now() - session.ts > PDC_SESSION_TTL) {
+      pdcDestroySession();
+      return null;
+    }
+    return session;
+  } catch (e) {
+    pdcDestroySession();
+    return null;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// DESTRUIR SESIÓN
+// Limpia sessionStorage y redirige al login
+// ─────────────────────────────────────────────────────────────
+function pdcDestroySession() {
+  sessionStorage.removeItem(PDC_SESSION_KEY);
+}
+
+// ─────────────────────────────────────────────────────────────
+// LOGOUT
+// Destruye la sesión y redirige al login
+// ─────────────────────────────────────────────────────────────
+function pdcLogout() {
+  pdcDestroySession();
+  // Resolver ruta relativa hacia login.html desde cualquier nivel
+  const depth = (window.location.pathname.match(/\//g) || []).length - 1;
+  const prefix = depth > 1 ? '../'.repeat(depth - 1) : '';
+  window.location.href = prefix + PDC_LOGIN_PAGE;
+}
+
+// ─────────────────────────────────────────────────────────────
+// GUARD PRINCIPAL — usar en todos los dashboards y el portal
+//
+// dashboardId: ID del dashboard a proteger (ej: 'rutas', 'cashtoday')
+//              Pasar null para proteger páginas generales (portal)
+//
+// Flujo:
+//   1. Sin sesión válida          → redirige a login.html
+//   2. Sin permiso al dashboard   → redirige a analytics.html
+//   3. Con sesión y permiso       → retorna objeto de sesión
+// ─────────────────────────────────────────────────────────────
+function pdcRequireAuth(dashboardId) {
+  const session = pdcGetSession();
+
+  if (!session) {
+    window.location.href = PDC_LOGIN_PAGE;
+    return null;
+  }
+
+  if (dashboardId && !session.dashboards.includes(dashboardId)) {
+    window.location.href = PDC_PORTAL_PAGE;
+    return null;
+  }
+
+  return session;
+}
+
+// ─────────────────────────────────────────────────────────────
+// GUARD ADMIN — usar en páginas exclusivas de administrador
+// ─────────────────────────────────────────────────────────────
+function pdcRequireAdmin() {
+  const session = pdcRequireAuth(null);
+  if (!session) return null;
+
+  if (session.rol !== 'admin') {
+    window.location.href = PDC_PORTAL_PAGE;
+    return null;
+  }
+
+  return session;
+}
+
+// ─────────────────────────────────────────────────────────────
+// FILTRO DE SEDES — usar en Cash Today para usuarios restringidos
+//
+// Retorna array de sedes autorizadas para el usuario actual,
+// o 'todas' si el usuario tiene acceso regional.
+//
+// Uso en Cash Today:
+//   const sedesAuth = pdcGetSedesAutorizadas(session);
+//   if (sedesAuth !== 'todas') {
+//     // Aplicar filtro silencioso sobre los controles de sede
+//   }
+// ─────────────────────────────────────────────────────────────
+function pdcGetSedesAutorizadas(session) {
+  if (!session) return [];
+  if (session.sedes === 'todas') return 'todas';
+  return session.sedes;
+}
+
+// ─────────────────────────────────────────────────────────────
+// VERIFICAR PERMISO DE ACCIÓN ESPECÍFICA
+//
+// Acciones disponibles:
+//   'descargar'   — descargar archivos de dashboard
+//   'subir'       — subir Excel de actualización
+//   'actualizar'  — acceder a Tipos de Cambio / Config
+//   'admin_panel' — acceso a admin.html
+// ─────────────────────────────────────────────────────────────
+function pdcCanDo(session, accion) {
+  if (!session) return false;
+  const accionesAdmin = ['descargar', 'subir', 'actualizar', 'admin_panel'];
+  if (accionesAdmin.includes(accion)) {
+    return session.rol === 'admin';
+  }
+  return false;
+}
+
+// ─────────────────────────────────────────────────────────────
+// HELPER: Resolver ruta base del repositorio
+// Necesario porque GitHub Pages sirve desde un subdirectorio
+// ─────────────────────────────────────────────────────────────
+function pdcBasePath() {
+  const path = window.location.pathname;
+  const repoMatch = path.match(/^(\/[^/]+\/)/);
+  return repoMatch ? repoMatch[1] : '/';
+}
+
+</script>
 
   <script>
   (function () {
