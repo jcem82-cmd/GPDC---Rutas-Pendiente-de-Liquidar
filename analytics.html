@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDC Analytics Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Variables PDC (Style Guide v1.0) ── */
+    :root {
+      --navy:    #002060;
+      --navy2:   #003090;
+      --navy3:   #001540;
+      --sky:     #CFEEFC;
+      --silver:  #DBDBDB;
+      --white:   #FFFFFF;
+      --bg:      #F0F4F8;
+      --card:    #FFFFFF;
+      --text:    #0F1729;
+      --text2:   #5A6480;
+      --border:  #E2E8F0;
+      --green:   #DCF0C6;
+      --green2:  #2D9E2D;
+      --yellow:  #FFF4CC;
+      --yellow2: #C48A00;
+      --red:     #FFBDBD;
+      --red2:    #CC0000;
+      --radius:  12px;
+      --shadow:  0 2px 16px rgba(0,32,96,.08);
+      --shadow-md: 0 4px 24px rgba(0,32,96,.12);
+      --shadow-lg: 0 8px 40px rgba(0,32,96,.16);
+    }
+
+    /* ── Base ── */
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+    }
+
+    /* ─────────────────────────────────────
+       HEADER PRINCIPAL
+    ───────────────────────────────────── */
+    .header {
+      background: var(--navy);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,.2);
+    }
+
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 28px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* Logo PDC */
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--white);
+      border-radius: 8px;
+      padding: 4px 12px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: .05em;
+    }
+
+    /* Separador vertical */
+    .header-divider {
+      width: 1px;
+      height: 28px;
+      background: rgba(255,255,255,.2);
+      flex-shrink: 0;
+    }
+
+    .header-brand {
+      flex: 1;
+    }
+
+    .header-title {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: .04em;
+      line-height: 1.2;
+    }
+
+    .header-subtitle {
+      font-size: .72rem;
+      font-weight: 400;
+      color: rgba(207,238,252,.7);
+      letter-spacing: .03em;
+    }
+
+    /* Info de sesión + logout */
+    .header-session {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .session-info {
+      text-align: right;
+    }
+
+    .session-name {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--white);
+      line-height: 1.2;
+    }
+
+    .session-role {
+      font-size: .7rem;
+      font-weight: 400;
+      color: rgba(207,238,252,.65);
+    }
+
+    .btn-logout {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      color: rgba(255,255,255,.85);
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: .78rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+      white-space: nowrap;
+    }
+
+    .btn-logout:hover {
+      background: rgba(255,255,255,.18);
+      color: var(--white);
+    }
+
+    /* ─────────────────────────────────────
+       BARRA DE BIENVENIDA
+    ───────────────────────────────────── */
+    .welcome-bar {
+      background: linear-gradient(135deg, var(--navy) 0%, #001d5c 60%, #002878 100%);
+      padding: 36px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Patrón de puntos decorativo */
+    .welcome-bar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(207,238,252,.06) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
+
+    /* Acento diagonal */
+    .welcome-bar::after {
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -5%;
+      width: 35%;
+      height: 200%;
+      background: linear-gradient(180deg, rgba(0,48,144,.4) 0%, transparent 100%);
+      transform: skewX(-10deg);
+      pointer-events: none;
+    }
+
+    .welcome-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .welcome-greeting {
+      font-size: .78rem;
+      font-weight: 500;
+      color: rgba(207,238,252,.7);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .welcome-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+
+    .welcome-desc {
+      font-size: .85rem;
+      color: rgba(207,238,252,.65);
+      font-weight: 400;
+      max-width: 520px;
+    }
+
+    /* Chips de estadísticas rápidas */
+    .welcome-stats {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .stat-chip {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: .75rem;
+      color: rgba(207,238,252,.85);
+      font-weight: 500;
+      backdrop-filter: blur(4px);
+    }
+
+    .stat-chip-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green2);
+      flex-shrink: 0;
+      box-shadow: 0 0 6px var(--green2);
+    }
+
+    /* ─────────────────────────────────────
+       CONTENIDO PRINCIPAL
+    ───────────────────────────────────── */
+    .main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 36px 28px 56px;
+    }
+
+    /* Sección de dashboards */
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: .02em;
+    }
+
+    .section-count {
+      font-size: .78rem;
+      font-weight: 500;
+      color: var(--text2);
+    }
+
+    /* Grid de cards */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+    }
+
+    /* ─────────────────────────────────────
+       DASHBOARD CARD
+    ───────────────────────────────────── */
+    .dash-card {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow .2s, transform .2s;
+      animation: cardIn .35s cubic-bezier(.22,.68,0,1.1) both;
+    }
+
+    .dash-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Delay escalonado por card */
+    .dash-card:nth-child(1) { animation-delay: .05s; }
+    .dash-card:nth-child(2) { animation-delay: .12s; }
+    .dash-card:nth-child(3) { animation-delay: .19s; }
+    .dash-card:nth-child(4) { animation-delay: .26s; }
+
+    /* Franja de color superior (accent) */
+    .card-accent {
+      height: 5px;
+      background: linear-gradient(90deg, var(--navy) 0%, var(--navy2) 100%);
+    }
+
+    .card-accent.rutas     { background: linear-gradient(90deg, #002060 0%, #00B8D9 100%); }
+    .card-accent.cashtoday { background: linear-gradient(90deg, #E6501E 0%, #FFAB00 100%); }
+
+    /* Cuerpo de la card */
+    .card-body {
+      padding: 22px 24px 18px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Fila superior: ícono + título + badge estado */
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .card-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .card-title-group {
+      flex: 1;
+    }
+
+    .card-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.25;
+      margin-bottom: 3px;
+    }
+
+    .card-category {
+      font-size: .72rem;
+      font-weight: 500;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    /* Badge de estado */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: .7rem;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .badge-active {
+      background: var(--green);
+      color: var(--green2);
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Descripción */
+    .card-desc {
+      font-size: .82rem;
+      color: var(--text2);
+      line-height: 1.55;
+      flex: 1;
+    }
+
+    /* Metadatos: países y última actualización */
+    .card-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .meta-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: .75rem;
+      color: var(--text2);
+    }
+
+    .meta-row svg {
+      flex-shrink: 0;
+      opacity: .55;
+    }
+
+    .country-chips {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .country-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--sky);
+      color: var(--navy);
+      border-radius: 20px;
+      padding: 2px 8px;
+      font-size: .7rem;
+      font-weight: 600;
+    }
+
+    /* Separador */
+    .card-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0 -24px;
+      width: calc(100% + 48px);
+    }
+
+    /* Footer de la card: acciones */
+    .card-footer {
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-update {
+      font-size: .72rem;
+      color: var(--text2);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .card-update svg { opacity: .5; }
+
+    /* Botón Acceder */
+    .btn-acceder {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--navy);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      padding: 9px 20px;
+      font-size: .82rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .15s, box-shadow .15s, transform .1s;
+      white-space: nowrap;
+    }
+
+    .btn-acceder:hover {
+      background: var(--navy2);
+      box-shadow: 0 3px 12px rgba(0,32,96,.25);
+    }
+
+    .btn-acceder:active {
+      transform: scale(.97);
+    }
+
+    .btn-acceder svg {
+      transition: transform .15s;
+    }
+
+    .btn-acceder:hover svg {
+      transform: translateX(3px);
+    }
+
+    /* ─────────────────────────────────────
+       PANEL DE ADMINISTRACIÓN
+    ───────────────────────────────────── */
+    .admin-section {
+      margin-top: 40px;
+    }
+
+    .admin-panel {
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .admin-header {
+      padding: 18px 24px;
+      background: linear-gradient(90deg, #f8faff 0%, var(--card) 100%);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-header-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--sky);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--navy);
+    }
+
+    .admin-header-text .admin-title {
+      font-size: .9rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .admin-header-text .admin-subtitle {
+      font-size: .73rem;
+      color: var(--text2);
+    }
+
+    .admin-actions {
+      padding: 20px 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .admin-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      transition: background .15s, border-color .15s, box-shadow .15s;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .admin-btn:hover {
+      background: var(--sky);
+      border-color: var(--navy2);
+      box-shadow: 0 2px 8px rgba(0,32,96,.1);
+    }
+
+    .admin-btn-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      background: var(--white);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .admin-btn-label {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--navy);
+      line-height: 1.3;
+    }
+
+    .admin-btn-desc {
+      font-size: .7rem;
+      color: var(--text2);
+      margin-top: 1px;
+    }
+
+    /* ─────────────────────────────────────
+       EMPTY STATE (sin dashboards)
+    ───────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 56px 24px;
+      color: var(--text2);
+    }
+
+    .empty-state-icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+      opacity: .5;
+    }
+
+    .empty-state-title {
+      font-size: .95rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+
+    .empty-state-desc {
+      font-size: .82rem;
+    }
+
+    /* ─────────────────────────────────────
+       FOOTER DE PÁGINA
+    ───────────────────────────────────── */
+    .page-footer {
+      border-top: 1px solid var(--border);
+      padding: 18px 28px;
+      background: var(--white);
+      max-width: 100%;
+    }
+
+    .page-footer-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-brand {
+      font-size: .72rem;
+      color: var(--text2);
+    }
+
+    .footer-version {
+      font-size: .7rem;
+      color: var(--silver);
+    }
+
+    /* ─────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────── */
+    @media (max-width: 768px) {
+      .header-inner   { padding: 0 16px; height: 56px; }
+      .welcome-bar    { padding: 24px 16px; }
+      .main           { padding: 24px 16px 40px; }
+      .cards-grid     { grid-template-columns: 1fr; }
+      .session-info   { display: none; }
+      .welcome-title  { font-size: 1.3rem; }
+      .welcome-stats  { gap: 8px; }
+      .admin-actions  { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .dash-card, .btn-acceder svg { animation: none; transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── HEADER ── -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo-wrap">
+        <!--
+          NOTA: Reemplazar por Base64 del logo PDC en Fase 5.
+          <img src="assets/logo_pdc.png" alt="PDC" height="36" />
+        -->
+        <span class="logo-text">PDC</span>
+      </div>
+      <div class="header-divider"></div>
+      <div class="header-brand">
+        <div class="header-title">PDC Analytics Center</div>
+        <div class="header-subtitle">Plataforma Corporativa de Business Intelligence</div>
+      </div>
+      <div class="header-session">
+        <div class="session-info">
+          <div class="session-name" id="sessionName">—</div>
+          <div class="session-role" id="sessionRole">—</div>
+        </div>
+        <button class="btn-logout" id="btnLogout" type="button">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M5 2H2.5A1 1 0 0 0 1.5 3v7a1 1 0 0 0 1 1H5M8.5 9.5L11.5 6.5M11.5 6.5L8.5 3.5M11.5 6.5H5"
+                  stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── BARRA DE BIENVENIDA ── -->
+  <div class="welcome-bar">
+    <div class="welcome-inner">
+      <div class="welcome-greeting">Panel de control</div>
+      <div class="welcome-title" id="welcomeTitle">Bienvenido al Analytics Center</div>
+      <div class="welcome-desc">
+        Acceda a los dashboards corporativos autorizados. Toda la información se actualiza en tiempo real desde los sistemas de gestión del Grupo PDC.
+      </div>
+      <div class="welcome-stats" id="welcomeStats"></div>
+    </div>
+  </div>
+
+  <!-- ── CONTENIDO PRINCIPAL ── -->
+  <main class="main">
+
+    <!-- Sección: Mis Dashboards -->
+    <div class="section-header">
+      <span class="section-title">Mis Dashboards</span>
+      <span class="section-count" id="dashCount"></span>
+    </div>
+
+    <div class="cards-grid" id="cardsGrid">
+      <!-- Las cards se generan dinámicamente según los permisos del usuario -->
+    </div>
+
+    <!-- Panel de Administración (solo Admin) -->
+    <div class="admin-section" id="adminSection" style="display:none">
+      <div class="section-header" style="margin-top:0">
+        <span class="section-title">Administración</span>
+      </div>
+      <div class="admin-panel">
+        <div class="admin-header">
+          <div class="admin-header-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="2.5" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.22 3.22l1.41 1.41M13.37 13.37l1.41 1.41M3.22 14.78l1.41-1.41M13.37 4.63l1.41-1.41"
+                    stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="admin-header-text">
+            <div class="admin-title">Panel de Administración</div>
+            <div class="admin-subtitle">Acciones disponibles para Administrador</div>
+          </div>
+        </div>
+        <div class="admin-actions" id="adminActions">
+          <!-- Generado dinámicamente -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer class="page-footer">
+    <div class="page-footer-inner">
+      <div class="footer-brand">Grupo PDC · Departamento Financiero · &copy; 2026</div>
+      <div class="footer-version">PDC Analytics Center v1.0</div>
+    </div>
+  </footer>
+
+  <!-- ── Scripts ── -->
+  <script src="js/users.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    /* ── 1. Verificar sesión ── */
+    const session = pdcRequireAuth(null);
+    if (!session) return; // guard redirige automáticamente
+
+    /* ── 2. Configuración de metadatos de dashboards ── */
+    const DASH_META = {
+      rutas: {
+        accentClass:  'rutas',
+        icono:        '🚚',
+        categoria:    'Operaciones · Financiero',
+        descripcion:  'Monitoreo en tiempo real del estado de liquidación de rutas de despacho. KPIs financieros, análisis por transportista, seguimiento de rutas vencidas y control de efectividad.',
+        paises:       { GT: '🇬🇹 Guatemala', ESV: '🇸🇻 El Salvador', PE: '🇵🇪 Perú', HN: '🇭🇳 Honduras' },
+        actualizacion:'11 jun 2026',
+        archivo:      'index.html'
+      },
+      cashtoday: {
+        accentClass:  'cashtoday',
+        icono:        '💰',
+        categoria:    'Tesorería · Cash Management',
+        descripcion:  'Dashboard ejecutivo de recolección de efectivo ATM. Volumetría por sede, costos de servicio, análisis de límites operativos y tráfico de recolección por hora y día.',
+        paises:       { GT: '🇬🇹 Guatemala', ESV: '🇸🇻 El Salvador' },
+        actualizacion:'11 jun 2026',
+        archivo:      'cash_today.html'
+      }
+    };
+
+    /* ── 3. Renderizar header de sesión ── */
+    document.getElementById('sessionName').textContent = session.nombre;
+    const roleLabel = { admin: 'Administrador', supervisor: 'Supervisor', consulta: 'Consulta' };
+    document.getElementById('sessionRole').textContent = roleLabel[session.rol] || session.rol;
+
+    /* ── 4. Saludo personalizado ── */
+    const hora = new Date().getHours();
+    const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
+    const nombreCorto = session.nombre.split(' ')[0];
+    document.getElementById('welcomeTitle').textContent = `${saludo}, ${nombreCorto}`;
+
+    /* ── 5. Chips de estadísticas en welcome bar ── */
+    const statsEl = document.getElementById('welcomeStats');
+    const dashsDisp = pdcGetUserDashboards(session);
+    const paisLabel = session.pais === 'regional' ? 'Acceso Regional' : `País: ${session.pais}`;
+
+    statsEl.innerHTML = `
+      <div class="stat-chip">
+        <span class="stat-chip-dot"></span>
+        ${dashsDisp.length} dashboard${dashsDisp.length !== 1 ? 's' : ''} disponible${dashsDisp.length !== 1 ? 's' : ''}
+      </div>
+      <div class="stat-chip">
+        <span class="stat-chip-dot" style="background:#FFAB00;box-shadow:0 0 6px #FFAB00"></span>
+        ${paisLabel}
+      </div>
+      <div class="stat-chip">
+        <span class="stat-chip-dot" style="background:#CFEEFC;box-shadow:0 0 6px rgba(207,238,252,.8)"></span>
+        ${roleLabel[session.rol] || session.rol}
+      </div>
+    `;
+
+    /* ── 6. Generar cards de dashboards ── */
+    const grid = document.getElementById('cardsGrid');
+    const countEl = document.getElementById('dashCount');
+
+    if (dashsDisp.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          <div class="empty-state-icon">📊</div>
+          <div class="empty-state-title">Sin dashboards disponibles</div>
+          <div class="empty-state-desc">Contacte al administrador para solicitar acceso.</div>
+        </div>`;
+    } else {
+      countEl.textContent = `${dashsDisp.length} disponible${dashsDisp.length !== 1 ? 's' : ''}`;
+
+      dashsDisp.forEach(dash => {
+        const meta = DASH_META[dash.id];
+        if (!meta) return;
+
+        // Determinar países visibles para este usuario en este dashboard
+        const paisesUsuario = session.pais === 'regional'
+          ? Object.keys(meta.paises)
+          : [session.pais].filter(p => meta.paises[p]);
+
+        const paisChips = paisesUsuario
+          .filter(p => meta.paises[p])
+          .map(p => `<span class="country-chip">${meta.paises[p]}</span>`)
+          .join('');
+
+        const card = document.createElement('div');
+        card.className = 'dash-card';
+        card.innerHTML = `
+          <div class="card-accent ${meta.accentClass}"></div>
+          <div class="card-body">
+            <div class="card-top">
+              <div class="card-icon">${meta.icono}</div>
+              <div class="card-title-group">
+                <div class="card-name">${dash.nombre}</div>
+                <div class="card-category">${meta.categoria}</div>
+              </div>
+              <span class="badge badge-active">
+                <span class="badge-dot"></span>
+                Activo
+              </span>
+            </div>
+
+            <p class="card-desc">${meta.descripcion}</p>
+
+            <div class="card-meta">
+              <div class="meta-row">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/>
+                  <path d="M4 6.5h5M6.5 4v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+                <div class="country-chips">${paisChips || '<span style="font-size:.72rem;color:var(--text2)">Sin país asignado</span>'}</div>
+              </div>
+            </div>
+
+            <div class="card-divider"></div>
+          </div>
+
+          <div class="card-footer">
+            <div class="card-update">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.1"/>
+                <path d="M6 3.5V6l1.5 1.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+              </svg>
+              Actualizado: ${meta.actualizacion}
+            </div>
+            <a href="${meta.archivo}" class="btn-acceder">
+              Acceder
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <path d="M2.5 6.5h8M7 3l3.5 3.5L7 10"
+                      stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    /* ── 7. Panel de Administración ── */
+    if (pdcIsAdmin(session)) {
+      document.getElementById('adminSection').style.display = '';
+
+      const adminActions = [
+        {
+          icono: '📂',
+          label: 'Actualizar Rutas',
+          desc:  'Tipos de Cambio · Subir Excel',
+          href:  'index.html#tipos-cambio'
+        },
+        {
+          icono: '📊',
+          label: 'Actualizar Cash Today',
+          desc:  'Config · Cargar nuevo Excel',
+          href:  'cash_today.html#config'
+        },
+        {
+          icono: '⚙️',
+          label: 'Panel Administrativo',
+          desc:  'Chat de soporte · Gestión',
+          href:  'admin.html'
+        },
+        {
+          icono: '⬇️',
+          label: 'Descargar Rutas',
+          desc:  'Exportar Dashboard actual',
+          href:  'index.html',
+          download: true
+        },
+        {
+          icono: '⬇️',
+          label: 'Descargar Cash Today',
+          desc:  'Exportar Dashboard actual',
+          href:  'cash_today.html',
+          download: true
+        }
+      ];
+
+      const actionsEl = document.getElementById('adminActions');
+      adminActions.forEach(action => {
+        const btn = document.createElement('a');
+        btn.href = action.href;
+        btn.className = 'admin-btn';
+        if (action.download) btn.setAttribute('download', '');
+        btn.innerHTML = `
+          <div class="admin-btn-icon">${action.icono}</div>
+          <div>
+            <div class="admin-btn-label">${action.label}</div>
+            <div class="admin-btn-desc">${action.desc}</div>
+          </div>
+        `;
+        actionsEl.appendChild(btn);
+      });
+    }
+
+    /* ── 8. Logout ── */
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      if (confirm('¿Desea cerrar la sesión?')) pdcLogout();
+    });
+
+  })();
+  </script>
+
+</body>
+</html>
