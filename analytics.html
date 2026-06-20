@@ -274,39 +274,72 @@ function pdcBridgeToTab(archivo, tab) {
   window.location.href = archivo + '?tab=' + tab;
 }
 
+/* ── DESCARGA DE SNAPSHOT — CORREGIDO v2.1 ── */
 function pdcDownload(archivo, nombre) {
-  /* Snapshot del DOM actual — sin fetch, sin dependencia de red */
   var session = pdcGetSession();
   if (!session) { window.location.href = PDC_LOGIN_PAGE; return; }
   var btn = event && event.target ? event.target.closest('button') : null;
   if (btn) { btn.textContent = '⏳ Generando...'; btn.disabled = true; }
 
-  /* Solo aplica al dashboard de Rutas (index.html) que está abierto en esta pestaña */
   if (archivo === 'index.html') {
-    /* Obtener HTML completo del DOM */
-    var src = '<!DOCTYPE html>' + document.documentElement.outerHTML;
-    /* Quitar el Auth Bridge — reemplazarlo por comentario vacío */
-    src = src.replace(/<script>\s*\(function\(\)\{\s*\/\* PDC Analytics Center[\s\S]*?\}\)\(\);\s*<\/script>/, '<!-- auth-bridge removed for snapshot -->');
-    /* Quitar también el script de pdcLogout del header */
-    src = src.replace(/<script>\s*function pdcLogout[\s\S]*?<\/script>/, '');
-    /* Agregar watermark */
-    var fecha = new Date().toLocaleDateString('es-GT',{day:'2-digit',month:'2-digit',year:'numeric'});
-    var wm = '<div style="background:#f59e0b;color:#000;text-align:center;padding:5px;font-size:.72rem;font-weight:700;position:relative;z-index:9999;">📸 SNAPSHOT PDC · ' + fecha + ' · Solo lectura · ' + session.nombre + '</div>';
-    src = src.replace('<header class="hdr">', wm + '<header class="hdr">');
-    /* Descargar */
-    var blob = new Blob([src], {type:'text/html;charset=utf-8'});
-    var url  = URL.createObjectURL(blob);
-    var a    = document.createElement('a');
-    a.href = url; a.download = nombre;
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a);
-    setTimeout(function(){ URL.revokeObjectURL(url); }, 3000);
-    if (btn) { btn.textContent = '✓ Descargado';
-      setTimeout(function(){ btn.textContent = '⬇️ Descargar Rutas'; btn.disabled = false; }, 2500); }
+    /* ── FETCH al mismo origin: GitHub Pages sirve todos los archivos del repo
+       desde el mismo dominio → no hay CORS → retorna el HTML fuente real      ── */
+    var baseUrl = window.location.href.replace(/[^\/]*$/, '') + 'index.html';
+
+    fetch(baseUrl)
+      .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      })
+      .then(function(src) {
+
+        /* ── STRIP Auth Bridge: 3 patrones en cascada para robustez ── */
+        var patterns = [
+          /<script>[\s\S]*?Auth Bridge[\s\S]*?<\/script>/,
+          /<script>[\s\S]*?PDC Analytics Center[\s\S]*?\}\)\(\);\s*<\/script>/,
+          /<script>[\s\S]*?location\.replace\('analytics\.html'\)[\s\S]*?<\/script>/
+        ];
+        for (var i = 0; i < patterns.length; i++) {
+          var cleaned = src.replace(patterns[i], '<!-- snapshot: sin login -->');
+          if (cleaned !== src) { src = cleaned; break; }
+        }
+
+        /* ── WATERMARK antes del <header class="hdr"> ── */
+        var fecha = new Date().toLocaleDateString('es-GT', {day:'2-digit', month:'2-digit', year:'numeric'});
+        var wm = '<div style="background:#f59e0b;color:#000;text-align:center;padding:5px;font-size:.72rem;font-weight:700;position:relative;z-index:9999;">'
+               + '📸 SNAPSHOT PDC · ' + fecha + ' · Solo lectura · ' + session.nombre
+               + '</div>';
+        src = src.replace('<header class="hdr">', wm + '<header class="hdr">');
+
+        /* ── DESCARGA como blob HTML ── */
+        var blob = new Blob([src], {type: 'text/html;charset=utf-8'});
+        var url  = URL.createObjectURL(blob);
+        var a    = document.createElement('a');
+        a.href = url;
+        a.download = nombre;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function() { URL.revokeObjectURL(url); }, 3000);
+
+        if (btn) {
+          btn.textContent = '✓ Descargado';
+          setTimeout(function() {
+            btn.textContent = '⬇️ Descargar Rutas';
+            btn.disabled = false;
+          }, 2500);
+        }
+      })
+      .catch(function(err) {
+        console.error('[pdcDownload] Error al hacer fetch de index.html:', err);
+        if (btn) { btn.textContent = '✗ Error'; btn.disabled = false; }
+        alert('No se pudo generar el snapshot.\nError: ' + err.message);
+      });
+
   } else {
-    /* Para otros archivos (cash_today.html) abrir en nueva pestaña con token */
-    var token = btoa(JSON.stringify({email:session.email, nombre:session.nombre, rol:session.rol}));
-    var BASE = 'https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/';
+    /* ── Otros dashboards (cash_today.html): abrir en nueva pestaña con token ── */
+    var token = btoa(JSON.stringify({email: session.email, nombre: session.nombre, rol: session.rol}));
+    var BASE  = 'https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/';
     window.open(BASE + archivo + '?pdc_token=' + encodeURIComponent(token), '_blank');
     if (btn) { btn.disabled = false; }
   }
