@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PDC Analytics Center · Regional</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#002060;--navy2:#003090;--sky:#CFEEFC;--white:#fff;
+  --bg:#F0F4F8;--card:#fff;--text:#0F1729;--text2:#5A6480;
+  --border:#E2E8F0;--green:#DCF0C6;--green2:#2D9E2D;
+  --yellow:#FFF4CC;--yellow2:#C48A00;--red:#FFBDBD;--red2:#CC0000;
+  --radius:12px;--shadow:0 2px 16px rgba(0,32,96,.08);
+  --shadow-md:0 4px 24px rgba(0,32,96,.14);
+  /* País palette */
+  --gt1:#002060;--gt2:#00B8D9;
+  --sv1:#E6501E;--sv2:#FFAB00;
+  --pe1:#8B1A1A;--pe2:#E8A020;
+  --hn1:#003F8A;--hn2:#009E60;
+}
+body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg);min-height:100vh;color:var(--text)}
+
+/* ── HEADER ── */
+.hdr{background:var(--navy);position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.hdr-inner{max-width:1400px;margin:0 auto;padding:0 28px;height:60px;display:flex;align-items:center;gap:16px}
+.hdr-logo{background:var(--white);border-radius:8px;padding:4px 12px;font-size:1rem;font-weight:700;color:var(--navy);letter-spacing:.05em;flex-shrink:0}
+.hdr-div{width:1px;height:24px;background:rgba(255,255,255,.2);flex-shrink:0}
+.hdr-back{display:flex;align-items:center;gap:6px;color:rgba(207,238,252,.75);font-size:.78rem;font-weight:500;text-decoration:none;padding:5px 10px;border-radius:7px;transition:background .15s;cursor:pointer;border:none;background:none;font-family:inherit}
+.hdr-back:hover{background:rgba(255,255,255,.1);color:var(--white)}
+.hdr-title-group{flex:1}
+.hdr-title{font-size:.9rem;font-weight:700;color:var(--white);letter-spacing:.04em}
+.hdr-sub{font-size:.7rem;color:rgba(207,238,252,.65)}
+.hdr-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.hdr-badge{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:.7rem;font-weight:600;color:rgba(207,238,252,.85)}
+.hdr-user{font-size:.78rem;font-weight:600;color:var(--white);opacity:.85}
+
+/* ── HERO ── */
+.hero{background:linear-gradient(135deg,#001848 0%,#002060 55%,#002878 100%);padding:32px 28px 28px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(207,238,252,.05) 1px,transparent 1px);background-size:28px 28px}
+.hero-inner{max-width:1400px;margin:0 auto;position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.hero-left{}
+.hero-eyebrow{font-size:.7rem;font-weight:600;color:rgba(207,238,252,.6);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.hero-h1{font-size:1.5rem;font-weight:800;color:var(--white);margin-bottom:4px}
+.hero-desc{font-size:.82rem;color:rgba(207,238,252,.6);margin-bottom:16px}
+.hero-chips{display:flex;gap:10px;flex-wrap:wrap}
+.hero-chip{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:4px 12px;font-size:.72rem;color:rgba(207,238,252,.8);font-weight:500}
+.hero-chip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.hero-right{display:flex;gap:12px;flex-wrap:wrap}
+.hero-kpi{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 20px;min-width:120px;text-align:center}
+.hero-kpi-val{font-size:1.6rem;font-weight:800;color:var(--white);line-height:1}
+.hero-kpi-lbl{font-size:.68rem;color:rgba(207,238,252,.55);margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+
+/* ── NAV TABS ── */
+.nav-wrap{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:60px;z-index:100;box-shadow:0 2px 8px rgba(0,32,96,.04)}
+.nav-inner{max-width:1400px;margin:0 auto;padding:0 28px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.ntab{padding:14px 18px;font-size:.8rem;font-weight:600;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;user-select:none;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.ntab:hover{color:var(--navy)}
+.ntab.on{color:var(--navy);border-bottom-color:var(--navy)}
+
+/* ── MAIN ── */
+.main{max-width:1400px;margin:0 auto;padding:32px 28px 64px}
+.page{display:none}.page.on{display:block}
+
+/* ── SECTION HEADER ── */
+.sec-hdr{display:flex;align-items:baseline;gap:10px;margin-bottom:20px}
+.sec-title{font-size:.95rem;font-weight:700;color:var(--navy)}
+.sec-sub{font-size:.75rem;color:var(--text2)}
+
+/* ── GRID ── */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+
+/* ── KPI CARD ── */
+.kc{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:18px 20px;display:flex;flex-direction:column;gap:4px;transition:box-shadow .2s}
+.kc:hover{box-shadow:var(--shadow-md)}
+.kc-flag{font-size:1.1rem;margin-bottom:4px}
+.kc-label{font-size:.7rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.07em}
+.kc-val{font-size:1.5rem;font-weight:800;color:var(--navy);line-height:1.1}
+.kc-val-sm{font-size:1.1rem;font-weight:700;color:var(--navy)}
+.kc-sub{font-size:.72rem;color:var(--text2);margin-top:2px}
+.kc-bar{height:3px;border-radius:2px;margin-top:8px;background:var(--border)}
+.kc-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.kc.g{border-left:4px solid var(--green2);background:linear-gradient(135deg,#f8fff4,var(--white))}
+.kc.y{border-left:4px solid var(--yellow2);background:linear-gradient(135deg,#fffef0,var(--white))}
+.kc.r{border-left:4px solid var(--red2);background:linear-gradient(135deg,#fff8f8,var(--white))}
+.kc.n{border-left:4px solid var(--navy)}
+
+/* ── PANEL ── */
+.panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
+.panel-hdr{padding:14px 20px;background:#f8faff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.panel-title{font-size:.82rem;font-weight:700;color:var(--navy)}
+.panel-sub{font-size:.7rem;color:var(--text2)}
+.panel-body{padding:20px}
+.chart-wrap{position:relative;padding:4px 0}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.tbl th{background:var(--navy);color:var(--white);padding:8px 12px;text-align:left;font-weight:600;font-size:.72rem;letter-spacing:.04em}
+.tbl th.r,.tbl td.r{text-align:right}
+.tbl td{padding:8px 12px;border-bottom:1px solid var(--border)}
+.tbl tr:hover td{background:var(--sky)}
+.tbl tr.total td{background:#dce8fe;color:var(--navy);font-weight:700}
+.tbl tr.total:hover td{background:#c8d8f4}
+
+/* ── BADGE ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:.68rem;font-weight:700}
+.bg{background:var(--green);color:var(--green2)}
+.by{background:var(--yellow);color:var(--yellow2)}
+.br{background:var(--red);color:var(--red2)}
+.bn{background:var(--sky);color:var(--navy)}
+
+/* ── COUNTRY SECTION ── */
+.country-header{display:flex;align-items:center;gap:12px;margin:28px 0 16px}
+.country-flag-lg{font-size:1.6rem}
+.country-name{font-size:1rem;font-weight:700;color:var(--navy)}
+.country-line{flex:1;height:1px;background:var(--border)}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:28px 0}
+
+/* ── UPDATE BADGE ── */
+.update-wrap{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:16px}
+.update-lbl{font-size:.7rem;color:var(--text2)}
+.update-val{font-size:.7rem;font-weight:600;color:var(--navy)}
+
+/* ── FOOTER ── */
+.page-footer{border-top:1px solid var(--border);padding:16px 28px;background:var(--white)}
+.page-footer-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.footer-l{font-size:.7rem;color:var(--text2)}
+.footer-r{font-size:.68rem;color:#ccc}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr)}.grid-3{grid-template-columns:repeat(2,1fr)}.grid-2,.grid-2-1{grid-template-columns:1fr}}
+@media(max-width:600px){.grid-4,.grid-3{grid-template-columns:1fr}.main{padding:20px 16px 48px}.hero{padding:20px 16px}.hdr-inner{padding:0 16px}.hero-right{display:none}}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:fadeUp .35s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── AUTH BRIDGE v2.0 — Regional ── -->
+<script>
+(function(){
+  var s=null;
+  try{s=JSON.parse(sessionStorage.getItem('pdc_session'));}catch(e){}
+  if(s&&s.email&&s.nombre){
+    sessionStorage.setItem('pdc_user',JSON.stringify({nombre:s.nombre,email:s.email,
+      role:s.rol==='admin'?'admin':'user',pais:s.pais||'',acceso:s.acceso||[]}));
+  } else {
+    var u=null;
+    try{u=JSON.parse(sessionStorage.getItem('pdc_user'));}catch(e){}
+    if(!u||!u.email){window.location.replace('../analytics.html');return;}
+  }
+})();
+</script>
+
+<!-- ── HEADER ── -->
+<header class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-logo">PDC</div>
+    <div class="hdr-div"></div>
+    <button class="hdr-back" onclick="window.location.href='../analytics.html'">
+      ← Portal
+    </button>
+    <div class="hdr-div"></div>
+    <div class="hdr-title-group">
+      <div class="hdr-title">CONSOLIDADO REGIONAL</div>
+      <div class="hdr-sub">Dashboard Ejecutivo · KPIs Grupo PDC · Todas las operaciones</div>
+    </div>
+    <div class="hdr-right">
+      <span class="hdr-badge">4 Países</span>
+      <span class="hdr-user" id="hdrUser"></span>
+    </div>
+  </div>
+</header>
+
+<!-- ── NAV TABS ── -->
+<nav class="nav-wrap">
+  <div class="nav-inner">
+    <button class="ntab on" onclick="goPage('resumen',this)">📊 Resumen Regional</button>
+    <button class="ntab" onclick="goPage('rutas',this)">🚚 Liquidación de Rutas</button>
+    <button class="ntab" onclick="goPage('cashtoday',this)">💰 Cash Today</button>
+    <button class="ntab" onclick="goPage('paises',this)">🌎 Por País</button>
+  </div>
+</nav>
+
+<!-- ══ PAGES ══ -->
+<main class="main">
+
+<!-- ════════════════════════════════
+     PAGE: RESUMEN REGIONAL
+════════════════════════════════ -->
+<div class="page on" id="page-resumen">
+
+  <div class="update-wrap">
+    <span class="update-lbl">Datos al:</span>
+    <span class="update-val">17 Jun 2026</span>
+    <span class="update-lbl" style="margin-left:8px">Rutas:</span>
+    <span class="update-val">11 Jun 2026</span>
+    <span class="update-lbl" style="margin-left:8px">Cash Today:</span>
+    <span class="update-val">11 Jun 2026</span>
+  </div>
+
+  <!-- Hero KPIs Globales -->
+  <div class="sec-hdr"><span class="sec-title">KPIs Globales · Junio 2026</span><span class="sec-sub">Consolidado todas las operaciones</span></div>
+  <div class="grid-4" style="margin-bottom:28px">
+    <div class="kc n anim" style="animation-delay:.05s">
+      <div class="kc-flag">🌎</div>
+      <div class="kc-label">Rutas Pendientes · Regional</div>
+      <div class="kc-val">680</div>
+      <div class="kc-sub">GT: 482 · SV: 124 · PE: 74</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--navy)"></div></div>
+    </div>
+    <div class="kc r anim" style="animation-delay:.1s">
+      <div class="kc-flag">⚠️</div>
+      <div class="kc-label">Rutas Vencidas · Regional</div>
+      <div class="kc-val">39</div>
+      <div class="kc-sub">GT: 22 · SV: 5 · PE: 12</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:57%;background:var(--red2)"></div></div>
+    </div>
+    <div class="kc g anim" style="animation-delay:.15s">
+      <div class="kc-flag">💵</div>
+      <div class="kc-label">Efectivo Recolectado · Jun</div>
+      <div class="kc-val-sm">USD 1,770,938</div>
+      <div class="kc-sub">GT: 949,926 · SV: 821,012</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--green2)"></div></div>
+    </div>
+    <div class="kc n anim" style="animation-delay:.2s">
+      <div class="kc-flag">📈</div>
+      <div class="kc-label">Efectivo YTD 2026</div>
+      <div class="kc-val-sm">USD 21,678,140</div>
+      <div class="kc-sub">GT: 10.48M · SV: 11.20M</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--gt1)"></div></div>
+    </div>
+  </div>
+
+  <!-- Gráficas lado a lado -->
+  <div class="grid-2" style="margin-bottom:28px">
+    <div class="panel anim" style="animation-delay:.22s">
+      <div class="panel-hdr">
+        <div><div class="panel-title">Rutas Pendientes por País</div><div class="panel-sub">Comparativo Jun 2026 · pendientes vs vencidas</div></div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:220px"><canvas id="chartRutasPais"></canvas></div>
+      </div>
+    </div>
+    <div class="panel anim" style="animation-delay:.27s">
+      <div class="panel-hdr">
+        <div><div class="panel-title">Efectivo Recolectado YTD 2026</div><div class="panel-sub">Acumulado enero–junio por país (USD)</div></div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:220px"><canvas id="chartEfectivoYTD"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tendencia 6 meses -->
+  <div class="panel anim" style="animation-delay:.3s">
+    <div class="panel-hdr">
+      <div><div class="panel-title">Tendencia Efectivo Mensual · Últimos 6 Meses (USD)</div><div class="panel-sub">Guatemala vs El Salvador — depósitos en cajeros ATM</div></div>
+    </div>
+    <div class="panel-body">
+      <div class="chart-wrap" style="height:200px"><canvas id="chartTendencia"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     PAGE: LIQUIDACIÓN DE RUTAS
+════════════════════════════════ -->
+<div class="page" id="page-rutas">
+
+  <div class="update-wrap">
+    <span class="update-lbl">Datos al:</span><span class="update-val">17 Jun 2026</span>
+  </div>
+
+  <div class="sec-hdr"><span class="sec-title">Liquidación de Rutas · Resumen Regional</span><span class="sec-sub">Estado de rutas pendientes de liquidar por país · Junio 2026</span></div>
+
+  <!-- KPIs de rutas por país -->
+  <div class="grid-4" style="margin-bottom:28px">
+    <div class="kc y anim" style="animation-delay:.05s">
+      <div class="kc-flag">🇬🇹</div>
+      <div class="kc-label">Guatemala · Pendientes</div>
+      <div class="kc-val">482</div>
+      <div class="kc-sub"><span class="badge br">22 vencidas</span></div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:71%;background:var(--gt1)"></div></div>
+    </div>
+    <div class="kc g anim" style="animation-delay:.1s">
+      <div class="kc-flag">🇸🇻</div>
+      <div class="kc-label">El Salvador · Pendientes</div>
+      <div class="kc-val">124</div>
+      <div class="kc-sub"><span class="badge by">5 vencidas</span></div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:18%;background:var(--sv1)"></div></div>
+    </div>
+    <div class="kc y anim" style="animation-delay:.15s">
+      <div class="kc-flag">🇵🇪</div>
+      <div class="kc-label">Perú · Pendientes</div>
+      <div class="kc-val">74</div>
+      <div class="kc-sub"><span class="badge br">12 vencidas</span></div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:11%;background:var(--pe1)"></div></div>
+    </div>
+    <div class="kc g anim" style="animation-delay:.2s">
+      <div class="kc-flag">🇭🇳</div>
+      <div class="kc-label">Honduras · Pendientes</div>
+      <div class="kc-val">—</div>
+      <div class="kc-sub"><span class="badge bn">Sin datos</span></div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:0%;background:var(--hn1)"></div></div>
+    </div>
+  </div>
+
+  <!-- Tabla consolidada por país -->
+  <div class="panel anim" style="animation-delay:.22s;margin-bottom:24px">
+    <div class="panel-hdr">
+      <div><div class="panel-title">Resumen por País y Canal</div><div class="panel-sub">Rutas pendientes · Junio 2026</div></div>
+    </div>
+    <div class="panel-body" style="padding:0">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>País</th><th>Moneda</th>
+            <th class="r">Detalle (pend.)</th>
+            <th class="r">Mayoristas (pend.)</th>
+            <th class="r">Distribuidores (pend.)</th>
+            <th class="r">Total Pend.</th>
+            <th class="r">Vencidas</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>🇬🇹 Guatemala</td><td>GTQ</td>
+            <td class="r">718 <span style="color:var(--red2);font-weight:700">(17)</span></td>
+            <td class="r">81 <span style="color:var(--red2);font-weight:700">(13)</span></td>
+            <td class="r">151 <span style="color:var(--red2);font-weight:700">(89)</span></td>
+            <td class="r" style="font-weight:700">482</td>
+            <td class="r"><span class="badge br">22</span></td>
+            <td><span class="badge by">⚠ Alerta</span></td>
+          </tr>
+          <tr>
+            <td>🇸🇻 El Salvador</td><td>USD</td>
+            <td class="r">510 <span style="color:var(--red2);font-weight:700">(14)</span></td>
+            <td class="r">85 <span style="color:var(--red2);font-weight:700">(2)</span></td>
+            <td class="r">0 <span style="color:var(--text2)">(0)</span></td>
+            <td class="r" style="font-weight:700">124</td>
+            <td class="r"><span class="badge by">5</span></td>
+            <td><span class="badge bg">✓ Normal</span></td>
+          </tr>
+          <tr>
+            <td>🇵🇪 Perú</td><td>PEN</td>
+            <td class="r">75 <span style="color:var(--text2)">(0)</span></td>
+            <td class="r">0 <span style="color:var(--text2)">(0)</span></td>
+            <td class="r">64 <span style="color:var(--red2);font-weight:700">(9)</span></td>
+            <td class="r" style="font-weight:700">74</td>
+            <td class="r"><span class="badge br">12</span></td>
+            <td><span class="badge by">⚠ Alerta</span></td>
+          </tr>
+          <tr>
+            <td>🇭🇳 Honduras</td><td>HNL</td>
+            <td class="r">—</td><td class="r">—</td><td class="r">—</td>
+            <td class="r" style="font-weight:700">—</td>
+            <td class="r"><span class="badge bn">—</span></td>
+            <td><span class="badge bn">Sin datos</span></td>
+          </tr>
+          <tr class="total">
+            <td colspan="5">TOTAL REGIONAL</td>
+            <td class="r">680</td>
+            <td class="r">39</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tendencia Rutas Vencidas -->
+  <div class="panel anim" style="animation-delay:.28s">
+    <div class="panel-hdr">
+      <div><div class="panel-title">Tendencia Rutas Vencidas (≥15 días) · Últimos 6 Meses</div><div class="panel-sub">Histórico regional consolidado</div></div>
+    </div>
+    <div class="panel-body">
+      <div class="chart-wrap" style="height:200px"><canvas id="chartVencidas"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     PAGE: CASH TODAY
+════════════════════════════════ -->
+<div class="page" id="page-cashtoday">
+
+  <div class="update-wrap">
+    <span class="update-lbl">Datos al:</span><span class="update-val">11 Jun 2026</span>
+  </div>
+
+  <div class="sec-hdr"><span class="sec-title">Cash Today · Recolección ATM</span><span class="sec-sub">Efectivo depositado en cajeros por país · Junio 2026</span></div>
+
+  <div class="grid-4" style="margin-bottom:28px">
+    <div class="kc g anim" style="animation-delay:.05s">
+      <div class="kc-flag">🇬🇹</div>
+      <div class="kc-label">Guatemala · Jun 2026</div>
+      <div class="kc-val-sm">USD 949,926</div>
+      <div class="kc-sub">1,008 transacciones</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:54%;background:var(--gt1)"></div></div>
+    </div>
+    <div class="kc g anim" style="animation-delay:.1s">
+      <div class="kc-flag">🇸🇻</div>
+      <div class="kc-label">El Salvador · Jun 2026</div>
+      <div class="kc-val-sm">USD 821,012</div>
+      <div class="kc-sub">1,090 transacciones</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:46%;background:var(--sv1)"></div></div>
+    </div>
+    <div class="kc n anim" style="animation-delay:.15s">
+      <div class="kc-flag">🇬🇹</div>
+      <div class="kc-label">Guatemala · YTD 2026</div>
+      <div class="kc-val-sm">USD 10,479,907</div>
+      <div class="kc-sub">Ene–Jun acumulado</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:48%;background:var(--gt1)"></div></div>
+    </div>
+    <div class="kc n anim" style="animation-delay:.2s">
+      <div class="kc-flag">🇸🇻</div>
+      <div class="kc-label">El Salvador · YTD 2026</div>
+      <div class="kc-val-sm">USD 11,198,233</div>
+      <div class="kc-sub">Ene–Jun acumulado</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:52%;background:var(--sv1)"></div></div>
+    </div>
+  </div>
+
+  <!-- Gráfica mensual -->
+  <div class="grid-2" style="margin-bottom:24px">
+    <div class="panel anim" style="animation-delay:.22s">
+      <div class="panel-hdr">
+        <div><div class="panel-title">Efectivo Mensual por País (USD)</div><div class="panel-sub">Ene–Jun 2026</div></div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:220px"><canvas id="chartCTMensual"></canvas></div>
+      </div>
+    </div>
+    <div class="panel anim" style="animation-delay:.27s">
+      <div class="panel-hdr">
+        <div><div class="panel-title">Distribución YTD 2026</div><div class="panel-sub">Participación por país en total recolectado</div></div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:220px"><canvas id="chartCTDonut"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla mensual -->
+  <div class="panel anim" style="animation-delay:.3s">
+    <div class="panel-hdr">
+      <div><div class="panel-title">Detalle Mensual · Efectivo Recolectado (USD)</div><div class="panel-sub">Ene–Jun 2026</div></div>
+    </div>
+    <div class="panel-body" style="padding:0">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Mes</th>
+            <th class="r">🇬🇹 Guatemala</th>
+            <th class="r">🇸🇻 El Salvador</th>
+            <th class="r">Total USD</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Enero 2026</td><td class="r">802,611</td><td class="r">2,515,432</td><td class="r" style="font-weight:600">3,318,043</td></tr>
+          <tr><td>Febrero 2026</td><td class="r">1,947,303</td><td class="r">2,205,289</td><td class="r" style="font-weight:600">4,152,592</td></tr>
+          <tr><td>Marzo 2026</td><td class="r">2,300,898</td><td class="r">1,845,166</td><td class="r" style="font-weight:600">4,146,064</td></tr>
+          <tr><td>Abril 2026</td><td class="r">2,105,217</td><td class="r">1,833,244</td><td class="r" style="font-weight:600">3,938,461</td></tr>
+          <tr><td>Mayo 2026</td><td class="r">2,373,953</td><td class="r">1,978,090</td><td class="r" style="font-weight:600">4,352,043</td></tr>
+          <tr><td>Junio 2026 *</td><td class="r">949,926</td><td class="r">821,012</td><td class="r" style="font-weight:600">1,770,938</td></tr>
+          <tr class="total"><td>TOTAL YTD 2026</td><td class="r">10,479,907</td><td class="r">11,198,233</td><td class="r">21,678,140</td></tr>
+        </tbody>
+      </table>
+      <div style="padding:10px 16px;font-size:.68rem;color:var(--text2)">* Junio 2026 parcial — datos al 11/06/2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     PAGE: POR PAÍS
+════════════════════════════════ -->
+<div class="page" id="page-paises">
+
+  <!-- GUATEMALA -->
+  <div class="country-header anim">
+    <span class="country-flag-lg">🇬🇹</span>
+    <span class="country-name">Guatemala</span>
+    <div class="country-line"></div>
+    <span class="badge bn">GTQ · Moneda local</span>
+  </div>
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="kc y"><div class="kc-label">Rutas Pendientes</div><div class="kc-val">482</div><div class="kc-sub">Jun 2026</div></div>
+    <div class="kc r"><div class="kc-label">Rutas Vencidas</div><div class="kc-val">22</div><div class="kc-sub">4.6% de pendientes</div></div>
+    <div class="kc g"><div class="kc-label">Efectivo Jun 2026</div><div class="kc-val-sm">USD 949,926</div><div class="kc-sub">1,008 transacciones</div></div>
+    <div class="kc n"><div class="kc-label">Efectivo YTD 2026</div><div class="kc-val-sm">USD 10,479,907</div><div class="kc-sub">Ene–Jun 2026</div></div>
+  </div>
+
+  <!-- EL SALVADOR -->
+  <div class="country-header anim">
+    <span class="country-flag-lg">🇸🇻</span>
+    <span class="country-name">El Salvador</span>
+    <div class="country-line"></div>
+    <span class="badge bn">USD · Economía dolarizada</span>
+  </div>
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="kc g"><div class="kc-label">Rutas Pendientes</div><div class="kc-val">124</div><div class="kc-sub">Jun 2026</div></div>
+    <div class="kc g"><div class="kc-label">Rutas Vencidas</div><div class="kc-val">5</div><div class="kc-sub">4.0% de pendientes</div></div>
+    <div class="kc g"><div class="kc-label">Efectivo Jun 2026</div><div class="kc-val-sm">USD 821,012</div><div class="kc-sub">1,090 transacciones</div></div>
+    <div class="kc n"><div class="kc-label">Efectivo YTD 2026</div><div class="kc-val-sm">USD 11,198,233</div><div class="kc-sub">Ene–Jun 2026</div></div>
+  </div>
+
+  <!-- PERÚ -->
+  <div class="country-header anim">
+    <span class="country-flag-lg">🇵🇪</span>
+    <span class="country-name">Perú</span>
+    <div class="country-line"></div>
+    <span class="badge bn">PEN · TC: 3.529</span>
+  </div>
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="kc y"><div class="kc-label">Rutas Pendientes</div><div class="kc-val">74</div><div class="kc-sub">Jun 2026</div></div>
+    <div class="kc r"><div class="kc-label">Rutas Vencidas</div><div class="kc-val">12</div><div class="kc-sub">16.2% de pendientes</div></div>
+    <div class="kc n"><div class="kc-label">Efectivo ATM</div><div class="kc-val">—</div><div class="kc-sub">No operativo aún</div></div>
+    <div class="kc n"><div class="kc-label">Cash Today</div><div class="kc-val">—</div><div class="kc-sub">En roadmap</div></div>
+  </div>
+
+  <!-- HONDURAS -->
+  <div class="country-header anim">
+    <span class="country-flag-lg">🇭🇳</span>
+    <span class="country-name">Honduras</span>
+    <div class="country-line"></div>
+    <span class="badge bn">HNL · En roadmap</span>
+  </div>
+  <div class="grid-4" style="margin-bottom:32px">
+    <div class="kc n"><div class="kc-label">Rutas Pendientes</div><div class="kc-val">—</div><div class="kc-sub">Sin datos disponibles</div></div>
+    <div class="kc n"><div class="kc-label">Rutas Vencidas</div><div class="kc-val">—</div><div class="kc-sub">Sin datos disponibles</div></div>
+    <div class="kc n"><div class="kc-label">Efectivo ATM</div><div class="kc-val">—</div><div class="kc-sub">Sin datos disponibles</div></div>
+    <div class="kc n"><div class="kc-label">Estado</div><div class="kc-val" style="font-size:1rem">Próximamente</div><div class="kc-sub">Integración en Fase 2</div></div>
+  </div>
+
+</div>
+</main>
+
+<footer class="page-footer">
+  <div class="page-footer-inner">
+    <div class="footer-l">Grupo PDC · Departamento Financiero · Consolidado Regional © 2026</div>
+    <div class="footer-r">PDC Analytics Center · regional/index.html · v1.0 · Datos: 11–17 Jun 2026</div>
+  </div>
+</footer>
+
+<script>
+/* ══ DATOS EMBEBIDOS ══ */
+var D = {
+  /* Rutas por país — Jun 2026 */
+  rutas: {
+    GT: { pendientes:482, vencidas:22 },
+    SV: { pendientes:124, vencidas:5  },
+    PE: { pendientes:74,  vencidas:12 },
+    HN: { pendientes:0,   vencidas:0  }
+  },
+  /* Cash Today — meses Ene-Jun 2026 (USD) */
+  cashMonths: ['Ene','Feb','Mar','Abr','May','Jun*'],
+  cashGT: [802611, 1947303, 2300898, 2105217, 2373953, 949926],
+  cashSV: [2515432, 2205289, 1845166, 1833244, 1978090, 821012],
+  /* Rutas tendencia vencidas últimos 6 meses (regional) */
+  rutasMeses: ['Ene','Feb','Mar','Abr','May','Jun'],
+  rutasVencidas: [0, 1, 1, 0, 1, 39],
+  rutasTotal:    [4155, 6672, 7080, 6543, 6665, 2713]
+};
+
+/* ══ NAVEGACIÓN ══ */
+var charts = {};
+function goPage(p, el){
+  document.querySelectorAll('.page').forEach(function(e){e.classList.remove('on');});
+  document.querySelectorAll('.ntab').forEach(function(e){e.classList.remove('on');});
+  document.getElementById('page-'+p).classList.add('on');
+  if(el) el.classList.add('on');
+  renderCharts(p);
+}
+
+/* ══ CHARTS ══ */
+var C = {
+  navy:'#002060', navy2:'#003090', sky:'#CFEEFC',
+  gt1:'#002060', gt2:'#00B8D9',
+  sv1:'#E6501E', sv2:'#FFAB00',
+  pe1:'#8B1A1A', pe2:'#E8A020',
+  green:'#2D9E2D', red:'#CC0000', yellow:'#C48A00',
+  text2:'#5A6480', border:'#E2E8F0'
+};
+
+var BASE_OPTS = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{ legend:{ labels:{ font:{ family:"'Inter',sans-serif", size:11 }, color:C.text2, boxWidth:12, padding:14 } } },
+  scales:{
+    x:{ grid:{ color:C.border }, ticks:{ font:{ family:"'Inter',sans-serif", size:10 }, color:C.text2 } },
+    y:{ grid:{ color:C.border }, ticks:{ font:{ family:"'Inter',sans-serif", size:10 }, color:C.text2 } }
+  }
+};
+
+function fmtUSD(n){ return '$'+n.toLocaleString('es-GT',{maximumFractionDigits:0}); }
+
+function mkChart(id, cfg){
+  if(charts[id]){ charts[id].destroy(); }
+  var ctx=document.getElementById(id);
+  if(!ctx) return;
+  charts[id]=new Chart(ctx, cfg);
+}
+
+function renderCharts(page){
+  if(page==='resumen'){
+    /* Rutas por país — barra horizontal */
+    mkChart('chartRutasPais',{
+      type:'bar',
+      data:{
+        labels:['🇬🇹 Guatemala','🇸🇻 El Salvador','🇵🇪 Perú'],
+        datasets:[
+          { label:'Pendientes', data:[482,124,74], backgroundColor:[C.gt1,C.sv1,C.pe1], borderRadius:4 },
+          { label:'Vencidas',   data:[22,5,12],    backgroundColor:[C.gt2,C.sv2,C.pe2], borderRadius:4 }
+        ]
+      },
+      options:Object.assign({},BASE_OPTS,{
+        indexAxis:'y',
+        plugins:Object.assign({},BASE_OPTS.plugins,{
+          tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+ctx.raw.toLocaleString('es-GT'); } } }
+        })
+      })
+    });
+    /* YTD efectivo — donut */
+    mkChart('chartEfectivoYTD',{
+      type:'doughnut',
+      data:{
+        labels:['🇬🇹 Guatemala','🇸🇻 El Salvador'],
+        datasets:[{ data:[10479907,11198233], backgroundColor:[C.gt1,C.sv1], borderWidth:0, hoverOffset:8 }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        cutout:'65%',
+        plugins:{
+          legend:{ position:'bottom', labels:{ font:{family:"'Inter',sans-serif",size:11}, color:C.text2, padding:16 } },
+          tooltip:{ callbacks:{ label:function(ctx){ return ctx.label+': '+fmtUSD(ctx.raw); } } }
+        }
+      }
+    });
+    /* Tendencia mensual */
+    mkChart('chartTendencia',{
+      type:'line',
+      data:{
+        labels:D.cashMonths,
+        datasets:[
+          { label:'🇬🇹 Guatemala', data:D.cashGT, borderColor:C.gt1, backgroundColor:C.gt1+'18', fill:true, tension:.35, pointRadius:4, pointBackgroundColor:C.gt1, borderWidth:2 },
+          { label:'🇸🇻 El Salvador', data:D.cashSV, borderColor:C.sv1, backgroundColor:C.sv1+'18', fill:true, tension:.35, pointRadius:4, pointBackgroundColor:C.sv1, borderWidth:2, borderDash:[6,3] }
+        ]
+      },
+      options:Object.assign({},BASE_OPTS,{
+        plugins:Object.assign({},BASE_OPTS.plugins,{
+          tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+fmtUSD(ctx.raw); } } }
+        }),
+        scales:{
+          x:BASE_OPTS.scales.x,
+          y:Object.assign({},BASE_OPTS.scales.y,{ ticks:Object.assign({},BASE_OPTS.scales.y.ticks,{ callback:function(v){ return '$'+Math.round(v/1000)+'K'; } }) })
+        }
+      })
+    });
+  }
+  if(page==='rutas'){
+    mkChart('chartVencidas',{
+      type:'bar',
+      data:{
+        labels:D.rutasMeses,
+        datasets:[
+          { label:'Total Rutas', data:D.rutasTotal, backgroundColor:C.sky, borderRadius:4, yAxisID:'y' },
+          { label:'Vencidas (≥15d)', data:D.rutasVencidas, backgroundColor:C.red, borderRadius:4, yAxisID:'y1' }
+        ]
+      },
+      options:Object.assign({},BASE_OPTS,{
+        scales:{
+          x:BASE_OPTS.scales.x,
+          y:Object.assign({},BASE_OPTS.scales.y,{ position:'left', title:{ display:true, text:'Total', font:{size:10}, color:C.text2 } }),
+          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ font:{family:"'Inter',sans-serif",size:10}, color:C.red }, title:{ display:true, text:'Vencidas', font:{size:10}, color:C.red } }
+        }
+      })
+    });
+  }
+  if(page==='cashtoday'){
+    /* Mensual por país */
+    mkChart('chartCTMensual',{
+      type:'bar',
+      data:{
+        labels:D.cashMonths,
+        datasets:[
+          { label:'🇬🇹 Guatemala', data:D.cashGT, backgroundColor:C.gt1, borderRadius:4 },
+          { label:'🇸🇻 El Salvador', data:D.cashSV, backgroundColor:C.sv1, borderRadius:4 }
+        ]
+      },
+      options:Object.assign({},BASE_OPTS,{
+        plugins:Object.assign({},BASE_OPTS.plugins,{
+          tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+fmtUSD(ctx.raw); } } }
+        }),
+        scales:{
+          x:BASE_OPTS.scales.x,
+          y:Object.assign({},BASE_OPTS.scales.y,{ stacked:false, ticks:Object.assign({},BASE_OPTS.scales.y.ticks,{ callback:function(v){ return '$'+Math.round(v/1000)+'K'; } }) })
+        }
+      })
+    });
+    /* Donut distribución */
+    mkChart('chartCTDonut',{
+      type:'doughnut',
+      data:{
+        labels:['🇬🇹 Guatemala','🇸🇻 El Salvador'],
+        datasets:[{ data:[10479907,11198233], backgroundColor:[C.gt1,C.sv1], borderWidth:0, hoverOffset:8 }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'65%',
+        plugins:{
+          legend:{ position:'bottom', labels:{ font:{family:"'Inter',sans-serif",size:11}, color:C.text2, padding:16 } },
+          tooltip:{ callbacks:{ label:function(ctx){ return ctx.label+': '+fmtUSD(ctx.raw)+' ('+((ctx.raw/21678140)*100).toFixed(1)+'%)'; } } }
+        }
+      }
+    });
+  }
+}
+
+/* ══ INIT ══ */
+(function(){
+  /* Usuario en header */
+  try{
+    var s=JSON.parse(sessionStorage.getItem('pdc_session'));
+    if(!s) s=JSON.parse(sessionStorage.getItem('pdc_user'));
+    if(s&&s.nombre){ document.getElementById('hdrUser').textContent=s.nombre.split(' ').slice(0,2).join(' '); }
+  }catch(e){}
+  /* Tab por URL */
+  try{
+    var tab=new URLSearchParams(window.location.search).get('tab');
+    var valid=['resumen','rutas','cashtoday','paises'];
+    if(tab&&valid.indexOf(tab)>-1){
+      var el=document.querySelector('.ntab[onclick*="\''+tab+'\'"]');
+      goPage(tab,el);
+    } else {
+      renderCharts('resumen');
+    }
+  }catch(e){ renderCharts('resumen'); }
+})();
+</script>
+</body>
+</html>
