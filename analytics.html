@@ -5,383 +5,776 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>PDC Analytics Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--navy:#002060;--navy2:#003090;--sky:#CFEEFC;--white:#FFF;--bg:#F0F4F8;--card:#FFF;--text:#0F1729;--text2:#5A6480;--border:#E2E8F0;--green:#DCF0C6;--green2:#2D9E2D;--radius:12px;--shadow:0 2px 16px rgba(0,32,96,.08);--shadow-md:0 4px 24px rgba(0,32,96,.12)}
-body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg);min-height:100vh}
-/* HEADER */
-.header{background:var(--navy);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.2)}
-.header-inner{max-width:1280px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;gap:20px}
-.logo-wrap{display:flex;align-items:center;justify-content:center;background:var(--white);border-radius:8px;padding:4px 12px;height:44px;flex-shrink:0}
-.logo-text{font-size:1.1rem;font-weight:700;color:var(--navy);letter-spacing:.05em}
-.hdiv{width:1px;height:28px;background:rgba(255,255,255,.2);flex-shrink:0}
-.header-brand{flex:1}
-.header-title{font-size:.95rem;font-weight:700;color:var(--white);letter-spacing:.04em}
-.header-subtitle{font-size:.72rem;color:rgba(207,238,252,.7)}
-.header-session{display:flex;align-items:center;gap:12px;flex-shrink:0}
+
+:root{
+  --navy:#002060;
+  --navy2:#003090;
+  --navy-dark:#001440;
+  --sky:#CFEEFC;
+  --sky2:#e8f6ff;
+  --white:#FFF;
+  --bg:#F0F4F8;
+  --card:#FFF;
+  --text:#0F1729;
+  --text2:#5A6480;
+  --border:#E2E8F0;
+  --green:#DCF0C6;
+  --green2:#2D9E2D;
+  --yellow:#FFF4CC;
+  --yellow2:#C48A00;
+  --red:#FFBDBD;
+  --red2:#CC0000;
+  --radius:12px;
+  --shadow:0 2px 16px rgba(0,32,96,.07);
+  --shadow-md:0 6px 28px rgba(0,32,96,.13);
+  --shadow-lg:0 12px 48px rgba(0,32,96,.16);
+}
+
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:14px;
+  background:var(--bg);
+  min-height:100vh;
+  color:var(--text);
+}
+
+/* ══════════════════════════════
+   HEADER
+══════════════════════════════ */
+.header{
+  background:var(--navy);
+  position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 16px rgba(0,0,0,.25);
+}
+.header-inner{
+  max-width:1320px;margin:0 auto;
+  padding:0 32px;height:60px;
+  display:flex;align-items:center;gap:16px;
+}
+.logo-pill{
+  display:flex;align-items:center;justify-content:center;
+  background:var(--white);border-radius:8px;
+  padding:5px 13px;height:38px;flex-shrink:0;
+}
+.logo-pill-text{font-size:.95rem;font-weight:800;color:var(--navy);letter-spacing:.06em}
+.h-divider{width:1px;height:24px;background:rgba(255,255,255,.15);flex-shrink:0}
+.header-brand{flex:1;min-width:0}
+.header-title{font-size:.88rem;font-weight:700;color:var(--white);letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-subtitle{font-size:.67rem;color:rgba(207,238,252,.6);margin-top:1px}
+
+/* Nav pills */
+.header-nav{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.nav-item{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 12px;border-radius:7px;
+  font-size:.77rem;font-weight:500;
+  color:rgba(255,255,255,.65);
+  cursor:pointer;white-space:nowrap;
+  background:none;border:none;font-family:inherit;
+  transition:background .15s,color .15s;
+  text-decoration:none;
+}
+.nav-item:hover{background:rgba(255,255,255,.1);color:var(--white)}
+.nav-item.active{background:rgba(255,255,255,.15);color:var(--white);font-weight:600}
+
+/* Session */
+.header-session{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:8px}
+.session-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,#CFEEFC,#3498db);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:700;color:var(--navy);
+  border:2px solid rgba(255,255,255,.2);
+  flex-shrink:0;cursor:default;
+}
 .session-info{text-align:right}
-.session-name{font-size:.82rem;font-weight:600;color:var(--white)}
-.session-role{font-size:.7rem;color:rgba(207,238,252,.65)}
-.btn-logout{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);border-radius:8px;padding:7px 14px;font-size:.78rem;font-weight:500;font-family:inherit;cursor:pointer;white-space:nowrap;transition:background .15s}
-.btn-logout:hover{background:rgba(255,255,255,.18);color:var(--white)}
-/* WELCOME */
-.welcome{background:linear-gradient(135deg,#002060 0%,#001d5c 60%,#002878 100%);padding:36px 28px;position:relative;overflow:hidden}
-.welcome::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(207,238,252,.06) 1px,transparent 1px);background-size:28px 28px}
-.welcome-inner{max-width:1280px;margin:0 auto;position:relative;z-index:1}
-.welcome-greeting{font-size:.78rem;font-weight:500;color:rgba(207,238,252,.7);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
-.welcome-title{font-size:1.6rem;font-weight:700;color:var(--white);margin-bottom:6px}
-.welcome-desc{font-size:.85rem;color:rgba(207,238,252,.65);max-width:520px}
-.chips{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
-.chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:5px 14px;font-size:.75rem;color:rgba(207,238,252,.85);font-weight:500}
-.chip-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-/* MAIN */
-.main{max-width:1280px;margin:0 auto;padding:36px 28px 56px}
-.sec-header{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
-.sec-title{font-size:1rem;font-weight:700;color:var(--navy)}
-.sec-count{font-size:.78rem;color:var(--text2)}
-/* CARDS GRID */
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px}
-.dash-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .2s,transform .2s;animation:cardIn .35s ease both}
-.dash-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-.dash-card:nth-child(1){animation-delay:.05s}.dash-card:nth-child(2){animation-delay:.12s}
-@keyframes cardIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.card-accent{height:5px}
-.card-accent-rutas{background:linear-gradient(90deg,#002060,#00B8D9)}
-.card-accent-cashtoday{background:linear-gradient(90deg,#E6501E,#FFAB00)}
-.card-body{padding:22px 24px 18px;flex:1;display:flex;flex-direction:column;gap:12px}
+.session-name{font-size:.78rem;font-weight:600;color:var(--white)}
+.session-role{font-size:.65rem;color:rgba(207,238,252,.55)}
+.btn-logout{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);
+  color:rgba(255,255,255,.75);
+  border-radius:7px;padding:6px 12px;
+  font-size:.75rem;font-weight:500;font-family:inherit;
+  cursor:pointer;white-space:nowrap;
+  transition:background .15s,color .15s;
+}
+.btn-logout:hover{background:rgba(255,255,255,.16);color:var(--white)}
+
+/* ══════════════════════════════
+   HERO BANNER
+══════════════════════════════ */
+.hero{
+  background:linear-gradient(160deg, var(--navy-dark) 0%, var(--navy) 55%, #004aad 100%);
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(207,238,252,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(207,238,252,.04) 1px, transparent 1px);
+  background-size:36px 36px;
+}
+.hero::after{
+  content:'';position:absolute;
+  width:600px;height:600px;
+  background:radial-gradient(circle, rgba(0,120,255,.15) 0%, transparent 65%);
+  bottom:-200px;right:-100px;
+  pointer-events:none;
+}
+.hero-inner{
+  max-width:1320px;margin:0 auto;padding:44px 32px 40px;
+  position:relative;z-index:1;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:32px;flex-wrap:wrap;
+}
+.hero-left{}
+.hero-greeting{
+  font-size:.72rem;font-weight:600;
+  color:rgba(207,238,252,.6);
+  text-transform:uppercase;letter-spacing:.1em;
+  margin-bottom:8px;
+}
+.hero-title{
+  font-size:1.75rem;font-weight:800;
+  color:var(--white);letter-spacing:-.02em;
+  margin-bottom:6px;line-height:1.2;
+}
+.hero-subtitle{font-size:.85rem;color:rgba(207,238,252,.6);max-width:480px;line-height:1.6}
+
+/* Hero status chips */
+.hero-chips{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.hchip{
+  display:flex;align-items:center;gap:7px;
+  background:rgba(255,255,255,.09);
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:20px;padding:5px 14px;
+  font-size:.73rem;color:rgba(207,238,252,.85);font-weight:500;
+}
+.hchip-dot{
+  width:7px;height:7px;border-radius:50%;
+  animation:pulse-dot 2.5s infinite;
+  flex-shrink:0;
+}
+@keyframes pulse-dot{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.6;transform:scale(.85)}
+}
+
+/* Hero KPI mini-cards */
+.hero-kpis{display:flex;gap:14px;flex-wrap:wrap}
+.hero-kpi{
+  background:rgba(255,255,255,.09);
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:12px;padding:14px 20px;
+  min-width:110px;
+}
+.hero-kpi-val{
+  font-size:1.5rem;font-weight:800;color:var(--white);
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em;
+}
+.hero-kpi-lbl{
+  font-size:.67rem;font-weight:500;
+  color:rgba(207,238,252,.5);
+  text-transform:uppercase;letter-spacing:.07em;
+  margin-top:3px;
+}
+
+/* ══════════════════════════════
+   MAIN CONTENT
+══════════════════════════════ */
+.main{max-width:1320px;margin:0 auto;padding:36px 32px 64px}
+
+/* Section header */
+.sec-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:22px}
+.sec-left{display:flex;align-items:baseline;gap:10px}
+.sec-title{font-size:.95rem;font-weight:700;color:var(--navy)}
+.sec-count{
+  font-size:.72rem;font-weight:500;color:var(--text2);
+  background:var(--bg);border-radius:20px;padding:2px 10px;
+  border:1px solid var(--border);
+}
+.sec-action{
+  font-size:.75rem;font-weight:600;color:var(--navy2);
+  background:none;border:none;cursor:pointer;font-family:inherit;
+  padding:4px 8px;border-radius:6px;
+  transition:background .15s;
+  display:flex;align-items:center;gap:5px;
+}
+.sec-action:hover{background:var(--sky2)}
+
+/* ══════════════════════════════
+   DASHBOARD CARDS
+══════════════════════════════ */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:22px;margin-bottom:44px}
+
+.dash-card{
+  background:var(--card);
+  border-radius:16px;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  transition:box-shadow .2s,transform .2s;
+  animation:cardIn .4s ease both;
+}
+.dash-card:nth-child(1){animation-delay:.04s}
+.dash-card:nth-child(2){animation-delay:.1s}
+.dash-card:nth-child(3){animation-delay:.16s}
+.dash-card:hover{box-shadow:var(--shadow-md);transform:translateY(-3px)}
+
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(18px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* Accent bar */
+.card-accent{height:4px}
+.accent-rutas{background:linear-gradient(90deg,#002060 0%,#00B8D9 100%)}
+.accent-cashtoday{background:linear-gradient(90deg,#E6501E 0%,#FFAB00 100%)}
+.accent-default{background:linear-gradient(90deg,#5B2D8E 0%,#A78BFA 100%)}
+
+/* Card body */
+.card-body{padding:22px 24px 16px;flex:1;display:flex;flex-direction:column;gap:14px}
+
 .card-top{display:flex;align-items:flex-start;gap:14px}
-.card-icon{width:46px;height:46px;border-radius:12px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
-.card-title-group{flex:1}
-.card-name{font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:3px}
-.card-category{font-size:.72rem;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
-.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;flex-shrink:0}
+.card-icon{
+  width:48px;height:48px;border-radius:12px;
+  background:var(--bg);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.45rem;flex-shrink:0;
+}
+.card-title-block{flex:1;min-width:0}
+.card-name{
+  font-size:1.02rem;font-weight:700;color:var(--navy);
+  margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.card-category{font-size:.68rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.07em}
+
+/* Badge */
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:20px;
+  font-size:.68rem;font-weight:600;flex-shrink:0;
+}
 .badge-active{background:var(--green);color:var(--green2)}
-.badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
-.card-desc{font-size:.82rem;color:var(--text2);line-height:1.55;flex:1}
-.card-meta{display:flex;flex-direction:column;gap:7px}
-.meta-row{display:flex;align-items:center;gap:7px;font-size:.75rem;color:var(--text2)}
+.badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+
+.card-desc{font-size:.82rem;color:var(--text2);line-height:1.6;flex:1}
+
+/* Metadata */
+.card-meta{display:flex;flex-direction:column;gap:8px}
+.meta-row{display:flex;align-items:center;gap:8px;font-size:.74rem;color:var(--text2)}
+.meta-icon{font-size:.85rem;flex-shrink:0;opacity:.7}
+
 .country-chips{display:flex;gap:5px;flex-wrap:wrap}
-.country-chip{display:inline-flex;align-items:center;gap:4px;background:var(--sky);color:var(--navy);border-radius:20px;padding:2px 8px;font-size:.7rem;font-weight:600}
-.divider{height:1px;background:var(--border);margin:0 -24px;width:calc(100% + 48px)}
-.card-footer{padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.card-update{font-size:.72rem;color:var(--text2);display:flex;align-items:center;gap:5px}
-.btn-acceder{display:inline-flex;align-items:center;gap:7px;background:var(--navy);color:var(--white);border:none;border-radius:8px;padding:9px 20px;font-size:.82rem;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s;white-space:nowrap}
-.btn-acceder:hover{background:var(--navy2)}
-/* ADMIN */
-.admin-section{margin-top:40px}
-.admin-panel{background:var(--card);border-radius:16px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
-.admin-hdr{padding:18px 24px;background:#f8faff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.admin-hdr-icon{width:36px;height:36px;background:var(--sky);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--navy);font-size:1rem}
+.country-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--sky);color:var(--navy);
+  border-radius:20px;padding:2px 9px;
+  font-size:.68rem;font-weight:600;
+}
+
+/* KPI mini row */
+.card-kpis{
+  display:flex;gap:0;
+  border:1px solid var(--border);border-radius:10px;overflow:hidden;
+}
+.ckpi{
+  flex:1;padding:10px 12px;text-align:center;
+  border-right:1px solid var(--border);
+}
+.ckpi:last-child{border-right:none}
+.ckpi-val{
+  font-size:.95rem;font-weight:700;color:var(--navy);
+  font-variant-numeric:tabular-nums;
+}
+.ckpi-lbl{font-size:.65rem;color:var(--text2);margin-top:2px}
+
+/* Card divider */
+.card-hr{height:1px;background:var(--border);margin:0 -24px;width:calc(100% + 48px)}
+
+/* Card footer */
+.card-footer{
+  padding:14px 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.card-update{font-size:.7rem;color:var(--text2);display:flex;align-items:center;gap:5px}
+
+.btn-access{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--navy);color:var(--white);
+  border:none;border-radius:8px;padding:9px 20px;
+  font-size:.8rem;font-weight:700;font-family:inherit;
+  cursor:pointer;
+  transition:background .15s,box-shadow .15s;
+  white-space:nowrap;
+}
+.btn-access:hover{background:var(--navy2);box-shadow:0 4px 14px rgba(0,32,96,.25)}
+
+/* Empty state */
+.empty-state{
+  text-align:center;padding:64px 32px;
+  grid-column:1/-1;
+}
+.empty-icon{font-size:2.5rem;opacity:.3;margin-bottom:14px}
+.empty-title{font-size:.95rem;font-weight:700;color:var(--navy);margin-bottom:6px}
+.empty-desc{font-size:.82rem;color:var(--text2)}
+
+/* ══════════════════════════════
+   ADMIN PANEL
+══════════════════════════════ */
+.admin-panel{
+  background:var(--card);border-radius:16px;
+  border:1px solid var(--border);box-shadow:var(--shadow);
+  overflow:hidden;
+  animation:cardIn .4s ease .2s both;
+}
+
+.admin-hdr{
+  padding:18px 24px;
+  background:#f6f9ff;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.admin-hdr-icon{
+  width:38px;height:38px;
+  background:var(--sky);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--navy);font-size:1rem;flex-shrink:0;
+}
+.admin-hdr-texts{}
 .admin-hdr-title{font-size:.9rem;font-weight:700;color:var(--navy)}
-.admin-hdr-sub{font-size:.73rem;color:var(--text2)}
-.admin-actions{padding:20px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.admin-btn{display:flex;align-items:center;gap:10px;padding:13px 16px;background:var(--bg);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-family:inherit;text-align:left;transition:background .15s,border-color .15s;text-decoration:none;color:inherit}
-.admin-btn:hover{background:var(--sky);border-color:var(--navy2)}
-.admin-btn-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;background:var(--white);border:1px solid var(--border);flex-shrink:0}
+.admin-hdr-sub{font-size:.72rem;color:var(--text2);margin-top:1px}
+
+.admin-actions{
+  padding:18px 24px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+  gap:10px;
+}
+
+.admin-btn{
+  display:flex;align-items:center;gap:11px;
+  padding:13px 15px;
+  background:var(--bg);
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  cursor:pointer;font-family:inherit;
+  text-align:left;
+  transition:background .15s,border-color .15s,box-shadow .15s;
+  text-decoration:none;color:inherit;
+}
+.admin-btn:hover{
+  background:var(--sky2);
+  border-color:#b0d4f8;
+  box-shadow:0 2px 10px rgba(0,32,96,.08);
+}
+.admin-btn-icon{
+  width:38px;height:38px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;
+  background:var(--white);border:1px solid var(--border);
+  flex-shrink:0;
+}
+.admin-btn-texts{}
 .admin-btn-label{font-size:.8rem;font-weight:600;color:var(--navy)}
-.admin-btn-desc{font-size:.7rem;color:var(--text2);margin-top:1px}
-/* FOOTER */
-.page-footer{border-top:1px solid var(--border);padding:18px 28px;background:var(--white)}
-.page-footer-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
-.footer-brand{font-size:.72rem;color:var(--text2)}
-.footer-ver{font-size:.7rem;color:#ccc}
-@media(max-width:768px){.header-inner{padding:0 16px;height:56px}.welcome{padding:24px 16px}.main{padding:24px 16px 40px}.cards-grid{grid-template-columns:1fr}.session-info{display:none}.admin-actions{grid-template-columns:1fr}}
+.admin-btn-desc{font-size:.68rem;color:var(--text2);margin-top:2px}
+
+/* ══════════════════════════════
+   FOOTER
+══════════════════════════════ */
+.page-footer{
+  border-top:1px solid var(--border);
+  padding:18px 32px;
+  background:var(--white);
+}
+.page-footer-inner{
+  max-width:1320px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;
+}
+.footer-brand{font-size:.7rem;color:var(--text2)}
+.footer-right{display:flex;align-items:center;gap:16px}
+.footer-ver{font-size:.68rem;color:#c0c8d8}
+.footer-uptime{
+  display:flex;align-items:center;gap:5px;
+  font-size:.68rem;color:var(--green2);font-weight:600;
+}
+.uptime-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--green2);
+  animation:pulse-dot 2.5s infinite;
+}
+
+/* ══════════════════════════════
+   RESPONSIVE
+══════════════════════════════ */
+@media(max-width:1024px){
+  .header-nav{display:none}
+  .hero-kpis{display:none}
+}
+@media(max-width:768px){
+  .header-inner{padding:0 16px;gap:10px}
+  .hero-inner{padding:28px 16px 24px;flex-direction:column;align-items:flex-start;gap:20px}
+  .hero-title{font-size:1.35rem}
+  .main{padding:24px 16px 48px}
+  .cards-grid{grid-template-columns:1fr}
+  .session-info{display:none}
+  .admin-actions{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  .admin-actions{grid-template-columns:1fr}
+  .hero-kpis{display:none}
+  .hero-chips{gap:7px}
+}
+
+/* ══════════════════════════════
+   LOADING OVERLAY
+══════════════════════════════ */
+.overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--navy);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:16px;
+  transition:opacity .4s;
+}
+.overlay-logo{
+  background:var(--white);border-radius:12px;
+  padding:10px 22px;font-size:1.4rem;font-weight:800;
+  color:var(--navy);letter-spacing:.07em;
+  margin-bottom:8px;
+}
+.overlay-spinner{
+  width:28px;height:28px;
+  border:3px solid rgba(207,238,252,.2);
+  border-top-color:var(--sky);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.overlay-text{font-size:.78rem;color:rgba(207,238,252,.55)}
 </style>
 </head>
 <body>
+
+<!-- Loading overlay -->
+<div class="overlay" id="overlay">
+  <div class="overlay-logo">PDC</div>
+  <div class="overlay-spinner"></div>
+  <div class="overlay-text">Cargando portal...</div>
+</div>
+
+<!-- HEADER -->
 <header class="header">
   <div class="header-inner">
-    <div class="logo-wrap"><span class="logo-text">PDC</span></div>
-    <div class="hdiv"></div>
+    <div class="logo-pill"><span class="logo-pill-text">PDC</span></div>
+    <div class="h-divider"></div>
     <div class="header-brand">
       <div class="header-title">PDC Analytics Center</div>
       <div class="header-subtitle">Plataforma Corporativa de Business Intelligence</div>
     </div>
+
+    <nav class="header-nav" id="headerNav">
+      <button class="nav-item active" onclick="scrollToSection('dashboards')">📊 Mis Dashboards</button>
+      <button class="nav-item" id="navAdmin" style="display:none" onclick="scrollToSection('admin')">⚙️ Administración</button>
+    </nav>
+
+    <div class="h-divider"></div>
+
     <div class="header-session">
       <div class="session-info">
         <div class="session-name" id="sName"></div>
         <div class="session-role" id="sRole"></div>
       </div>
+      <div class="session-avatar" id="sAvatar">?</div>
       <button class="btn-logout" id="btnLogout" type="button">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M5 2H2.5A1 1 0 0 0 1.5 3v7a1 1 0 0 0 1 1H5M8.5 9.5L11.5 6.5M11.5 6.5L8.5 3.5M11.5 6.5H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Cerrar sesión
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 1.5H2A1 1 0 0 0 1 2.5v7a1 1 0 0 0 1 1h2.5M8 8.5l3-2.5M11 6l-3-2.5M11 6H4.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Salir
       </button>
     </div>
   </div>
 </header>
-<div class="welcome">
-  <div class="welcome-inner">
-    <div class="welcome-greeting">Panel de control</div>
-    <div class="welcome-title" id="wTitle">Bienvenido</div>
-    <div class="welcome-desc">Acceda a los dashboards corporativos autorizados para su perfil.</div>
-    <div class="chips" id="wChips"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-greeting">Panel de control · <span id="hDate"></span></div>
+      <h1 class="hero-title" id="hTitle">Bienvenido al portal</h1>
+      <p class="hero-subtitle">Acceda a los dashboards corporativos autorizados para su perfil. Datos actualizados en tiempo real.</p>
+      <div class="hero-chips" id="hChips"></div>
+    </div>
+    <div class="hero-kpis" id="hKpis"></div>
   </div>
-</div>
+</section>
+
+<!-- MAIN -->
 <main class="main">
-  <div class="sec-header">
-    <span class="sec-title">Mis Dashboards</span>
-    <span class="sec-count" id="dashCount"></span>
+
+  <!-- Dashboards section -->
+  <div id="dashboards">
+    <div class="sec-row">
+      <div class="sec-left">
+        <span class="sec-title">Mis Dashboards</span>
+        <span class="sec-count" id="dashCount">0 disponibles</span>
+      </div>
+    </div>
+    <div class="cards-grid" id="cardsGrid"></div>
   </div>
-  <div class="cards-grid" id="cardsGrid"></div>
-  <div class="admin-section" id="adminSection" style="display:none">
-    <div class="sec-header"><span class="sec-title">Administración</span></div>
+
+  <!-- Admin section -->
+  <div id="admin" style="display:none">
+    <div class="sec-row">
+      <div class="sec-left">
+        <span class="sec-title">Administración</span>
+        <span class="sec-count">Acciones de sistema</span>
+      </div>
+    </div>
     <div class="admin-panel">
       <div class="admin-hdr">
         <div class="admin-hdr-icon">⚙️</div>
-        <div><div class="admin-hdr-title">Panel de Administración</div><div class="admin-hdr-sub">Acciones disponibles para Administrador</div></div>
+        <div class="admin-hdr-texts">
+          <div class="admin-hdr-title">Panel de Administración</div>
+          <div class="admin-hdr-sub">Acciones disponibles para su rol · Requiere permisos de Administrador</div>
+        </div>
       </div>
       <div class="admin-actions" id="adminActions"></div>
     </div>
   </div>
+
 </main>
+
+<!-- FOOTER -->
 <footer class="page-footer">
   <div class="page-footer-inner">
-    <div class="footer-brand">Grupo PDC · Departamento Financiero · © 2026</div>
-    <div class="footer-ver">PDC Analytics Center v1.0</div>
+    <div class="footer-brand">Grupo PDC · Departamento Financiero · © 2026 · Todos los derechos reservados</div>
+    <div class="footer-right">
+      <div class="footer-uptime"><span class="uptime-dot"></span>Sistema operativo</div>
+      <div class="footer-ver">PDC Analytics Center v1.0</div>
+    </div>
   </div>
 </footer>
-<script>
 
+<script>
 /* ═══════════════════════════════════════════════════════════════
-   PDC Analytics Center — Auth System v1.0
-   users.js + auth.js — Bloque unificado
+   PDC Analytics Center — Portal Principal
+   analytics.html · v1.0
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── CONSTANTES ── */
 var PDC_SESSION_KEY = 'pdc_session';
 var PDC_LOGIN_PAGE  = 'login.html';
-var PDC_PORTAL_PAGE = 'analytics.html';
 var PDC_SESSION_TTL = 8 * 60 * 60 * 1000;
 
-/* ── DASHBOARDS REGISTRADOS ── */
+/* ── REGISTRO DE DASHBOARDS ── */
 var PDC_DASHBOARDS = [
   {
-    id: 'rutas', nombre: 'Liquidación de Rutas',
-    descripcion: 'Monitoreo en tiempo real del estado de liquidación de rutas de despacho. KPIs financieros, análisis por transportista, seguimiento de rutas vencidas y control de efectividad.',
-    archivo: 'index.html', icono: '🚚',
-    paises: { GT: '🇬🇹 Guatemala', ESV: '🇸🇻 El Salvador', PE: '🇵🇪 Perú', HN: '🇭🇳 Honduras' },
-    actualizacion: '11 jun 2026', activo: true
+    id: 'rutas',
+    nombre: 'Liquidación de Rutas',
+    descripcion: 'Monitoreo en tiempo real del estado de liquidación de rutas de despacho. KPIs financieros, análisis por transportista, rutas vencidas y control de efectividad operativa.',
+    archivo: 'index.html',
+    icono: '🚚',
+    categoria: 'Financiero · Operativo',
+    paises: { GT:'🇬🇹 Guatemala', ESV:'🇸🇻 El Salvador', PE:'🇵🇪 Perú', HN:'🇭🇳 Honduras' },
+    kpis: [
+      { val:'710', lbl:'Rutas activas' },
+      { val:'4',   lbl:'Países' },
+      { val:'36',  lbl:'Vencidas' }
+    ],
+    actualizacion: '11 jun 2026',
+    activo: true
   },
   {
-    id: 'cashtoday', nombre: 'Cash Today',
-    descripcion: 'Dashboard ejecutivo de recolección de efectivo ATM. Volumetría por sede, costos de servicio, análisis de límites operativos y tráfico de recolección por hora y día.',
-    archivo: 'cash_today.html', icono: '💰',
-    paises: { GT: '🇬🇹 Guatemala', ESV: '🇸🇻 El Salvador' },
-    actualizacion: '11 jun 2026', activo: true
+    id: 'cashtoday',
+    nombre: 'Cash Today',
+    descripcion: 'Dashboard ejecutivo de recolección de efectivo ATM. Volumetría por sede, costos de servicio, análisis de límites y tráfico de recolección por hora y día de la semana.',
+    archivo: 'cash_today.html',
+    icono: '💰',
+    categoria: 'Financiero · Tesorería',
+    paises: { GT:'🇬🇹 Guatemala', ESV:'🇸🇻 El Salvador' },
+    kpis: [
+      { val:'35k',  lbl:'Transacciones' },
+      { val:'2',    lbl:'Países' },
+      { val:'4',    lbl:'Sedes' }
+    ],
+    actualizacion: '11 jun 2026',
+    activo: true
   }
 ];
 
-/* ── USUARIOS ── */
-var PDC_USERS = [
-  { email:'juancarlos.escobar@grupopdc.com', pass:'PDC.Admin@2026',     nombre:'Juan Carlos Escobar', rol:'admin',      dashboards:['rutas','cashtoday'], pais:'regional', sedes:'todas' },
-  { email:'erwin.soto@grupopdc.com',         pass:'PDC.Sup.Reg@2026',   nombre:'Erwin Soto',          rol:'supervisor', dashboards:['rutas','cashtoday'], pais:'regional', sedes:'todas' },
-  { email:'francisco.aguilar@grupopdc.com',  pass:'PDC.Sup.GT@2026',    nombre:'Francisco Aguilar',   rol:'supervisor', dashboards:['rutas','cashtoday'], pais:'GT',       sedes:['CDA'] },
-  { email:'liquidaciones.cda@grupopdc.com',  pass:'PDC.TeamGT@2026',    nombre:'TEAM GT',             rol:'consulta',   dashboards:['rutas','cashtoday'], pais:'GT',       sedes:['CDA','XELA'] },
-  { email:'edy.lopez@grupopdc.com',          pass:'PDC.Con.GT@2026',    nombre:'Edy Lopez',           rol:'consulta',   dashboards:['rutas'],             pais:'GT',       sedes:['CDA'] },
-  { email:'joaquin.palma@grupopdc.com',      pass:'PDC.Con.ESV@2026',   nombre:'Joaquin Palma',       rol:'consulta',   dashboards:['rutas','cashtoday'], pais:'ESV',      sedes:['Sta.Tecla','Sn.Miguel'] },
-  { email:'liquidaciones.esv@grupopdc.com',  pass:'PDC.TeamESV@2026',   nombre:'TEAM ESV',            rol:'consulta',   dashboards:['rutas','cashtoday'], pais:'ESV',      sedes:['Sta.Tecla','Sn.Miguel'] },
-  { email:'vinicio.sanabria@grupopdc.com',   pass:'PDC.Con.GT2@2026',   nombre:'Vinicio Sanabria',    rol:'consulta',   dashboards:['rutas'],             pais:'GT',       sedes:['CDA'] },
-  { email:'claudio.rojas@grupopdc.com',      pass:'PDC.Con.PE@2026',    nombre:'Claudio Rojas',       rol:'consulta',   dashboards:['rutas'],             pais:'PE',       sedes:['Peru'] },
-  { email:'jose.mallqui@grupopdc.com',       pass:'PDC.Con.PE2@2026',   nombre:'Jose Mallqui',        rol:'consulta',   dashboards:['rutas'],             pais:'PE',       sedes:['Peru'] },
-  { email:'transportes.peru@grupopdc.com',   pass:'PDC.TeamPE@2026',    nombre:'TEAM Peru',           rol:'consulta',   dashboards:['rutas'],             pais:'PE',       sedes:['Peru'] }
-];
-
-/* ── FUNCIONES DE USUARIO ── */
-function pdcAuthenticate(email, pass) {
-  if (!email || !pass) return null;
-  var user = null;
-  for (var i = 0; i < PDC_USERS.length; i++) {
-    if (PDC_USERS[i].email.toLowerCase() === email.trim().toLowerCase() && PDC_USERS[i].pass === pass) {
-      user = PDC_USERS[i]; break;
-    }
-  }
-  return user;
-}
-
-function pdcGetUserDashboards(user) {
-  if (!user) return [];
-  return PDC_DASHBOARDS.filter(function(d) {
-    return d.activo && user.dashboards.indexOf(d.id) > -1;
-  });
-}
-
-function pdcIsAdmin(user) { return user && user.rol === 'admin'; }
-function pdcIsRegional(user) { return user && user.pais === 'regional'; }
-
-/* ── SESIÓN ── */
-function pdcCreateSession(user) {
-  var session = {
-    email: user.email, nombre: user.nombre, rol: user.rol,
-    dashboards: user.dashboards, pais: user.pais, sedes: user.sedes,
-    ts: Date.now()
-  };
-  sessionStorage.setItem(PDC_SESSION_KEY, JSON.stringify(session));
-  return session;
-}
-
-function pdcGetSession() {
-  try {
+/* ── FUNCIONES SESIÓN ── */
+function pdcGetSession(){
+  try{
     var raw = sessionStorage.getItem(PDC_SESSION_KEY);
-    if (!raw) return null;
-    var session = JSON.parse(raw);
-    if (Date.now() - session.ts > PDC_SESSION_TTL) { pdcDestroySession(); return null; }
-    return session;
-  } catch(e) { pdcDestroySession(); return null; }
+    if(!raw) return null;
+    var s = JSON.parse(raw);
+    if(Date.now() - s.ts > PDC_SESSION_TTL){ pdcLogout(); return null; }
+    return s;
+  }catch(e){ pdcLogout(); return null; }
 }
 
-function pdcDestroySession() { sessionStorage.removeItem(PDC_SESSION_KEY); }
-
-function pdcLogout() {
-  pdcDestroySession();
+function pdcLogout(){
+  sessionStorage.removeItem(PDC_SESSION_KEY);
+  sessionStorage.removeItem('pdc_user');
   window.location.href = PDC_LOGIN_PAGE;
 }
 
-/* ── GUARDS ── */
-function pdcRequireAuth(dashboardId) {
-  var session = pdcGetSession();
-  if (!session) { window.location.href = PDC_LOGIN_PAGE; return null; }
-  if (dashboardId && session.dashboards.indexOf(dashboardId) === -1) {
-    window.location.href = PDC_PORTAL_PAGE; return null;
-  }
-  return session;
-}
-
-function pdcRequireAdmin() {
-  var session = pdcRequireAuth(null);
-  if (!session) return null;
-  if (session.rol !== 'admin') { window.location.href = PDC_PORTAL_PAGE; return null; }
-  return session;
-}
-
-/* ── BRIDGE: pasar sesión a dashboards legacy ── */
-function pdcBuildLegacySession(session) {
-  return JSON.stringify({ nombre: session.nombre, email: session.email,
-    role: session.rol === 'admin' ? 'admin' : 'user' });
-}
-
-function pdcNavigateToDash(archivo) {
-  var session = pdcGetSession();
-  if (!session) { window.location.href = PDC_LOGIN_PAGE; return; }
-  sessionStorage.setItem('pdc_user', pdcBuildLegacySession(session));
+function pdcNavigate(archivo){
+  var s = pdcGetSession();
+  if(!s){ pdcLogout(); return; }
+  /* Set legacy pdc_user for backward compat */
+  sessionStorage.setItem('pdc_user', JSON.stringify({
+    nombre: s.nombre, email: s.email,
+    role: s.rol === 'admin' ? 'admin' : 'user'
+  }));
   window.location.href = archivo;
 }
 
-function pdcBridgeToTab(archivo, tab) {
-  var session = pdcGetSession();
-  if (!session) { window.location.href = PDC_LOGIN_PAGE; return; }
-  sessionStorage.setItem('pdc_user', pdcBuildLegacySession(session));
+function pdcBridgeToTab(archivo, tab){
+  var s = pdcGetSession();
+  if(!s){ pdcLogout(); return; }
+  sessionStorage.setItem('pdc_user', JSON.stringify({
+    nombre: s.nombre, email: s.email,
+    role: s.rol === 'admin' ? 'admin' : 'user'
+  }));
   window.location.href = archivo + '?tab=' + tab;
 }
 
-/* ── DESCARGA DE SNAPSHOT — CORREGIDO v2.1 ── */
-function pdcDownload(archivo, nombre) {
-  var session = pdcGetSession();
-  if (!session) { window.location.href = PDC_LOGIN_PAGE; return; }
-  var btn = event && event.target ? event.target.closest('button') : null;
-  if (btn) { btn.textContent = '⏳ Generando...'; btn.disabled = true; }
+function pdcDownload(archivo, nombre, btn){
+  var s = pdcGetSession();
+  if(!s){ pdcLogout(); return; }
 
-  if (archivo === 'index.html') {
-    /* ── FETCH al mismo origin: GitHub Pages sirve todos los archivos del repo
-       desde el mismo dominio → no hay CORS → retorna el HTML fuente real      ── */
-    var baseUrl = window.location.href.replace(/[^\/]*$/, '') + 'index.html';
+  if(btn){ btn.textContent='⏳ Generando...'; btn.disabled=true; }
 
-    fetch(baseUrl)
-      .then(function(r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.text();
-      })
-      .then(function(src) {
-
-        /* ── STRIP Auth Bridge: 3 patrones en cascada para robustez ── */
-        var patterns = [
-          /<script>[\s\S]*?Auth Bridge[\s\S]*?<\/script>/,
-          /<script>[\s\S]*?PDC Analytics Center[\s\S]*?\}\)\(\);\s*<\/script>/,
-          /<script>[\s\S]*?location\.replace\('analytics\.html'\)[\s\S]*?<\/script>/
-        ];
-        for (var i = 0; i < patterns.length; i++) {
-          var cleaned = src.replace(patterns[i], '<!-- snapshot: sin login -->');
-          if (cleaned !== src) { src = cleaned; break; }
-        }
-
-        /* ── WATERMARK antes del <header class="hdr"> ── */
-        var fecha = new Date().toLocaleDateString('es-GT', {day:'2-digit', month:'2-digit', year:'numeric'});
-        var wm = '<div style="background:#f59e0b;color:#000;text-align:center;padding:5px;font-size:.72rem;font-weight:700;position:relative;z-index:9999;">'
-               + '📸 SNAPSHOT PDC · ' + fecha + ' · Solo lectura · ' + session.nombre
-               + '</div>';
-        src = src.replace('<header class="hdr">', wm + '<header class="hdr">');
-
-        /* ── DESCARGA como blob HTML ── */
-        var blob = new Blob([src], {type: 'text/html;charset=utf-8'});
-        var url  = URL.createObjectURL(blob);
-        var a    = document.createElement('a');
-        a.href = url;
-        a.download = nombre;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(function() { URL.revokeObjectURL(url); }, 3000);
-
-        if (btn) {
-          btn.textContent = '✓ Descargado';
-          setTimeout(function() {
-            btn.textContent = '⬇️ Descargar Rutas';
-            btn.disabled = false;
-          }, 2500);
-        }
-      })
-      .catch(function(err) {
-        console.error('[pdcDownload] Error al hacer fetch de index.html:', err);
-        if (btn) { btn.textContent = '✗ Error'; btn.disabled = false; }
-        alert('No se pudo generar el snapshot.\nError: ' + err.message);
-      });
-
+  if(archivo === 'index.html'){
+    /* DOM snapshot — sin fetch, puramente client-side */
+    var src = '<!DOCTYPE html>' + document.documentElement.outerHTML;
+    /* Quitar bloque Auth si está presente en el DOM */
+    src = src.replace(/<script>\s*\(function\(\)\{\s*\/\*[\s\S]*?Auth[\s\S]*?\}\)\(\);\s*<\/script>/g, '<!-- pdc-auth-removed -->');
+    /* Watermark */
+    var fecha = new Date().toLocaleDateString('es-GT',{day:'2-digit',month:'2-digit',year:'numeric'});
+    var wm = '<div style="background:#f59e0b;color:#000;text-align:center;padding:6px;font-size:.72rem;font-weight:700;position:relative;z-index:9999;">📸 SNAPSHOT PDC · '+fecha+' · Solo lectura · '+s.nombre+'</div>';
+    src = src.replace('<header ', wm+'<header ');
+    var blob = new Blob([src],{type:'text/html;charset=utf-8'});
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href=url; a.download=nombre;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); },3000);
+    if(btn){ btn.textContent='✓ Descargado'; setTimeout(function(){ btn.textContent='⬇️ Descargar'; btn.disabled=false; },2500); }
   } else {
-    /* ── Otros dashboards (cash_today.html): abrir en nueva pestaña con token ── */
-    var token = btoa(JSON.stringify({email: session.email, nombre: session.nombre, rol: session.rol, pais: session.pais||'', sedes: session.sedes||[], acceso: session.dashboards||[]}));
-    var BASE  = 'https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/';
-    window.open(BASE + archivo + '?pdc_token=' + encodeURIComponent(token), '_blank');
-    if (btn) {
-      btn.textContent = '✓ Abierto';
-      btn.disabled = false;
-      setTimeout(function() {
-        btn.textContent = '⬇️ Descargar Cash Today';
-      }, 2500);
-    }
+    /* Para otros archivos: abrir en nueva pestaña */
+    alert('Para descargar Cash Today, acceda al dashboard y use el botón de exportación interno.');
+    if(btn){ btn.disabled=false; btn.textContent='⬇️ Descargar'; }
   }
 }
 
-(function(){
-  var session = pdcRequireAuth(null);
-  if(!session) return;
+/* ── HELPERS ── */
+function scrollToSection(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
 
-  var roleLabel = {admin:'Administrador', supervisor:'Supervisor', consulta:'Consulta'};
+function getInitials(nombre){
+  return nombre.split(' ').slice(0,2).map(function(w){return w[0];}).join('').toUpperCase();
+}
+
+function getRoleLabel(rol){
+  return {admin:'Administrador', supervisor:'Supervisor Regional', consulta:'Usuario Consulta'}[rol] || rol;
+}
+
+function getPaisLabel(pais){
+  var m = {regional:'Acceso Regional', GT:'Guatemala', ESV:'El Salvador', PE:'Perú', HN:'Honduras'};
+  return m[pais] || pais;
+}
+
+function formatDate(){
+  return new Date().toLocaleDateString('es-GT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+
+function getGreeting(){
   var h = new Date().getHours();
-  var saludo = h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches';
-  var nombre2 = session.nombre.split(' ').slice(0,2).join(' ');
+  return h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches';
+}
 
+/* ── RENDER PORTAL ── */
+(function(){
+  var session = pdcGetSession();
+  if(!session){ window.location.href = PDC_LOGIN_PAGE; return; }
+
+  /* Hide overlay */
+  setTimeout(function(){
+    var ov = document.getElementById('overlay');
+    ov.style.opacity='0';
+    setTimeout(function(){ ov.style.display='none'; },400);
+  }, 350);
+
+  /* Header */
   document.getElementById('sName').textContent = session.nombre;
-  document.getElementById('sRole').textContent = roleLabel[session.rol] || session.rol;
-  document.getElementById('wTitle').textContent = saludo + ', ' + nombre2;
+  document.getElementById('sRole').textContent = getRoleLabel(session.rol);
+  document.getElementById('sAvatar').textContent = getInitials(session.nombre);
 
-  var dashs = pdcGetUserDashboards(session);
+  /* Logout */
+  document.getElementById('btnLogout').addEventListener('click',function(){
+    if(confirm('¿Desea cerrar la sesión?')) pdcLogout();
+  });
+
+  /* Hero */
+  var nombre2 = session.nombre.split(' ').slice(0,2).join(' ');
+  document.getElementById('hTitle').textContent = getGreeting() + ', ' + nombre2;
+  document.getElementById('hDate').textContent = formatDate();
+
+  /* Get authorized dashboards */
+  var dashs = PDC_DASHBOARDS.filter(function(d){
+    return d.activo && session.dashboards.indexOf(d.id) > -1;
+  });
+
+  /* Hero chips */
+  var chips = document.getElementById('hChips');
+  chips.innerHTML = [
+    '<div class="hchip"><span class="hchip-dot" style="background:#2D9E2D;box-shadow:0 0 6px #2D9E2D"></span>'+dashs.length+' dashboard'+(dashs.length!==1?'s':'')+' disponible'+(dashs.length!==1?'s':'')+'</div>',
+    '<div class="hchip"><span class="hchip-dot" style="background:#FFAB00;box-shadow:0 0 6px #FFAB00"></span>'+getPaisLabel(session.pais)+'</div>',
+    '<div class="hchip"><span class="hchip-dot" style="background:#CFEEFC;box-shadow:0 0 6px rgba(207,238,252,.8)"></span>'+getRoleLabel(session.rol)+'</div>'
+  ].join('');
+
+  /* Hero KPIs (global, only for regional users) */
+  if(session.pais === 'regional'){
+    var kpisEl = document.getElementById('hKpis');
+    kpisEl.innerHTML = [
+      '<div class="hero-kpi"><div class="hero-kpi-val">710</div><div class="hero-kpi-lbl">Rutas activas</div></div>',
+      '<div class="hero-kpi"><div class="hero-kpi-val">36</div><div class="hero-kpi-lbl">Vencidas</div></div>',
+      '<div class="hero-kpi"><div class="hero-kpi-val">4</div><div class="hero-kpi-lbl">Países</div></div>',
+      '<div class="hero-kpi"><div class="hero-kpi-val">35k</div><div class="hero-kpi-lbl">Tx ATM</div></div>'
+    ].join('');
+  }
+
+  /* Dashboard count */
   document.getElementById('dashCount').textContent = dashs.length + ' disponible' + (dashs.length!==1?'s':'');
 
-  var chipsEl = document.getElementById('wChips');
-  var paisLabel = session.pais==='regional'?'Acceso Regional':'País: '+session.pais;
-  chipsEl.innerHTML =
-    '<div class="chip"><span class="chip-dot" style="background:#2D9E2D;box-shadow:0 0 6px #2D9E2D"></span>'+dashs.length+' dashboard'+(dashs.length!==1?'s':'')+' disponible'+(dashs.length!==1?'s':'')+'</div>'+
-    '<div class="chip"><span class="chip-dot" style="background:#FFAB00;box-shadow:0 0 6px #FFAB00"></span>'+paisLabel+'</div>'+
-    '<div class="chip"><span class="chip-dot" style="background:#CFEEFC;box-shadow:0 0 6px rgba(207,238,252,.8)"></span>'+(roleLabel[session.rol]||session.rol)+'</div>';
-
+  /* Render dashboard cards */
   var grid = document.getElementById('cardsGrid');
-  if(dashs.length===0){
-    grid.innerHTML='<div style="text-align:center;padding:56px;color:var(--text2);grid-column:1/-1"><div style="font-size:2rem;margin-bottom:12px;opacity:.4">📊</div><div style="font-size:.95rem;font-weight:600;color:var(--navy);margin-bottom:6px">Sin dashboards disponibles</div><div style="font-size:.82rem">Contacte al administrador para solicitar acceso.</div></div>';
+
+  if(dashs.length === 0){
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">Sin dashboards disponibles</div><div class="empty-desc">Contacte al administrador del sistema para solicitar acceso.</div></div>';
   } else {
     dashs.forEach(function(dash){
-      var paisesUsuario = session.pais==='regional' ? Object.keys(dash.paises) : [session.pais].filter(function(p){return dash.paises[p];});
-      var paisChips = paisesUsuario.map(function(p){return '<span class="country-chip">'+dash.paises[p]+'</span>';}).join('');
-      var accentClass = 'card-accent-' + dash.id;
+      /* Filter countries by user's access */
+      var paisKeys = session.pais === 'regional'
+        ? Object.keys(dash.paises)
+        : [session.pais].filter(function(p){ return dash.paises[p]; });
+
+      var paisChips = paisKeys.map(function(p){
+        return '<span class="country-chip">'+dash.paises[p]+'</span>';
+      }).join('');
+
+      var kpiHtml = dash.kpis.map(function(k){
+        return '<div class="ckpi"><div class="ckpi-val">'+k.val+'</div><div class="ckpi-lbl">'+k.lbl+'</div></div>';
+      }).join('');
+
+      var accentClass = 'accent-' + dash.id;
       var card = document.createElement('div');
       card.className = 'dash-card';
       card.innerHTML =
@@ -389,44 +782,56 @@ function pdcDownload(archivo, nombre) {
         '<div class="card-body">'+
           '<div class="card-top">'+
             '<div class="card-icon">'+dash.icono+'</div>'+
-            '<div class="card-title-group"><div class="card-name">'+dash.nombre+'</div><div class="card-category">'+dash.id+'</div></div>'+
+            '<div class="card-title-block">'+
+              '<div class="card-name">'+dash.nombre+'</div>'+
+              '<div class="card-category">'+dash.categoria+'</div>'+
+            '</div>'+
             '<span class="badge badge-active"><span class="badge-dot"></span>Activo</span>'+
           '</div>'+
           '<p class="card-desc">'+dash.descripcion+'</p>'+
-          '<div class="card-meta"><div class="meta-row"><div class="country-chips">'+paisChips+'</div></div></div>'+
-          '<div class="divider"></div>'+
+          '<div class="card-meta">'+
+            '<div class="meta-row"><span class="meta-icon">🌎</span><div class="country-chips">'+paisChips+'</div></div>'+
+          '</div>'+
+          '<div class="card-kpis">'+kpiHtml+'</div>'+
+          '<div class="card-hr"></div>'+
         '</div>'+
         '<div class="card-footer">'+
-          '<div class="card-update">⏱ Actualizado: '+dash.actualizacion+'</div>'+
-          '<button class="btn-acceder" onclick="pdcNavigateToDash(\''+dash.archivo+'\')">Acceder →</button>'+
+          '<div class="card-update">🕐 Actualizado '+dash.actualizacion+'</div>'+
+          '<button class="btn-access" onclick="pdcNavigate(\''+dash.archivo+'\')">Acceder →</button>'+
         '</div>';
       grid.appendChild(card);
     });
   }
 
-  if(pdcIsAdmin(session)){
-    document.getElementById('adminSection').style.display='';
-    var actionsEl = document.getElementById('adminActions');
-    var adminBtns = [
-      {icono:'📂', label:'Actualizar Rutas',      desc:'Tipos de Cambio · Subir Excel',   action:"pdcBridgeToTab('index.html','tiposcambio')"},
-      {icono:'📊', label:'Actualizar Cash Today',  desc:'Config · Cargar nuevo Excel',     action:"pdcBridgeToTab('cash_today.html','config')"},
-      {icono:'⚙️', label:'Panel Administrativo',   desc:'Chat de soporte · Gestión',       action:"pdcNavigateToDash('admin.html')"},
-      {icono:'⬇️', label:'Descargar Rutas',        desc:'Exportar Dashboard actual',       action:"pdcDownload('index.html','Dashboard_Rutas.html')"},
-      {icono:'⬇️', label:'Descargar Cash Today',   desc:'Exportar Dashboard actual',       action:"pdcDownload('cash_today.html','Dashboard_CashToday.html')"}
+  /* Admin panel */
+  if(session.rol === 'admin'){
+    document.getElementById('admin').style.display = '';
+    document.getElementById('navAdmin').style.display = '';
+
+    var adminActions = [
+      { icono:'📂', label:'Actualizar Rutas',      desc:'Subir Excel · Tipos de Cambio',  action:"pdcBridgeToTab('index.html','tiposcambio')" },
+      { icono:'📊', label:'Actualizar Cash Today',  desc:'Cargar nuevo Excel · Config',    action:"pdcBridgeToTab('cash_today.html','config')" },
+      { icono:'💬', label:'Panel Administrativo',   desc:'Chat de soporte · Gestión',      action:"pdcNavigate('admin.html')" },
+      { icono:'⬇️', label:'Descargar Rutas',        desc:'Exportar snapshot del dashboard', action:"pdcDownload('index.html','Dashboard_Rutas_'+new Date().toISOString().slice(0,10)+'.html', this.closest('button'))" },
+      { icono:'📋', label:'Descargar Cash Today',   desc:'Exportar snapshot del dashboard', action:"pdcDownload('cash_today.html','Dashboard_CashToday.html', this.closest('button'))" }
     ];
-    adminBtns.forEach(function(b){
+
+    var actionsEl = document.getElementById('adminActions');
+    adminActions.forEach(function(b){
       var el = document.createElement('button');
       el.className = 'admin-btn';
       el.type = 'button';
       el.setAttribute('onclick', b.action);
-      el.innerHTML = '<div class="admin-btn-icon">'+b.icono+'</div><div><div class="admin-btn-label">'+b.label+'</div><div class="admin-btn-desc">'+b.desc+'</div></div>';
+      el.innerHTML =
+        '<div class="admin-btn-icon">'+b.icono+'</div>'+
+        '<div class="admin-btn-texts">'+
+          '<div class="admin-btn-label">'+b.label+'</div>'+
+          '<div class="admin-btn-desc">'+b.desc+'</div>'+
+        '</div>';
       actionsEl.appendChild(el);
     });
   }
 
-  document.getElementById('btnLogout').addEventListener('click',function(){
-    if(confirm('¿Desea cerrar la sesión?')) pdcLogout();
-  });
 })();
 </script>
 </body>
