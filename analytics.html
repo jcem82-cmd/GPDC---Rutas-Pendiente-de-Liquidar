@@ -624,6 +624,22 @@ var PDC_DASHBOARDS = [
     ],
     actualizacion: '11 jun 2026',
     activo: true
+  },
+  {
+    id: 'regional',
+    nombre: 'Consolidado Regional',
+    descripcion: 'Vista ejecutiva multi-país. KPIs consolidados de liquidación de rutas y recolección de efectivo ATM para todas las operaciones del Grupo PDC: Guatemala, El Salvador, Perú y Honduras.',
+    archivo: 'regional/index.html',
+    icono: '🌎',
+    categoria: 'Ejecutivo · Regional',
+    paises: { GT:'🇬🇹 Guatemala', ESV:'🇸🇻 El Salvador', PE:'🇵🇪 Perú', HN:'🇭🇳 Honduras' },
+    kpis: [
+      { val:'680', lbl:'Rutas Pendientes' },
+      { val:'4', lbl:'Países' },
+      { val:'21.7M', lbl:'USD YTD' }
+    ],
+    actualizacion: '17 jun 2026',
+    activo: true
   }
 ];
 
@@ -919,7 +935,8 @@ function pdcRenewSession(){
       { icono:'📊', label:'Actualizar Cash Today',  desc:'Cargar nuevo Excel · Config',    action:"pdcBridgeToTab('cash_today.html','config')" },
       { icono:'💬', label:'Panel Administrativo',   desc:'Chat de soporte · Gestión',      action:"pdcNavigate('admin.html')" },
       { icono:'⬇️', label:'Descargar Rutas',        desc:'Exportar snapshot del dashboard', action:"pdcDownload('index.html','Dashboard_Rutas_'+new Date().toISOString().slice(0,10)+'.html', this.closest('button'))" },
-      { icono:'📋', label:'Descargar Cash Today',   desc:'Exportar snapshot del dashboard', action:"pdcDownload('cash_today.html','Dashboard_CashToday.html', this.closest('button'))" }
+      { icono:'📋', label:'Descargar Cash Today',   desc:'Exportar snapshot del dashboard', action:"pdcDownload('cash_today.html','Dashboard_CashToday.html', this.closest('button'))" },
+      { icono:'🌎', label:'Consolidado Regional', desc:'KPIs multi-país · 4 países', action:"pdcNavigateToDash('regional/index.html')" }
     ];
 
     var actionsEl = document.getElementById('adminActions');
