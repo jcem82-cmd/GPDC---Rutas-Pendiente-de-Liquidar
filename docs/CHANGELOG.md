@@ -2,86 +2,48 @@
 
 ---
 
-## [v1.0] · 20/06/2026 — PDC Analytics Center · LANZAMIENTO ✅
+## [v1.1] — 21/06/2026 · Fase 1 completa ✅
 
-### Alcance
-Primera versión de la plataforma corporativa unificada de Business Intelligence. Implementa el portal de acceso centralizado con autenticación única para todos los dashboards del Grupo PDC.
+### `analytics.html`
+| # | Cambio | Detalle |
+|---|---|---|
+| 1 | Regex unificado Auth Bridge | Cubre `index.html` (patrón IIFE) y `cash_today.html` (patrón comentario) en una sola expresión |
+| 2 | Toast de descarga | Notificación visual esquina inferior derecha · auto-dismiss 4.5s · reemplaza `alert()` |
+| 3 | Session expiry watcher | Corre cada 60s · banner amarillo + toast a 15 min del TTL · `pdcRenewSession()` extiende sin re-login |
 
-### Nuevos archivos
+### `cash_today.html`
+| # | Cambio | Detalle |
+|---|---|---|
+| 4 | `?tab=` URL param | `pdcBridgeToTab('cash_today.html','config')` navega directo al módulo config |
+| 5 | Nombre de usuario en header | Se popula desde `pdc_session` o `pdc_user` al cargar |
 
-| Archivo | Descripción |
+### `login.html`
+| # | Cambio | Detalle |
+|---|---|---|
+| 6 | Bloqueo por 3 intentos | Countdown 30s visible en botón · se resetea al lograr acceso exitoso |
+| 7 | Recordar email | Checkbox persiste en `localStorage` · se carga automáticamente al abrir login |
+
+### Commits
+| Commit | Descripción |
 |---|---|
-| `login.html` | Login corporativo único — diseño split-screen, 11 usuarios, 3 roles |
-| `analytics.html` | Portal Hub — tarjetas de dashboards, panel de administración, navegación |
-
-### Funcionalidades implementadas
-
-#### `login.html`
-- Diseño split-screen: panel izquierdo branding PDC + panel derecho formulario
-- Grid pattern y orbs de glow sobre fondo `--navy` con degradado
-- Estadísticas del sistema visibles antes de ingresar (710 rutas · 4 países · 11 usuarios)
-- Vista previa de módulos disponibles (Rutas · Cash Today)
-- Validación de campos en tiempo real con mensajes de error específicos
-- Toggle mostrar/ocultar contraseña
-- Spinner de carga con estado "Verificando..." (600ms simulado para UX)
-- Animación `shake` en formulario cuando las credenciales son incorrectas
-- Auto-redirect si ya existe sesión válida (`pdc_session`) al cargar la página
-- Escribe `pdc_session` y `pdc_user` (legacy compat) en `sessionStorage`
-- Diseño responsive — panel izquierdo se oculta en mobile ≤900px
-
-#### `analytics.html`
-- Loading overlay azul PDC que se disuelve al confirmar sesión válida
-- Header sticky con logo PDC, nav pills (Mis Dashboards · Administración), avatar con iniciales, botón Salir
-- Hero banner con saludo dinámico por hora del día, fecha en español, chips de estado con animación pulse
-- KPIs globales en hero (solo para usuarios `pais: regional`)
-- Cards de dashboards con accent bar por color corporativo (Rutas: azul degradado · Cash Today: naranja/amarillo)
-- Cada card incluye: ícono, nombre, categoría, descripción, badge "Activo", países filtrados por perfil del usuario, KPI mini-row (3 métricas), botón "Acceder →"
-- Animación de entrada escalonada por card (`cardIn` con `animation-delay`)
-- Panel de Administración visible solo para `rol: admin` con 5 acciones: Actualizar Rutas · Actualizar Cash Today · Panel Administrativo · Descargar Rutas · Descargar Cash Today
-- Footer con estado del sistema ("Sistema operativo" con dot pulsante) y versión
-
-#### Función `pdcDownload` — Snapshots sin login
-- Usa `fetch(base + archivo, {cache:'no-store'})` al mismo origin de GitHub Pages
-- Strip del Auth Bridge v2.0 con regex validado contra `index.html` real del repositorio:
-  `/<script>\s*\(function\(\)\s*\{[\s\S]*?Auth Bridge[\s\S]*?\}\)\(\);\s*<\/script>/`
-- Agrega watermark sticky amarillo: `📸 SNAPSHOT PDC · fecha · Solo lectura · nombre`
-- Descarga como `Blob` local (`text/html;charset=utf-8`) — sin dependencias de red al abrir
-- El archivo descargado abre directamente sin requerir autenticación
-- Estado del botón: Descargando → ✅ Descargado (3s) → restaura estado original
-- Diseñado para archivos históricos de cierre de mes
-
-#### Sistema de sesión unificado
-- Clave `pdc_session`: objeto `{email, nombre, rol, dashboards, pais, sedes, ts}` · TTL 8h
-- Clave `pdc_user`: legacy compat para dashboards existentes · `{nombre, email, role}`
-- Guard en `analytics.html`: sin sesión válida → redirect a `login.html`
-- `pdcNavigate()`: escribe `pdc_user` antes de navegar a dashboard legacy
-- `pdcBridgeToTab()`: navega a dashboard legacy + activa tab específico vía `?tab=`
-
-### Arquitectura de acceso por rol
-| Función | admin | supervisor | consulta |
-|---|---|---|---|
-| Portal y dashboards autorizados | ✅ | ✅ | ✅ |
-| Panel de administración | ✅ | ❌ | ❌ |
-| Descargar snapshots | ✅ | ❌ | ❌ |
-| Actualizar datos | ✅ | ❌ | ❌ |
-
-### Deploy
-- Ambos archivos subidos vía GitHub REST API PUT al repo `jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar` (branch: main)
-- GitHub Pages activo en: `https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/`
+| `cc9d03a3` | fix(analytics): unified Auth Bridge regex |
+| `4a66fa4a` | feat(analytics): toast + session expiry watcher |
+| `25777a37` | fix(analytics): remove {0,50} quantifier from regex |
+| `e95f1f13` | feat(cash_today): ?tab= URL param + user name in header |
+| `dadd824f` | feat(login): 3-attempt lockout + remember-email |
 
 ---
 
-## Historial previo por proyecto
+## [v1.0] — 20/06/2026 · Lanzamiento inicial ✅
 
-### Dashboard Rutas — v12 · 12/06/2026
-- Auth Bridge v2.0 integrado en `index.html`
-- 710 rutas activas · 36 vencidas · última carga 11/06/2026
-- Ver contexto detallado en `MASTER_PROJECT_CONTEXT.md §7.1`
+### Archivos creados
+- `login.html` — Login corporativo split-screen · 11 usuarios · 3 roles · TTL 8h
+- `analytics.html` — Portal hub · tarjetas por rol · panel admin · pdcDownload con fetch+regex
 
-### Dashboard Cash Today — v2.7 · Junio 2026
-- 10 módulos funcionales · 35,089 transacciones Jun 2025 → Jun 2026
-- TC mensual BANGUAT · Volumetría · Costo Servicio multi-país
-- Ver contexto detallado en `MASTER_PROJECT_CONTEXT.md §7.2`
+### Integración dashboards legados
+- `index.html` v12 — Auth Bridge v2.0 · soporte `pdc_session` + `pdc_user` + `?pdc_token`
+- `cash_today.html` v2.7 — Auth Bridge v2.0 · guard de acceso a `cashtoday`
 
 ---
-*Actualizar este archivo al finalizar cada sesión de desarrollo*
+
+*PDC Analytics Center · Grupo PDC · Departamento Financiero*
