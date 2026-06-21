@@ -2,48 +2,66 @@
 
 ---
 
-## [v1.1] — 21/06/2026 · Fase 1 completa ✅
+## [v1.2] — 21/06/2026 · Dashboard Consolidado Regional ✅
+
+### Archivos creados
+| Archivo | Descripción |
+|---|---|
+| `regional/index.html` | Dashboard Consolidado Regional v1.0 — nuevo módulo independiente |
+
+### `regional/index.html` — funcionalidades
+| # | Feature | Detalle |
+|---|---|---|
+| 1 | Auth Bridge v2.0 | Guard de sesión · redirect a `../analytics.html` si sin sesión |
+| 2 | 4 tabs de navegación | Resumen Regional · Rutas · Cash Today · Por País |
+| 3 | KPIs globales | 680 rutas · 39 vencidas · USD 1.77M Jun · USD 21.7M YTD |
+| 4 | Gráficas Chart.js | Rutas por país (barra H) · YTD donut · Tendencia línea · Vencidas barra dual · Mensual CT · Donut CT |
+| 5 | Tabla por país y canal | Detalle pendientes y vencidas con semáforo |
+| 6 | Tabla mensual Cash Today | Ene–Jun 2026 GT vs SV en USD |
+| 7 | Ficha por país | KPIs individuales GT · SV · PE · HN |
+| 8 | ?tab= URL param | Navegación directa por URL |
+| 9 | Nombre usuario en header | Desde pdc_session o pdc_user |
+| 10 | Diseño corporativo PDC | Paleta unificada · Inter · responsive · animaciones |
 
 ### `analytics.html`
 | # | Cambio | Detalle |
 |---|---|---|
-| 1 | Regex unificado Auth Bridge | Cubre `index.html` (patrón IIFE) y `cash_today.html` (patrón comentario) en una sola expresión |
-| 2 | Toast de descarga | Notificación visual esquina inferior derecha · auto-dismiss 4.5s · reemplaza `alert()` |
-| 3 | Session expiry watcher | Corre cada 60s · banner amarillo + toast a 15 min del TTL · `pdcRenewSession()` extiende sin re-login |
-
-### `cash_today.html`
-| # | Cambio | Detalle |
-|---|---|---|
-| 4 | `?tab=` URL param | `pdcBridgeToTab('cash_today.html','config')` navega directo al módulo config |
-| 5 | Nombre de usuario en header | Se popula desde `pdc_session` o `pdc_user` al cargar |
+| 11 | PDC_DASHBOARDS regional | Registrado con acceso admin + supervisor regional |
+| 12 | Admin panel button | Botón "Consolidado Regional" en panel de administración |
 
 ### `login.html`
 | # | Cambio | Detalle |
 |---|---|---|
-| 6 | Bloqueo por 3 intentos | Countdown 30s visible en botón · se resetea al lograr acceso exitoso |
-| 7 | Recordar email | Checkbox persiste en `localStorage` · se carga automáticamente al abrir login |
+| 13 | dashboards[] regional | Admin y supervisores regionales tienen acceso a 'regional' |
 
 ### Commits
 | Commit | Descripción |
 |---|---|
-| `cc9d03a3` | fix(analytics): unified Auth Bridge regex |
-| `4a66fa4a` | feat(analytics): toast + session expiry watcher |
-| `25777a37` | fix(analytics): remove {0,50} quantifier from regex |
-| `e95f1f13` | feat(cash_today): ?tab= URL param + user name in header |
-| `dadd824f` | feat(login): 3-attempt lockout + remember-email |
+| `459c5fa4` | feat(regional): Dashboard Consolidado Regional v1.0 |
+| `861a2741` | feat(analytics): register Consolidado Regional |
+| `4fd6ce80` | feat(login): add 'regional' to admin+supervisor users |
+
+### Decisión arquitectónica registrada
+Todo nuevo dashboard se implementa como módulo independiente en su propia carpeta.
+`analytics.html` actúa exclusivamente como Hub de navegación y control de permisos.
+
+---
+
+## [v1.1] — 21/06/2026 · Fase 1 completa ✅
+
+### `analytics.html`
+- Regex unificado Auth Bridge · Toast de descarga · Session expiry watcher
+
+### `cash_today.html`
+- ?tab= URL param · Nombre usuario en header
+
+### `login.html`
+- Bloqueo 3 intentos (30s) · Remember-email checkbox
 
 ---
 
 ## [v1.0] — 20/06/2026 · Lanzamiento inicial ✅
-
-### Archivos creados
-- `login.html` — Login corporativo split-screen · 11 usuarios · 3 roles · TTL 8h
-- `analytics.html` — Portal hub · tarjetas por rol · panel admin · pdcDownload con fetch+regex
-
-### Integración dashboards legados
-- `index.html` v12 — Auth Bridge v2.0 · soporte `pdc_session` + `pdc_user` + `?pdc_token`
-- `cash_today.html` v2.7 — Auth Bridge v2.0 · guard de acceso a `cashtoday`
+- `login.html` · `analytics.html` · Auth Bridge index.html + cash_today.html
 
 ---
-
 *PDC Analytics Center · Grupo PDC · Departamento Financiero*
