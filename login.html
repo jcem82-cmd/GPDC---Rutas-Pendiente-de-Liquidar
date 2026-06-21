@@ -3,112 +3,433 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Acceso Seguro — PDC Analytics Center</title>
+<title>PDC Analytics Center · Acceso</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--navy:#002060;--navy2:#003090;--navy3:#001540;--sky:#CFEEFC;--white:#FFFFFF;--bg:#F0F4F8;--text:#0F1729;--text2:#5A6480;--border:#E2E8F0;--red2:#CC0000;--radius:12px}
-html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--navy3);overflow:hidden}
-.bg{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy3) 0%,#001d5c 50%,var(--navy3) 100%);z-index:0}
-.bg::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(207,238,252,.08) 1px,transparent 1px);background-size:32px 32px}
-.bg::after{content:'';position:absolute;top:-20%;right:-10%;width:60%;height:140%;background:linear-gradient(180deg,rgba(0,48,144,.35) 0%,transparent 100%);transform:skewX(-12deg)}
-.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
-.card{background:var(--white);border-radius:20px;box-shadow:0 8px 40px rgba(0,32,96,.16);width:100%;max-width:420px;overflow:hidden;animation:cardIn .4s cubic-bezier(.22,.68,0,1.2) both}
-@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-.card-header{background:var(--navy);padding:32px 36px 28px;text-align:center}
-.logo-wrap{display:inline-flex;align-items:center;justify-content:center;background:var(--white);border-radius:10px;padding:8px 16px;margin-bottom:20px;min-height:52px}
-.logo-text{font-size:1.25rem;font-weight:700;color:var(--navy);letter-spacing:.04em}
-.card-title{color:var(--white);font-size:1.15rem;font-weight:600;letter-spacing:.02em}
-.card-subtitle{color:rgba(207,238,252,.75);font-size:.78rem;margin-top:4px;letter-spacing:.03em}
-.card-body{padding:32px 36px 36px}
-.field{margin-bottom:18px}
-.field label{display:block;font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px}
-.field input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;font-family:inherit;color:var(--text);background:var(--bg);transition:border-color .15s,box-shadow .15s;outline:none}
-.field input:focus{border-color:var(--navy2);box-shadow:0 0 0 3px rgba(0,48,144,.1);background:var(--white)}
-.field input::placeholder{color:#b0b8cc}
-.error-msg{display:none;align-items:center;gap:8px;background:#fff0f0;border:1px solid #fcc;border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:.82rem;color:var(--red2);font-weight:500;animation:shake .3s ease}
+
+:root{
+  --navy:#002060;
+  --navy2:#003090;
+  --navy-dark:#001440;
+  --sky:#CFEEFC;
+  --sky2:#e8f6ff;
+  --white:#FFF;
+  --bg:#F0F4F8;
+  --text:#0F1729;
+  --text2:#5A6480;
+  --border:#E2E8F0;
+  --green:#DCF0C6;
+  --green2:#2D9E2D;
+  --red:#FFBDBD;
+  --red2:#CC0000;
+  --radius:12px;
+  --shadow:0 2px 16px rgba(0,32,96,.08);
+  --shadow-lg:0 8px 40px rgba(0,32,96,.18);
+}
+
+html,body{height:100%;font-family:'Inter',system-ui,sans-serif}
+
+/* ── LAYOUT ── */
+body{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  min-height:100vh;
+  background:var(--bg);
+}
+
+/* ── LEFT PANEL ── */
+.panel-left{
+  background:linear-gradient(160deg, var(--navy-dark) 0%, var(--navy) 50%, #004aad 100%);
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  padding:48px 52px;
+  position:relative;
+  overflow:hidden;
+}
+
+/* Grid pattern overlay */
+.panel-left::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(207,238,252,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(207,238,252,.04) 1px, transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;
+}
+
+/* Glow orbs */
+.panel-left::after{
+  content:'';
+  position:absolute;
+  width:480px;height:480px;
+  background:radial-gradient(circle, rgba(0,120,255,.18) 0%, transparent 65%);
+  bottom:-120px;right:-100px;
+  pointer-events:none;
+}
+
+.orb-top{
+  position:absolute;
+  width:280px;height:280px;
+  background:radial-gradient(circle, rgba(207,238,252,.1) 0%, transparent 65%);
+  top:-60px;left:-60px;
+  pointer-events:none;
+}
+
+.left-top{position:relative;z-index:1}
+.left-logo{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--white);border-radius:10px;
+  padding:8px 16px;height:48px;
+  margin-bottom:48px;
+}
+.left-logo-text{font-size:1.1rem;font-weight:800;color:var(--navy);letter-spacing:.06em}
+
+.left-headline{
+  font-size:2.4rem;font-weight:800;
+  color:var(--white);
+  line-height:1.15;
+  margin-bottom:20px;
+  letter-spacing:-.02em;
+}
+.left-headline span{
+  color:var(--sky);
+}
+.left-desc{
+  font-size:.9rem;color:rgba(207,238,252,.7);
+  line-height:1.7;max-width:360px;
+  margin-bottom:48px;
+}
+
+/* Stats row */
+.stats-row{
+  display:flex;gap:28px;
+  position:relative;z-index:1;
+}
+.stat-item{
+  display:flex;flex-direction:column;gap:3px;
+}
+.stat-val{
+  font-size:1.5rem;font-weight:700;color:var(--white);
+  font-variant-numeric:tabular-nums;
+}
+.stat-lbl{
+  font-size:.7rem;color:rgba(207,238,252,.55);
+  text-transform:uppercase;letter-spacing:.07em;
+  font-weight:500;
+}
+
+/* Module chips */
+.modules-wrap{
+  position:relative;z-index:1;
+  margin-top:40px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.module-chip{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;
+  padding:11px 16px;
+  transition:background .15s;
+}
+.module-chip:hover{background:rgba(255,255,255,.1)}
+.chip-icon{
+  width:32px;height:32px;
+  background:rgba(207,238,252,.12);
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;flex-shrink:0;
+}
+.chip-info{}
+.chip-name{font-size:.8rem;font-weight:600;color:var(--white);}
+.chip-desc{font-size:.7rem;color:rgba(207,238,252,.5);}
+
+.left-footer{
+  position:relative;z-index:1;
+  font-size:.7rem;color:rgba(207,238,252,.35);
+  padding-top:24px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+/* ── RIGHT PANEL ── */
+.panel-right{
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  padding:48px 60px;
+  background:var(--white);
+}
+
+.login-box{
+  width:100%;max-width:380px;
+}
+
+.login-header{margin-bottom:36px}
+.login-eyebrow{
+  font-size:.72rem;font-weight:600;
+  color:var(--navy);letter-spacing:.1em;
+  text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:10px;
+}
+.login-eyebrow::before{
+  content:'';display:block;
+  width:20px;height:2px;background:var(--navy);border-radius:2px;
+}
+.login-title{
+  font-size:1.75rem;font-weight:800;
+  color:var(--text);letter-spacing:-.02em;
+  margin-bottom:6px;
+}
+.login-subtitle{font-size:.85rem;color:var(--text2);line-height:1.5;}
+
+/* Form */
+.login-form{display:flex;flex-direction:column;gap:18px}
+
+.field{display:flex;flex-direction:column;gap:6px}
+.field-label{
+  font-size:.78rem;font-weight:600;
+  color:var(--text);letter-spacing:.01em;
+}
+.field-wrap{position:relative;}
+.field-icon{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  color:var(--text2);font-size:.9rem;pointer-events:none;
+  transition:color .15s;
+}
+.field-input{
+  width:100%;padding:12px 14px 12px 40px;
+  border:1.5px solid var(--border);border-radius:10px;
+  font-size:.875rem;font-family:inherit;color:var(--text);
+  background:var(--bg);
+  outline:none;
+  transition:border-color .15s,box-shadow .15s,background .15s;
+  -webkit-appearance:none;
+}
+.field-input::placeholder{color:#b0b8cc}
+.field-input:focus{
+  border-color:var(--navy);
+  background:var(--white);
+  box-shadow:0 0 0 3px rgba(0,32,96,.08);
+}
+.field-input:focus + .field-icon,
+.field-wrap:focus-within .field-icon{color:var(--navy)}
+
+.field-toggle{
+  position:absolute;right:13px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;
+  color:var(--text2);font-size:.85rem;padding:2px;
+  transition:color .15s;
+}
+.field-toggle:hover{color:var(--navy)}
+
+/* Error */
+.error-msg{
+  display:none;
+  align-items:center;gap:8px;
+  background:#fff5f5;border:1px solid #fecaca;
+  border-radius:8px;padding:10px 13px;
+  font-size:.78rem;color:var(--red2);font-weight:500;
+}
 .error-msg.visible{display:flex}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-.btn-login{width:100%;padding:13px;background:var(--navy);color:var(--white);border:none;border-radius:8px;font-size:.95rem;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:.03em;transition:background .15s,transform .1s}
-.btn-login:hover:not(:disabled){background:var(--navy2)}
-.btn-login:disabled{opacity:.65;cursor:not-allowed}
-.btn-login .spinner{display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:var(--white);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
-.btn-login.loading .btn-label{display:none}
-.btn-login.loading .spinner{display:block}
+.error-icon{font-size:1rem;flex-shrink:0}
+
+/* Submit */
+.btn-submit{
+  width:100%;padding:13px;
+  background:var(--navy);color:var(--white);
+  border:none;border-radius:10px;
+  font-size:.9rem;font-weight:700;font-family:inherit;
+  cursor:pointer;letter-spacing:.02em;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .15s,transform .1s,box-shadow .15s;
+  position:relative;overflow:hidden;
+  margin-top:4px;
+}
+.btn-submit::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(rgba(255,255,255,.06),transparent);
+}
+.btn-submit:hover{background:var(--navy2);box-shadow:0 4px 16px rgba(0,32,96,.25)}
+.btn-submit:active{transform:scale(.985)}
+.btn-submit:disabled{opacity:.65;cursor:not-allowed;transform:none}
+
+/* Spinner */
+.spinner{
+  display:none;
+  width:16px;height:16px;
+  border:2px solid rgba(255,255,255,.3);
+  border-top-color:var(--white);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+}
 @keyframes spin{to{transform:rotate(360deg)}}
-.card-footer{border-top:1px solid var(--border);padding:14px 36px;display:flex;align-items:center;justify-content:center}
-.security-badge{display:flex;align-items:center;gap:5px;font-size:.73rem;color:var(--text2);font-weight:500}
-.page-footer{margin-top:24px;text-align:center;color:rgba(207,238,252,.4);font-size:.72rem}
-@media(max-width:480px){.card-header{padding:24px 24px 20px}.card-body{padding:24px 24px 28px}}
+
+/* Divider */
+.login-divider{
+  display:flex;align-items:center;gap:12px;
+  margin:4px 0;
+}
+.login-divider::before,.login-divider::after{
+  content:'';flex:1;height:1px;background:var(--border);
+}
+.login-divider-text{font-size:.72rem;color:var(--text2);white-space:nowrap}
+
+/* Security badge */
+.security-badge{
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg);border-radius:10px;
+  padding:11px 14px;margin-top:4px;
+}
+.sec-icon{font-size:1.1rem;flex-shrink:0}
+.sec-text{font-size:.72rem;color:var(--text2);line-height:1.4}
+.sec-text strong{color:var(--text);font-weight:600}
+
+.right-footer{
+  margin-top:36px;text-align:center;
+  font-size:.7rem;color:#c0c8d8;
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  body{grid-template-columns:1fr}
+  .panel-left{display:none}
+  .panel-right{padding:32px 24px;min-height:100vh}
+  .login-box{max-width:420px}
+}
+
+/* ── SHAKE ANIMATION ── */
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-6px)}
+  40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)}
+  80%{transform:translateX(4px)}
+}
+.shake{animation:shake .35s ease}
 </style>
 </head>
 <body>
-<div class="bg"></div>
-<main class="page">
-  <div class="card">
-    <div class="card-header">
-      <div class="logo-wrap"><span class="logo-text">PDC</span></div>
-      <div class="card-title">PDC Analytics Center</div>
-      <div class="card-subtitle">Plataforma Corporativa de Business Intelligence</div>
-    </div>
-    <div class="card-body">
-      <div class="error-msg" id="errorMsg" role="alert">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.5v4M8 10.5v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <span id="errorText">Correo o contraseña incorrectos.</span>
+
+<!-- LEFT PANEL -->
+<div class="panel-left">
+  <div class="orb-top"></div>
+
+  <div class="left-top">
+    <div class="left-logo"><span class="left-logo-text">PDC</span></div>
+    <h1 class="left-headline">Plataforma de<br><span>Business Intelligence</span><br>Corporativo</h1>
+    <p class="left-desc">Centraliza los indicadores financieros y operativos del Grupo PDC en una única plataforma ejecutiva segura.</p>
+
+    <div class="modules-wrap">
+      <div class="module-chip">
+        <div class="chip-icon">🚚</div>
+        <div class="chip-info">
+          <div class="chip-name">Liquidación de Rutas</div>
+          <div class="chip-desc">GT · SV · PE · HN — Rutas pendientes y vencidas</div>
+        </div>
       </div>
-      <div class="field">
-        <label for="email">Correo electrónico</label>
-        <input type="email" id="email" placeholder="usuario@grupopdc.com" autocomplete="email"/>
-      </div>
-      <div class="field">
-        <label for="pass">Contraseña</label>
-        <input type="password" id="pass" placeholder="••••••••••••" autocomplete="current-password"/>
-      </div>
-      <button class="btn-login" id="btnLogin" type="button">
-        <span class="btn-label">Ingresar</span>
-        <span class="spinner"></span>
-      </button>
-    </div>
-    <div class="card-footer">
-      <div class="security-badge">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1L1.5 3v3.5C1.5 9.08 3.5 11 6 11s4.5-1.92 4.5-4.5V3L6 1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
-        Sesión segura · Acceso restringido a personal autorizado
+      <div class="module-chip">
+        <div class="chip-icon">💰</div>
+        <div class="chip-info">
+          <div class="chip-name">Cash Today</div>
+          <div class="chip-desc">GT · SV — Recolección de efectivo ATM</div>
+        </div>
       </div>
     </div>
   </div>
-  <div class="page-footer">Grupo PDC · Departamento Financiero · © 2026</div>
-</main>
+
+  <div>
+    <div class="stats-row">
+      <div class="stat-item">
+        <span class="stat-val">710</span>
+        <span class="stat-lbl">Rutas activas</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val">4</span>
+        <span class="stat-lbl">Países</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val">11</span>
+        <span class="stat-lbl">Usuarios</span>
+      </div>
+    </div>
+    <div class="left-footer" style="margin-top:24px">
+      PDC Analytics Center v1.0 · Grupo PDC · Departamento Financiero · © 2026
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="panel-right">
+  <div class="login-box">
+    <div class="login-header">
+      <div class="login-eyebrow">Acceso seguro</div>
+      <h2 class="login-title">Iniciar sesión</h2>
+      <p class="login-subtitle">Ingrese sus credenciales corporativas para acceder al portal.</p>
+    </div>
+
+    <div class="login-form">
+      <!-- Email -->
+      <div class="field">
+        <label class="field-label" for="fEmail">Correo corporativo</label>
+        <div class="field-wrap">
+          <input class="field-input" id="fEmail" type="email" placeholder="usuario@grupopdc.com" autocomplete="email" spellcheck="false"/>
+          <span class="field-icon">✉</span>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <label class="field-label" for="fPass">Contraseña</label>
+        <div class="field-wrap">
+          <input class="field-input" id="fPass" type="password" placeholder="••••••••••" autocomplete="current-password"/>
+          <span class="field-icon">🔒</span>
+          <button class="field-toggle" id="togglePass" type="button" tabindex="-1" title="Mostrar/ocultar">👁</button>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div class="error-msg" id="errMsg">
+        <span class="error-icon">⚠️</span>
+        <span id="errText">Credenciales incorrectas. Verifique e intente nuevamente.</span>
+      </div>
+
+      <!-- Submit -->
+      <button class="btn-submit" id="btnLogin" type="button">
+        <span class="spinner" id="spinner"></span>
+        <span id="btnLabel">Ingresar al portal</span>
+        <span id="btnArrow">→</span>
+      </button>
+
+      <div class="login-divider"><span class="login-divider-text">Acceso corporativo restringido</span></div>
+
+      <!-- Security note -->
+      <div class="security-badge">
+        <span class="sec-icon">🔐</span>
+        <span class="sec-text"><strong>Sesión segura.</strong> Su acceso expira automáticamente tras 8 horas de inactividad. No comparta sus credenciales.</span>
+      </div>
+    </div>
+
+    <div class="right-footer">
+      Grupo PDC · Departamento Financiero<br>
+      Para soporte contacte al administrador del sistema
+    </div>
+  </div>
+</div>
+
 <script>
+/* ═══════════════════════════════════════════════════════
+   PDC Analytics Center — Auth System
+   login.html · v1.0
+   ═══════════════════════════════════════════════════════ */
 
-/* ═══════════════════════════════════════════════════════════════
-   PDC Analytics Center — Auth System v1.0
-   users.js + auth.js — Bloque unificado
-   ═══════════════════════════════════════════════════════════════ */
-
-/* ── CONSTANTES ── */
 var PDC_SESSION_KEY = 'pdc_session';
-var PDC_LOGIN_PAGE  = 'login.html';
-var PDC_PORTAL_PAGE = 'analytics.html';
 var PDC_SESSION_TTL = 8 * 60 * 60 * 1000;
-
-/* ── DASHBOARDS REGISTRADOS ── */
-var PDC_DASHBOARDS = [
-  {
-    id: 'rutas', nombre: 'Liquidación de Rutas',
-    descripcion: 'Monitoreo en tiempo real del estado de liquidación de rutas de despacho. KPIs financieros, análisis por transportista, seguimiento de rutas vencidas y control de efectividad.',
-    archivo: 'index.html', icono: '🚚',
-    paises: { GT: '🇬🇹 Guatemala', ESV: '🇸🇻 El Salvador', PE: '🇵🇪 Perú', HN: '🇭🇳 Honduras' },
-    actualizacion: '11 jun 2026', activo: true
-  },
-  {
-    id: 'cashtoday', nombre: 'Cash Today',
-    descripcion: 'Dashboard ejecutivo de recolección de efectivo ATM. Volumetría por sede, costos de servicio, análisis de límites operativos y tráfico de recolección por hora y día.',
-    archivo: 'cash_today.html', icono: '💰',
-    paises: { GT: '🇬🇹 Guatemala', ESV: '🇸🇻 El Salvador' },
-    actualizacion: '11 jun 2026', activo: true
-  }
-];
+var PDC_PORTAL      = 'analytics.html';
 
 /* ── USUARIOS ── */
 var PDC_USERS = [
@@ -125,139 +446,110 @@ var PDC_USERS = [
   { email:'transportes.peru@grupopdc.com',   pass:'PDC.TeamPE@2026',    nombre:'TEAM Peru',           rol:'consulta',   dashboards:['rutas'],             pais:'PE',       sedes:['Peru'] }
 ];
 
-/* ── FUNCIONES DE USUARIO ── */
-function pdcAuthenticate(email, pass) {
-  if (!email || !pass) return null;
-  var user = null;
-  for (var i = 0; i < PDC_USERS.length; i++) {
-    if (PDC_USERS[i].email.toLowerCase() === email.trim().toLowerCase() && PDC_USERS[i].pass === pass) {
-      user = PDC_USERS[i]; break;
-    }
-  }
-  return user;
-}
-
-function pdcGetUserDashboards(user) {
-  if (!user) return [];
-  return PDC_DASHBOARDS.filter(function(d) {
-    return d.activo && user.dashboards.indexOf(d.id) > -1;
-  });
-}
-
-function pdcIsAdmin(user) { return user && user.rol === 'admin'; }
-function pdcIsRegional(user) { return user && user.pais === 'regional'; }
-
-/* ── SESIÓN ── */
-function pdcCreateSession(user) {
-  var session = {
-    email: user.email, nombre: user.nombre, rol: user.rol,
-    dashboards: user.dashboards, pais: user.pais, sedes: user.sedes,
-    ts: Date.now()
-  };
-  sessionStorage.setItem(PDC_SESSION_KEY, JSON.stringify(session));
-  return session;
-}
-
-function pdcGetSession() {
-  try {
-    var raw = sessionStorage.getItem(PDC_SESSION_KEY);
-    if (!raw) return null;
-    var session = JSON.parse(raw);
-    if (Date.now() - session.ts > PDC_SESSION_TTL) { pdcDestroySession(); return null; }
-    return session;
-  } catch(e) { pdcDestroySession(); return null; }
-}
-
-function pdcDestroySession() { sessionStorage.removeItem(PDC_SESSION_KEY); }
-
-function pdcLogout() {
-  pdcDestroySession();
-  window.location.href = PDC_LOGIN_PAGE;
-}
-
-/* ── GUARDS ── */
-function pdcRequireAuth(dashboardId) {
-  var session = pdcGetSession();
-  if (!session) { window.location.href = PDC_LOGIN_PAGE; return null; }
-  if (dashboardId && session.dashboards.indexOf(dashboardId) === -1) {
-    window.location.href = PDC_PORTAL_PAGE; return null;
-  }
-  return session;
-}
-
-function pdcRequireAdmin() {
-  var session = pdcRequireAuth(null);
-  if (!session) return null;
-  if (session.rol !== 'admin') { window.location.href = PDC_PORTAL_PAGE; return null; }
-  return session;
-}
-
-/* ── BRIDGE: pasar sesión a dashboards legacy ── */
-function pdcBuildLegacySession(session) {
-  return JSON.stringify({ nombre: session.nombre, email: session.email,
-    role: session.rol === 'admin' ? 'admin' : 'user' });
-}
-
-function pdcNavigateToDash(archivo) {
-  var session = pdcGetSession();
-  if (!session) { window.location.href = PDC_LOGIN_PAGE; return; }
-  sessionStorage.setItem('pdc_user', pdcBuildLegacySession(session));
-  window.location.href = archivo;
-}
-
-function pdcBridgeToTab(archivo, tab) {
-  var session = pdcGetSession();
-  if (!session) { window.location.href = PDC_LOGIN_PAGE; return; }
-  sessionStorage.setItem('pdc_user', pdcBuildLegacySession(session));
-  window.location.href = archivo + '?tab=' + tab;
-}
-
-function pdcDownload(archivo, nombre) {
-  fetch(archivo)
-    .then(function(r) { return r.blob(); })
-    .then(function(blob) {
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url; a.download = nombre;
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    });
-}
-
+/* Si ya hay sesión válida → redirigir al portal */
 (function(){
-  if(pdcGetSession()){window.location.href=PDC_PORTAL_PAGE;return;}
-  var emailEl=document.getElementById('email');
-  var passEl=document.getElementById('pass');
-  var btnEl=document.getElementById('btnLogin');
-  var errEl=document.getElementById('errorMsg');
-  var errTxt=document.getElementById('errorText');
-  emailEl.focus();
-  [emailEl,passEl].forEach(function(el){
-    el.addEventListener('input',function(){errEl.classList.remove('visible');});
-  });
-  emailEl.addEventListener('keydown',function(e){if(e.key==='Enter')passEl.focus();});
-  passEl.addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
-  btnEl.addEventListener('click',doLogin);
-  function doLogin(){
-    var email=emailEl.value.trim();
-    var pass=passEl.value;
-    if(!email||!pass){showError('Ingrese su correo electrónico y contraseña.');return;}
-    btnEl.classList.add('loading');btnEl.disabled=true;
-    errEl.classList.remove('visible');
-    setTimeout(function(){
-      var user=pdcAuthenticate(email,pass);
-      if(!user){
-        btnEl.classList.remove('loading');btnEl.disabled=false;
-        showError('Correo o contraseña incorrectos.');
-        passEl.value='';passEl.focus();return;
-      }
-      pdcCreateSession(user);
-      window.location.href=PDC_PORTAL_PAGE;
-    },350);
-  }
-  function showError(msg){errTxt.textContent=msg;errEl.classList.add('visible');}
+  try{
+    var raw = sessionStorage.getItem(PDC_SESSION_KEY);
+    if(raw){
+      var s = JSON.parse(raw);
+      if(Date.now() - s.ts < PDC_SESSION_TTL){ window.location.href = PDC_PORTAL; }
+    }
+  }catch(e){}
 })();
+
+/* ── DOM ── */
+var fEmail   = document.getElementById('fEmail');
+var fPass    = document.getElementById('fPass');
+var errMsg   = document.getElementById('errMsg');
+var errText  = document.getElementById('errText');
+var btnLogin = document.getElementById('btnLogin');
+var btnLabel = document.getElementById('btnLabel');
+var btnArrow = document.getElementById('btnArrow');
+var spinner  = document.getElementById('spinner');
+
+/* Toggle password visibility */
+document.getElementById('togglePass').addEventListener('click', function(){
+  fPass.type = fPass.type === 'password' ? 'text' : 'password';
+  this.textContent = fPass.type === 'password' ? '👁' : '🙈';
+});
+
+/* Clear error on typing */
+[fEmail, fPass].forEach(function(el){
+  el.addEventListener('input', function(){
+    errMsg.classList.remove('visible');
+  });
+});
+
+/* Enter key */
+[fEmail, fPass].forEach(function(el){
+  el.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ doLogin(); }
+  });
+});
+
+btnLogin.addEventListener('click', doLogin);
+
+function doLogin(){
+  var email = fEmail.value.trim();
+  var pass  = fPass.value;
+  errMsg.classList.remove('visible');
+
+  /* Basic validation */
+  if(!email){ showError('Ingrese su correo corporativo.'); fEmail.focus(); return; }
+  if(!pass) { showError('Ingrese su contraseña.');         fPass.focus();  return; }
+
+  /* Simulate brief loading */
+  setLoading(true);
+
+  setTimeout(function(){
+    var user = authenticate(email, pass);
+    if(!user){
+      setLoading(false);
+      showError('Credenciales incorrectas. Verifique e intente nuevamente.');
+      fPass.value = '';
+      fPass.focus();
+      /* Shake effect */
+      var box = document.querySelector('.login-form');
+      box.classList.remove('shake');
+      void box.offsetWidth;
+      box.classList.add('shake');
+      return;
+    }
+    /* Create session */
+    var session = {
+      email: user.email, nombre: user.nombre, rol: user.rol,
+      dashboards: user.dashboards, pais: user.pais, sedes: user.sedes,
+      ts: Date.now()
+    };
+    sessionStorage.setItem(PDC_SESSION_KEY, JSON.stringify(session));
+    /* Also set legacy pdc_user key for backward compatibility with existing dashboards */
+    sessionStorage.setItem('pdc_user', JSON.stringify({
+      nombre: user.nombre, email: user.email,
+      role: user.rol === 'admin' ? 'admin' : 'user'
+    }));
+    window.location.href = PDC_PORTAL;
+  }, 600);
+}
+
+function authenticate(email, pass){
+  for(var i=0; i<PDC_USERS.length; i++){
+    var u = PDC_USERS[i];
+    if(u.email.toLowerCase() === email.toLowerCase() && u.pass === pass) return u;
+  }
+  return null;
+}
+
+function setLoading(on){
+  btnLogin.disabled = on;
+  spinner.style.display = on ? 'block' : 'none';
+  btnLabel.textContent  = on ? 'Verificando...' : 'Ingresar al portal';
+  btnArrow.style.display = on ? 'none' : 'inline';
+}
+
+function showError(msg){
+  errText.textContent = msg;
+  errMsg.classList.add('visible');
+}
 </script>
 </body>
 </html>
