@@ -647,29 +647,48 @@ function pdcDownload(archivo, nombre, btn){
   var s = pdcGetSession();
   if(!s){ pdcLogout(); return; }
 
-  if(btn){ btn.textContent='⏳ Generando...'; btn.disabled=true; }
+  var btnOrig = btn ? btn.innerHTML : null;
+  if(btn){ btn.innerHTML='<div class="admin-btn-icon">⏳</div><div class="admin-btn-texts"><div class="admin-btn-label">Descargando...</div><div class="admin-btn-desc">Preparando snapshot</div></div>'; btn.disabled=true; }
 
-  if(archivo === 'index.html'){
-    /* DOM snapshot — sin fetch, puramente client-side */
-    var src = '<!DOCTYPE html>' + document.documentElement.outerHTML;
-    /* Quitar bloque Auth si está presente en el DOM */
-    src = src.replace(/<script>\s*\(function\(\)\{\s*\/\*[\s\S]*?Auth[\s\S]*?\}\)\(\);\s*<\/script>/g, '<!-- pdc-auth-removed -->');
-    /* Watermark */
-    var fecha = new Date().toLocaleDateString('es-GT',{day:'2-digit',month:'2-digit',year:'numeric'});
-    var wm = '<div style="background:#f59e0b;color:#000;text-align:center;padding:6px;font-size:.72rem;font-weight:700;position:relative;z-index:9999;">📸 SNAPSHOT PDC · '+fecha+' · Solo lectura · '+s.nombre+'</div>';
-    src = src.replace('<header ', wm+'<header ');
-    var blob = new Blob([src],{type:'text/html;charset=utf-8'});
-    var url  = URL.createObjectURL(blob);
-    var a    = document.createElement('a');
-    a.href=url; a.download=nombre;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function(){ URL.revokeObjectURL(url); },3000);
-    if(btn){ btn.textContent='✓ Descargado'; setTimeout(function(){ btn.textContent='⬇️ Descargar'; btn.disabled=false; },2500); }
-  } else {
-    /* Para otros archivos: abrir en nueva pestaña */
-    alert('Para descargar Cash Today, acceda al dashboard y use el botón de exportación interno.');
-    if(btn){ btn.disabled=false; btn.textContent='⬇️ Descargar'; }
+  function resetBtn(ok){
+    if(!btn) return;
+    if(ok){ btn.innerHTML='<div class="admin-btn-icon">✅</div><div class="admin-btn-texts"><div class="admin-btn-label">Descargado</div><div class="admin-btn-desc">Revise su carpeta de descargas</div></div>'; }
+    else   { btn.innerHTML=btnOrig; btn.disabled=false; }
+    if(ok) setTimeout(function(){ btn.innerHTML=btnOrig; btn.disabled=false; }, 3000);
   }
+
+  /* Obtener URL base del mismo origin — fetch evita CORS y trae el HTML fuente real */
+  var base = window.location.href.replace(/[^\/]*$/, '');
+  fetch(base + archivo, {cache:'no-store'})
+    .then(function(r){
+      if(!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    })
+    .then(function(src){
+      /* ── Strip Auth Bridge v2.0 (regex validado contra index.html real) ── */
+      src = src.replace(
+        /<script>\s*\(function\(\)\s*\{[\s\S]*?Auth Bridge[\s\S]*?\}\)\(\);\s*<\/script>/,
+        '<!-- pdc-snapshot: sin autenticación requerida -->'
+      );
+      /* ── Watermark de snapshot ── */
+      var fecha = new Date().toLocaleDateString('es-GT',{day:'2-digit',month:'2-digit',year:'numeric'});
+      var wm = '<div style="position:sticky;top:0;z-index:9999;background:#f59e0b;color:#000;' +
+               'text-align:center;padding:6px 0;font-size:.72rem;font-weight:700;letter-spacing:.04em;">' +
+               '📸 SNAPSHOT PDC · ' + fecha + ' · Solo lectura · ' + s.nombre + '</div>';
+      src = src.replace('<body>', '<body>' + wm);
+      /* ── Descargar ── */
+      var blob = new Blob([src], {type:'text/html;charset=utf-8'});
+      var url  = URL.createObjectURL(blob);
+      var a    = document.createElement('a');
+      a.href=url; a.download=nombre;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 3000);
+      resetBtn(true);
+    })
+    .catch(function(e){
+      alert('Error al generar snapshot: ' + e.message + '\nIntente de nuevo.');
+      resetBtn(false);
+    });
 }
 
 /* ── HELPERS ── */
