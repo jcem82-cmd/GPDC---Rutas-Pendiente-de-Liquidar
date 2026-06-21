@@ -1,105 +1,205 @@
-# 📊 MASTER PROJECT CONTEXT — Dashboard Liquidación de Rutas | Grupo PDC
+# 📊 MASTER PROJECT CONTEXT — PDC Analytics Center | Grupo PDC
 
-**Versión vigente:** v12 | **Última actualización:** 12/06/2026 | **Estado:** Producción ✅
+**Versión vigente:** v13 | **Última actualización:** 20/06/2026 | **Estado:** Producción ✅
 
 ---
 
 ## 1. Objetivo
 
-Dashboard Ejecutivo para Liquidación de Rutas (financiero/operativo/gerencial), monitoreo en tiempo real del estado de liquidación de rutas de despacho en Guatemala, El Salvador, Perú y Honduras. Centraliza datos del ERP JDE (vía Excel), genera KPIs ejecutivos, interfaz web autoactualizable.
+Plataforma corporativa de Business Intelligence para Grupo PDC. Consolida dos dashboards ejecutivos (Liquidación de Rutas y Cash Today ATM) bajo un portal unificado con autenticación, control de acceso por rol y filtro de país automático. Opera en Guatemala, El Salvador, Perú y Honduras. Datos provenientes del ERP JDE vía Excel.
+
+---
 
 ## 2. Personas y roles
 
-| Nombre | Rol |
-|---|---|
-| Juan Carlos Escobar | Admin |
-| Erwin Soto | Usuario |
-| Edy Lopez | Usuario |
-| Francisco Aguilar | Usuario |
-| Cuenta equipo | liquidaciones.cda@grupopdc.com |
+| Email | Nombre | Rol | País | Dashboards |
+|-------|--------|-----|------|------------|
+| juancarlos.escobar@grupopdc.com | Juan Carlos Escobar | admin | regional | rutas + cashtoday |
+| erwin.soto@grupopdc.com | Erwin Soto | supervisor | regional | rutas + cashtoday |
+| francisco.aguilar@grupopdc.com | Francisco Aguilar | supervisor | GT | rutas + cashtoday |
+| liquidaciones.cda@grupopdc.com | TEAM GT | consulta | GT | rutas + cashtoday |
+| edy.lopez@grupopdc.com | Edy Lopez | consulta | GT | solo rutas |
+| joaquin.palma@grupopdc.com | Joaquin Palma | consulta | ESV | rutas + cashtoday |
+| liquidaciones.esv@grupopdc.com | TEAM ESV | consulta | ESV | rutas + cashtoday |
+| vinicio.sanabria@grupopdc.com | Vinicio Sanabria | consulta | GT | solo rutas |
+| claudio.rojas@grupopdc.com | Claudio Rojas | consulta | PE | solo rutas |
+| jose.mallqui@grupopdc.com | Jose Mallqui | consulta | PE | solo rutas |
+| transportes.peru@grupopdc.com | TEAM Perú | consulta | PE | solo rutas |
+
+---
 
 ## 3. Tecnologías
-HTML5 + CSS3 + JS vanilla (single-file) · Chart.js 4.4.0 · SheetJS (XLSX.js 0.20.0) · Supabase (chat) · GitHub Pages + Actions (~80s deploy) · GitHub REST API · MS Teams + Power Automate.
 
-## 4. Estructura del repo
+HTML5 + CSS3 + JS vanilla (single-file) · Chart.js 4.4.1 · SheetJS 0.18.5 · Supabase (chat admin) · GitHub Pages (hosting) · GitHub REST API (deploy) · MS Teams + Power Automate.
+
+---
+
+## 4. Estructura del repositorio
 
 ```
 GPDC---Rutas-Pendiente-de-Liquidar/  (branch: main)
-├── index.html      # Dashboard principal (single-file)
-├── login.html      # Autenticación, 6 usuarios, roles
-├── admin.html      # Panel admin (chat)
+├── login.html              # Autenticación — 11 usuarios, roles, generación pdc_session
+├── analytics.html          # Portal principal — cards ejecutivas por rol/acceso
+├── index.html              # Dashboard Liquidación de Rutas (single-file ~grande)
+├── cash_today.html         # Dashboard Cash Today ATM (single-file ~9.3MB)
+├── admin.html              # Panel admin — chat Supabase (solo rol admin)
+├── hub.html                # Hub legacy (deprecado)
+├── js/
+│   ├── auth.js             # Funciones de sesión y autenticación
+│   └── users.js            # Matriz centralizada de usuarios, roles y permisos
+├── PDC_Dashboard_Config.md # Config técnica del sistema (v2.0)
+├── PDC_MASTER_DOC.md       # Documento maestro legacy (pre-v13)
+├── README.md
 └── docs/
-    ├── README.md
     ├── MASTER_PROJECT_CONTEXT.md  (este archivo)
-    ├── PROJECT_RULES.md
     ├── CHANGELOG.md
-    └── ROADMAP.md
+    ├── ROADMAP.md
+    ├── PROJECT_RULES.md
+    └── README.md
 ```
 
-## 5. Constantes de datos en index.html
+---
 
-- `RAW` — array de rutas pendientes (de `General (seguimiento)`).
-- `KPI_TOTALS` — `{report_date, report_month, total_by_moneda, canal_totals}`.
-- `KPI_HIST` — `[{mes,vencidas,total,pct}]` → gráfica "Total Rutas vs Vencidas" (Tendencias KPI).
-- `EFECT` — `[{mes,total,mas15,pct}]` → gráfica "Rutas ≥15 días" (Tendencias KPI, 2da gráfica).
-- `FX` / `FX_DEF` — tipos de cambio (GTQ, PEN; USD=El Salvador fijo 1:1).
+## 5. Flujo de autenticación y navegación
 
-**Importante:** `vencidas` y `mas15` son métricas **independientes** (no intercambiables). Ver `PROJECT_RULES.md §2`.
+```
+login.html
+  → valida credenciales contra PDC_USERS
+  → guarda pdc_session en sessionStorage
+  → redirige a analytics.html
 
-## 6. Flujo de actualización diaria (canal preferente: self-service)
+analytics.html (Portal)
+  → verifica pdc_session (TTL 8h)
+  → muestra cards según dashboards[] del usuario
+  → pdcGoToDashboard(archivo):
+      index.html  → abre en misma pestaña (guarda pdc_user legacy)
+      cash_today  → abre en nueva pestaña con ?pdc_token=base64(...)
 
-1. Usuario admin entra a **💱 Tipos de Cambio → 📂 Actualizar Dashboard**.
-2. Sube `Rutas_no_Liquidadas_DD_MM_YYYY.xlsx` o `.xlsm`.
-3. `processWorkbook()` (en navegador, SheetJS) regenera `RAW`, `KPI_TOTALS`, `KPI_HIST`, `EFECT`.
-4. Clic en **🚀 Publicar en GitHub** → PUT directo vía GitHub API (token embebido fragmentado).
-5. GitHub Actions despliega (~80s).
+index.html / cash_today.html / admin.html
+  → Auth Bridge v2.0 (IIFE al inicio del body)
+  → lee pdc_session → mapea a pdc_user
+  → si no hay sesión → redirige a analytics.html
+  → verifica acceso al dashboard → redirige si no autorizado
+  → botones ⏏ Salir y ⬅ Portal en el header
+  → filtro país automático (pdcAutoSetPais)
+```
 
-**Flujo alterno (este chat):** usuario sube el Excel al chat → Claude repite el mismo proceso vía `bash_tool` + GitHub API.
+### Keys de sesión (sessionStorage)
 
-### Reglas de extracción (críticas)
-- `General (seguimiento)`: `dropna(subset=['Numero de Despacho'])`; usar `Cliente` (mayúscula).
-- País por `Moneda`: GTQ→GT, USD→SV, PEN→PE, HNL→HN.
-- `Efectividad`: header en fila índice 2 (`header=None`/`{header:1,cellDates:true}`), datos desde índice 3.
-- Eliminar filas finales con `total=0` (meses futuros plantilla) antes de derivar `kpiData`.
-- `KPI_HIST.vencidas` (mes activo) = max(EFECT.mas15, conteo real `Estado Real==='Vencidas'`).
-- `EFECT.mas15` = valor real de Efectividad, **sin override**.
+| Key | Formato | Uso |
+|-----|---------|-----|
+| `pdc_session` | `{nombre, email, rol, pais, sedes, dashboards, acceso, ts}` | Principal — generada en login.html |
+| `pdc_user` | `{nombre, email, role, pais, acceso}` | Legacy — generada por Auth Bridge para compatibilidad |
+| TTL | 8 horas | Validado en analytics.html |
 
-## 7. Control de acceso por rol — ver `PROJECT_RULES.md §4` (tabla completa)
+### Token URL (apertura en nueva pestaña)
+```
+?pdc_token=base64({email, nombre, rol, pais, sedes, acceso})
+```
+El Auth Bridge lo lee si no existe `pdc_session` ni `pdc_user` en sessionStorage.
 
-Resumen: **Admin** ve todo (incluye Snapshot y Tipos de Cambio). **Usuario regular** ve Resumen/Análisis/Transportistas/Tendencias/Detalle/Tableros + Chat + Salir, pero NO Snapshot ni Tipos de Cambio.
+---
 
-## 8. Chat de soporte (Supabase)
+## 6. Control de acceso por rol
 
-- Proyecto: `https://pytsrgtcjytjztwdlvux.supabase.co`
-- Tabla: `chat_messages` — `id (uuid)`, `sender_email`, `sender_nombre`, `sender_role ('user'|'admin')`, `message`, `is_read`, `created_at`.
-- Usuario → admin: insert con `sender_role='user'`.
-- Admin → usuario: insert con `sender_email=<email_usuario>`, `sender_role='admin'`, `message='[To:'+email+'] '+texto`.
-- Ambos consultan `WHERE sender_email = <email_del_usuario>` (trae conversación completa).
-- Polling 3s (background) / 1.5s (chat abierto). Sin Realtime configurado.
-- ⚠️ `id` es UUID — usar `created_at` para detectar mensajes nuevos, nunca comparar `id` con `>`.
-- `#chatBox`: visibilidad 100% vía clase `.open` (CSS). Nunca agregar `style="display:none"` inline al contenedor.
+| Función | admin | supervisor | consulta |
+|---------|-------|-----------|---------|
+| Ver dashboards autorizados | ✅ | ✅ | ✅ |
+| Botón ⏏ Salir | ✅ | ✅ | ✅ |
+| Botón ⬅ Portal | ✅ | ✅ | ✅ |
+| 💱 Tipos de Cambio (tab) | ✅ | ❌ | ❌ |
+| ⬇ Guardar Snapshot | ✅ | ❌ | ❌ |
+| Panel admin.html | ✅ | ❌ | ❌ |
+| Publicar en GitHub | ✅ | ❌ | ❌ |
 
-## 9. Credenciales / Recursos
+### Filtro de país automático (index.html y cash_today.html)
+
+| País usuario | Comportamiento |
+|-------------|----------------|
+| `regional` (admin/supervisor) | Ve todos los países, sin restricción |
+| `GT` / `GT/CDA` | Forzado a Guatemala, selector deshabilitado |
+| `ESV` | Forzado a El Salvador, selector deshabilitado |
+| `PE` | Sin datos en Cash Today; solo Rutas |
+
+---
+
+## 7. Constantes de datos en index.html
+
+- `RAW` — array de rutas pendientes (de `General (seguimiento)`)
+- `KPI_TOTALS` — `{report_date, report_month, total_by_moneda, canal_totals}`
+- `KPI_HIST` — `[{mes,vencidas,total,pct}]` → gráfica "Total Rutas vs Vencidas"
+- `EFECT` — `[{mes,total,mas15,pct}]` → gráfica "Rutas ≥15 días"
+- `FX` / `FX_DEF` — tipos de cambio (GTQ, PEN; USD=1:1 El Salvador)
+
+**Importante:** `vencidas` y `mas15` son métricas independientes (no intercambiables).
+
+---
+
+## 8. Flujo de actualización diaria (self-service)
+
+1. Admin entra a **💱 Tipos de Cambio → 📂 Actualizar Dashboard**
+2. Sube `Rutas_no_Liquidadas_DD_MM_YYYY.xlsx` o `.xlsm`
+3. `processWorkbook()` (SheetJS en navegador) regenera `RAW`, `KPI_TOTALS`, `KPI_HIST`, `EFECT`
+4. Clic en **🚀 Publicar en GitHub** → PUT directo vía GitHub API
+5. GitHub Pages despliega en ~80s
+
+**Reglas de extracción críticas:**
+- `General (seguimiento)`: `dropna(subset=['Numero de Despacho'])`; usar `Cliente` (mayúscula)
+- País por moneda: GTQ→GT, USD→SV, PEN→PE, HNL→HN
+- `Efectividad`: header en fila índice 2, datos desde índice 3
+- Eliminar filas finales con `total=0` antes de derivar `kpiData`
+- `KPI_HIST.vencidas` (mes activo) = max(EFECT.mas15, conteo real `Estado Real==='Vencidas'`)
+- `EFECT.mas15` = valor real de Efectividad, sin override
+
+---
+
+## 9. Chat de soporte (Supabase)
+
+- **Proyecto:** `https://pytsrgtcjytjztwdlvux.supabase.co`
+- **Tabla:** `chat_messages` — `id (uuid)`, `sender_email`, `sender_nombre`, `sender_role`, `message`, `is_read`, `created_at`
+- **Acceso:** Solo desde `admin.html` (rol admin)
+- **Polling:** 3s background / 1.5s con chat abierto
+- ⚠️ Usar `created_at` para detectar mensajes nuevos, nunca comparar UUID con `>`
+- ⚠️ `#chatBox`: visibilidad 100% vía clase `.open` (CSS). No agregar `style="display:none"` inline
+
+---
+
+## 10. Credenciales y recursos
 
 | Recurso | Valor |
-|---|---|
-| Live Dashboard | https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/ |
+|---------|-------|
+| Portal principal | https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/analytics.html |
 | Login | .../login.html |
+| Dashboard Rutas | .../index.html |
+| Dashboard Cash Today | .../cash_today.html |
 | Admin Panel | .../admin.html |
 | Repo | `jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar` (main) |
-| Token GitHub (fragmentado) | `['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'].join('')` |
 | Supabase URL | `https://pytsrgtcjytjztwdlvux.supabase.co` |
-| Supabase key (publishable) | `sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj` |
+| Supabase key | `sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj` |
 | MS Teams | "C & C \| Liquidaciones" — canales: Dashboard KPIs, Reportes Mensuales, Alertas Vencidas |
 
-## 10. Integraciones
-- Power Automate: OneDrive (`/Reporte de Liquidaciones`) → notificación a Teams canal "Dashboard KPIs".
+---
 
-## 11. Estado de datos (última carga: 11/06/2026)
-- Total Rutas pendientes: 710 | Vencidas (Estado Real): ~36-44 según corte | Mes activo KPI_HIST 2026-06: vencidas=36, total=2066 | EFECT 2026-06 mas15=0.
+## 11. Integraciones externas
 
-## 12. Próximos pasos
+- **Power Automate Flujo 1:** OneDrive (`/Reporte de Liquidaciones`) → notificación Teams "Dashboard KPIs"
+- **Power Automate Flujo 2:** Alertas rutas vencidas (en implementación)
+- **Supabase:** Chat interno admin ↔ usuarios
+
+---
+
+## 12. Estado del sistema (20/06/2026)
+
+- **v13** — PDC Analytics Center completo con 5 fases implementadas
+- Todas las fases de auth, portal, guards y filtros están en producción
+- Último dato cargado: 11/06/2026 (710 rutas, 36 vencidas)
+
+---
+
+## 13. Próximos pasos
+
 Ver `ROADMAP.md`.
 
-## 13. Historial de cambios
+## 14. Historial de cambios
+
 Ver `CHANGELOG.md`.
