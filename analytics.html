@@ -341,7 +341,13 @@ function pdcDownload(archivo, nombre) {
     var token = btoa(JSON.stringify({email: session.email, nombre: session.nombre, rol: session.rol}));
     var BASE  = 'https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/';
     window.open(BASE + archivo + '?pdc_token=' + encodeURIComponent(token), '_blank');
-    if (btn) { btn.disabled = false; }
+    if (btn) {
+      btn.textContent = '✓ Abierto';
+      btn.disabled = false;
+      setTimeout(function() {
+        btn.textContent = '⬇️ Descargar Cash Today';
+      }, 2500);
+    }
   }
 }
 
