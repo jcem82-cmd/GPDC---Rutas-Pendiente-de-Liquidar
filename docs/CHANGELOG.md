@@ -1,48 +1,84 @@
-# 📜 CHANGELOG — Dashboard Liquidación de Rutas
+# 📜 CHANGELOG — PDC Analytics Center
 
 Formato: `## vX.Y — YYYY-MM-DD` seguido de cambios. Más reciente arriba.
 
 ---
 
-## v12 — 2026-06-11/12 (sesión actual)
+## v13 — 2026-06-20 (PDC Analytics Center — Fases 3, 4 y 5)
 
-**Datos:**
-- Procesado `Rutas no Liquidadas 11.06.2026.xlsm` (710 rutas, 36 vencidas) vía módulo Tipos de Cambio.
-- `KPI_HIST['2026-06']`: vencidas=36, total=2066.
-- `EFECT['2026-06']`: mas15=0 (valor real de Efectividad — métrica "≥15 días" distinta de "vencidas").
+### Fase 3 — Auth Bridge + navegación en index.html y admin.html
+- **Auth Bridge v2.0** insertado en `index.html` (IIFE al inicio del `<body>`):
+  - Lee `pdc_session` → mapea a `pdc_user` legacy con campos `pais` y `acceso`
+  - Lee `?pdc_token=base64(...)` como fallback
+  - Redirige a `analytics.html` si no hay sesión válida
+- **Botón ⬅ Portal** agregado en header de `index.html` (visible todos los roles, estilo gris oscuro, a la derecha del botón ⏏ Salir existente)
+- **Guard en `admin.html`** verificando `role === 'admin'` antes de renderizar
 
-**Fixes — Módulo Tipos de Cambio (autoservicio):**
-- Soporte para subir archivos `.xlsm` (con macros) además de `.xlsx`. SheetJS ignora macros automáticamente.
-- Fix botón "🚀 Publicar en GitHub": quedaba `disabled` permanentemente tras procesar el Excel (texto fijo "Publicando...", `disabled=""` en HTML nunca se quitaba). Ahora se habilita correctamente tras parseo exitoso.
-- Fix `processWorkbook()`: elimina filas plantilla futuras (`total=0`) del final de `efData` antes de derivar `kpiData` — evita que datos del mes activo se asignen al mes siguiente vacío.
-- Fix `processWorkbook()`: `KPI_HIST.vencidas` (mes activo) ahora usa el conteo real de `Estado Real==='Vencidas'` de `General (seguimiento)` cuando supera al valor de Efectividad. `EFECT.mas15` ya NO se sobreescribe — se mantiene como valor real de la hoja Efectividad (métrica "≥15 días" independiente).
+### Fase 4 — Auth Bridge + filtro país + navegación en cash_today.html
+- **Auth Bridge v2.0** insertado en `cash_today.html`:
+  - Misma lógica que index.html: lee `pdc_session`, mapea a `pdc_user`, fallback a token URL
+  - Verifica que `cashtoday` esté en `acceso[]` del usuario; si no → redirige a `analytics.html`
+- **Botón ⏏ Salir** en header de `cash_today.html` (limpia `pdc_session` y `pdc_user`, redirige a `analytics.html`)
+- **Botón ⬅ Portal** en header de `cash_today.html` (visible todos los roles)
+- **Función `pdcAutoSetPais()`** implementada:
+  - Lee `pdc_session` → extrae campo `pais`
+  - admin/supervisor/regional → sin restricción, selector libre
+  - `GT`/`GT/CDA` → fuerza selector a "Guatemala" y lo deshabilita
+  - `ESV` → fuerza selector a "El Salvador" y lo deshabilita
+  - `PE` → sin datos en Cash Today (solo Rutas)
+- **Llamada a `pdcAutoSetPais()`** en `DOMContentLoaded`, antes de `initFilters()` y `autoFilter()`
 
-**Fixes — Chat de soporte:**
-- Root cause: `#chatBox` tenía `style="display:none"` **inline**, que sobreescribía la regla CSS `.chat-box.open{display:flex}` por especificidad → el panel nunca abría para usuarios regulares (admin no usa `toggle()`, por eso "funcionaba" solo para él). Eliminado el inline style.
-- Fix secundario: `chatFabIco` (span del ícono del botón flotante) no existía en el HTML para usuarios regulares → error JS al hacer clic. Ahora se inyecta dinámicamente en `initChat()`.
-- Fix: `checkNewAdminReply()` / `checkNewUserMsgs()` comparaban `id` (UUID de Supabase) con `>` contra `0` — comparación siempre `false`. Cambiado a comparación por `created_at` (timestamp).
+### Fase 5 — Token enriquecido + documentación
+- **Token URL enriquecido** en `analytics.html`:
+  - Antes: `btoa({email, nombre, rol})`
+  - Ahora: `btoa({email, nombre, rol, pais, sedes, acceso})` — permite al Auth Bridge leer país y permisos desde el token
+- **`PDC_Dashboard_Config.md` v2.0** actualizado con arquitectura completa, flujo de navegación, matriz de usuarios, lógica de filtro país, y guía de mantenimiento
+- **`docs/MASTER_PROJECT_CONTEXT.md` v13** actualizado con contexto completo del sistema
+- **`docs/CHANGELOG.md`** actualizado con todas las decisiones de esta sesión
+- **`docs/ROADMAP.md`** actualizado con ítems completados y nuevos pendientes
 
-**Fixes — Control de acceso por rol:**
-- `⬇ Guardar Snapshot`: traía `class="hdr-dl-btn admin-visible"` **hardcodeada en HTML**, visible para todos sin importar rol. Removida; ahora solo JS la agrega si `role==='admin'`.
-- `💱 Tipos de Cambio` (tab + panel): oculto por defecto, visible solo para admin (`admin-visible` vía JS). Antes era además el **panel activo por defecto** para todos — corregido, ahora "Resumen General" es el panel inicial.
-- `⏏ Salir` (nuevo): botón en header superior derecho, visible para **todos los roles** (`display:flex !important` inline, independiente de `.hdr-dl-btn` admin-only). Limpia `sessionStorage.pdc_user` y redirige a `login.html`.
+---
+
+## v12 — 2026-06-11/12 (Fases 1 y 2 — Auth Core + Portal)
+
+### Fase 1 — Auth Core
+- `login.html`: formulario + validación + generación de `pdc_session`
+- `js/users.js`: matriz centralizada con 11 usuarios, roles, países y accesos
+- `js/auth.js`: funciones `pdcAuthenticate()`, `pdcGetSession()`, `pdcRequireAuth()`, `pdcGetUserDashboards()`
+- Roles implementados: `admin`, `supervisor`, `consulta`
+
+### Fase 2 — Portal analytics.html
+- Cards ejecutivas por dashboard (`rutas`, `cashtoday`)
+- Visibilidad de cards según `dashboards[]` del usuario
+- Chip de país y rol en header
+- Función `pdcGoToDashboard()`: index.html en misma pestaña, cash_today en nueva pestaña con token
+- Botón "Cerrar sesión" en header: limpia `pdc_session` + `pdc_user` → redirige a login.html
+- Acciones admin: sección exclusiva para rol admin (Supabase, GitHub, etc.)
+
+### Fixes en index.html (v12)
+- Soporte `.xlsm` en módulo Tipos de Cambio
+- Fix botón "🚀 Publicar en GitHub" que quedaba disabled permanentemente
+- Fix `processWorkbook()`: elimina filas plantilla futuras (`total=0`)
+- Fix `KPI_HIST.vencidas` vs `EFECT.mas15` (métricas independientes)
+- Fix chat: `#chatBox` tenía `display:none` inline sobreescribiendo CSS
+- Fix `chatFabIco` no existía para usuarios regulares
+- Fix comparación UUID con `>` (cambiado a `created_at`)
+- Fix `⬇ Guardar Snapshot` hardcodeado visible para todos
 
 ---
 
 ## v11 — 2026-06-09
 
-- Dashboard reconstruido sobre base 29/05/2026, datos actualizados a 08/06/2026.
-- Login con 6 usuarios (1 admin, 5 consulta), roles diferenciados.
-- Logo PDC embebido (base64 JPEG).
-- Chat de soporte en tiempo real (polling, sin Supabase Realtime).
-- `admin.html` — panel de conversaciones.
-- Botón "⬇ Guardar Snapshot" (admin-only en su momento).
-- Módulo Tipos de Cambio habilitado como canal self-service (`Publicar en GitHub` sin tokens Claude).
-- Fix fechas 1899/1900 en gráfica de tendencia (`cellDates:true`, `xlSerialToDate` valida rango 2000-2100).
-- `KPI_HIST`/`EFECT` derivados siempre de hoja Efectividad.
-- Equipo MS Teams "C & C | Liquidaciones" + Power Automate (OneDrive → Teams).
+- Dashboard reconstruido sobre base 29/05/2026, datos actualizados a 08/06/2026
+- Login con 6 usuarios (1 admin, 5 consulta), roles diferenciados
+- Logo PDC embebido (base64 JPEG)
+- Chat de soporte en tiempo real (polling Supabase)
+- `admin.html` — panel de conversaciones
+- Módulo Tipos de Cambio self-service (Publicar en GitHub)
+- Fix fechas 1899/1900 en gráfica de tendencia
+- Power Automate: OneDrive → Teams
 
 ---
 
-## Versiones anteriores
-Ver `PDC_Dashboard_Config.md` en el repo para historial pre-v11.
+## Versiones anteriores (pre-v11)
+Ver historial de commits en GitHub.
