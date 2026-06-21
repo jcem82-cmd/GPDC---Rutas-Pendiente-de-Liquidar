@@ -1,84 +1,87 @@
-# 📜 CHANGELOG — PDC Analytics Center
-
-Formato: `## vX.Y — YYYY-MM-DD` seguido de cambios. Más reciente arriba.
+# CHANGELOG — PDC Analytics Center | Grupo PDC
 
 ---
 
-## v13 — 2026-06-20 (PDC Analytics Center — Fases 3, 4 y 5)
+## [v1.0] · 20/06/2026 — PDC Analytics Center · LANZAMIENTO ✅
 
-### Fase 3 — Auth Bridge + navegación en index.html y admin.html
-- **Auth Bridge v2.0** insertado en `index.html` (IIFE al inicio del `<body>`):
-  - Lee `pdc_session` → mapea a `pdc_user` legacy con campos `pais` y `acceso`
-  - Lee `?pdc_token=base64(...)` como fallback
-  - Redirige a `analytics.html` si no hay sesión válida
-- **Botón ⬅ Portal** agregado en header de `index.html` (visible todos los roles, estilo gris oscuro, a la derecha del botón ⏏ Salir existente)
-- **Guard en `admin.html`** verificando `role === 'admin'` antes de renderizar
+### Alcance
+Primera versión de la plataforma corporativa unificada de Business Intelligence. Implementa el portal de acceso centralizado con autenticación única para todos los dashboards del Grupo PDC.
 
-### Fase 4 — Auth Bridge + filtro país + navegación en cash_today.html
-- **Auth Bridge v2.0** insertado en `cash_today.html`:
-  - Misma lógica que index.html: lee `pdc_session`, mapea a `pdc_user`, fallback a token URL
-  - Verifica que `cashtoday` esté en `acceso[]` del usuario; si no → redirige a `analytics.html`
-- **Botón ⏏ Salir** en header de `cash_today.html` (limpia `pdc_session` y `pdc_user`, redirige a `analytics.html`)
-- **Botón ⬅ Portal** en header de `cash_today.html` (visible todos los roles)
-- **Función `pdcAutoSetPais()`** implementada:
-  - Lee `pdc_session` → extrae campo `pais`
-  - admin/supervisor/regional → sin restricción, selector libre
-  - `GT`/`GT/CDA` → fuerza selector a "Guatemala" y lo deshabilita
-  - `ESV` → fuerza selector a "El Salvador" y lo deshabilita
-  - `PE` → sin datos en Cash Today (solo Rutas)
-- **Llamada a `pdcAutoSetPais()`** en `DOMContentLoaded`, antes de `initFilters()` y `autoFilter()`
+### Nuevos archivos
 
-### Fase 5 — Token enriquecido + documentación
-- **Token URL enriquecido** en `analytics.html`:
-  - Antes: `btoa({email, nombre, rol})`
-  - Ahora: `btoa({email, nombre, rol, pais, sedes, acceso})` — permite al Auth Bridge leer país y permisos desde el token
-- **`PDC_Dashboard_Config.md` v2.0** actualizado con arquitectura completa, flujo de navegación, matriz de usuarios, lógica de filtro país, y guía de mantenimiento
-- **`docs/MASTER_PROJECT_CONTEXT.md` v13** actualizado con contexto completo del sistema
-- **`docs/CHANGELOG.md`** actualizado con todas las decisiones de esta sesión
-- **`docs/ROADMAP.md`** actualizado con ítems completados y nuevos pendientes
+| Archivo | Descripción |
+|---|---|
+| `login.html` | Login corporativo único — diseño split-screen, 11 usuarios, 3 roles |
+| `analytics.html` | Portal Hub — tarjetas de dashboards, panel de administración, navegación |
 
----
+### Funcionalidades implementadas
 
-## v12 — 2026-06-11/12 (Fases 1 y 2 — Auth Core + Portal)
+#### `login.html`
+- Diseño split-screen: panel izquierdo branding PDC + panel derecho formulario
+- Grid pattern y orbs de glow sobre fondo `--navy` con degradado
+- Estadísticas del sistema visibles antes de ingresar (710 rutas · 4 países · 11 usuarios)
+- Vista previa de módulos disponibles (Rutas · Cash Today)
+- Validación de campos en tiempo real con mensajes de error específicos
+- Toggle mostrar/ocultar contraseña
+- Spinner de carga con estado "Verificando..." (600ms simulado para UX)
+- Animación `shake` en formulario cuando las credenciales son incorrectas
+- Auto-redirect si ya existe sesión válida (`pdc_session`) al cargar la página
+- Escribe `pdc_session` y `pdc_user` (legacy compat) en `sessionStorage`
+- Diseño responsive — panel izquierdo se oculta en mobile ≤900px
 
-### Fase 1 — Auth Core
-- `login.html`: formulario + validación + generación de `pdc_session`
-- `js/users.js`: matriz centralizada con 11 usuarios, roles, países y accesos
-- `js/auth.js`: funciones `pdcAuthenticate()`, `pdcGetSession()`, `pdcRequireAuth()`, `pdcGetUserDashboards()`
-- Roles implementados: `admin`, `supervisor`, `consulta`
+#### `analytics.html`
+- Loading overlay azul PDC que se disuelve al confirmar sesión válida
+- Header sticky con logo PDC, nav pills (Mis Dashboards · Administración), avatar con iniciales, botón Salir
+- Hero banner con saludo dinámico por hora del día, fecha en español, chips de estado con animación pulse
+- KPIs globales en hero (solo para usuarios `pais: regional`)
+- Cards de dashboards con accent bar por color corporativo (Rutas: azul degradado · Cash Today: naranja/amarillo)
+- Cada card incluye: ícono, nombre, categoría, descripción, badge "Activo", países filtrados por perfil del usuario, KPI mini-row (3 métricas), botón "Acceder →"
+- Animación de entrada escalonada por card (`cardIn` con `animation-delay`)
+- Panel de Administración visible solo para `rol: admin` con 5 acciones: Actualizar Rutas · Actualizar Cash Today · Panel Administrativo · Descargar Rutas · Descargar Cash Today
+- Footer con estado del sistema ("Sistema operativo" con dot pulsante) y versión
 
-### Fase 2 — Portal analytics.html
-- Cards ejecutivas por dashboard (`rutas`, `cashtoday`)
-- Visibilidad de cards según `dashboards[]` del usuario
-- Chip de país y rol en header
-- Función `pdcGoToDashboard()`: index.html en misma pestaña, cash_today en nueva pestaña con token
-- Botón "Cerrar sesión" en header: limpia `pdc_session` + `pdc_user` → redirige a login.html
-- Acciones admin: sección exclusiva para rol admin (Supabase, GitHub, etc.)
+#### Función `pdcDownload` — Snapshots sin login
+- Usa `fetch(base + archivo, {cache:'no-store'})` al mismo origin de GitHub Pages
+- Strip del Auth Bridge v2.0 con regex validado contra `index.html` real del repositorio:
+  `/<script>\s*\(function\(\)\s*\{[\s\S]*?Auth Bridge[\s\S]*?\}\)\(\);\s*<\/script>/`
+- Agrega watermark sticky amarillo: `📸 SNAPSHOT PDC · fecha · Solo lectura · nombre`
+- Descarga como `Blob` local (`text/html;charset=utf-8`) — sin dependencias de red al abrir
+- El archivo descargado abre directamente sin requerir autenticación
+- Estado del botón: Descargando → ✅ Descargado (3s) → restaura estado original
+- Diseñado para archivos históricos de cierre de mes
 
-### Fixes en index.html (v12)
-- Soporte `.xlsm` en módulo Tipos de Cambio
-- Fix botón "🚀 Publicar en GitHub" que quedaba disabled permanentemente
-- Fix `processWorkbook()`: elimina filas plantilla futuras (`total=0`)
-- Fix `KPI_HIST.vencidas` vs `EFECT.mas15` (métricas independientes)
-- Fix chat: `#chatBox` tenía `display:none` inline sobreescribiendo CSS
-- Fix `chatFabIco` no existía para usuarios regulares
-- Fix comparación UUID con `>` (cambiado a `created_at`)
-- Fix `⬇ Guardar Snapshot` hardcodeado visible para todos
+#### Sistema de sesión unificado
+- Clave `pdc_session`: objeto `{email, nombre, rol, dashboards, pais, sedes, ts}` · TTL 8h
+- Clave `pdc_user`: legacy compat para dashboards existentes · `{nombre, email, role}`
+- Guard en `analytics.html`: sin sesión válida → redirect a `login.html`
+- `pdcNavigate()`: escribe `pdc_user` antes de navegar a dashboard legacy
+- `pdcBridgeToTab()`: navega a dashboard legacy + activa tab específico vía `?tab=`
 
----
+### Arquitectura de acceso por rol
+| Función | admin | supervisor | consulta |
+|---|---|---|---|
+| Portal y dashboards autorizados | ✅ | ✅ | ✅ |
+| Panel de administración | ✅ | ❌ | ❌ |
+| Descargar snapshots | ✅ | ❌ | ❌ |
+| Actualizar datos | ✅ | ❌ | ❌ |
 
-## v11 — 2026-06-09
-
-- Dashboard reconstruido sobre base 29/05/2026, datos actualizados a 08/06/2026
-- Login con 6 usuarios (1 admin, 5 consulta), roles diferenciados
-- Logo PDC embebido (base64 JPEG)
-- Chat de soporte en tiempo real (polling Supabase)
-- `admin.html` — panel de conversaciones
-- Módulo Tipos de Cambio self-service (Publicar en GitHub)
-- Fix fechas 1899/1900 en gráfica de tendencia
-- Power Automate: OneDrive → Teams
+### Deploy
+- Ambos archivos subidos vía GitHub REST API PUT al repo `jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar` (branch: main)
+- GitHub Pages activo en: `https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/`
 
 ---
 
-## Versiones anteriores (pre-v11)
-Ver historial de commits en GitHub.
+## Historial previo por proyecto
+
+### Dashboard Rutas — v12 · 12/06/2026
+- Auth Bridge v2.0 integrado en `index.html`
+- 710 rutas activas · 36 vencidas · última carga 11/06/2026
+- Ver contexto detallado en `MASTER_PROJECT_CONTEXT.md §7.1`
+
+### Dashboard Cash Today — v2.7 · Junio 2026
+- 10 módulos funcionales · 35,089 transacciones Jun 2025 → Jun 2026
+- TC mensual BANGUAT · Volumetría · Costo Servicio multi-país
+- Ver contexto detallado en `MASTER_PROJECT_CONTEXT.md §7.2`
+
+---
+*Actualizar este archivo al finalizar cada sesión de desarrollo*
