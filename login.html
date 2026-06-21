@@ -398,6 +398,12 @@ body{
         <span id="errText">Credenciales incorrectas. Verifique e intente nuevamente.</span>
       </div>
 
+      <!-- Recordar email -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <input type="checkbox" id="chkRemember" style="width:15px;height:15px;accent-color:var(--navy);cursor:pointer"/>
+        <label for="chkRemember" style="font-size:.78rem;color:var(--text2);cursor:pointer;user-select:none">Recordar mi correo</label>
+      </div>
+
       <!-- Submit -->
       <button class="btn-submit" id="btnLogin" type="button">
         <span class="spinner" id="spinner"></span>
@@ -462,6 +468,38 @@ var fEmail   = document.getElementById('fEmail');
 var fPass    = document.getElementById('fPass');
 var errMsg   = document.getElementById('errMsg');
 var errText  = document.getElementById('errText');
+var chkRem   = document.getElementById('chkRemember');
+
+/* ── Recordar email ── */
+(function(){
+  var saved = localStorage.getItem('pdc_remember_email');
+  if(saved){ fEmail.value=saved; if(chkRem) chkRem.checked=true; }
+})();
+
+/* ── Bloqueo por intentos ── */
+var loginAttempts = 0;
+var loginLocked   = false;
+var lockTimer     = null;
+function checkLockout(){
+  if(!loginLocked) return false;
+  return true;
+}
+function applyLockout(){
+  loginLocked=true;
+  var btn=document.getElementById('btnLogin');
+  var secs=30;
+  if(btn){ btn.disabled=true; }
+  var interval=setInterval(function(){
+    secs--;
+    if(btn) btn.querySelector('span:last-child').textContent='Bloqueado ('+secs+'s)';
+    if(secs<=0){
+      clearInterval(interval);
+      loginLocked=false;
+      loginAttempts=0;
+      if(btn){ btn.disabled=false; btn.querySelector('span:last-child').textContent='Iniciar sesión'; }
+    }
+  },1000);
+}
 var btnLogin = document.getElementById('btnLogin');
 var btnLabel = document.getElementById('btnLabel');
 var btnArrow = document.getElementById('btnArrow');
@@ -490,6 +528,9 @@ document.getElementById('togglePass').addEventListener('click', function(){
 btnLogin.addEventListener('click', doLogin);
 
 function doLogin(){
+  /* ── Verificar bloqueo ── */
+  if(checkLockout()){ return; }
+
   var email = fEmail.value.trim();
   var pass  = fPass.value;
   errMsg.classList.remove('visible');
@@ -505,7 +546,14 @@ function doLogin(){
     var user = authenticate(email, pass);
     if(!user){
       setLoading(false);
-      showError('Credenciales incorrectas. Verifique e intente nuevamente.');
+      loginAttempts++;
+      var restantes = 3 - loginAttempts;
+      if(loginAttempts >= 3){
+        showError('Demasiados intentos fallidos. Espere 30 segundos.');
+        applyLockout();
+      } else {
+        showError('Credenciales incorrectas. ' + (restantes===1?'Último intento.':restantes+' intentos restantes.'));
+      }
       fPass.value = '';
       fPass.focus();
       /* Shake effect */
@@ -521,6 +569,11 @@ function doLogin(){
       dashboards: user.dashboards, pais: user.pais, sedes: user.sedes,
       ts: Date.now()
     };
+    /* ── Recordar email ── */
+    if(chkRem && chkRem.checked){ localStorage.setItem('pdc_remember_email', email); }
+    else { localStorage.removeItem('pdc_remember_email'); }
+    loginAttempts = 0;
+
     sessionStorage.setItem(PDC_SESSION_KEY, JSON.stringify(session));
     /* Also set legacy pdc_user key for backward compatibility with existing dashboards */
     sessionStorage.setItem('pdc_user', JSON.stringify({
