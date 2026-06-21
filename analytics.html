@@ -665,9 +665,9 @@ function pdcDownload(archivo, nombre, btn){
       return r.text();
     })
     .then(function(src){
-      /* ── Strip Auth Bridge v2.0 (regex validado contra index.html real) ── */
+      /* ── Strip Auth Bridge v2.0 — regex unificado (index.html + cash_today.html) ── */
       src = src.replace(
-        /<script>\s*\(function\(\)\s*\{[\s\S]*?Auth Bridge[\s\S]*?\}\)\(\);\s*<\/script>/,
+        /<script>\n[\s\S]{0,50}(?:Auth Bridge|AUTH BRIDGE)[\s\S]*?\}\)\(\);\n<\/script>/,
         '<!-- pdc-snapshot: sin autenticación requerida -->'
       );
       /* ── Watermark de snapshot ── */
