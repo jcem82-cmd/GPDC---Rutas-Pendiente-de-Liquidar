@@ -226,6 +226,7 @@ body{
 .dash-card:nth-child(3){animation-delay:.16s}
 .dash-card:hover{box-shadow:var(--shadow-md);transform:translateY(-3px)}
 
+@keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes cardIn{
   from{opacity:0;transform:translateY(18px)}
   to{opacity:1;transform:translateY(0)}
@@ -467,6 +468,27 @@ body{
   <div class="overlay-text">Cargando portal...</div>
 </div>
 
+<!-- ── Toast de descarga ── -->
+<div id="pdcToast" style="position:fixed;bottom:28px;right:28px;z-index:10000;
+  background:#0F1729;color:#fff;border-radius:12px;padding:14px 20px;
+  box-shadow:0 8px 32px rgba(0,32,96,.28);font-family:'Inter',sans-serif;
+  font-size:.82rem;font-weight:500;min-width:260px;max-width:340px;
+  display:none;align-items:center;gap:12px;border-left:4px solid #2D9E2D;
+  transition:opacity .3s">
+  <span id="pdcToastIcon" style="font-size:1.1rem">✅</span>
+  <div style="flex:1"><div id="pdcToastTitle" style="font-weight:700;margin-bottom:2px">Listo</div>
+  <div id="pdcToastMsg" style="opacity:.7;font-size:.75rem">Operación completada</div></div>
+  <button onclick="pdcHideToast()" style="background:none;border:none;color:#fff;opacity:.5;cursor:pointer;font-size:1.1rem;padding:0 4px;line-height:1">×</button>
+</div>
+<!-- ── Banner sesión expirando ── -->
+<div id="pdcSessionWarning" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9998;
+  background:#f59e0b;color:#000;text-align:center;padding:8px 16px;
+  font-family:'Inter',sans-serif;font-size:.78rem;font-weight:700;
+  box-shadow:0 2px 8px rgba(0,0,0,.2)">
+  ⚠️ Tu sesión expira en <span id="pdcSessionMins">15</span> minutos ·
+  <button onclick="pdcRenewSession()" style="background:#000;color:#f59e0b;border:none;border-radius:6px;padding:3px 12px;font-size:.75rem;font-weight:700;cursor:pointer;margin-left:8px">Renovar sesión</button>
+</div>
+
 <!-- HEADER -->
 <header class="header">
   <div class="header-inner">
@@ -652,8 +674,10 @@ function pdcDownload(archivo, nombre, btn){
 
   function resetBtn(ok){
     if(!btn) return;
-    if(ok){ btn.innerHTML='<div class="admin-btn-icon">✅</div><div class="admin-btn-texts"><div class="admin-btn-label">Descargado</div><div class="admin-btn-desc">Revise su carpeta de descargas</div></div>'; }
-    else   { btn.innerHTML=btnOrig; btn.disabled=false; }
+    if(ok){
+      btn.innerHTML='<div class="admin-btn-icon">✅</div><div class="admin-btn-texts"><div class="admin-btn-label">Descargado</div><div class="admin-btn-desc">Revise su carpeta de descargas</div></div>';
+      pdcShowToast('📥','Snapshot generado',nombre + ' listo en descargas',4000);
+    } else { btn.innerHTML=btnOrig; btn.disabled=false; }
     if(ok) setTimeout(function(){ btn.innerHTML=btnOrig; btn.disabled=false; }, 3000);
   }
 
@@ -686,7 +710,7 @@ function pdcDownload(archivo, nombre, btn){
       resetBtn(true);
     })
     .catch(function(e){
-      alert('Error al generar snapshot: ' + e.message + '\nIntente de nuevo.');
+      pdcShowToast('❌', 'Error de descarga', e.message.slice(0,60));
       resetBtn(false);
     });
 }
@@ -719,6 +743,68 @@ function getGreeting(){
   return h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches';
 }
 
+/* ── TOAST ── */
+function pdcShowToast(icon, title, msg, duration){
+  var t=document.getElementById('pdcToast');
+  if(!t) return;
+  document.getElementById('pdcToastIcon').textContent  = icon  || '✅';
+  document.getElementById('pdcToastTitle').textContent = title || 'Listo';
+  document.getElementById('pdcToastMsg').textContent   = msg   || '';
+  t.style.display='flex';
+  t.style.animation='toastIn .3s ease';
+  if(pdcShowToast._timer) clearTimeout(pdcShowToast._timer);
+  pdcShowToast._timer = setTimeout(pdcHideToast, duration || 4500);
+}
+function pdcHideToast(){
+  var t=document.getElementById('pdcToast');
+  if(!t) return;
+  t.style.opacity='0';
+  setTimeout(function(){ t.style.display='none'; t.style.opacity=''; }, 300);
+}
+
+/* ── SESSION EXPIRY WATCHER ── */
+function pdcStartSessionWatcher(){
+  var WARN_BEFORE    = 15 * 60 * 1000; /* avisar 15 min antes */
+  var CHECK_INTERVAL = 60 * 1000;      /* verificar cada 60s  */
+  var warned = false;
+  setInterval(function(){
+    try{
+      var raw = sessionStorage.getItem(PDC_SESSION_KEY);
+      if(!raw) return;
+      var s = JSON.parse(raw);
+      var remaining = PDC_SESSION_TTL - (Date.now() - s.ts);
+      var banner = document.getElementById('pdcSessionWarning');
+      if(remaining <= 0){ pdcLogout(); return; }
+      if(remaining <= WARN_BEFORE){
+        if(banner){
+          banner.style.display = '';
+          document.getElementById('pdcSessionMins').textContent = Math.ceil(remaining / 60000);
+        }
+        if(!warned){
+          pdcShowToast('⏰','Sesión por expirar','Te quedan '+Math.ceil(remaining/60000)+' min · Renueva para continuar',7000);
+          warned = true;
+        }
+      } else {
+        if(banner) banner.style.display = 'none';
+        warned = false;
+      }
+    }catch(e){}
+  }, CHECK_INTERVAL);
+}
+
+function pdcRenewSession(){
+  try{
+    var raw = sessionStorage.getItem(PDC_SESSION_KEY);
+    if(!raw){ pdcLogout(); return; }
+    var s = JSON.parse(raw);
+    s.ts = Date.now();
+    sessionStorage.setItem(PDC_SESSION_KEY, JSON.stringify(s));
+    var banner = document.getElementById('pdcSessionWarning');
+    if(banner) banner.style.display = 'none';
+    pdcShowToast('✅','Sesión renovada','Extendida 8 horas más · ' + new Date().toLocaleTimeString('es-GT',{hour:'2-digit',minute:'2-digit'}), 3500);
+  }catch(e){ pdcLogout(); }
+}
+
 /* ── RENDER PORTAL ── */
 (function(){
   var session = pdcGetSession();
@@ -740,6 +826,7 @@ function getGreeting(){
   document.getElementById('btnLogout').addEventListener('click',function(){
     if(confirm('¿Desea cerrar la sesión?')) pdcLogout();
   });
+  pdcStartSessionWatcher();
 
   /* Hero */
   var nombre2 = session.nombre.split(' ').slice(0,2).join(' ');
