@@ -1,7 +1,7 @@
 # ROADMAP — PDC Analytics Center | Grupo PDC
 
-**Estado actual: v1.0 ESTABLE** · Próxima versión objetivo: v1.1
-**Última actualización:** 20/06/2026
+**Estado actual: v1.1 ESTABLE** · Próxima versión objetivo: v1.2
+**Última actualización:** 21/06/2026
 
 ---
 
@@ -24,27 +24,25 @@
 
 ---
 
-## 🔵 FASE 1 — Consolidación y Mejoras Portal (v1.1 · Por priorizar)
+## ✅ FASE 1 — Consolidación y Mejoras Portal (COMPLETADA · v1.1 · Jun 2026)
 
 ### Portal (`analytics.html`)
-- [ ] **Integrar Auth Bridge** en `cash_today.html` igual al de `index.html` (actualmente sin guard)
-- [ ] **Sesión expirando:** notificación proactiva 15 min antes del vencimiento de las 8h
-- [ ] **Último acceso:** mostrar fecha/hora del último login en el portal
-- [ ] **Breadcrumb de retorno:** botón en cada dashboard para volver al portal sin perder sesión
+- [x] **Auth Bridge unificado** — regex único cubre `index.html` y `cash_today.html`
+- [x] **Sesión expirando** — banner + toast 15 min antes del vencimiento · botón Renovar sesión
+- [x] **Toast de descarga** — notificación visual de snapshot completado (reemplaza `alert()`)
 
 ### Login (`login.html`)
-- [ ] **Bloqueo temporal** tras 3 intentos fallidos consecutivos (30 segundos)
-- [ ] **Recordar email** — checkbox para persistir el último email usado (`localStorage`)
+- [x] **Bloqueo temporal** — 3 intentos fallidos → bloqueo 30 segundos con countdown
+- [x] **Recordar email** — checkbox persiste último correo usado en `localStorage`
 
-### Descarga de Snapshots
-- [ ] **Snapshot Cash Today:** implementar misma lógica `fetch` + strip para `cash_today.html`
-  (actualmente muestra alerta; requiere identificar su Auth Bridge si lo tiene)
-- [ ] **Nombre de archivo con fecha:** `Dashboard_Rutas_YYYY-MM-DD.html` — ya implementado en Rutas
-- [ ] **Notificación en pantalla:** toast visual de descarga completada (sin `alert()`)
+### Cash Today (`cash_today.html`)
+- [x] **Auth Bridge v2.0** — guard de sesión, acceso a `cashtoday`, redirect a portal
+- [x] **?tab= URL param** — `pdcBridgeToTab('cash_today.html','config')` navega directo al módulo
+- [x] **Nombre de usuario en header** — se muestra al cargar desde el portal
 
 ---
 
-## 🟡 FASE 2 — Nuevos Dashboards (v1.2 · Roadmap)
+## 🔵 FASE 2 — Nuevos Dashboards (v1.2 · Roadmap)
 
 ### Arquitectura de integración de nuevos dashboards
 Todo nuevo dashboard deberá:
@@ -94,45 +92,16 @@ Todo nuevo dashboard deberá:
 
 ## 📋 BACKLOG — Correcciones y Deuda Técnica
 
-| Prioridad | Descripción | Archivo | Origen |
+| Prioridad | Descripción | Archivo | Estado |
 |---|---|---|---|
-| Alta | Integrar Auth Bridge en `cash_today.html` | cash_today.html | Fase 1 |
-| Alta | Alinear versión SheetJS: Rutas 0.20.0 vs Cash Today 0.18.5 | Ambos | Style Guide |
-| Media | Alinear versión Chart.js: Rutas 4.4.0 vs Cash Today 4.4.1 | Ambos | Style Guide |
-| Media | Validar visitas SV (STA TECLA, SAN MIGUEL) con Recogidas | cash_today.html | v2.7 |
-| Media | Documentar variables CSS `:root` en `index.html` (actualmente sin sistema de variables) | index.html | Style Guide |
-| Baja | Tooltip hover en gráfica Tráfico | cash_today.html | v2.7 |
-| Baja | Badge "último mes cargado" en Resumen Cash Today | cash_today.html | v2.7 |
-| Baja | Paginación Detalle más visible en móvil | cash_today.html | v2.7 |
+| Alta | Alinear versión SheetJS: Rutas 0.20.0 vs Cash Today 0.18.5 | Ambos | Pendiente |
+| Media | Alinear versión Chart.js: Rutas 4.4.0 vs Cash Today 4.4.1 | Ambos | Pendiente |
+| Media | Validar visitas SV (STA TECLA, SAN MIGUEL) con Recogidas | cash_today.html | Pendiente |
+| Media | Documentar variables CSS `:root` en `index.html` | index.html | Pendiente |
+| Baja | Tooltip hover en gráfica Tráfico | cash_today.html | Pendiente |
+| Baja | Badge "último mes cargado" en Resumen Cash Today | cash_today.html | Pendiente |
+| Baja | Paginación Detalle más visible en móvil | cash_today.html | Pendiente |
 
 ---
 
-## 🗓 PROCESO DE ACTUALIZACIÓN DE DATOS
-
-### Dashboard Rutas
-**Frecuencia:** diaria / al cierre de mes
-
-1. Ingresar al portal → Acceder a Rutas → tab "Tipos de Cambio" → "Actualizar Dashboard"
-2. Subir `Rutas_no_Liquidadas_DD_MM_YYYY.xlsx`
-3. `processWorkbook()` regenera constantes JS en el navegador
-4. Clic "Publicar en GitHub" → PUT vía GitHub API → deploy ~80s
-
-**Flujo alterno (Claude):** subir Excel al chat → Claude procesa vía `bash_tool` + GitHub API
-
-### Dashboard Cash Today
-**Frecuencia:** mensual (al cierre de mes operativo)
-
-1. Exportar Excel desde sistema Cash Today
-2. Nuevo chat en Claude → pegar `MASTER_PROJECT_CONTEXT.md`
-3. Subir `cash_today.html` + Excel nuevo
-4. Claude aplica modificación quirúrgica y sube vía GitHub API
-
-### Snapshots de Cierre de Mes
-1. Ingresar al portal como Administrador
-2. Panel de Administración → "Descargar Rutas"
-3. El archivo `.html` se descarga sin autenticación y se guarda localmente
-4. Nombrar: `Dashboard_Rutas_YYYY-MM.html` para el archivo histórico
-
----
-
-*PDC Analytics Center · Grupo PDC · Departamento Financiero · v1.0 · Junio 2026*
+*PDC Analytics Center · Grupo PDC · Departamento Financiero · v1.1 · Junio 2026*
