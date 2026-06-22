@@ -604,6 +604,8 @@ body{
               <th style="padding:9px 14px;text-align:center;font-weight:600">Rol</th>
               <th style="padding:9px 14px;text-align:center;font-weight:600">País / Región</th>
               <th style="padding:9px 14px;text-align:left;font-weight:600">Dashboards autorizados</th>
+              <th style="padding:9px 14px;text-align:center;font-weight:600">Último acceso</th>
+              <th style="padding:9px 14px;text-align:center;font-weight:600">Estado</th>
             </tr>
           </thead>
           <tbody id="userTableBody"></tbody>
@@ -721,6 +723,26 @@ var PDC_DASHBOARDS = [
 ];
 
 /* ── FUNCIONES SESIÓN ── */
+/* ── U4: Toggle activo/inactivo de usuario ── */
+function pdcToggleUser(email, setActive, callback){
+  try{
+    var states = JSON.parse(localStorage.getItem('pdc_user_states') || '{}');
+    states[email] = setActive;
+    localStorage.setItem('pdc_user_states', JSON.stringify(states));
+    /* Si se desactiva al usuario actualmente logueado → logout inmediato */
+    var session = pdcGetSession();
+    if(session && session.email === email && !setActive){
+      pdcShowToast('⚠️','Usuario desactivado','Sesión cerrada por el administrador',3000);
+      setTimeout(pdcLogout, 2000);
+      return;
+    }
+    if(callback) callback();
+    pdcShowToast(setActive ? '🟢' : '🔴',
+      setActive ? 'Usuario activado' : 'Usuario desactivado',
+      email, 3000);
+  }catch(e){ console.error('pdcToggleUser error:', e); }
+}
+
 function pdcGetSession(){
   try{
     var raw = sessionStorage.getItem(PDC_SESSION_KEY);
@@ -903,6 +925,17 @@ function pdcRenewSession(){
   var session = pdcGetSession();
   if(!session){ window.location.href = PDC_LOGIN_PAGE; return; }
 
+  /* U4 — Verificar si el usuario está activo */
+  try{
+    var states = JSON.parse(localStorage.getItem('pdc_user_states') || '{}');
+    if(states[session.email] === false){
+      /* Usuario desactivado → logout inmediato */
+      pdcDestroySession();
+      window.location.href = PDC_LOGIN_PAGE;
+      return;
+    }
+  }catch(e){}
+
   /* Hide overlay */
   setTimeout(function(){
     var ov = document.getElementById('overlay');
@@ -933,11 +966,25 @@ function pdcRenewSession(){
 
   /* Hero chips */
   var chips = document.getElementById('hChips');
+  /* U3 — Leer último acceso desde localStorage */
+  var lastAccessStr = '';
+  try{
+    var accessLog = JSON.parse(localStorage.getItem('pdc_access_log') || '{}');
+    var prev = accessLog[session.email];
+    if(prev){
+      /* Guardar el previo ANTES de actualizar (el login ya actualizó) */
+      var prevDate = new Date(prev);
+      lastAccessStr = prevDate.toLocaleDateString('es-GT',{day:'2-digit',month:'2-digit',year:'numeric'}) +
+                      ' ' + prevDate.toLocaleTimeString('es-GT',{hour:'2-digit',minute:'2-digit'});
+    }
+  }catch(e){}
+
   chips.innerHTML = [
     '<div class="hchip"><span class="hchip-dot" style="background:#2D9E2D;box-shadow:0 0 6px #2D9E2D"></span>'+dashs.length+' dashboard'+(dashs.length!==1?'s':'')+' disponible'+(dashs.length!==1?'s':'')+'</div>',
     '<div class="hchip"><span class="hchip-dot" style="background:#FFAB00;box-shadow:0 0 6px #FFAB00"></span>'+getPaisLabel(session.pais)+'</div>',
-    '<div class="hchip"><span class="hchip-dot" style="background:#CFEEFC;box-shadow:0 0 6px rgba(207,238,252,.8)"></span>'+getRoleLabel(session.rol)+'</div>'
-  ].join('');
+    '<div class="hchip"><span class="hchip-dot" style="background:#CFEEFC;box-shadow:0 0 6px rgba(207,238,252,.8)"></span>'+getRoleLabel(session.rol)+'</div>',
+    lastAccessStr ? '<div class="hchip"><span class="hchip-dot" style="background:#A78BFA"></span>Último acceso: '+lastAccessStr+'</div>' : ''
+  ].filter(Boolean).join('');
 
   /* Hero KPIs (global, only for regional users) */
   if(session.pais === 'regional'){
@@ -1087,20 +1134,48 @@ function pdcRenewSession(){
           ESV:'🇸🇻 El Salvador', PE:'🇵🇪 Perú', HN:'🇭🇳 Honduras'
         };
 
-        tbEl.innerHTML = PDC_USERS.map(function(u, i){
-          var rolCls = 'role-' + u.rol;
-          var dashChips = u.dashboards.map(function(d){
-            return '<span class="dash-chip">'+(DASH_ICONS[d]||'📊')+' '+d+'</span>';
+        /* U4 — Leer estado activo/inactivo desde localStorage */
+        var userStates = {};
+        try{ userStates = JSON.parse(localStorage.getItem('pdc_user_states') || '{}'); }catch(e){}
+
+        /* U3 — Leer log de accesos */
+        var accessLogT = {};
+        try{ accessLogT = JSON.parse(localStorage.getItem('pdc_access_log') || '{}'); }catch(e){}
+
+        var renderUserTable = function(){
+          try{ userStates = JSON.parse(localStorage.getItem('pdc_user_states') || '{}'); }catch(e){}
+          tbEl.innerHTML = PDC_USERS.map(function(u, i){
+            var rolCls  = 'role-' + u.rol;
+            var dashChips = u.dashboards.map(function(d){
+              return '<span class="dash-chip">'+(DASH_ICONS[d]||'📊')+' '+d+'</span>';
+            }).join('');
+            var rowBg   = i % 2 === 0 ? '' : 'background:#f8faff';
+            var isActive = userStates[u.email] !== false; /* activo por defecto */
+            var toggleLbl = isActive ? '🟢 Activo' : '🔴 Inactivo';
+            var toggleCls = isActive
+              ? 'padding:3px 10px;border-radius:10px;font-size:.7rem;font-weight:700;background:var(--green);color:var(--green2);border:none;cursor:pointer;font-family:inherit'
+              : 'padding:3px 10px;border-radius:10px;font-size:.7rem;font-weight:700;background:var(--red);color:var(--red2);border:none;cursor:pointer;font-family:inherit';
+            /* Último acceso */
+            var lastAcc = accessLogT[u.email];
+            var lastAccStr = lastAcc
+              ? (function(d){ return d.toLocaleDateString('es-GT',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('es-GT',{hour:'2-digit',minute:'2-digit'}); })(new Date(lastAcc))
+              : '<span style="color:var(--text2);font-size:.7rem">Sin registro</span>';
+            /* Opacar fila si inactivo */
+            var rowStyle = rowBg + (isActive ? '' : ';opacity:.55');
+            return '<tr style="'+rowStyle+'">'+
+              '<td><strong>'+u.nombre+'</strong></td>'+
+              '<td style="color:var(--text2);font-size:.72rem">'+u.email+'</td>'+
+              '<td style="text-align:center"><span class="role-badge '+rolCls+'">'+(ROL_LABELS[u.rol]||u.rol)+'</span></td>'+
+              '<td style="text-align:center;font-weight:600;color:var(--navy)">'+(PAIS_LABELS[u.pais]||u.pais)+'</td>'+
+              '<td>'+dashChips+'</td>'+
+              '<td style="text-align:center;font-size:.72rem">'+lastAccStr+'</td>'+
+              '<td style="text-align:center">'+
+                '<button style="'+toggleCls+'" onclick="pdcToggleUser(\''+u.email+'\','+(!isActive)+',renderUserTable)">'+toggleLbl+'</button>'+
+              '</td>'+
+              '</tr>';
           }).join('');
-          var rowBg = i % 2 === 0 ? '' : 'background:#f8faff';
-          return '<tr style="'+rowBg+'">'+
-            '<td><strong>'+u.nombre+'</strong></td>'+
-            '<td style="color:var(--text2);font-size:.72rem">'+u.email+'</td>'+
-            '<td style="text-align:center"><span class="role-badge '+rolCls+'">'+(ROL_LABELS[u.rol]||u.rol)+'</span></td>'+
-            '<td style="text-align:center;font-weight:600;color:var(--navy)">'+(PAIS_LABELS[u.pais]||u.pais)+'</td>'+
-            '<td>'+dashChips+'</td>'+
-            '</tr>';
-        }).join('');
+        };
+        renderUserTable();
       }
     }
   }
