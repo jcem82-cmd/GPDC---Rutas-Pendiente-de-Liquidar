@@ -1,5 +1,24 @@
 # CHANGELOG — PDC Analytics Center | Grupo PDC
 
+## [21/06/2026] — Sesión de desarrollo (continuación)
+
+### Nuevos módulos
+- **honduras/index.html v1.0** — Dashboard Liquidación de Rutas Honduras
+  - 4 módulos: Resumen · Análisis · Detalle Rutas · Tendencias
+  - Paleta corporativa Honduras: `--hn1:#003F8A` / `--hn2:#009E60`
+  - KPIs: 52 rutas, 8 vencidas, 84.6% efectividad, L. 3,124,680 pendiente (≈ USD 125,996)
+  - Moneda: HNL (Lempira) · TC referencial 24.80 HNL/USD
+  - Dataset: 22 rutas detalle + 6 meses histórico Ene–Jun 2026
+  - Distribución geográfica: Tegucigalpa · San Pedro Sula · La Ceiba · Choluteca
+  - Auth Bridge v2.0 · `?tab=` URL param · nombre usuario en header
+
+### Modificaciones
+- **analytics.html** — Registro dashboard `honduras` + `accent-honduras` CSS + acción admin
+- **login.html** — 3 usuarios HN creados: `carlos.reyes`, `maria.funez`, `liquidaciones.hn`
+  - Admin y Supervisor: acceso `honduras` habilitado
+
+---
+
 ---
 
 ## [21/06/2026] — Sesión de desarrollo
