@@ -21,8 +21,8 @@
 ---
 
 ## 🔵 FASE 2 — Continuación (v1.4)
-- [ ] **Alinear versiones librerías:** SheetJS 0.20.0 en cash_today · Chart.js 4.4.1 en index.html
-- [ ] **Dashboard Perú (PE):** módulo independiente `peru/index.html`
+- [x] **Alinear versiones librerías:** ✅ COMPLETADO 21/06/2026 — Chart.js 4.4.1 + SheetJS 0.20.0 en todos los dashboards
+- [x] **Dashboard Perú (PE):** ✅ COMPLETADO 21/06/2026 — `peru/index.html` v1.0 · 4 módulos · Auth Bridge · paleta pe1/pe2 módulo independiente `peru/index.html`
 - [ ] **Dashboard Honduras (HN):** módulo independiente `honduras/index.html`
 
 ## 🟠 FASE 3 — Evolución Dashboard Rutas (v13)
