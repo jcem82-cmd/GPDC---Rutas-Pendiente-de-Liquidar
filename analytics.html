@@ -622,10 +622,10 @@ var PDC_DASHBOARDS = [
     paises: { GT:'🇬🇹 Guatemala', ESV:'🇸🇻 El Salvador' },
     kpis: [
       { val:'35k',  lbl:'Transacciones' },
-      { val:'2',    lbl:'Países' },
+      { val:'10',   lbl:'Módulos' },
       { val:'4',    lbl:'Sedes' }
     ],
-    actualizacion: '11 jun 2026',
+    actualizacion: '21 jun 2026',
     activo: true
   },
   {
@@ -970,7 +970,7 @@ function pdcRenewSession(){
       { icono:'📊', label:'Actualizar Cash Today',  desc:'Cargar nuevo Excel · Config',    action:"pdcBridgeToTab('cash_today.html','config')" },
       { icono:'💬', label:'Panel Administrativo',   desc:'Chat de soporte · Gestión',      action:"pdcNavigate('admin.html')" },
       { icono:'⬇️', label:'Descargar Rutas',        desc:'Exportar snapshot del dashboard', action:"pdcDownload('index.html','Dashboard_Rutas_'+new Date().toISOString().slice(0,10)+'.html', this.closest('button'))" },
-      { icono:'📋', label:'Descargar Cash Today',   desc:'Exportar snapshot del dashboard', action:"pdcDownload('cash_today.html','Dashboard_CashToday.html', this.closest('button'))" },
+      { icono:'📋', label:'Descargar Cash Today',   desc:'Exportar snapshot del dashboard', action:"pdcDownload('cash_today.html','Dashboard_CashToday_'+new Date().toISOString().slice(0,10)+'.html', this.closest('button'))" },
       { icono:'🌎', label:'Consolidado Regional', desc:'KPIs multi-país · 4 países', action:"pdcNavigateToDash('regional/index.html')" },
       { icono:'🇵🇪', label:'Dashboard Perú',        desc:'Liquidación de Rutas · PEN',  action:"pdcNavigate('peru/index.html')" },
       { icono:'🇭🇳', label:'Dashboard Honduras',     desc:'Liquidación de Rutas · HNL',  action:"pdcNavigate('honduras/index.html')" }
