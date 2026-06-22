@@ -1,5 +1,27 @@
 # CHANGELOG — PDC Analytics Center | Grupo PDC
 
+## [21/06/2026] — Export PDF Ejecutivo (index.html · Rutas)
+
+### index.html — 5 cambios quirúrgicos
+- **`@media print` CSS** — layout A4, oculta nav/header/filtros, preserva kgrid + de-grid
+- **`exportarPDF()`** — abre ventana con reporte HTML limpio y llama `window.print()`
+  - Header ejecutivo PDC con logo, título, fecha de corte y usuario
+  - Sección KPIs globales (kgrid, 6 tarjetas con semáforo)
+  - Sección detalle por país (de-card Despacho + Facturación)
+  - Footer corporativo con fecha de datos
+  - CSS self-contained (Inter, colores corporativos, bordes print-safe)
+- **Botón `📄 Exportar PDF`** — header, `admin-visible`, clase `.pdf-btn`
+- **`ST()` hook** — muestra/oculta botón PDF según tab activo (solo visible en Resumen)
+- **Init visibility** — botón visible en carga inicial (resumen es tab por defecto)
+
+### Arquitectura
+- Sin dependencias externas de PDF — usa `window.print()` nativo
+- Compatible con todos los navegadores modernos
+- El usuario elige "Guardar como PDF" en el diálogo de impresión del navegador
+- Estilo A4 forzado vía `@page{size:A4;margin:12mm 14mm}`
+
+---
+
 ## [21/06/2026] — Módulo Presupuesto vs Real (Cash Today v2.8)
 
 ### cash_today.html — Cambios quirúrgicos (5 modificaciones)
