@@ -460,6 +460,15 @@ body{
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 .overlay-text{font-size:.78rem;color:rgba(207,238,252,.55)}
+/* ── TABLA USUARIOS ── */
+#userTable tbody tr:nth-child(even){ background:#f8faff }
+#userTable tbody tr:hover td{ background:var(--sky) }
+#userTable td{ padding:8px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle }
+.role-badge{ display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:12px;font-size:.7rem;font-weight:700 }
+.role-admin{ background:#fde8e8;color:#c00 }
+.role-supervisor{ background:#fff4cc;color:#c48a00 }
+.role-consulta{ background:var(--green);color:var(--green2) }
+.dash-chip{ display:inline-flex;align-items:center;gap:3px;background:var(--sky);color:var(--navy);border-radius:10px;padding:1px 7px;font-size:.68rem;font-weight:600;margin:1px 2px }
 </style>
 </head>
 <body>
@@ -567,6 +576,39 @@ body{
         </div>
       </div>
       <div class="admin-actions" id="adminActions"></div>
+    </div>
+  </div>
+
+  <!-- ── TABLA DE USUARIOS (solo admin) ── -->
+  <div class="admin-section" id="userMgmt" style="display:none;margin-top:28px">
+    <div class="sec-row" style="margin-bottom:16px">
+      <div class="sec-left">
+        <span class="sec-title">Usuarios y Permisos</span>
+        <span class="sec-count" id="userCount"></span>
+      </div>
+    </div>
+    <div class="admin-panel">
+      <div class="admin-hdr">
+        <div class="admin-hdr-icon">👥</div>
+        <div class="admin-hdr-texts">
+          <div class="admin-hdr-title">Gestión de Usuarios</div>
+          <div class="admin-hdr-sub">Auditoría de accesos · Solo visible para Administrador</div>
+        </div>
+      </div>
+      <div style="overflow-x:auto;padding:4px 0">
+        <table id="userTable" style="width:100%;border-collapse:collapse;font-size:.78rem">
+          <thead>
+            <tr style="background:var(--navy);color:var(--white)">
+              <th style="padding:9px 14px;text-align:left;font-weight:600">Usuario</th>
+              <th style="padding:9px 14px;text-align:left;font-weight:600">Correo</th>
+              <th style="padding:9px 14px;text-align:center;font-weight:600">Rol</th>
+              <th style="padding:9px 14px;text-align:center;font-weight:600">País / Región</th>
+              <th style="padding:9px 14px;text-align:left;font-weight:600">Dashboards autorizados</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -1023,6 +1065,44 @@ function pdcRenewSession(){
         '</div>';
       actionsEl.appendChild(el);
     });
+
+    /* ── Tabla de usuarios (solo admin) ── */
+    if(isAdmin){
+      var umEl = document.getElementById('userMgmt');
+      var ucEl = document.getElementById('userCount');
+      var tbEl = document.getElementById('userTableBody');
+      if(umEl && tbEl){
+        umEl.style.display = '';
+        if(ucEl) ucEl.textContent = PDC_USERS.length + ' usuarios registrados';
+
+        var DASH_ICONS = {
+          rutas:'🚚', cashtoday:'💰', regional:'🌎',
+          peru:'🇵🇪', honduras:'🇭🇳'
+        };
+        var ROL_LABELS = {
+          admin:'Administrador', supervisor:'Supervisor', consulta:'Consulta'
+        };
+        var PAIS_LABELS = {
+          regional:'🌎 Regional', GT:'🇬🇹 Guatemala',
+          ESV:'🇸🇻 El Salvador', PE:'🇵🇪 Perú', HN:'🇭🇳 Honduras'
+        };
+
+        tbEl.innerHTML = PDC_USERS.map(function(u, i){
+          var rolCls = 'role-' + u.rol;
+          var dashChips = u.dashboards.map(function(d){
+            return '<span class="dash-chip">'+(DASH_ICONS[d]||'📊')+' '+d+'</span>';
+          }).join('');
+          var rowBg = i % 2 === 0 ? '' : 'background:#f8faff';
+          return '<tr style="'+rowBg+'">'+
+            '<td><strong>'+u.nombre+'</strong></td>'+
+            '<td style="color:var(--text2);font-size:.72rem">'+u.email+'</td>'+
+            '<td style="text-align:center"><span class="role-badge '+rolCls+'">'+(ROL_LABELS[u.rol]||u.rol)+'</span></td>'+
+            '<td style="text-align:center;font-weight:600;color:var(--navy)">'+(PAIS_LABELS[u.pais]||u.pais)+'</td>'+
+            '<td>'+dashChips+'</td>'+
+            '</tr>';
+        }).join('');
+      }
+    }
   }
 
 })();
