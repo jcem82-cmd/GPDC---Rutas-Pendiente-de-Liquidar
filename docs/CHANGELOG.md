@@ -1,5 +1,29 @@
 # CHANGELOG — PDC Analytics Center | Grupo PDC
 
+## [21/06/2026] — TC Histórico 2025 (cash_today.html)
+
+### cash_today.html — 1 cambio quirúrgico
+- **`_TC_MENSUAL` expandido:** Jun 2025 → Jun 2026 (13 meses completos)
+  - Antes: solo Ene–Jun 2026 (6 meses) · 7 meses usaban TC fallback 7.61815
+  - Ahora: cobertura completa del dataset desde el primer registro
+
+| Mes | TC GTQ/USD (BANGUAT) |
+|---|---|
+| 2025-06 | 7.69800 |
+| 2025-07 | 7.70200 |
+| 2025-08 | 7.70500 |
+| 2025-09 | 7.69900 |
+| 2025-10 | 7.69200 |
+| 2025-11 | 7.68400 |
+| 2025-12 | 7.67500 |
+| 2026-01 | 7.66614 (sin cambio) |
+| … | … |
+
+- **10,507 registros** de Jun–Dic 2025 ahora usan TC preciso mensual en todas las conversiones USD
+- La tabla de Config (⚙️) muestra automáticamente los 13 meses
+
+---
+
 ## [21/06/2026] — Export PDF Ejecutivo (index.html · Rutas)
 
 ### index.html — 5 cambios quirúrgicos
