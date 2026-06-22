@@ -1,3 +1,59 @@
+## [22/06/2026] — Fase Usuarios y Permisos (login.html v1.2 · analytics.html v1.9)
+
+### login.html v1.1 → v1.2 — 5 mejoras
+
+**U1 — Feedback visual de bienvenida al ingresar:**
+- Al autenticarse correctamente: botón cambia a `✅ Bienvenido, [Nombre]!` en verde
+- Pausa de 900ms antes del redirect al portal (el usuario ve la confirmación)
+- `setLoading(false)` llamado explícitamente en el flujo de éxito
+
+**U2 — Panel de sesión activa:**
+- Si ya existe `pdc_session` válida al abrir login.html → NO redirige silenciosamente
+- Muestra panel dedicado con: nombre del usuario, rol, minutos restantes de sesión
+- Dos opciones: "Continuar al portal" o "Cerrar sesión e ingresar con otro usuario"
+- El formulario de login queda oculto mientras haya sesión activa
+
+**U3 — Registro de último acceso:**
+- Al login exitoso: guarda `ISO timestamp` en `localStorage['pdc_access_log'][email]`
+- Persiste entre sesiones del mismo dispositivo/navegador
+
+**U4 — Bloqueo de usuarios inactivos en doLogin:**
+- Si `pdc_user_states[email] === false` → error "Cuenta desactivada. Contacte al administrador"
+- Shake animation + campo contraseña vaciado (igual que credenciales incorrectas)
+- No consume intentos de lockout (es un estado, no un error de autenticación)
+
+**U5 — pdc_user legacy con rol completo:**
+- Antes: `role: user.rol === 'admin' ? 'admin' : 'user'` (solo 2 valores)
+- Ahora: `role: user.rol` → lleva `admin | supervisor | consulta` completo
+- También lleva `pais` y `sedes` en el token legacy
+- Los dashboards hijos pueden distinguir los 3 roles desde `pdc_user.role`
+
+### analytics.html v1.8 → v1.9 — 3 mejoras
+
+**U3 — Último acceso en hero section:**
+- Lee `pdc_access_log` desde localStorage al cargar el portal
+- Muestra chip "Último acceso: DD/MM/YYYY HH:MM" en la banda hero
+- Si no hay registro previo: chip no aparece (primera vez en el dispositivo)
+
+**U4 — Toggle activo/inactivo en tabla de usuarios (admin only):**
+- Nueva función `pdcToggleUser(email, setActive, callback)`:
+  - Persiste estado en `localStorage['pdc_user_states']`
+  - Si se desactiva al usuario actualmente logueado → toast + logout en 2 segundos
+  - Callback `renderUserTable` re-renderiza la tabla tras el cambio
+- Tabla ampliada con 2 columnas nuevas:
+  - **Último acceso:** fecha/hora desde `pdc_access_log`, "Sin registro" si nunca
+  - **Estado:** badge 🟢 Activo / 🔴 Inactivo con botón toggle
+  - Filas inactivas se muestran con `opacity: 0.55`
+- Guard al inicio del IIFE de render: si el usuario en sesión está marcado inactivo → logout inmediato
+
+**Nota de arquitectura:** El toggle usa `localStorage` del dispositivo del admin — es persistente en ese dispositivo. Sin backend no es posible invalidar sesiones activas en otros dispositivos simultáneamente; el bloqueo opera en el próximo intento de login o al recargar el portal.
+
+**SHAs post-deploy:**
+- `login.html`: `4e0f9bebd3a6590e899e9dc8a7dec4b0a58a66f7`
+- `analytics.html`: `238eff0432ce0afb16feb68e13d32314bd122854`
+
+---
+
 ## [22/06/2026] — Fase 4 Pilar 2: Gestión de Usuarios + Regional HN + Perú datos reales
 
 ### analytics.html v1.7 → v1.8 — Tabla Gestión de Usuarios (ítem 4.4)
