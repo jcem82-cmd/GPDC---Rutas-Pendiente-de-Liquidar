@@ -1,3 +1,40 @@
+## [22/06/2026] — Export PDF ejecutivo + fix validTabs (cash_today.html v2.9)
+
+### cash_today.html — 6 modificaciones quirúrgicas
+
+**C. Export PDF ejecutivo (ítem C del Roadmap Fase 3):**
+
+1. **CSS `@media print` + `.btn-pdf`** (en `<style>`):
+   - `.btn-pdf`: oculto por defecto (`display:none`), visible con clase `.visible` para admin en tab Resumen
+   - `@media print`: oculta header/nav/filtros/botones · layout A4 · `@page{size:A4 portrait;margin:10mm 12mm}`
+   - Solo `#page-resumen` visible al imprimir
+
+2. **Botón `📄 PDF` en `hdr-right`** (antes del botón Salir):
+   - `id="btn-pdf-ct"` · `onclick="exportarPDF_CT()"`
+   - Oculto por CSS por defecto; visible solo si `_pdfAdminOk=true` y tab activo = `resumen`
+
+3. **`goPage()` actualizado** — hook de visibilidad:
+   - Al cambiar de tab: muestra botón si `p==='resumen' && _pdfAdminOk`, oculta en cualquier otro tab
+
+4. **`exportarPDF_CT()`** — nueva función:
+   - Lee DOM en vivo: `#kpi-res`, `#tbl-res-sede`, `#sem-cupo`, `#sem-alertas`, `#hdr-rango`
+   - Abre ventana emergente con HTML autocontenido (Inter + CSS inline + datos actuales del filtro)
+   - Contenido: header PDC navy · watermark · KPIs globales · semáforos (si activos) · tabla por sede · footer
+   - `window.print()` automático al cargar → `window.close()` post-impresión
+   - Sin dependencias externas (solo Google Fonts)
+
+5. **`_pdfAdminOk`** — variable global de control:
+   - Inicializada en `false`; se activa en el init de usuario si `rol==='admin'` o `role==='admin'`
+
+6. **Fix `validTabs`** (bug secundario detectado en auditoría):
+   - `'presupuesto'` no estaba en el array — el módulo Presupuesto (añadido en Fase 2) no era navegable vía `?tab=presupuesto`
+   - Corregido: `validTabs` ahora incluye los 11 módulos completos
+
+**SHAs post-deploy:**
+- `cash_today.html`: `b679719c12515e659894ca6a4042bb60aff22d3c`
+
+---
+
 ## [22/06/2026] — Integración Cash Today en PDC Analytics Center (analytics.html v1.5)
 
 ### analytics.html — 2 correcciones quirúrgicas (integración Cash Today v2.8)
