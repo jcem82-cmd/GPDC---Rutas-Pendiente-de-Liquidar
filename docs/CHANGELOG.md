@@ -1,3 +1,44 @@
+## [22/06/2026] — Fase 4 Pilar 1: Presupuesto desde _M + cajeros nuevos (cash_today.html v2.11)
+
+### cash_today.html v2.10 → v2.11 — 5 modificaciones quirúrgicas
+
+**4.1 — Presupuesto calculado desde Valor Contratado (_M)**
+
+Se elimina `_PRESUPUESTO` hardcoded (24 filas de valores estimados manualmente).
+Se reemplaza por `buildPresupuestoFromM()` — función que calcula el presupuesto
+mensual dinámicamente desde `_M` (indicador `Valor Contratado`) para cada mes
+activo en `RECS`.
+
+Reglas de cálculo:
+- **CDA (Guatemala):** AMAT I + AMAT II = Q16,000,000 consolidado (override; _M suma Q18MM pero el cupo operativo es Q16MM) + Monedera = cupo real de _M (Q75,000) → total CDA: **Q16,075,000/mes**
+- **Xela (Guatemala):** PDC XELA (SDM500) + PDC XELA (Monedera) = Q3,000,000 + Q35,000 = **Q3,035,000/mes**
+- **Santa Tecla (El Salvador):** PDC Comercial + PDC Comercial (Monedera) = $1,400,000 + $28,000 = **$1,428,000/mes**
+- **San Miguel (El Salvador):** PDC Comercial San Miguel + Monedera = $400,000 + $8,000 = **$408,000/mes**
+- Al cargar un nuevo Excel con hoja `metas`, el presupuesto se recalcula automáticamente
+- `buildPresupuestoFromM()` se invoca dentro de `autoFilter()` → siempre sincronizado
+
+**4.2 — Selector de año dinámico en módulo Presupuesto**
+- Eliminado el guard `if(yrEl.options.length===0)` — ahora se repuebla con cada cambio de dataset
+- Preserva la selección previa si el año sigue disponible
+
+**4.3 — Aviso del módulo actualizado**
+- Antes: "Presupuesto basado en metas planificadas 2026. Para actualizar, cargar hoja Presupuesto"
+- Ahora: "Presupuesto calculado desde el Valor Contratado de cada cajero (hoja metas). CDA: AMAT I + II = Q16,000,000 consolidado + Monedera."
+
+**4.4 — Detección de cajeros nuevos al cargar Excel**
+- Nuevo div `#cfg-cajeros-warn` en módulo Config (oculto por defecto, amarillo)
+- Al cargar Excel: compara cajeros de `newRecs` vs `METAS` (hoja metas cargada)
+- Si hay cajeros sin metas registradas → muestra lista con nombre de cada cajero
+- Mensaje orientativo: "Notifique al administrador para registrar sus metas contractuales"
+- La carga continúa normalmente sin bloqueo — transparente para el usuario
+- Badge de estado actualizado: "X cajero(s) nuevo(s)"
+- Si no hay cajeros nuevos → warning permanece oculto
+
+**SHAs post-deploy:**
+- `cash_today.html`: `d7d1f1d7ea9b2159430352991c9943380d1b0a12`
+
+---
+
 ## [22/06/2026] — Chat para consulta + corrección cupo AMAT (analytics.html v1.7 · cash_today.html)
 
 ### analytics.html v1.6 → v1.7 — Chat de soporte para rol consulta
