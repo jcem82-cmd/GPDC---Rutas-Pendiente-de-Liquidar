@@ -1,64 +1,198 @@
-# 🔒 PROJECT_RULES.md — Reglas Permanentes (NO NEGOCIABLES)
+# 🔒 PROJECT RULES — Reglas Permanentes (NO NEGOCIABLES)
+**PDC Analytics Center · Grupo PDC · v1.4 · 21/06/2026**
 
-## 1. Principio general de edición
-- **Cambios siempre quirúrgicos.** Leer `index.html` actual (HEAD de `main`) antes de editar.
-- Modificar **solo** lo solicitado. Preservar CSS/JS/HTML no relacionado.
-- **Nunca reconstruir** el archivo desde cero.
-- Nunca eliminar funcionalidades existentes sin confirmación explícita del usuario.
+---
 
-## 2. Estructura de datos (constantes JS en index.html)
-- `RAW` — array de rutas (de `General (seguimiento)`, filtrado con `Numero de Despacho` no nulo).
-- `KPI_TOTALS` — totales agregados (report_date, report_month, totales por moneda/canal).
-- `KPI_HIST` — histórico mensual `{mes, vencidas, total, pct}` — gráfica "Total Rutas vs Vencidas".
-  - `vencidas` = conteo de `Estado Real==='Vencidas'` en `General (seguimiento)` para el mes activo (último con datos).
-- `EFECT` — histórico mensual `{mes, total, mas15, pct}` — gráfica "Rutas ≥15 días" (Efectividad).
-  - `mas15` = valor **real** de la columna "Rutas >15 días" de la hoja Efectividad. **NO se sobreescribe** con `vencidas`.
-  - ⚠️ `vencidas` (KPI_HIST) y `mas15` (EFECT) son **métricas distintas** y pueden diferir legítimamente (ej. 36 vencidas totales, 0 con ≥15 días de retraso).
+## REGLA 1 — NUNCA RECONSTRUIR ⛔
 
-## 3. Extracción de Excel (`processWorkbook`)
-- Hojas requeridas: `General (seguimiento)`, `Efectividad`. NO depender de `Target días`, `KPI`, `Total Rutas (Gral)` (no existen).
-- `General (seguimiento)`: filtrar `dropna(subset=['Numero de Despacho'])`. Usar `Cliente` (mayúscula) para campo `cliente`.
-- País derivado de `Moneda`: GTQ→Guatemala, USD→El Salvador, PEN→Perú, HNL→Honduras.
-- `Efectividad`: `header=None` / `{header:1, cellDates:true}`, header real en fila índice 2, datos desde índice 3.
-- **Filas plantilla futuras** (total=0, meses sin datos aún) deben **eliminarse** del final de `efData` antes de derivar `kpiData`.
-- Acepta `.xlsx` y `.xlsm` (las macros se ignoran, SheetJS solo lee celdas).
+La regla más importante del proyecto.
 
-## 4. Control de acceso por rol (`sessionStorage.pdc_user.role`)
+❌ **Prohibido:** reescribir el archivo completo, reconstruir módulos enteros, alterar la estructura base.
 
-| Elemento | Admin | Usuario regular |
+✅ **Correcto:** modificaciones quirúrgicas, siempre verificando el target:
+```python
+assert OLD_TARGET in html, f"Target not found"
+html = html.replace(OLD_TARGET, NEW_TARGET, 1)
+```
+
+---
+
+## REGLA 2 — VALIDACIÓN OBLIGATORIA ANTES DE DEPLOY
+
+1. **Brace balance JS:** strip strings/templates con `re.sub`, luego `count({) == count(})`
+2. **Canvas IDs:** cada `mkChart('id')` debe existir como `id="id"` en HTML
+3. **No duplicar funciones:** `content.count("function X(") == 1`
+4. **Library versions:** verificar que Chart.js 4.4.1 + SheetJS 0.20.0 no cambien
+5. **Assert target:** `assert OLD in content` antes de cada replace
+
+---
+
+## REGLA 3 — ARQUITECTURA DE MÓDULOS
+
+- Todo nuevo dashboard = carpeta propia (`nombre/index.html`)
+- `analytics.html` = solo Hub (auth + navegación) — nunca lógica de datos
+- Auth Bridge v2.0 = IIFE al inicio del body en cada dashboard
+- `?tab=` URL param = patrón estándar para deep-linking
+- `pdcNavigateToDash(archivo)` = función de navegación desde analytics
+
+---
+
+## REGLA 4 — LIBRERÍAS CANÓNICAS
+
+| Librería | Versión | CDN |
 |---|---|---|
-| ⬇ Guardar Snapshot | ✅ visible (`admin-visible` agregado por JS) | ❌ oculto (`display:none` default) |
-| 💱 Tipos de Cambio (tab + módulo subir Excel) | ✅ visible (`admin-visible` por JS) | ❌ oculto |
-| ⏏ Salir | ✅ siempre visible | ✅ siempre visible |
-| 💬 Chat soporte (widget flotante) | Redirige a `admin.html` | ✅ funcional (panel flotante) |
-| Tab inicial por defecto | Resumen General | Resumen General |
+| Chart.js | **4.4.1** | `https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js` |
+| SheetJS | **0.20.0** | `https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js` |
+| Inter (Google Fonts) | — | `https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800` |
 
-⚠️ **No volver a hardcodear `admin-visible` en el HTML estático** — debe agregarse SOLO vía JS según `data.role`. Esto causó bugs repetidos donde botones admin-only aparecían para todos.
+Sin frameworks (React, Vue, Angular). JS vanilla únicamente.
 
-## 5. GitHub API
-- Siempre `GET` el SHA actual antes de `PUT` (contents endpoint).
-- 409 Conflict → esperar ~30s y reintentar con SHA fresco.
-- Token fragmentado en array JS para evitar secret-scanning (ver `MASTER_PROJECT_CONTEXT.md`).
-- Cada commit debe tener mensaje descriptivo del fix/feature.
+---
 
-## 6. Chat de soporte (Supabase)
-- `chat_messages.id` es **UUID** — nunca comparar con `>` contra un número. Usar `created_at` (timestamp) para detectar mensajes nuevos.
-- `#chatBox` NO debe tener `style="display:none"` **inline** — esto rompe la transición CSS `.chat-box.open{display:flex}` (especificidad). El control de visibilidad es 100% vía clase `.open`.
-- Admin responde insertando fila con `sender_email = email_del_usuario_destino`, `sender_role='admin'`, mensaje prefijado `[To:email]`.
-- Usuario consulta con `WHERE sender_email = currentUser.email` (trae ambos: sus mensajes y respuestas del admin).
-- Polling: 3s en background, 1.5s con chat abierto (Realtime no configurado en Supabase).
+## REGLA 5 — DEPLOY PATTERN
 
-## 7. Diseño visual
-- Colores corporativos: navy `#001240`-`#002060`, sky `#0ea5e9`, índigo `#4f46e5`.
-- Mantener menú superior de tabs (no agregar sidebar).
-- Mantener iconografía emoji existente (📊🔍🚛📈📋📑💱⏏).
-- Logo PDC (base64 JPEG) siempre visible en header.
-- Responsive: desktop/tablet/mobile.
+```
+Archivos < 1MB  → Python urllib PUT directo
+Archivos > 1MB  → blob API para GET + Python urllib para PUT
+                   (nunca curl: "arg list too long")
 
-## 8. Sesión / Login
-- Todo acceso pasa por `login.html` excepto snapshots descargados (sin guard).
-- `sessionStorage.pdc_user = {email, nombre, role}`.
-- `pdcLogout()`: `sessionStorage.removeItem('pdc_user')` + redirect a `login.html`.
+Patrón GET SHA:
+  GET /repos/{owner}/{repo}/git/trees/main?recursive=1
+  → item['sha'] por path
 
-## 9. Reporte post-cambio
-Tras cada actualización, reportar: URL de verificación, KPIs clave (Total Rutas, Vencidas, %), y commit hash.
+Patrón PUT:
+  PUT /repos/{owner}/{repo}/contents/{path}
+  body: {message, content (base64), sha}
+```
+
+GitHub cancela runs intermedios con commits rápidos — el último gana. Comportamiento normal.
+
+---
+
+## REGLA 6 — SEPARACIÓN DEPÓSITO / RECOGIDA (Cash Today)
+
+```javascript
+fData   = RECS.filter(r => r.t === 'Depósito' && dateFn(r) && dimFn(r))
+recData = RECS.filter(r => r.t === 'Recogida' && dateFn(r) && dimFn(r))
+```
+
+| Tipo | Módulos |
+|---|---|
+| Depósito | Resumen · GT · SV · Tráfico · Comparador · Detalle · Volumetría (monto/txn/piezas) |
+| Recogida | Metas (capacidad/cupo) · Volumetría (visitas) |
+
+---
+
+## REGLA 7 — PRECISIÓN DECIMAL UNIFORME (Cash Today)
+
+| Moneda | Función | Aplica en |
+|---|---|---|
+| GTQ | `fmt(v, 0)` | Celdas · subtotales · totales · grand total |
+| USD | `fmt(v, 2)` | Celdas · subtotales · totales · grand total |
+
+❌ Nunca `fmt(v)` sin decimales explícitos en contextos USD.
+
+---
+
+## REGLA 8 — CONVERSIÓN USD CON TC MENSUAL (Cash Today)
+
+```javascript
+const usd = r => {
+  if(r.div !== 'GTQ') return r.imp;
+  const tc = (r.ym && _TC_MENSUAL[r.ym]) ? _TC_MENSUAL[r.ym] : tcGTQ;
+  return r.imp / tc;
+};
+```
+
+`_TC_MENSUAL` cubre Jun 2025 → Jun 2026 (13 meses). Fallback: `tcGTQ = 7.61815`.
+
+---
+
+## REGLA 9 — CAMPO `hr` DESDE FECHA TRANSACCIÓN (Cash Today)
+
+- `hr` (hora) y `dia` = de `Fecha transacción` (columna con hora real)
+- `ym`, `yr`, `mo`, `dy` = de `FECHA` (columna de fecha de operación)
+- **Nunca usar `FECHA` para calcular hora** — siempre es medianoche
+
+---
+
+## REGLA 10 — TRÁFICO: SVG PURO (Cash Today)
+
+El módulo Tráfico usa SVG puro (no Chart.js). Canvas falla en contenedores `display:none`.
+**No cambiar este patrón nunca.**
+
+---
+
+## REGLA 11 — CONTROL DE ACCESO POR ROL
+
+| Elemento | admin | supervisor | consulta |
+|---|---|---|---|
+| Ver dashboards autorizados | ✅ | ✅ | ✅ |
+| Panel Admin (analytics.html) | ✅ | ❌ | ❌ |
+| Snapshot / Export PDF | ✅ | ❌ | ❌ |
+| Tab Tipos de Cambio (Rutas) | ✅ | ❌ | ❌ |
+| Chat de soporte | ✅ | ✅ | ✅ |
+
+`admin-visible` se agrega por JS según `data.role`. **Nunca hardcodear en HTML estático.**
+
+---
+
+## REGLA 12 — SESIÓN Y LOGIN
+
+- `pdc_session` (primary) → `{email, nombre, rol, dashboards, pais, sedes, ts}`
+- `pdc_user` (legacy) → `{nombre, email, role}` — `role` no `rol` (compatibilidad)
+- TTL: 8 horas · session watcher: verifica 60s · banner + toast a 15 min restantes
+- Login: bloqueo 3 intentos (30s) · remember-email
+- `pdcRenewSession()` resetea TTL sin re-login
+
+---
+
+## REGLA 13 — ESTRUCTURA DASHBOARDS PAÍS
+
+Patrón estándar (Perú y Honduras como referencia):
+- Auth Bridge v2.0: lee `pdc_session` → `pdc_user` → redirect `../analytics.html`
+- Header: logo · botón `← Portal` · título · badge (bandera+moneda) · nombre usuario
+- Nav: 4 tabs · `goPage()` · `renderCharts(page)` lazy
+- Módulos: resumen · analisis · detalle · tendencias
+- Charts: `BASE_OPTS` compartido · `mkChart()` con `destroy()` previo
+- Detalle: filtros select + `renderDetalle()` + `filtrarDetalle()` + `resetFiltros()`
+- Init: `?tab=` URL param · nombre usuario desde `pdc_session`
+
+---
+
+## REGLA 14 — DISEÑO CORPORATIVO
+
+No modificar sin autorización:
+- Logo PDC (Base64, `height:52px`)
+- Paleta CSS `:root`
+- Estructura de header y navegación
+- Fila CONSOLIDADO: `background:#DCE8FE` + `color:var(--navy)` — nunca texto blanco
+
+---
+
+## REGLA 15 — DOCUMENTACIÓN
+
+Al finalizar cada sesión de desarrollo:
+1. Actualizar `docs/CHANGELOG.md` — nueva entrada con fecha, archivos y cambios
+2. Actualizar `docs/ROADMAP.md` — marcar ítems completados, añadir pendientes
+3. Actualizar `docs/MASTER_PROJECT_CONTEXT.md` — versiones, estado, SHAs
+
+---
+
+## REGLA 16 — CHAT DE SOPORTE (Supabase)
+
+- `chat_messages.id` es UUID — nunca comparar con `>`. Usar `created_at` para mensajes nuevos
+- `#chatBox` NO debe tener `style="display:none"` inline — control de visibilidad solo vía clase `.open`
+- Admin responde con `sender_email = email_usuario_destino`, `sender_role='admin'`, prefijo `[To:email]`
+- Usuario lee con `WHERE sender_email = currentUser.email`
+- Polling: 3s background · 1.5s con chat abierto
+
+---
+
+## REGLA 17 — EXPORT PDF (index.html Rutas)
+
+- `exportarPDF()` → ventana emergente con HTML autocontenido → `window.print()`
+- Visible solo en tab Resumen (clase `.pdf-btn.visible` via `ST()` hook)
+- Sin dependencias externas — `window.print()` nativo
+- `@page{size:A4;margin:12mm 14mm}` forzado
+- Botón `admin-visible` — solo admin lo ve
