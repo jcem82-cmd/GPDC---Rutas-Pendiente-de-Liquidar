@@ -220,7 +220,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
       <div class="kc-flag">🇵🇪</div>
       <div class="kc-label">Rutas Pendientes</div>
       <div class="kc-val">74</div>
-      <div class="kc-sub">Lima: 48 · Provincias: 26</div>
+      <div class="kc-sub">Lima: 41 · Provincias: 33</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--pe1)"></div></div>
     </div>
     <div class="kc r anim" style="animation-delay:.1s">
@@ -233,15 +233,15 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
     <div class="kc y anim" style="animation-delay:.15s">
       <div class="kc-flag">🕐</div>
       <div class="kc-label">En Proceso (8–14d)</div>
-      <div class="kc-val">23</div>
-      <div class="kc-sub">31.1% del total</div>
+      <div class="kc-val">18</div>
+      <div class="kc-sub">24.3% del total</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:31%;background:var(--yellow2)"></div></div>
     </div>
     <div class="kc g anim" style="animation-delay:.2s">
       <div class="kc-flag">✅</div>
       <div class="kc-label">Al Día (≤7 días)</div>
-      <div class="kc-val">39</div>
-      <div class="kc-sub">52.7% del total</div>
+      <div class="kc-val">44</div>
+      <div class="kc-sub">59.5% del total</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:53%;background:var(--green2)"></div></div>
     </div>
   </div>
@@ -250,20 +250,20 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
   <div class="grid-3" style="margin-bottom:28px">
     <div class="kc n anim" style="animation-delay:.22s">
       <div class="kc-label">Monto Pendiente</div>
-      <div class="kc-val-sm">S/ 2,847,320</div>
-      <div class="kc-sub">≈ USD 759,285 · Jun 2026</div>
+      <div class="kc-val-sm">S/ 1,492,234</div>
+      <div class="kc-sub">≈ USD 397,929 · Jun 2026</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--pe1)"></div></div>
     </div>
     <div class="kc n anim" style="animation-delay:.27s">
       <div class="kc-label">Monto Vencido</div>
-      <div class="kc-val-sm">S/ 461,850</div>
-      <div class="kc-sub">16.2% del monto total pendiente</div>
+      <div class="kc-val-sm">S/ 240,339</div>
+      <div class="kc-sub">16.1% del monto total pendiente</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:16%;background:var(--red2)"></div></div>
     </div>
     <div class="kc g anim" style="animation-delay:.32s">
       <div class="kc-label">Efectividad Liquidación</div>
       <div class="kc-val">83.8%</div>
-      <div class="kc-sub">Meta: ≥90% · Brecha: −6.2pp</div>
+      <div class="kc-sub">Meta: ≥90% · Brecha: -6.2pp</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:84%;background:var(--green2)"></div></div>
     </div>
   </div>
@@ -531,40 +531,90 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
 var MESES = ['Ene','Feb','Mar','Abr','May','Jun'];
 
 var D = {
-  rutasTotal:    [61, 65, 58, 71, 76, 74],
-  rutasVencidas: [7,   9,  5, 10, 16, 12],
-  efectividad:   [88.5, 86.2, 91.4, 85.9, 78.9, 83.8],
-  montoPEN:      [2284100, 2431750, 2168400, 2657900, 2844200, 2847320],
-  zonas:         { 'Lima Metropolitana':48, 'Arequipa':12, 'Trujillo':8, 'Cusco':4, 'Otras':2 }
+  /* Últimos 2 meses reales (RAW Rutas) · anteriores: referencial */
+  rutasTotal:    [61, 65, 58, 71, 21, 74],
+  rutasVencidas: [7,   9,  5, 10,  2, 12],
+  efectividad:   [88.5, 86.2, 91.4, 85.9, 90.5, 83.8],
+  montoPEN:      [2284100, 2431750, 2168400, 2657900, 778809, 1492234],
+  zonas:         { 'LIMA':41, 'LA LIBERTAD':6, 'CAJAMARCA':4, 'LAMBAYEQUE':4, 'AREQUIPA':3, 'Otras':16 }
 };
 
 /* Dataset detalle rutas */
 var RUTAS_DETALLE = [
-  {despacho:'PE-2026-0801',transp:'Transp. Los Andes SAC',zona:'Lima Metropolitana',dias:18,monto:52300,estado:'Vencida'},
-  {despacho:'PE-2026-0802',transp:'Transp. Los Andes SAC',zona:'Lima Metropolitana',dias:6,monto:48750,estado:'Al Día'},
-  {despacho:'PE-2026-0803',transp:'Transp. Los Andes SAC',zona:'Lima Metropolitana',dias:12,monto:44200,estado:'En Proceso'},
-  {despacho:'PE-2026-0804',transp:'Transp. Los Andes SAC',zona:'Lima Metropolitana',dias:21,monto:61400,estado:'Vencida'},
-  {despacho:'PE-2026-0805',transp:'Transp. Los Andes SAC',zona:'Lima Metropolitana',dias:4,monto:38900,estado:'Al Día'},
-  {despacho:'PE-2026-0806',transp:'Distribuciones Pacífico',zona:'Lima Metropolitana',dias:9,monto:53100,estado:'En Proceso'},
-  {despacho:'PE-2026-0807',transp:'Distribuciones Pacífico',zona:'Lima Metropolitana',dias:3,monto:45600,estado:'Al Día'},
-  {despacho:'PE-2026-0808',transp:'Distribuciones Pacífico',zona:'Lima Metropolitana',dias:7,monto:41800,estado:'Al Día'},
-  {despacho:'PE-2026-0809',transp:'Distribuciones Pacífico',zona:'Lima Metropolitana',dias:17,monto:58200,estado:'Vencida'},
-  {despacho:'PE-2026-0810',transp:'Distribuciones Pacífico',zona:'Lima Metropolitana',dias:5,monto:49300,estado:'Al Día'},
-  {despacho:'PE-2026-0811',transp:'Ruta Sur EIRL',zona:'Arequipa',dias:22,monto:47500,estado:'Vencida'},
-  {despacho:'PE-2026-0812',transp:'Ruta Sur EIRL',zona:'Arequipa',dias:19,monto:43800,estado:'Vencida'},
-  {despacho:'PE-2026-0813',transp:'Ruta Sur EIRL',zona:'Arequipa',dias:16,monto:42100,estado:'Vencida'},
-  {despacho:'PE-2026-0814',transp:'Ruta Sur EIRL',zona:'Arequipa',dias:25,monto:55200,estado:'Vencida'},
-  {despacho:'PE-2026-0815',transp:'Ruta Sur EIRL',zona:'Arequipa',dias:8,monto:38400,estado:'En Proceso'},
-  {despacho:'PE-2026-0816',transp:'Trans. Norte Express',zona:'Trujillo',dias:18,monto:40600,estado:'Vencida'},
-  {despacho:'PE-2026-0817',transp:'Trans. Norte Express',zona:'Trujillo',dias:11,monto:37900,estado:'En Proceso'},
-  {despacho:'PE-2026-0818',transp:'Trans. Norte Express',zona:'Trujillo',dias:19,monto:44200,estado:'Vencida'},
-  {despacho:'PE-2026-0819',transp:'Trans. Norte Express',zona:'Trujillo',dias:6,monto:35800,estado:'Al Día'},
-  {despacho:'PE-2026-0820',transp:'Logística Andina SAC',zona:'Lima Metropolitana',dias:4,monto:46100,estado:'Al Día'},
-  {despacho:'PE-2026-0821',transp:'Logística Andina SAC',zona:'Lima Metropolitana',dias:6,monto:42300,estado:'Al Día'},
-  {despacho:'PE-2026-0822',transp:'Logística Andina SAC',zona:'Lima Metropolitana',dias:3,monto:38700,estado:'Al Día'},
-  {despacho:'PE-2026-0823',transp:'Carga Inca Perú',zona:'Cusco',dias:10,monto:41500,estado:'En Proceso'},
-  {despacho:'PE-2026-0824',transp:'Carga Inca Perú',zona:'Cusco',dias:17,monto:39200,estado:'Vencida'},
-  {despacho:'PE-2026-0825',transp:'Distribuidora Lima Norte',zona:'Lima Metropolitana',dias:5,monto:40800,estado:'Al Día'}
+  {despacho:'PE-29005',transp:'FRICH GROUP TRADEA S.A.C.',zona:'LIMA',dias:18,monto:81713,estado:'Vencida'},
+  {despacho:'PE-29085',transp:'FRICH GROUP TRADEA S.A.C.',zona:'LIMA',dias:16,monto:68060,estado:'Vencida'},
+  {despacho:'PE-28974',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'SAN MARTÍN',dias:15,monto:25481,estado:'En Proceso'},
+  {despacho:'PE-29190',transp:'FRICH GROUP TRADEA S.A.C.',zona:'LIMA',dias:15,monto:42331,estado:'En Proceso'},
+  {despacho:'PE-29210',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:15,monto:14696,estado:'En Proceso'},
+  {despacho:'PE-29160',transp:'FELIXCAR F & M  S.A.C.',zona:'TACNA',dias:14,monto:29573,estado:'En Proceso'},
+  {despacho:'PE-29178',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'AREQUIPA',dias:13,monto:69266,estado:'En Proceso'},
+  {despacho:'PE-29179',transp:'FELIXCAR F & M  S.A.C.',zona:'AREQUIPA',dias:13,monto:15148,estado:'En Proceso'},
+  {despacho:'PE-29192',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'CAJAMARCA',dias:13,monto:7257,estado:'En Proceso'},
+  {despacho:'PE-29193',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'CAJAMARCA',dias:13,monto:27438,estado:'En Proceso'},
+  {despacho:'PE-29195',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'CAJAMARCA',dias:13,monto:27635,estado:'En Proceso'},
+  {despacho:'PE-29208',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'AREQUIPA',dias:13,monto:73,estado:'En Proceso'},
+  {despacho:'PE-29214',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'TACNA',dias:13,monto:21920,estado:'En Proceso'},
+  {despacho:'PE-29221',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'CAJAMARCA',dias:13,monto:19649,estado:'En Proceso'},
+  {despacho:'PE-29252',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'LA LIBERTAD',dias:13,monto:18332,estado:'En Proceso'},
+  {despacho:'PE-29212',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'MADRE DE DIOS',dias:12,monto:43331,estado:'En Proceso'},
+  {despacho:'PE-29215',transp:'FELIXCAR F & M  S.A.C.',zona:'CUSCO',dias:12,monto:88611,estado:'En Proceso'},
+  {despacho:'PE-29231',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'UCAYALI',dias:12,monto:4458,estado:'En Proceso'},
+  {despacho:'PE-29232',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'UCAYALI',dias:12,monto:6578,estado:'En Proceso'},
+  {despacho:'PE-29211',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'SAN MARTÍN',dias:11,monto:44206,estado:'En Proceso'},
+  {despacho:'PE-28971',transp:'FRICH GROUP TRADEA S.A.C.',zona:'LORETO',dias:5,monto:123053,estado:'Al Día'},
+  {despacho:'PE-29420',transp:'FRANKLIN MURAYARI VELA',zona:'LIMA',dias:5,monto:1127,estado:'Al Día'},
+  {despacho:'PE-29412',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'TUMBES',dias:4,monto:4181,estado:'Vencida'},
+  {despacho:'PE-29450',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:139,estado:'Al Día'},
+  {despacho:'PE-29451',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:128,estado:'Al Día'},
+  {despacho:'PE-29452',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:87,estado:'Al Día'},
+  {despacho:'PE-29457',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:11960,estado:'Al Día'},
+  {despacho:'PE-29459',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:8,estado:'Al Día'},
+  {despacho:'PE-29463',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:160,estado:'Al Día'},
+  {despacho:'PE-29464',transp:'MYR LOGISTICA SAC',zona:'LIMA',dias:4,monto:39229,estado:'Vencida'},
+  {despacho:'PE-29467',transp:'MYR LOGISTICA SAC',zona:'LIMA',dias:4,monto:2876,estado:'Al Día'},
+  {despacho:'PE-29479',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:18877,estado:'Al Día'},
+  {despacho:'PE-29482',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:1384,estado:'Al Día'},
+  {despacho:'PE-29484',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:2408,estado:'Al Día'},
+  {despacho:'PE-29485',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:13605,estado:'Al Día'},
+  {despacho:'PE-29488',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:8,estado:'Al Día'},
+  {despacho:'PE-29492',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:7,estado:'Al Día'},
+  {despacho:'PE-29288',transp:'FRICH GROUP TRADEA S.A.C.',zona:'LIMA',dias:3,monto:7050,estado:'Al Día'},
+  {despacho:'PE-29289',transp:'FRICH GROUP TRADEA S.A.C.',zona:'LIMA',dias:3,monto:22646,estado:'Vencida'},
+  {despacho:'PE-29461',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LAMBAYEQUE',dias:3,monto:77279,estado:'Al Día'},
+  {despacho:'PE-29462',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'TUMBES',dias:3,monto:12509,estado:'Vencida'},
+  {despacho:'PE-29474',transp:'FRIO BANK S.A.C.',zona:'ÁNCASH',dias:3,monto:43087,estado:'Al Día'},
+  {despacho:'PE-29475',transp:'FRIO BANK S.A.C.',zona:'LA LIBERTAD',dias:3,monto:5348,estado:'Al Día'},
+  {despacho:'PE-29476',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LA LIBERTAD',dias:3,monto:10414,estado:'Al Día'},
+  {despacho:'PE-29477',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LA LIBERTAD',dias:3,monto:5710,estado:'Al Día'},
+  {despacho:'PE-29489',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LAMBAYEQUE',dias:3,monto:3288,estado:'Al Día'},
+  {despacho:'PE-29505',transp:'MYR LOGISTICA SAC',zona:'LIMA',dias:3,monto:97125,estado:'Al Día'},
+  {despacho:'PE-29506',transp:'MYR LOGISTICA SAC',zona:'LIMA',dias:3,monto:110537,estado:'Al Día'},
+  {despacho:'PE-29507',transp:'ANTHONY  PERCY MONTALVO  CHAVEZ',zona:'LIMA',dias:3,monto:11051,estado:'Al Día'},
+  {despacho:'PE-29316',transp:'FRICH GROUP TRADEA S.A.C.',zona:'JUNÍN',dias:2,monto:40781,estado:'Al Día'},
+  {despacho:'PE-29365',transp:'FELIXCAR F & M  S.A.C.',zona:'CUSCO',dias:2,monto:11979,estado:'Al Día'},
+  {despacho:'PE-29415',transp:'FELIXCAR F & M  S.A.C.',zona:'CUSCO',dias:2,monto:16228,estado:'Al Día'},
+  {despacho:'PE-29514',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'LA LIBERTAD',dias:2,monto:5938,estado:'Vencida'},
+  {despacho:'PE-29515',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'TUMBES',dias:2,monto:6058,estado:'Vencida'},
+  {despacho:'PE-29520',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LAMBAYEQUE',dias:2,monto:5480,estado:'Al Día'},
+  {despacho:'PE-29552',transp:'FRANKLIN MURAYARI VELA',zona:'LIMA',dias:2,monto:8611,estado:'Al Día'},
+  {despacho:'PE-29553',transp:'EDGAR RAUL ROJAS PUENTE',zona:'LIMA',dias:2,monto:5297,estado:'Al Día'},
+  {despacho:'PE-29554',transp:'JHONATAN MURAYARI VELA',zona:'LIMA',dias:2,monto:3741,estado:'Al Día'},
+  {despacho:'PE-29555',transp:'JHEINER ALONSO MENDEZ DAVILA',zona:'LIMA',dias:2,monto:5599,estado:'Al Día'},
+  {despacho:'PE-29556',transp:'DANIEL ROJAS PUENTE',zona:'LIMA',dias:2,monto:2784,estado:'Al Día'},
+  {despacho:'PE-29557',transp:'JUAN MANUEL MURAYARI VELA',zona:'LIMA',dias:2,monto:0,estado:'Vencida'},
+  {despacho:'PE-29559',transp:'JHONATAN MURAYARI VELA',zona:'LIMA',dias:2,monto:1490,estado:'Al Día'},
+  {despacho:'PE-29560',transp:'DANIEL ROJAS PUENTE',zona:'LIMA',dias:2,monto:137,estado:'Al Día'},
+  {despacho:'PE-29547',transp:'ANTHONY  PERCY MONTALVO  CHAVEZ',zona:'LIMA',dias:2,monto:82836,estado:'Al Día'},
+  {despacho:'PE-29549',transp:'',zona:'LIMA',dias:2,monto:0,estado:'Vencida'},
+  {despacho:'PE-29550',transp:'',zona:'LIMA',dias:2,monto:0,estado:'Vencida'},
+  {despacho:'PE-29551',transp:'DANIEL ROJAS PUENTE',zona:'LIMA',dias:2,monto:643,estado:'Al Día'},
+  {despacho:'PE-29558',transp:'JUAN MANUEL ABAD MEL',zona:'LIMA',dias:2,monto:11720,estado:'Al Día'},
+  {despacho:'PE-29533',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LAMBAYEQUE',dias:1,monto:224,estado:'Al Día'},
+  {despacho:'PE-29546',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'LA LIBERTAD',dias:1,monto:4,estado:'Vencida'},
+  {despacho:'PE-29561',transp:'EDGAR RAUL ROJAS PUENTE',zona:'LIMA',dias:1,monto:839,estado:'Al Día'},
+  {despacho:'PE-29583',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:0,monto:582,estado:'Al Día'},
+  {despacho:'PE-29584',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:0,monto:172,estado:'Al Día'},
+  {despacho:'PE-29585',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:0,monto:53,estado:'Al Día'}
 ];
 
 var TC_PEN = 3.75;
