@@ -1,3 +1,39 @@
+## [22/06/2026] — Usuarios y Permisos: rol Supervisor (analytics.html v1.6 · login.html)
+
+### analytics.html v1.5 → v1.6 — 1 modificación quirúrgica
+
+**Rol Supervisor — panel propio con acceso restringido:**
+
+- El panel de acción (sección Administración) ahora es visible para `admin` **y** `supervisor`
+- La lógica es ternaria: `isAdmin ? [...acciones admin] : [...acciones supervisor]`
+- **Admin:** conserva todas las acciones sin cambios (Actualizar Rutas, Actualizar Cash Today, Panel Administrativo, Descargar Rutas, Descargar Cash Today, Consolidado Regional, Dashboard Perú, Dashboard Honduras)
+- **Supervisor:** accede exclusivamente a **💬 Chat de soporte** (`admin.html`) — sin descargas, sin actualización de datos, sin acceso a config
+- Título, subtítulo e ícono del panel se adaptan al rol en runtime:
+  - Admin → `⚙️ Panel de Administración · Acciones disponibles para Administrador`
+  - Supervisor → `👤 Panel de Supervisor · Acciones disponibles para su rol`
+- `navAdmin` (botón "Administración" en la nav) se muestra para ambos roles
+
+### login.html — 1 corrección menor
+
+- Contador de usuarios en panel izquierdo: `11` → `14` (refleja el total real de usuarios registrados)
+
+**Matriz de permisos post-cambio:**
+
+| Acción | Admin | Supervisor | Consulta |
+|---|---|---|---|
+| Ver dashboards autorizados | ✅ | ✅ | ✅ |
+| Chat de soporte | ✅ | ✅ | ❌ |
+| Actualizar datos (Excel) | ✅ | ❌ | ❌ |
+| Descargar snapshots | ✅ | ❌ | ❌ |
+| Panel Administrativo | ✅ | ❌ | ❌ |
+| Sección Administración visible | ✅ | ✅ | ❌ |
+
+**SHAs post-deploy:**
+- `analytics.html`: `9f8ac21a2bb481116603cced6c261aaf22aff3c6`
+- `login.html`: `48271ca93606dc14c2a5fc865ca3bfe5a17995e5`
+
+---
+
 ## [22/06/2026] — TC histórico 2024 + procesamiento hoja TC (cash_today.html v2.10)
 
 ### cash_today.html — 2 modificaciones quirúrgicas
