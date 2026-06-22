@@ -1,3 +1,56 @@
+## [22/06/2026] — Fase 4 Pilar 2: Gestión de Usuarios + Regional HN + Perú datos reales
+
+### analytics.html v1.7 → v1.8 — Tabla Gestión de Usuarios (ítem 4.4)
+
+Nueva sección **Usuarios y Permisos** visible exclusivamente para rol `admin`, debajo del panel de administración:
+
+- Tabla completa de 14 usuarios con: Nombre · Correo · Rol (badge color) · País/Región · Dashboards autorizados (chips)
+- Badges de rol: 🔴 Administrador · 🟡 Supervisor · 🟢 Consulta
+- Chips de dashboards con ícono por dashboard (🚚 rutas · 💰 cashtoday · 🌎 regional · 🇵🇪 peru · 🇭🇳 honduras)
+- Contador dinámico: "14 usuarios registrados"
+- Se puebla desde `PDC_USERS` en runtime — sin datos estáticos
+
+### regional/index.html v1.0 → v1.1 — Honduras marcado como Proyectado (ítem 4.5)
+
+- Badge "HNL · En roadmap" → **"HNL · Proyectado"** (sección Por País)
+- KPI Estado "Próximamente / Integración en Fase 2" → **"Proyectado / Operación en plan de expansión"**
+- Tabla consolidada: badge "Sin datos" → **"🔜 Proyectado"**
+- Cards resumen HN: "Sin datos disponibles" → **"Operación proyectada"** · "Sin datos" → **"Proyectado"**
+- Fechas actualizadas: 17 Jun → 22 Jun 2026
+
+### peru/index.html v1.0 → v1.1 — Datos reales desde RAW (ítem 4.6)
+
+Fuente: 74 rutas reales de `RAW` en `index.html` (campo `Pais='Perú'`, `Moneda='PEN'`).
+
+**KPIs actualizados (datos reales Jun 2026):**
+
+| KPI | Demo anterior | Real |
+|---|---|---|
+| Rutas Pendientes | 74 | 74 ✅ |
+| Vencidas | 12 | 12 ✅ |
+| En Proceso (8-14d) | 23 | 18 |
+| Al Día (≤7d) | 39 | 44 |
+| Lima / Provincias | 48 / 26 | 41 / 33 |
+| Monto Pendiente | S/ 2,847,320 | S/ 1,492,234 |
+| Monto Vencido | S/ 461,850 | S/ 240,339 |
+| USD equiv | ~$759,285 | ~$397,929 |
+| Efectividad | 83.8% | 83.8% ✅ |
+| Brecha vs meta | −6.2pp | −6.2pp ✅ |
+
+**RUTAS_DETALLE:** 25 rutas demo → **74 rutas reales** (Nro. Despacho real, Transportista real, Zona real, Días reales, Monto real)
+
+**Dataset D (gráficas):**
+- Últimos 2 meses reales: May (21 rutas, 2 vencidas, S/778,809) · Jun (74 rutas, 12 vencidas, S/1,492,234)
+- Meses anteriores: conservan valores referenciales hasta disponibilidad de data histórica
+- Zonas reales: LIMA:41 · LA LIBERTAD:6 · CAJAMARCA:4 · LAMBAYEQUE:4 · AREQUIPA:3 · Otras:16
+
+**SHAs post-deploy:**
+- `analytics.html`: `fe6719b029bb`
+- `regional/index.html`: `75b224bf8739`
+- `peru/index.html`: `129c6845101c`
+
+---
+
 ## [22/06/2026] — Fase 4 Pilar 1: Validación de totales al cargar Excel (cash_today.html v2.12)
 
 ### cash_today.html v2.11 → v2.12 — 3 modificaciones quirúrgicas
