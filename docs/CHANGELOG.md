@@ -1,3 +1,37 @@
+## [22/06/2026] — Integración Cash Today en PDC Analytics Center (analytics.html v1.5)
+
+### analytics.html — 2 correcciones quirúrgicas (integración Cash Today v2.8)
+
+**Diagnóstico previo al cambio:**
+- Cash Today ya tenía entrada en `PDC_DASHBOARDS`, accent CSS, nav card y admin panel
+- Auth Bridge v2.0 confirmado presente en `cash_today.html` (dentro del `<body>`)
+- `pdcNavigate()` ya seteaba `pdc_user` para compatibilidad con `cash_today.html`
+- Dos inconsistencias menores identificadas y corregidas
+
+**Correcciones aplicadas:**
+
+1. **KPIs de Cash Today actualizados a v2.8:**
+   - `{ val:'2', lbl:'Países' }` → `{ val:'10', lbl:'Módulos' }` (refleja los 10 módulos de v2.8 incluyendo Presupuesto)
+   - `actualizacion: '11 jun 2026'` → `'21 jun 2026'` (fecha real de última actualización)
+   - Antes los KPIs no reflejaban el estado real del dashboard v2.8
+
+2. **Timestamp en filename de snapshot Cash Today (consistencia con Rutas):**
+   - `'Dashboard_CashToday.html'` → `'Dashboard_CashToday_'+new Date().toISOString().slice(0,10)+'.html'`
+   - Rutas ya tenía timestamp; Cash Today tenía nombre fijo — inconsistencia corregida
+   - Ejemplo resultado: `Dashboard_CashToday_2026-06-22.html`
+
+**Arquitectura verificada (sin cambios requeridos):**
+- `pdcNavigate('cash_today.html')` → setea `pdc_user` → Auth Bridge v2.0 en CT lo recibe ✅
+- `pdcBridgeToTab('cash_today.html','config')` → acceso directo a módulo Config ✅
+- `pdcDownload('cash_today.html',...)` → fetch + strip Auth Bridge + watermark ✅
+- Accent CSS `.accent-cashtoday` → `linear-gradient(90deg,#E6501E,#FFAB00)` ✅
+- `paises: { GT, ESV }` → chips de país correctos ✅
+
+**SHAs post-deploy:**
+- `analytics.html`: `991d127c8f8a7e7890406654e2828622d8425680`
+
+---
+
 # CHANGELOG — PDC Analytics Center | Grupo PDC
 
 ## [21/06/2026] — TC Histórico 2025 (cash_today.html)
