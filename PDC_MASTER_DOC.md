@@ -1,151 +1,180 @@
 # PDC Analytics Center — Documento Maestro
-**Versión:** 1.0 | **Fecha:** Junio 2026 | **Autor:** Charly / Grupo PDC
+**Versión:** 1.4 | **Fecha:** 21 Junio 2026 | **Autor:** Charly / Grupo PDC
 
 ---
 
 ## 1. ARQUITECTURA DEL SISTEMA
 
-### URLs
-- **Portal principal:** `https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/analytics.html`
-- **Login:** `https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/login.html`
-- **Dashboard Rutas:** `https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/index.html`
-- **Dashboard Cash Today:** `https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/cash_today.html`
-- **Admin:** `https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/admin.html`
+### URLs de producción
+| Dashboard | URL |
+|---|---|
+| Portal principal | `https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/analytics.html` |
+| Login | `.../login.html` |
+| Liquidación de Rutas | `.../index.html` |
+| Cash Today | `.../cash_today.html` |
+| Consolidado Regional | `.../regional/index.html` |
+| Perú | `.../peru/index.html` |
+| Honduras | `.../honduras/index.html` |
+| Admin | `.../admin.html` |
 
 ### Repositorio
 - **GitHub:** `jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar` | Branch: `main`
+- **Deploy:** GitHub Pages · GitHub Actions (~80s) · PUT vía GitHub REST API
 
 ### Stack Tecnológico
-- HTML5 + JavaScript vanilla (sin frameworks)
-- Chart.js 4.4.1 | SheetJS 0.18.5
-- Supabase (chat en admin.html)
-- Hosting: GitHub Pages
+- HTML5 + JavaScript vanilla ES6+ (sin frameworks)
+- Chart.js **4.4.1** (jsdelivr) | SheetJS **0.20.0** (cdn.sheetjs.com)
+- Inter Google Fonts · Supabase (chat admin) · MS Teams + Power Automate
 
 ---
 
 ## 2. FLUJO DE AUTENTICACIÓN
 
 ```
-login.html → [valida credenciales] → guarda pdc_session → analytics.html
-analytics.html → [verifica sesión] → muestra portal con cards según acceso
-card click → [pdcGoToDashboard()] → guarda pdc_user (legacy) → dashboard
-dashboard → [Auth Bridge IIFE] → verifica pdc_session + pdc_user → redirige si no válido
+login.html → [valida credenciales · bloqueo 3 intentos · remember-email]
+           → guarda pdc_session (TTL 8h) → analytics.html
+analytics.html → [verifica sesión · session watcher cada 60s]
+              → muestra cards filtradas por rol/país/dashboards
+card click → pdcNavigateToDash() → guarda pdc_user (legacy) → dashboard
+dashboard  → Auth Bridge v2.0 (IIFE) → verifica pdc_session + pdc_user
+           → redirige analytics.html si sesión inválida
 ```
 
 ### Keys de sesión
 | Key | Formato | Uso |
-|-----|---------|-----|
-| `pdc_session` | `{nombre, email, rol, pais, sedes, dashboards, acceso, ts}` | Principal |
-| `pdc_user` | `{nombre, email, role, pais, acceso}` | Legacy (compatibilidad dashboards) |
-| TTL | 8 horas | Validado en analytics.html |
+|---|---|---|
+| `pdc_session` | `{nombre, email, rol, pais, sedes, dashboards, ts}` | Principal |
+| `pdc_user` | `{nombre, email, role, pais, acceso}` | Legacy dashboards |
+| TTL | 8 horas | Validado en cada página + watcher |
 
 ---
 
-## 3. USUARIOS DEL SISTEMA
+## 3. USUARIOS DEL SISTEMA (14 usuarios)
 
 | Email | Password | Nombre | Rol | País | Dashboards |
-|-------|----------|--------|-----|------|------------|
-| juancarlos.escobar@grupopdc.com | PDC.Admin@2026 | Juan Carlos Escobar | admin | regional | rutas + cashtoday |
-| erwin.soto@grupopdc.com | PDC.Sup.Reg@2026 | Erwin Soto | supervisor | regional | rutas + cashtoday |
-| francisco.aguilar@grupopdc.com | PDC.Sup.GT@2026 | Francisco Aguilar | supervisor | GT | rutas + cashtoday |
-| liquidaciones.cda@grupopdc.com | PDC.TeamGT@2026 | TEAM GT | consulta | GT | rutas + cashtoday |
-| edy.lopez@grupopdc.com | PDC.Con.GT@2026 | Edy Lopez | consulta | GT | solo rutas |
-| joaquin.palma@grupopdc.com | PDC.Con.ESV@2026 | Joaquin Palma | consulta | ESV | rutas + cashtoday |
-| liquidaciones.esv@grupopdc.com | PDC.TeamESV@2026 | TEAM ESV | consulta | ESV | rutas + cashtoday |
-| vinicio.sanabria@grupopdc.com | PDC.Con.GT2@2026 | Vinicio Sanabria | consulta | GT | solo rutas |
-| claudio.rojas@grupopdc.com | PDC.Con.PE@2026 | Claudio Rojas | consulta | PE | solo rutas |
-| jose.mallqui@grupopdc.com | PDC.Con.PE2@2026 | Jose Mallqui | consulta | PE | solo rutas |
-| transportes.peru@grupopdc.com | PDC.TeamPE@2026 | TEAM Peru | consulta | PE | solo rutas |
+|---|---|---|---|---|---|
+| juancarlos.escobar@grupopdc.com | PDC.Admin@2026 | Juan Carlos Escobar | admin | regional | rutas · cashtoday · regional · peru · honduras |
+| erwin.soto@grupopdc.com | PDC.Sup.Reg@2026 | Erwin Soto | supervisor | regional | rutas · cashtoday · regional · peru · honduras |
+| francisco.aguilar@grupopdc.com | PDC.Sup.GT@2026 | Francisco Aguilar | supervisor | GT | rutas · cashtoday |
+| liquidaciones.cda@grupopdc.com | PDC.TeamGT@2026 | TEAM GT | consulta | GT | rutas · cashtoday |
+| edy.lopez@grupopdc.com | PDC.Con.GT@2026 | Edy Lopez | consulta | GT | rutas |
+| joaquin.palma@grupopdc.com | PDC.Con.ESV@2026 | Joaquin Palma | consulta | ESV | rutas · cashtoday |
+| liquidaciones.esv@grupopdc.com | PDC.TeamESV@2026 | TEAM ESV | consulta | ESV | rutas · cashtoday |
+| vinicio.sanabria@grupopdc.com | PDC.Con.GT2@2026 | Vinicio Sanabria | consulta | GT | rutas |
+| claudio.rojas@grupopdc.com | PDC.Con.PE@2026 | Claudio Rojas | consulta | PE | rutas · peru |
+| jose.mallqui@grupopdc.com | PDC.Con.PE2@2026 | Jose Mallqui | consulta | PE | rutas · peru |
+| transportes.peru@grupopdc.com | PDC.TeamPE@2026 | TEAM Peru | consulta | PE | rutas · peru |
+| carlos.reyes@grupopdc.com | PDC.Con.HN@2026 | Carlos Reyes | consulta | HN | rutas · honduras |
+| maria.funez@grupopdc.com | PDC.Con.HN2@2026 | Maria Funez | consulta | HN | rutas · honduras |
+| liquidaciones.hn@grupopdc.com | PDC.TeamHN@2026 | TEAM Honduras | consulta | HN | rutas · honduras |
 
 ---
 
 ## 4. ARCHIVOS DEL PROYECTO
 
-| Archivo | Función | Estado |
-|---------|---------|--------|
-| `login.html` | Login + auth + lista de usuarios | ✅ Producción |
-| `analytics.html` | Portal principal con cards ejecutivas | ✅ Producción |
-| `index.html` | Dashboard Liquidación de Rutas | ✅ Producción |
-| `cash_today.html` | Dashboard Cash Today | ✅ Producción |
-| `admin.html` | Panel admin (chat Supabase) | ✅ Producción |
-| `hub.html` | Hub legacy (deprecado) | ⚠️ Legacy |
-| `js/` | Scripts auxiliares (si aplica) | — |
+| Archivo | Función | Versión | Estado |
+|---|---|---|---|
+| `login.html` | Auth + 14 usuarios + bloqueo + remember | v1.1 | ✅ |
+| `analytics.html` | Portal hub + cards + admin + toast + watcher | v1.3 | ✅ |
+| `index.html` | Dashboard Liquidación de Rutas + Export PDF | v12 | ✅ |
+| `cash_today.html` | Dashboard Cash Today · 11 módulos · Presupuesto | v2.8 | ✅ |
+| `regional/index.html` | Consolidado Regional · 4 países | v1.0 | ✅ |
+| `peru/index.html` | Dashboard Perú · PEN · 4 módulos | v1.0 | ✅ |
+| `honduras/index.html` | Dashboard Honduras · HNL · 4 módulos | v1.0 | ✅ |
+| `admin.html` | Panel admin · chat Supabase | — | ✅ |
+| `hub.html` | Hub legacy | — | ⚠️ Deprecado |
 
 ---
 
 ## 5. FASES COMPLETADAS
 
-### Fase 1 — Auth Core
-- `login.html`: formulario + validación + generación de `pdc_session`
-- Lista de 11 usuarios con roles, países y accesos
+### Fase 0 — Fundación (v1.0)
+- Auth unificada, portal hub, Auth Bridge v2.0, toast system, session watcher
 
-### Fase 2 — Portal
-- `analytics.html`: cards ejecutivas por dashboard
-- Muestra solo los dashboards a los que tiene acceso el usuario
-- Sección admin visible solo para rol admin
+### Fase 1 — Consolidado Regional (v1.1–v1.2)
+- `regional/index.html`, semáforo cupo Cash Today, ?tab= URL param, bloqueo login, remember-email
 
-### Fase 3 — Guard en index.html y admin.html
-- **Auth Bridge v2.0** en `index.html`: IIFE al inicio del body
-  - Lee `pdc_session` → mapea a `pdc_user` legacy
-  - Redirige a `analytics.html` si no hay sesión
-- **Botón ⬅ Portal** en index.html (visible para todos)
-- **Guard en admin.html**: verifica `role === 'admin'`
-
-### Fase 4 — Guard + Filtro País en cash_today.html
-- **Auth Bridge v2.0** insertado después de `<body>`
-- Verifica acceso a cashtoday (redirige si no tiene acceso)
-- **Botones ⏏ Salir y ⬅ Portal** en el header
-- **`pdcAutoSetPais()`**: fuerza filtro de país según sesión
-  - GT/GT/CDA → Guatemala (selector bloqueado)
-  - ESV → El Salvador (selector bloqueado)
-  - admin/supervisor → sin restricción
-- Llamada en `DOMContentLoaded` antes de `initFilters()`
-
-### Fase 5 — Producción
-- **Logo PDC real** en analytics.html (imagen base64 embebida)
-- Documentación maestro generada
+### Fase 2 — Expansión Regional + Cash Today (v1.3–v1.4)
+- Librerías unificadas (Chart.js 4.4.1 + SheetJS 0.20.0 en todos los archivos)
+- `peru/index.html` v1.0 — PEN · paleta pe1/pe2 · 3 usuarios PE
+- `honduras/index.html` v1.0 — HNL · paleta hn1/hn2 · 3 usuarios HN
+- Módulo Presupuesto vs Real en `cash_today.html` — `_PRESUPUESTO` 24 filas · gráfica dual · tabla semáforo
+- Export PDF ejecutivo en `index.html` — ventana A4 · `window.print()` · solo admin/tab Resumen
+- TC histórico 2025 — `_TC_MENSUAL` Jun 2025→Jun 2026 (13 meses · 10,507 registros corregidos)
 
 ---
 
-## 6. LÓGICA DE FILTRO POR PAÍS (cash_today.html)
+## 6. MÓDULO PRESUPUESTO VS REAL (cash_today.html)
 
 ```javascript
-function pdcAutoSetPais(){
-  // Lee sesión pdc_session o pdc_user
-  // Si rol es admin o supervisor → no restringe
-  // Si pais es 'regional' o '' → no restringe
-  // Mapeo: GT/GT/CDA → 'Guatemala' | ESV → 'El Salvador' | PE → '' (sin datos)
-  // Si hay valor: sel.value = valor; sel.disabled = true; onPaisChange()
-}
+const _PRESUPUESTO = [
+  // Estructura: {s: sede, p: país, div: moneda, ym: 'YYYY-MM', budget: monto}
+  // 4 sedes × 6 meses 2026 = 24 filas
+  // GT: CDA + Xela (GTQ) | SV: Santa Tecla + San Miguel (USD)
+];
+// Cálculo real: sobre RECS existente en tiempo real (sin duplicar datos)
+// Semáforo: verde ≥100% · amarillo ≥85% · rojo <85%
 ```
 
 ---
 
-## 7. SUPABASE (admin.html / chat)
+## 7. EXPORT PDF EJECUTIVO (index.html)
+
+```javascript
+function exportarPDF() {
+  // 1. Captura kgrid (6 KPIs) + de-card Despacho + de-card Facturación
+  // 2. Abre ventana emergente con HTML autocontenido
+  // 3. setTimeout 800ms → window.print()
+  // Sin dependencias externas · @page{size:A4;margin:12mm 14mm}
+}
+// Visible solo en tab Resumen · solo admin · clase .pdf-btn.visible
+```
+
+---
+
+## 8. TC MENSUAL (cash_today.html)
+
+```javascript
+const _TC_MENSUAL = {
+  "2025-06": 7.69800, "2025-07": 7.70200, "2025-08": 7.70500,
+  "2025-09": 7.69900, "2025-10": 7.69200, "2025-11": 7.68400, "2025-12": 7.67500,
+  "2026-01": 7.66614, "2026-02": 7.66476, "2026-03": 7.64677,
+  "2026-04": 7.63627, "2026-05": 7.62240, "2026-06": 7.62240
+};
+// Fuente: BANGUAT (promedios mensuales GTQ/USD)
+// 13 meses: Jun 2025 → Jun 2026
+// Fallback: tcGTQ = 7.61815
+```
+
+---
+
+## 9. SUPABASE (admin.html / chat)
 
 - **URL:** `https://pytsrgtcjytjztwdlvux.supabase.co`
 - **Key pública:** `sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj`
+- `chat_messages.id` es UUID — usar `created_at` para detectar nuevos mensajes
 
 ---
 
-## 8. PENDIENTES FUTUROS (backlog)
+## 10. PENDIENTES (Fase 3+)
 
 | # | Tarea | Prioridad |
-|---|-------|-----------|
-| A | Filtro de sede automático en index.html (Rutas) según `sedes` en sesión | Media |
-| B | Ocultar módulo Tab "💱 Tipos de Cambio" en cash_today para no-admin | Baja |
-| C | Mover lista de usuarios a archivo externo (JS o JSON en repo privado) | Media |
-| D | Token de GitHub: rotar periódicamente | Alta |
-| E | Integrar Power Automate Flujo 3 (resumen ejecutivo semanal) | Media |
-| F | Integrar Power Automate Flujo 4 (validación anomalías) con dashboard | Alta |
+|---|---|---|
+| A | Análisis de festivos (campo `hol` ya en `_R`) | Alta |
+| B | Alertas automáticas en Resumen cuando sede >85% cupo | Media |
+| C | Export PDF Cash Today (replicar patrón Rutas) | Media |
+| D | Módulo Presupuesto conectado a hoja Excel | Media |
+| E | TC histórico 2024 si se carga data anterior a Jun 2025 | Baja |
+| F | Token GitHub: rotar periódicamente | Alta |
+| G | Integrar Power Automate Flujo 3 (resumen semanal) | Media |
 
 ---
 
-## 9. NOTAS TÉCNICAS
+## 11. NOTAS TÉCNICAS
 
-- **Auth Bridge**: siempre es una IIFE (función autoejecutable) al inicio del `<body>` para bloquear render antes de validar sesión
-- **sessionStorage** (no localStorage): la sesión expira al cerrar el navegador
-- **cash_today.html es ~9.3 MB**: contiene datos embebidos; no editar manualmente sin herramienta
-- **Compatibilidad legacy**: `pdc_user` mantiene `role` (no `rol`) para compatibilidad con guards anteriores
-- **GitHub Pages**: puede tardar 1-3 minutos en reflejar cambios después de commit
-
+- **Auth Bridge:** IIFE al inicio del `<body>` — bloquea render antes de validar sesión
+- **sessionStorage** (no localStorage): sesión expira al cerrar el navegador / pestaña
+- **cash_today.html es ~9.3 MB:** usar blob API para leer · Python urllib para escribir
+- **GitHub Pages:** ~80s en reflejar cambios · cancela runs intermedios (normal)
+- **Compatibilidad legacy:** `pdc_user` usa `role` (no `rol`) para guards anteriores
+- **Canvas Chart.js:** no inicializar en contenedores `display:none` (módulo Tráfico usa SVG puro)
