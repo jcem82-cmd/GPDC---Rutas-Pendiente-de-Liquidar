@@ -294,6 +294,26 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
 }
 .hdr-dl-btn.admin-visible{display:flex;}
 .hdr-dl-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(14,165,233,.4);}
+/* ── EXPORT PDF ── */
+.pdf-btn{display:none;align-items:center;gap:7px;background:linear-gradient(135deg,#b91c1c,#dc2626);
+  color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:.78rem;font-weight:700;
+  font-family:var(--fn);cursor:pointer;transition:.15s;white-space:nowrap;letter-spacing:.02em}
+.pdf-btn:hover{background:linear-gradient(135deg,#991b1b,#b91c1c);transform:translateY(-1px)}
+.pdf-btn.visible{display:flex}
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  body{margin:0;padding:0;background:#fff!important;font-family:'Inter',system-ui,sans-serif!important}
+  .hdr,.fb,.tabs,.hdr-dl-btn,.pdf-btn,#adminSection,.tc-panel,#tab-analisis,
+  #tab-transportistas,#tab-tendencias,#tab-detalle,#tab-tableros,#tab-tiposcambio,
+  .page-footer,#fb,nav,footer{display:none!important}
+  #tab-resumen{display:block!important;padding:0!important}
+  .panel{box-shadow:none!important;border:none!important}
+  .kgrid{grid-template-columns:repeat(3,1fr)!important;gap:10px!important;margin-bottom:14px!important}
+  .kpi{border:1px solid #e2e8f0!important;break-inside:avoid;page-break-inside:avoid}
+  .de-grid{grid-template-columns:repeat(2,1fr)!important;gap:12px!important}
+  .de-card{break-inside:avoid;page-break-inside:avoid;border:1px solid #e2e8f0!important;box-shadow:none!important}
+  @page{size:A4;margin:12mm 14mm}
+}
 </style>
 </head>
 <body><script>
@@ -358,6 +378,9 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
   </div>
   <button class="hdr-dl-btn admin-visible" onclick="downloadDashboard()" title="Descargar snapshot del dashboard actual">
     ⬇ Guardar Snapshot
+  </button>
+  <button class="pdf-btn admin-visible" id="btnPDF" onclick="exportarPDF()" title="Exportar Resumen Ejecutivo como PDF">
+    📄 Exportar PDF
   </button>
   <button class="hdr-dl-btn" onclick="pdcLogout()" title="Cerrar sesión y volver al login" style="display:flex !important;background:linear-gradient(135deg,#ef4444,#b91c1c);margin-left:6px">
     ⏏ Salir
@@ -1462,6 +1485,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   AF();
   initTrendYrBtns();
   document.querySelectorAll('.panel').forEach((p,i)=>{if(i>0)p.style.display='none';});
+  /* Show PDF button on initial load (resumen is default tab) */
+  var pdfBtnInit = document.getElementById('btnPDF');
+  if(pdfBtnInit){ pdfBtnInit.classList.add('visible'); }
 });
 
 function PF(){
@@ -2144,6 +2170,9 @@ function ST(tab){
   if(tab==='tableros'){renderTableros();}
   if(tab==='transportistas'){RT();}
   if(tab==='analisis'){RD();}
+  /* Show PDF button only on resumen tab */
+  var pdfBtn = document.getElementById('btnPDF');
+  if(pdfBtn){ pdfBtn.classList.toggle('visible', tab==='resumen'); }
 }
 
 // ═══ UTILS ═══════════════════════════════════════════════════════
@@ -3008,7 +3037,129 @@ window.PDCChat = (function() {
 </script>
 
 <script>
-async function downloadDashboard() {
+async function exportarPDF() {
+  /* Genera una ventana de impresión con el Resumen actual formateado para A4 */
+  const btn = document.querySelector('.pdf-btn');
+  if(btn){ btn.textContent = '⏳ Preparando...'; btn.disabled = true; }
+
+  /* Collect current resumen HTML */
+  const kgridHTML = document.getElementById('kgrid') ? document.getElementById('kgrid').outerHTML : '';
+  const debDHTML  = document.getElementById('debD')  ? document.getElementById('debD').closest('.de-card').outerHTML : '';
+  const debFHTML  = document.getElementById('debF')  ? document.getElementById('debF').closest('.de-card').outerHTML : '';
+
+  /* Date and session info */
+  const fechaEl  = document.getElementById('hdr-fecha');
+  const fecha    = fechaEl ? fechaEl.textContent.trim() : new Date().toLocaleDateString('es-GT');
+  var userName   = '';
+  try{ var s=JSON.parse(sessionStorage.getItem('pdc_session')||sessionStorage.getItem('pdc_user')||'{}');
+    userName = s.nombre ? s.nombre.split(' ').slice(0,2).join(' ') : ''; }catch(e){}
+
+  const printWin = window.open('', '_blank', 'width=900,height=700');
+  if(!printWin){ alert('Habilite ventanas emergentes para exportar PDF.'); 
+    if(btn){ btn.textContent = '📄 Exportar PDF'; btn.disabled = false; } return; }
+
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<title>Reporte Ejecutivo · Liquidación de Rutas · ${fecha}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+body{font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#0d1b3e;background:#fff;padding:0}
+@page{size:A4;margin:12mm 14mm}
+
+/* ── REPORT HEADER ── */
+.rpt-hdr{background:#002060;color:#fff;padding:16px 20px;display:flex;align-items:center;
+  justify-content:space-between;gap:16px;margin-bottom:18px;border-radius:10px}
+.rpt-logo{background:#fff;border-radius:6px;padding:3px 10px;font-size:.95rem;
+  font-weight:800;color:#002060;letter-spacing:.06em}
+.rpt-title{flex:1;padding:0 16px}
+.rpt-title h1{font-size:1rem;font-weight:800;letter-spacing:.04em;margin-bottom:2px}
+.rpt-title p{font-size:.7rem;opacity:.7}
+.rpt-meta{text-align:right;font-size:.72rem;opacity:.75;line-height:1.6}
+.rpt-meta strong{opacity:1;font-weight:700}
+
+/* ── SECTION LABEL ── */
+.sec-lbl{font-size:.68rem;font-weight:700;color:#5a6480;text-transform:uppercase;
+  letter-spacing:.1em;margin:14px 0 8px;border-bottom:1px solid #e2e8f0;padding-bottom:4px}
+
+/* ── KPI GRID ── */
+.kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.kpi{background:#fff;border-radius:8px;padding:13px 15px;border:1px solid #e2e8f0;
+  border-top:3px solid #002060;break-inside:avoid;page-break-inside:avoid}
+.kpi.g{border-top-color:#48a010;background:#f8fff4}
+.kpi.y{border-top-color:#e0ac00;background:#fffef0}
+.kpi.r{border-top-color:#d03030;background:#fff8f8}
+.kico{font-size:1.1rem;margin-bottom:4px}
+.klbl{font-size:.65rem;font-weight:700;color:#7a8aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.kval{font-size:1.4rem;font-weight:800;color:#0d1b3e;line-height:1}
+.ksub{font-size:.65rem;color:#7a8aaa;margin-top:3px}
+
+/* ── DE-GRID (detail cards) ── */
+.de-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+.de-card{background:#fff;border-radius:8px;border:1px solid #e2e8f0;overflow:hidden;
+  break-inside:avoid;page-break-inside:avoid}
+.de-hdr{background:#f8faff;border-bottom:1px solid #e2e8f0;padding:8px 14px;
+  display:flex;align-items:center;gap:7px}
+.de-hdr h4{font-size:.75rem;font-weight:700;color:#002060}
+.de-body{padding:8px 14px}
+.de-row{display:flex;align-items:center;justify-content:space-between;
+  padding:5px 0;border-bottom:1px solid #f0f4f8;font-size:.75rem}
+.de-row:last-child{border-bottom:none}
+.de-lbl{color:#3a4a70;font-weight:500}
+.de-nums{display:flex;align-items:center;gap:8px}
+.de-tot{color:#7a8aaa;font-size:.7rem}
+.de-v{font-weight:700;color:#0d1b3e}
+.sm{font-size:.68rem;font-weight:700;padding:2px 6px;border-radius:10px}
+.sm.r{background:#FFBDBD;color:#8a0f0f}
+.sm.y{background:#FFF4CC;color:#7a5800}
+.sm.g{background:#DCF0C6;color:#2a6000}
+
+/* ── FOOTER ── */
+.rpt-footer{border-top:1px solid #e2e8f0;margin-top:16px;padding-top:10px;
+  display:flex;align-items:center;justify-content:space-between;font-size:.65rem;color:#7a8aaa}
+.rpt-footer strong{color:#002060}
+</style>
+</head>
+<body>
+
+<div class="rpt-hdr">
+  <div class="rpt-logo">PDC</div>
+  <div class="rpt-title">
+    <h1>REPORTE EJECUTIVO · LIQUIDACIÓN DE RUTAS</h1>
+    <p>Dashboard Ejecutivo · Grupo PDC · Departamento Financiero</p>
+  </div>
+  <div class="rpt-meta">
+    <strong>Corte:</strong> ${fecha}<br>
+    <strong>Generado:</strong> ${new Date().toLocaleString('es-GT')}<br>
+    ${userName ? '<strong>Usuario:</strong> '+userName : ''}
+  </div>
+</div>
+
+<div class="sec-lbl">KPIs Globales · Rutas Pendientes de Liquidación</div>
+<div class="kgrid">${kgridHTML.replace(/<div class="kgrid"[^>]*>/,'').replace(/<\/div>\s*$/,'')}</div>
+
+<div class="sec-lbl">Detalle por País · Estado de Liquidación</div>
+<div class="de-grid">${debDHTML}${debFHTML}</div>
+
+<div class="rpt-footer">
+  <span>Grupo PDC · Departamento Financiero · © 2026</span>
+  <strong>Dashboard Liquidación de Rutas · Reporte Ejecutivo</strong>
+  <span>Datos al ${fecha}</span>
+</div>
+
+</body></html>`);
+
+  printWin.document.close();
+  printWin.focus();
+  setTimeout(function(){
+    printWin.print();
+    if(btn){ btn.textContent = '📄 Exportar PDF'; btn.disabled = false; }
+  }, 800);
+}
+
+function downloadDashboard() {
   var btn = document.querySelector('.hdr-dl-btn');
   var origText = btn.innerHTML;
   btn.innerHTML = '⏳ Descargando...';
