@@ -1,3 +1,36 @@
+## [22/06/2026] — TC histórico 2024 + procesamiento hoja TC (cash_today.html v2.10)
+
+### cash_today.html — 2 modificaciones quirúrgicas
+
+**D. TC histórico 2024 (ítem D del Roadmap Fase 3):**
+
+**Diagnóstico previo al cambio:**
+- `_TC_MENSUAL` cubría Jun 2025 → Jun 2026 (13 meses)
+- Dataset `_R` arranca en 2025-06 — no hay registros de 2024 actualmente
+- Si se cargara un Excel con data de 2024, esos meses usarían fallback `tcGTQ = 7.61815` en lugar de TC preciso
+- Implementación es preventiva: deja el sistema listo para data histórica de 2024
+
+**Cambios aplicados:**
+
+1. **`_TC_MENSUAL` expandido: Ene 2024 → Jun 2026 (25 meses)**
+   - Añadidos 12 meses de 2024 con TCs BANGUAT (promedios mensuales)
+   - Valores: 2024-01: 7.797 · 2024-06: 7.771 · 2024-12: 7.728
+   - Tendencia coherente: GTQ se aprecia sostenidamente (7.797 → 7.622)
+   - Cobertura completa para cualquier Excel histórico de 2024 o posterior
+   - `updateConfigInfo()` muestra la tabla completa dinámicamente (sin cambios)
+
+2. **Procesamiento de hoja `TC` desde Excel (runtime)**
+   - Si el Excel cargado incluye una pestaña `TC`, sus valores se incorporan a `_TC_MENSUAL` en runtime
+   - Formato aceptado columna A: `YYYY-MM` o `MM/YYYY` (normalización automática)
+   - Formato columna B: valor numérico del TC GTQ/USD
+   - Permite extender la tabla de TCs sin necesidad de nuevo deploy
+   - Error handling silencioso vía `console.warn` — no interrumpe la carga del Excel
+
+**SHAs post-deploy:**
+- `cash_today.html`: `3c04e8a84010e5a7c9a5e0d73dccd5d94d13ff91`
+
+---
+
 ## [22/06/2026] — Export PDF ejecutivo + fix validTabs (cash_today.html v2.9)
 
 ### cash_today.html — 6 modificaciones quirúrgicas
