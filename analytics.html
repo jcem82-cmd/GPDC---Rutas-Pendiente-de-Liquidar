@@ -237,6 +237,8 @@ body{
 .accent-rutas{background:linear-gradient(90deg,#002060 0%,#00B8D9 100%)}
 .accent-cashtoday{background:linear-gradient(90deg,#E6501E 0%,#FFAB00 100%)}
 .accent-default{background:linear-gradient(90deg,#5B2D8E 0%,#A78BFA 100%)}
+.accent-peru{background:linear-gradient(90deg,#8B1A1A 0%,#E8A020 100%)}
+.accent-regional{background:linear-gradient(90deg,#002060 0%,#5B2D8E 60%,#E6501E 100%)}
 
 /* Card body */
 .card-body{padding:22px 24px 16px;flex:1;display:flex;flex-direction:column;gap:14px}
@@ -640,6 +642,22 @@ var PDC_DASHBOARDS = [
     ],
     actualizacion: '17 jun 2026',
     activo: true
+  },
+  {
+    id: 'peru',
+    nombre: 'Perú · Liquidación de Rutas',
+    descripcion: 'Dashboard operativo de liquidación de rutas para la operación Perú. KPIs en Soles (PEN), análisis por zona geográfica, seguimiento de transportistas y tendencias mensuales.',
+    archivo: 'peru/index.html',
+    icono: '🇵🇪',
+    categoria: 'Operativo · Perú',
+    paises: { PE:'🇵🇪 Perú' },
+    kpis: [
+      { val:'74',    lbl:'Rutas activas' },
+      { val:'12',    lbl:'Vencidas' },
+      { val:'83.8%', lbl:'Efectividad' }
+    ],
+    actualizacion: '21 jun 2026',
+    activo: true
   }
 ];
 
@@ -936,7 +954,8 @@ function pdcRenewSession(){
       { icono:'💬', label:'Panel Administrativo',   desc:'Chat de soporte · Gestión',      action:"pdcNavigate('admin.html')" },
       { icono:'⬇️', label:'Descargar Rutas',        desc:'Exportar snapshot del dashboard', action:"pdcDownload('index.html','Dashboard_Rutas_'+new Date().toISOString().slice(0,10)+'.html', this.closest('button'))" },
       { icono:'📋', label:'Descargar Cash Today',   desc:'Exportar snapshot del dashboard', action:"pdcDownload('cash_today.html','Dashboard_CashToday.html', this.closest('button'))" },
-      { icono:'🌎', label:'Consolidado Regional', desc:'KPIs multi-país · 4 países', action:"pdcNavigateToDash('regional/index.html')" }
+      { icono:'🌎', label:'Consolidado Regional', desc:'KPIs multi-país · 4 países', action:"pdcNavigateToDash('regional/index.html')" },
+      { icono:'🇵🇪', label:'Dashboard Perú',        desc:'Liquidación de Rutas · PEN',  action:"pdcNavigate('peru/index.html')" }
     ];
 
     var actionsEl = document.getElementById('adminActions');
