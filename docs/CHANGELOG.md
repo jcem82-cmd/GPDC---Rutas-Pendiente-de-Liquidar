@@ -1,3 +1,39 @@
+## [22/06/2026] — Fase 4 Pilar 1: Validación de totales al cargar Excel (cash_today.html v2.12)
+
+### cash_today.html v2.11 → v2.12 — 3 modificaciones quirúrgicas
+
+**4.2 — Validación de totales al cargar Excel**
+
+Al cargar un Excel en ⚙️ Config, se ejecuta automáticamente `renderValidacion(newRecs, wb)` que compara los totales del archivo fuente contra los registros efectivamente parseados.
+
+**Qué se compara (por hoja/sede):**
+
+| Columna | Fuente A | Fuente B | Indica |
+|---|---|---|---|
+| Dep. Excel | Filas con `Tipo='Depósito'` en hoja raw | — | Total bruto del Excel |
+| Dep. Leídos | Registros en `newRecs` para esa sede | — | Total parseado |
+| Δ Registros | Diferencia A-B | — | Filas omitidas (tipo inválido, fecha no parseable) |
+| Importe Excel | Suma columna Importe en hoja raw | — | Total bruto |
+| Importe Leído | Suma `r.imp` en newRecs para esa sede | — | Total parseado |
+| Δ Importe | Diferencia | — | Discrepancia numérica |
+| Rec. Excel / Leídas | Recogidas en hoja raw vs newRecs | — | Integridad de recogidas |
+
+**Semáforo:**
+- ✅ OK — Todo cuadra (Δ = 0 en registros, Δ < 0.1% en importes)
+- ⚠️ Revisar — Diferencia menor detectada
+- ❌ Discrepancia — Diferencia significativa (≥ 0.1% en importe o registros faltantes)
+
+**Comportamiento:**
+- Se muestra debajo del warning de cajeros nuevos, dentro del bloque `cfg-loaded`
+- Siempre visible tras cargar Excel exitosamente (no solo cuando hay problemas)
+- Cuando hay discrepancias: mensaje orientativo "Revise el Excel fuente si la diferencia es significativa"
+- Orden de ejecución: `autoFilter()` → `detectNuevosCajeros()` → `renderValidacion()` → `updateConfigInfo()`
+
+**SHAs post-deploy:**
+- `cash_today.html`: `5a46d290f1c805d4fafec4d0e2293a925c82b8fb`
+
+---
+
 ## [22/06/2026] — Fase 4 Pilar 1: Presupuesto desde _M + cajeros nuevos (cash_today.html v2.11)
 
 ### cash_today.html v2.10 → v2.11 — 5 modificaciones quirúrgicas
