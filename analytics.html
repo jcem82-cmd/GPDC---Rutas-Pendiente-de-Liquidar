@@ -960,12 +960,14 @@ function pdcRenewSession(){
     });
   }
 
-  /* Panel por rol: admin ve todo · supervisor solo chat */
-  if(session.rol === 'admin' || session.rol === 'supervisor'){
+  /* Panel por rol: admin ve todo · supervisor solo chat · consulta solo chat */
+  if(session.rol === 'admin' || session.rol === 'supervisor' || session.rol === 'consulta'){
     document.getElementById('admin').style.display = '';
     document.getElementById('navAdmin').style.display = '';
 
-    var isAdmin = (session.rol === 'admin');
+    var isAdmin      = (session.rol === 'admin');
+    var isSupervisor = (session.rol === 'supervisor');
+    var isConsulta   = (session.rol === 'consulta');
 
     /* Título y subtítulo del panel según rol */
     var panelTitle = document.querySelector('#admin .admin-hdr-title');
@@ -975,16 +977,21 @@ function pdcRenewSession(){
       if(panelTitle) panelTitle.textContent = 'Panel de Administración';
       if(panelSub)   panelSub.textContent   = 'Acciones disponibles para Administrador';
       if(panelIcon)  panelIcon.textContent  = '⚙️';
-    } else {
+    } else if(isSupervisor){
       if(panelTitle) panelTitle.textContent = 'Panel de Supervisor';
       if(panelSub)   panelSub.textContent   = 'Acciones disponibles para su rol';
       if(panelIcon)  panelIcon.textContent  = '👤';
-      /* Actualizar también el título de la sección */
       var secCount = document.querySelector('#admin .sec-count');
       if(secCount) secCount.textContent = 'Acciones de supervisor';
+    } else {
+      if(panelTitle) panelTitle.textContent = 'Soporte';
+      if(panelSub)   panelSub.textContent   = 'Canal de comunicación con el equipo administrador';
+      if(panelIcon)  panelIcon.textContent  = '💬';
+      var secCount2 = document.querySelector('#admin .sec-count');
+      if(secCount2) secCount2.textContent = 'Chat de soporte';
     }
 
-    /* Acciones admin — completas */
+    /* Acciones según rol */
     var adminActions = isAdmin ? [
       { icono:'📂', label:'Actualizar Rutas',      desc:'Subir Excel · Tipos de Cambio',  action:"pdcBridgeToTab('index.html','tiposcambio')" },
       { icono:'📊', label:'Actualizar Cash Today',  desc:'Cargar nuevo Excel · Config',    action:"pdcBridgeToTab('cash_today.html','config')" },
@@ -994,9 +1001,12 @@ function pdcRenewSession(){
       { icono:'🌎', label:'Consolidado Regional',   desc:'KPIs multi-país · 4 países',     action:"pdcNavigateToDash('regional/index.html')" },
       { icono:'🇵🇪', label:'Dashboard Perú',         desc:'Liquidación de Rutas · PEN',     action:"pdcNavigate('peru/index.html')" },
       { icono:'🇭🇳', label:'Dashboard Honduras',      desc:'Liquidación de Rutas · HNL',     action:"pdcNavigate('honduras/index.html')" }
-    ] : [
-      /* Acciones supervisor — solo chat, sin descargas ni actualización de datos */
+    ] : isSupervisor ? [
+      /* Supervisor — solo chat */
       { icono:'💬', label:'Chat de soporte',        desc:'Consultas y comunicación con admin', action:"pdcNavigate('admin.html')" }
+    ] : [
+      /* Consulta — solo chat */
+      { icono:'💬', label:'Chat de soporte',        desc:'Enviar consulta al equipo administrador', action:"pdcNavigate('admin.html')" }
     ];
 
     var actionsEl = document.getElementById('adminActions');
