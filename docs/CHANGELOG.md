@@ -1,3 +1,43 @@
+## [22/06/2026] — Chat para consulta + corrección cupo AMAT (analytics.html v1.7 · cash_today.html)
+
+### analytics.html v1.6 → v1.7 — Chat de soporte para rol consulta
+
+**Cambio:** El panel de Soporte/Administración ahora es visible para los 3 roles.
+
+Lógica actualizada de ternario a triple rama:
+- `isAdmin` → Panel de Administración completo (8 acciones, sin cambios)
+- `isSupervisor` → Panel de Supervisor · solo 💬 Chat de soporte
+- `isConsulta` → Soporte · solo 💬 Chat de soporte (descripción diferenciada)
+
+Título, subtítulo e ícono del panel se adaptan por rol en runtime:
+- Consulta → `💬 Soporte · Canal de comunicación con el equipo administrador`
+
+**Matriz de permisos vigente (definitiva):**
+
+| Acción | Admin | Supervisor | Consulta |
+|---|---|---|---|
+| Ver dashboards autorizados | ✅ | ✅ | ✅ |
+| Sección panel visible | ✅ | ✅ | ✅ |
+| Chat de soporte | ✅ | ✅ | ✅ |
+| Actualizar datos (Excel) | ✅ | ❌ | ❌ |
+| Descargar snapshots | ✅ | ❌ | ❌ |
+| Panel Administrativo completo | ✅ | ❌ | ❌ |
+
+### cash_today.html — Corrección cupo AMAT consolidado
+
+**Corrección:** Cupo AMAT I + II (Consolidado) `Q18,000,000` → `Q16,000,000`
+
+- Afectaba 2 puntos del código: `renderSemaforo()` y `renderMetas()/buildRow()`
+- El semáforo de cupo en Resumen ahora calcula el % sobre Q16MM
+- El módulo Límites & KPIs ahora muestra Q16MM como cupo contratado consolidado
+- Nota: `_M` individual sigue con AMAT I = Q9MM y AMAT II = Q9MM (suma técnica Q18MM), pero el cupo operativo acordado para el consolidado es Q16MM
+
+**SHAs post-deploy:**
+- `analytics.html`: `15ab0fe1e5f69abc3189398b548109877f2b8ddb`
+- `cash_today.html`: `1fd03d67b85ffa4ceaf475422ac4d05a65f5b2ea`
+
+---
+
 ## [22/06/2026] — Usuarios y Permisos: rol Supervisor (analytics.html v1.6 · login.html)
 
 ### analytics.html v1.5 → v1.6 — 1 modificación quirúrgica
