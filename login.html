@@ -365,6 +365,30 @@ body{
 
 <!-- RIGHT PANEL -->
 <div class="panel-right">
+
+  <!-- Panel sesión activa (visible si ya hay sesión válida) -->
+  <div id="activeSessionPanel" style="display:none;background:var(--card);border-radius:20px;box-shadow:0 8px 40px rgba(0,32,96,.14);padding:40px 36px;width:100%;max-width:440px;margin:auto">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="width:64px;height:64px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.8rem">✅</div>
+      <div style="font-size:1.2rem;font-weight:700;color:var(--navy);margin-bottom:6px">Sesión activa</div>
+      <div style="font-size:.85rem;color:var(--text2)">Ya tiene una sesión iniciada en este dispositivo</div>
+    </div>
+    <div style="background:#f0f4f8;border-radius:12px;padding:16px 20px;margin-bottom:22px">
+      <div style="font-size:.75rem;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Usuario activo</div>
+      <div id="asName" style="font-size:1rem;font-weight:700;color:var(--navy)"></div>
+      <div id="asRole" style="font-size:.78rem;color:var(--text2);margin-top:2px"></div>
+      <div id="asMins" style="font-size:.72rem;color:var(--green2);font-weight:600;margin-top:6px"></div>
+    </div>
+    <button onclick="window.location.href='analytics.html'" type="button"
+      style="width:100%;background:var(--navy);color:#fff;border:none;border-radius:12px;padding:14px;font-size:.9rem;font-weight:700;cursor:pointer;margin-bottom:10px;font-family:inherit">
+      Continuar al portal →
+    </button>
+    <button onclick="(function(){sessionStorage.removeItem('pdc_session');sessionStorage.removeItem('pdc_user');location.reload();})()" type="button"
+      style="width:100%;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:12px;padding:12px;font-size:.82rem;font-weight:500;cursor:pointer;font-family:inherit">
+      Cerrar sesión e ingresar con otro usuario
+    </button>
+  </div>
+
   <div class="login-box">
     <div class="login-header">
       <div class="login-eyebrow">Acceso seguro</div>
@@ -455,13 +479,30 @@ var PDC_USERS = [
   { email:'liquidaciones.hn@grupopdc.com',   pass:'PDC.TeamHN@2026',    nombre:'TEAM Honduras',       rol:'consulta',   dashboards:['rutas','honduras'],   pais:'HN',       sedes:['Tegucigalpa','SanPedro'] }
 ];
 
-/* Si ya hay sesión válida → redirigir al portal */
+/* Si ya hay sesión válida → mostrar panel de sesión activa */
 (function(){
   try{
     var raw = sessionStorage.getItem(PDC_SESSION_KEY);
     if(raw){
       var s = JSON.parse(raw);
-      if(Date.now() - s.ts < PDC_SESSION_TTL){ window.location.href = PDC_PORTAL; }
+      if(Date.now() - s.ts < PDC_SESSION_TTL){
+        /* Mostrar panel de sesión activa en lugar de redirigir */
+        document.addEventListener('DOMContentLoaded', function(){
+          var panel = document.getElementById('activeSessionPanel');
+          var loginBox = document.querySelector('.login-box');
+          if(panel && loginBox){
+            var ROL_LABELS = {admin:'Administrador',supervisor:'Supervisor',consulta:'Consulta'};
+            document.getElementById('asName').textContent = s.nombre;
+            document.getElementById('asRole').textContent = ROL_LABELS[s.rol] || s.rol;
+            var mins = Math.floor((PDC_SESSION_TTL - (Date.now() - s.ts)) / 60000);
+            document.getElementById('asMins').textContent = mins + ' min restantes';
+            loginBox.style.display = 'none';
+            panel.style.display = '';
+          } else {
+            window.location.href = PDC_PORTAL;
+          }
+        });
+      }
     }
   }catch(e){}
 })();
@@ -547,6 +588,20 @@ function doLogin(){
 
   setTimeout(function(){
     var user = authenticate(email, pass);
+    if(user){
+      /* U4 — Verificar si el usuario está desactivado */
+      try{
+        var states = JSON.parse(localStorage.getItem('pdc_user_states') || '{}');
+        if(states[user.email] === false){
+          setLoading(false);
+          showError('Cuenta desactivada. Contacte al administrador del sistema.');
+          fPass.value = '';
+          var box = document.querySelector('.login-form');
+          box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
+          return;
+        }
+      }catch(e){}
+    }
     if(!user){
       setLoading(false);
       loginAttempts++;
@@ -578,12 +633,24 @@ function doLogin(){
     loginAttempts = 0;
 
     sessionStorage.setItem(PDC_SESSION_KEY, JSON.stringify(session));
-    /* Also set legacy pdc_user key for backward compatibility with existing dashboards */
+    /* U5 — pdc_user legacy con rol completo (admin/supervisor/consulta) */
     sessionStorage.setItem('pdc_user', JSON.stringify({
       nombre: user.nombre, email: user.email,
-      role: user.rol === 'admin' ? 'admin' : 'user'
+      role: user.rol,   /* rol completo: admin | supervisor | consulta */
+      pais: user.pais, sedes: user.sedes
     }));
-    window.location.href = PDC_PORTAL;
+    /* U3 — Registrar último acceso en localStorage */
+    try{
+      var accessLog = JSON.parse(localStorage.getItem('pdc_access_log') || '{}');
+      accessLog[user.email] = new Date().toISOString();
+      localStorage.setItem('pdc_access_log', JSON.stringify(accessLog));
+    }catch(e){}
+    /* U1 — Breve pausa para mostrar nombre antes del redirect */
+    setLoading(false);
+    btnLabel.textContent = '✅ Bienvenido, ' + user.nombre.split(' ')[0] + '!';
+    btnArrow.style.display = 'none';
+    document.getElementById('btnLogin').style.background = 'linear-gradient(135deg,#2d9e2d,#1a7a1a)';
+    setTimeout(function(){ window.location.href = PDC_PORTAL; }, 900);
   }, 600);
 }
 
