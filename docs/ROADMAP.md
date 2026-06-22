@@ -29,7 +29,7 @@
 - [ ] Alertas vencidas vía Teams · Export PDF · Histórico snapshots
 
 ## 🟠 FASE 4 — Evolución Dashboard Cash Today (v2.8)
-- [x] **Presupuesto vs Real · Export PDF · TC histórico 2025 · Análisis festivos** — Presupuesto ✅ 21/06/2026 · Export PDF ✅ 21/06/2026
+- [x] **Presupuesto vs Real · Export PDF · TC histórico 2025 · Análisis festivos** — Presupuesto ✅ · Export PDF ✅ · TC histórico 2025 ✅ 21/06/2026
 
 ## 🔴 FASE 5 — Plataforma Avanzada (v2.0)
 - [ ] Admin Dashboard · Push notifications · Modo oscuro · PWA · IA predictiva
