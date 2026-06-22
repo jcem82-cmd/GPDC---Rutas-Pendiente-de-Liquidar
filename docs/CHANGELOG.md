@@ -1,5 +1,28 @@
 # CHANGELOG — PDC Analytics Center | Grupo PDC
 
+## [21/06/2026] — Módulo Presupuesto vs Real (Cash Today v2.8)
+
+### cash_today.html — Cambios quirúrgicos (5 modificaciones)
+- **Nav tab:** `🎯 Presupuesto` agregado entre Costo Servicio y Config
+- **`renderPage()`:** case `'presupuesto'` → `renderPresupuesto()`
+- **`_PRESUPUESTO`:** constante embebida con 24 filas (4 sedes × 6 meses 2026)
+  - GT (GTQ): CDA + Xela · SV (USD): Santa Tecla + San Miguel
+- **`renderPresupuesto()`:** función completa
+  - Selectores año + país (Consolidado / GT / SV)
+  - 4 KPI cards: Cumplimiento % (semáforo) · Presupuesto · Recolectado · Superávit/Déficit
+  - Gráfica barras agrupadas + línea cumplimiento % (eje dual)
+  - Tabla sede × mes con semáforo (verde ≥100% · amarillo ≥85% · rojo <85%)
+  - Fila total con fondo navy suave
+- **`page-presupuesto`:** HTML completo con toolbar, kpi-grid, canvas, tabla + nota de actualización
+- **CSS:** `.pres-total`, `td.g/y/r`, `td.total-cell`
+
+### Arquitectura
+- Datos de presupuesto como constante `_PRESUPUESTO` (editable inline o via futura hoja Excel)
+- Cálculo de real en tiempo real sobre `RECS` existente (sin duplicar datos)
+- Presupuesto filtrable por año y país — listo para expansión multi-año
+
+---
+
 ## [21/06/2026] — Sesión de desarrollo (continuación)
 
 ### Nuevos módulos
