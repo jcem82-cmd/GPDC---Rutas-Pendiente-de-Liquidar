@@ -74,6 +74,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#0a0f1e;color:#e2e8f0
   box-shadow:0 8px 32px rgba(0,0,0,.5);display:none;gap:12px;align-items:center;cursor:pointer;}
 .alert-toast.show{display:flex;animation:alertIn .4s cubic-bezier(.16,1,.3,1);}
 @keyframes alertIn{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:none}}
+/* R-CHAT: ocultar panel admin para supervisor y consulta */
+[data-role="supervisor"] .admin-only,
+[data-role="consulta"] .admin-only { display:none!important; }
+[data-role="supervisor"] .user-chat-only,
+[data-role="consulta"] .user-chat-only { display:block!important; }
 </style>
 </head>
 <body>
@@ -130,8 +135,16 @@ const uStr = sessionStorage.getItem('pdc_user');
 if(!uStr) { window.location.replace('login.html'); }
 else {
   currentAdmin = JSON.parse(uStr);
-  if(currentAdmin.role !== 'admin') window.location.replace('index.html');
-  document.getElementById('adminNameTB').textContent = currentAdmin.nombre;
+  /* R-CHAT: supervisor y consulta pueden usar el chat de soporte */
+  if(currentAdmin.role !== 'admin' && currentAdmin.role !== 'supervisor' && currentAdmin.role !== 'consulta') {
+    window.location.replace('login.html');
+  }
+  /* Si es supervisor o consulta: mostrar vista de usuario del chat */
+  if(currentAdmin.role === 'supervisor' || currentAdmin.role === 'consulta') {
+    document.documentElement.setAttribute('data-role', currentAdmin.role);
+  }
+  var nameEl = document.getElementById('adminNameTB');
+  if(nameEl) nameEl.textContent = currentAdmin.nombre;
 }
 
 function logout() { sessionStorage.removeItem('pdc_user'); window.location.href='login.html'; }
