@@ -3037,10 +3037,11 @@ async function exportarPDF() {
   try{ var s=JSON.parse(sessionStorage.getItem('pdc_session')||sessionStorage.getItem('pdc_user')||'{}');
     userName = s.nombre ? s.nombre.split(' ').slice(0,2).join(' ') : ''; }catch(e){}
 
+  if(btn){ btn.disabled = false; } /* R2: restaurar btn antes del open */
   const printWin = window.open('', '_blank', 'width=900,height=700');
   if(!printWin){
-    alert('No se pudo abrir la ventana de impresion.\nPermita ventanas emergentes para este sitio en la barra del navegador.');
-    if(btn){ btn.textContent = '📄 Exportar PDF'; btn.disabled = false; }
+    alert('No se pudo abrir la ventana de impresion.\nEn Chrome: icono de popup en la barra de direcciones → Permitir siempre.');
+    if(btn){ btn.textContent = '📄 Exportar PDF'; }
     return; return; }
 
   printWin.document.write(`<!DOCTYPE html>
@@ -3207,7 +3208,12 @@ async function publishToGitHub() {
     const srcR = await fetch(GH_URL_R1,{headers:{'Authorization':'token '+_tR1,'Accept':'application/vnd.github.v3+json'}});
     if(!srcR.ok) throw new Error('Error leyendo fuente: '+srcR.status);
     const srcD = await srcR.json();
-    let updated = decodeURIComponent(escape(atob(srcD.content.replace(/\n/g,''))));
+    /* R1-FIX-ARCH: TextDecoder para UTF-8 correcto en archivos grandes */
+    const _b64clean = srcD.content.replace(/[\n\r]/g,'');
+    const _raw = atob(_b64clean);
+    const _bytes = new Uint8Array(_raw.length);
+    for(let _i=0;_i<_raw.length;_i++) _bytes[_i]=_raw.charCodeAt(_i);
+    let updated = new TextDecoder('utf-8').decode(_bytes);
     updated = updated.replace(/const RAW = \[[\s\S]*?\];/,        'const RAW = '        +JSON.stringify(res.routes)+';');
     updated = updated.replace(/const KPI_HIST = \[[\s\S]*?\];/,   'const KPI_HIST = '   +JSON.stringify(res.kpiData)+';');
     updated = updated.replace(/const EFECT = \[[\s\S]*?\];/,      'const EFECT = '      +JSON.stringify(res.efData)+';');
