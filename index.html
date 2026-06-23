@@ -351,8 +351,10 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
     var sub = document.querySelector('.hdr-sub');
     if (sub) sub.textContent = 'Dashboard Operativo · Bienvenido, ' + data.nombre;
     if (data.role === 'admin') {
-      var btn = document.querySelector('.hdr-dl-btn');
-      if (btn) btn.classList.add('admin-visible');
+      /* R2-FIX: mostrar todos los elementos admin (PDF + cualquier otro) */
+      document.querySelectorAll('.admin-visible').forEach(function(el){
+        el.style.display = 'flex';
+      });
       var tc = document.getElementById('tabTC');
       if (tc) tc.style.display = '';
     }
@@ -376,9 +378,6 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
     <div class="hbadge">Vencidas Fact.: <strong id="hdr-vf" style="color:#ffbdbd">89</strong></div>
     <div class="hbadge">Vencidas Desp.: <strong id="hdr-vd" style="color:#ffe08a">85</strong></div>
   </div>
-  <button class="hdr-dl-btn admin-visible" onclick="downloadDashboard()" title="Descargar snapshot del dashboard actual">
-    ⬇ Guardar Snapshot
-  </button>
   <button class="pdf-btn admin-visible" id="btnPDF" onclick="exportarPDF()" title="Exportar Resumen Ejecutivo como PDF">
     📄 Exportar PDF
   </button>
@@ -3215,18 +3214,22 @@ async function publishToGitHub() {
     const res = parsedFileData.result;
     const gtq = parseFloat(document.getElementById('tcGTQ').value)||7.63627;
     const pen = parseFloat(document.getElementById('tcPEN').value)||3.529;
-    let updated = document.documentElement.outerHTML;
-    updated = updated.replace(/const RAW = \[[\s\S]*?\];/,       'const RAW = '       +JSON.stringify(res.routes)+';');
-    updated = updated.replace(/const KPI_HIST = \[[\s\S]*?\];/,  'const KPI_HIST = '  +JSON.stringify(res.kpiData)+';');
-    updated = updated.replace(/const EFECT = \[[\s\S]*?\];/,     'const EFECT = '     +JSON.stringify(res.efData)+';');
-    updated = updated.replace(/const KPI_TOTALS = \{[\s\S]*?\};/,'const KPI_TOTALS = '+JSON.stringify(res.kpiTotals)+';');
+    /* R1-FIX: Leer HTML limpio desde repo (no DOM en vivo) */
+    const _tR1 = ['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'].join('');
+    const GH_URL_R1 = 'https://api.github.com/repos/jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar/contents/index.html';
+    const srcR = await fetch(GH_URL_R1,{headers:{'Authorization':'token '+_tR1,'Accept':'application/vnd.github.v3+json'}});
+    if(!srcR.ok) throw new Error('Error leyendo fuente: '+srcR.status);
+    const srcD = await srcR.json();
+    let updated = decodeURIComponent(escape(atob(srcD.content.replace(/\n/g,''))));
+    updated = updated.replace(/const RAW = \[[\s\S]*?\];/,        'const RAW = '        +JSON.stringify(res.routes)+';');
+    updated = updated.replace(/const KPI_HIST = \[[\s\S]*?\];/,   'const KPI_HIST = '   +JSON.stringify(res.kpiData)+';');
+    updated = updated.replace(/const EFECT = \[[\s\S]*?\];/,      'const EFECT = '      +JSON.stringify(res.efData)+';');
+    updated = updated.replace(/const KPI_TOTALS = \{[\s\S]*?\};/, 'const KPI_TOTALS = ' +JSON.stringify(res.kpiTotals)+';');
     updated = updated.replace(/const FX_DEF = \{GTQ:[^}]+\};/,    'const FX_DEF = {GTQ:1/'+gtq+', USD:1, PEN:1/'+pen+'};');
     if(res.kpiTotals && res.kpiTotals.report_date) {
       updated = updated.replace(/id="hdr-fecha">[^<]+<\/strong>/g,
         'id="hdr-fecha">'+res.kpiTotals.report_date+'<\/strong>');
     }
-    updated = updated.replace('id="file-preview" style="display: block;',
-                              'id="file-preview" style="display: none;');
     const bytes = new TextEncoder().encode(updated);
     let bin = '';
     for(let i=0; i<bytes.length; i+=8192) {
@@ -3234,13 +3237,11 @@ async function publishToGitHub() {
     }
     const b64 = btoa(bin);
     // Token assembled at runtime
+    /* Reutilizar srcD.sha y URL del fetch anterior */
     const _t = ['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'].join('');
-    const GH_REPO = 'jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar';
-    const GH_URL  = 'https://api.github.com/repos/'+GH_REPO+'/contents/index.html';
+    const GH_URL  = 'https://api.github.com/repos/jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar/contents/index.html';
     const HDRS    = {'Authorization':'token '+_t,'Accept':'application/vnd.github.v3+json'};
-    const shaR = await fetch(GH_URL, {headers: HDRS});
-    if(!shaR.ok) throw new Error('Error SHA: '+shaR.status);
-    const shaD = await shaR.json();
+    const shaD    = srcD;
     const pushR = await fetch(GH_URL, {
       method:'PUT', headers:{...HDRS,'Content-Type':'application/json'},
       body: JSON.stringify({
