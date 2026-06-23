@@ -39,10 +39,10 @@ SIEMPRE actualizar los docs en /docs al cerrar la sesión con cambios.
 
 | Archivo | Versión | SHA | Tamaño |
 |---|---|---|---|
-| `analytics.html` | v2.0 | `0dcb64bac8` | 50,626 b |
+| `analytics.html` | v2.1 | `e4f6a4d905` | 50,626 b |
 | `login.html` | v1.2 | `4e0f9bebd3` | 24,702 b |
-| `index.html` | v12 | `804588b847` | 734,696 b |
-| `cash_today.html` | v2.13 | `53d846086f` | 9,361,062 b |
+| `index.html` | v12.1 | `05794c2bdf` | 734,921 b |
+| `cash_today.html` | v2.14 | `ff27d7e2cd` | 9,361,509 b |
 | `regional/index.html` | v1.1 | `75b224bf87` | 36,605 b |
 | `peru/index.html` | v1.1 | `129c684510` | 47,814 b |
 | `honduras/index.html` | v1.0 | `c2014b3adf` | 41,524 b |
