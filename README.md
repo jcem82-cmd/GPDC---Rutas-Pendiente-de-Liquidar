@@ -1,58 +1,55 @@
 # PDC Analytics Center — Grupo PDC
 
-**Estado:** ✅ Producción | **Versión:** v1.4 | **Actualizado:** 21/06/2026
+**Plataforma corporativa de Business Intelligence** para el Departamento Financiero.
 
-**Portal:** https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/analytics.html
-
----
-
-## Descripción
-
-Plataforma corporativa de Business Intelligence del Grupo PDC. Centraliza dashboards ejecutivos de Liquidación de Rutas y Cash Today bajo autenticación unificada, diseño corporativo consistente y arquitectura escalable desplegada en GitHub Pages.
+[![Estado](https://img.shields.io/badge/Estado-Producción%20✅-2D9E2D)](https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/analytics.html)
+[![Versión](https://img.shields.io/badge/Versión-v2.13-002060)](https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/analytics.html)
 
 ---
 
-## Dashboards activos
+## 🚀 Acceso rápido
 
-| Dashboard | URL | Países | Módulos |
-|---|---|---|---|
-| 🌎 Consolidado Regional | .../regional/index.html | GT · SV · PE · HN | 4 |
-| 🚚 Liquidación de Rutas | .../index.html | GT · SV · PE · HN | 7 + PDF |
-| 💰 Cash Today | .../cash_today.html | GT · SV | 11 |
-| 🇵🇪 Perú | .../peru/index.html | PE | 4 |
-| 🇭🇳 Honduras | .../honduras/index.html | HN | 4 |
-
----
-
-## Stack
-
-- **Frontend:** HTML5 · CSS3 · JavaScript ES6+ vanilla (sin frameworks)
-- **Gráficas:** Chart.js 4.4.1 (jsdelivr)
-- **Excel:** SheetJS 0.20.0 (cdn.sheetjs.com)
-- **Tipografía:** Inter (Google Fonts)
-- **Auth:** sessionStorage · 8h TTL · 14 usuarios · 3 roles
-- **Chat:** Supabase
-- **Hosting:** GitHub Pages · GitHub Actions (~80s deploy)
+| Recurso | URL |
+|---|---|
+| **Portal Hub** | [analytics.html](https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/analytics.html) |
+| **Login** | [login.html](https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/login.html) |
+| **Rutas** | [index.html](https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/index.html) |
+| **Cash Today** | [cash_today.html](https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/cash_today.html) |
+| **Regional** | [regional/index.html](https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/regional/index.html) |
+| **Perú** | [peru/index.html](https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/peru/index.html) |
+| **Honduras** | [honduras/index.html](https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/honduras/index.html) |
 
 ---
 
-## Acceso
+## 📁 Documentación (`/docs`)
 
-Entrar por `login.html` con credenciales corporativas PDC.
-Cada usuario ve solo los dashboards autorizados para su perfil y país.
-
----
-
-## Para desarrolladores
-
-Leer en orden antes de modificar cualquier archivo:
-1. `docs/MASTER_PROJECT_CONTEXT.md`
-2. `docs/PROJECT_RULES.md`
-3. `docs/CHANGELOG.md`
-4. `docs/ROADMAP.md`
-
-**Regla principal:** nunca reconstruir — solo modificaciones quirúrgicas sobre el HEAD actual.
+| Archivo | Descripción |
+|---|---|
+| [00_MASTER_REQUEST.md](docs/00_MASTER_REQUEST.md) | Prompt listo para nuevo chat con Claude |
+| [01_MASTER_PROJECT_CONTEXT.md](docs/01_MASTER_PROJECT_CONTEXT.md) | Contexto técnico completo del proyecto |
+| [02_CHANGELOG.md](docs/02_CHANGELOG.md) | Historial de todas las versiones |
+| [03_ROADMAP.md](docs/03_ROADMAP.md) | Plan de evolución y fases |
+| [04_PROJECT_RULES.md](docs/04_PROJECT_RULES.md) | Reglas permanentes (no negociables) |
+| [05_README.md](docs/05_README.md) | Guía de inicio rápido |
+| [06_AI_GOVERNANCE.md](docs/06_AI_GOVERNANCE.md) | Protocolo de trabajo con Claude |
+| [07_DESIGN_SYSTEM.md](docs/07_DESIGN_SYSTEM.md) | Sistema visual corporativo |
 
 ---
 
-*Grupo PDC · Departamento Financiero · © 2026*
+## 🏗 Arquitectura
+
+```
+login.html  →  analytics.html (Hub)
+                ├── index.html          Rutas GT+SV+PE+HN
+                ├── cash_today.html     ATM GT+SV
+                ├── regional/           Consolidado 4 países
+                ├── peru/               Rutas Perú
+                ├── honduras/           Rutas Honduras
+                └── admin.html          Chat soporte
+```
+
+**Stack:** HTML5 · CSS3 · JS vanilla · Chart.js 4.4.1 · SheetJS 0.20.0 · GitHub Pages
+
+---
+
+*Grupo PDC · Departamento Financiero · 22/06/2026*
