@@ -3,6 +3,19 @@
 
 ---
 
+## [Arquitectura Sprint Final] — 22/06/2026
+
+### Causa raíz definitiva por issue
+
+| Issue | Causa raíz confirmada | Fix |
+|---|---|---|
+| **R1 Publicar GitHub** | `decodeURIComponent(escape(atob(...)))` falla en archivos UTF-8 grandes (>500KB) — el decode corrompía caracteres multi-byte y el PUT resultante era inválido | `TextDecoder('utf-8')` sobre `Uint8Array` — correcto para cualquier tamaño |
+| **R2 Exportar PDF** | `btn.disabled=true` antes de `window.open` → si el popup fallaba, el botón quedaba bloqueado y el usuario no podía reintentar | `btn.disabled=false` antes del `window.open` + mensaje instructivo |
+| **CT Dashboard congelado** | `pdcAutoSetPais()` se llamaba ANTES de `initFilters()` → `onPaisChange()` corría con filtros no inicializados → crash total | Movida después de `initFilters()+autoFilter()` |
+| **CT dispatchEvent loop** | `dispatchEvent(new Event('change'))` en selectores de módulo provocaba re-renders en cascada | Eliminado completamente — solo `el.value` y `el.disabled` |
+| **CT Config visible supervisor/consulta** | No había código que ocultara el tab Config para no-admin | `pdcAutoSetPais` + `isAdmin block` ocultan `.ntab[onclick*='config']` |
+| **CT Festivos sin datos** | Dataset `_R` histórico tiene `hol:0` en todos los registros | Muestra calendario estático oficial GT/SV; datos reales al cargar Excel |
+
 ## [Bug Fix Sprint 4] — 22/06/2026 · Fixes definitivos
 
 | Archivo | SHA | Fix |
