@@ -3,6 +3,29 @@
 
 ---
 
+## [Bug Fix Sprint 2] — 22/06/2026 · Causas raíz definitivas
+
+### Causa raíz de cada issue (confirmada en producción)
+
+| Issue | Causa raíz real | Fix aplicado |
+|---|---|---|
+| **R1: Publicar GitHub** | `function publishToGitHub()` sin `async` → los `await` generan SyntaxError silencioso | `async function publishToGitHub()` |
+| **R2: PDF sin acción** | CSS `.pdf-btn{display:none}` tiene más especificidad que el JS → override imposible | `display:none!important` + `setProperty('display','flex','important')` |
+| **R5: Tabla usuarios vacía** | `PDC_USERS` se usa en analytics.html pero nunca se declaraba | `PDC_USERS` copiado de login.html a analytics.html |
+| **R-CHAT: supervisor/consulta → rutas** | Auth Bridge mapeaba todos los no-admin → `'user'`; admin.html rechazaba `role!=='admin'` | Auth Bridge preserva rol real; admin.html permite supervisor/consulta |
+| **R-ROLES: tabTC visible para todos** | Mismo mapeo binario → supervisor/consulta tenían `role='user'` y el tab se mostraba | Con rol real preservado, DOMContentLoaded oculta tabTC para supervisor/consulta |
+| **CT-AUTH: Config visible para todos** | Auth Bridge de cash_today mapeaba binario igual | Preserva rol real; tab Config oculto para supervisor/consulta |
+| **CT-FESTIVOS: no muestra datos** | Dataset `_R` histórico tiene todos los registros con `hol:0` — no hay festivos en datos embebidos | Mensaje informativo mejorado; festivos aparecen al cargar nuevo Excel |
+
+### Archivos desplegados en este sprint
+
+| Archivo | SHA | Cambios |
+|---|---|---|
+| `index.html` | `f2649cf9a2` | R1 async, R2 !important, R-ROLES Auth Bridge |
+| `analytics.html` | `61fefe9d8d` | R5 PDC_USERS, R-ROLES pdcNavigate |
+| `admin.html` | `65acd01085` | R-CHAT supervisor/consulta acceden al chat |
+| `cash_today.html` | `340fbdc04415` | CT-AUTH rol real, CT-ROLES Config oculto, CT-FEST mensaje |
+
 ## [cash_today.html v2.15] — 22/06/2026 · CT2 parseWB dinámico
 
 ### Corrección crítica — parseWB detección dinámica de columnas
