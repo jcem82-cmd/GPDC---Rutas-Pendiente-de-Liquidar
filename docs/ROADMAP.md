@@ -1,7 +1,7 @@
 # ROADMAP — PDC Analytics Center | Grupo PDC
 
-**Estado actual: v1.4 ESTABLE** · Próxima versión objetivo: v1.5
-**Última actualización:** 21/06/2026
+**Estado actual: v2.13 ESTABLE** · Próxima versión objetivo: v2.14
+**Última actualización:** 22/06/2026
 
 ---
 
@@ -40,12 +40,12 @@
 
 ---
 
-## 🔵 FASE 3 — Mejoras Operativas (v1.5 · Próximo sprint)
+## ✅ FASE 3 — Mejoras Operativas (COMPLETADA · v2.13 · 22/06/2026)
 
-- [ ] **Análisis de festivos** — campo `hol` ya disponible en `_R` · impacto días festivos en recolección Cash Today
-- [ ] **Alertas automáticas en Resumen** — semáforo cuando sede supera 85% cupo o debajo 70% presupuesto (Cash Today)
-- [ ] **Export PDF Cash Today** — replicar patrón del PDF de Rutas en `cash_today.html`
-- [ ] **TC histórico 2024** — ampliar `_TC_MENSUAL` hacia atrás si se carga data anterior a Jun 2025
+- [x] **Análisis de festivos** — tab 🗓 Festivos expuesto en nav · `renderFestivos()` conectada · datos `hol` activos
+- [x] **Alertas semáforo en Resumen** — `renderAlertasPresupuesto()` 85%/70% ya funcional dentro de `renderResumen`
+- [x] **Export PDF Cash Today** — `exportarPDF_CT()` implementado · botón en header · visible solo en Resumen (admin)
+- [x] **TC histórico 2024** — `_TC_MENSUAL` 25 meses Ene 2024 → Jun 2026 · aplicado por transacción vía `usd(r)`
 
 ---
 
@@ -99,4 +99,4 @@ repo/
 
 ---
 
-*PDC Analytics Center · v1.4 · 21 Jun 2026*
+*PDC Analytics Center · v2.13 · 22 Jun 2026*
