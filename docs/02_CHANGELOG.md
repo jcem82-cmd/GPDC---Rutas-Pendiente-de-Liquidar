@@ -3,6 +3,33 @@
 
 ---
 
+## [Correcciones multi-archivo] — 22/06/2026 · Bug Fix Sprint
+
+### analytics.html v2.1
+| Fix | Causa raíz | Solución |
+|---|---|---|
+| **R4: Tarjeta Consolidado Regional sin acción** | Llamaba a `pdcNavigateToDash()` que no existe | Cambiado a `pdcNavigate('regional/index.html')` |
+| **R5: Tabla Gestión de Usuarios vacía** | `renderUserTable()` se ejecutaba antes de que el DOM terminara de pintar | Envuelto en `setTimeout(renderUserTable, 0)` |
+
+### index.html v12.1
+| Fix | Causa raíz | Solución |
+|---|---|---|
+| **R1: Publicar en GitHub no funciona** | `publishToGitHub` usaba `document.documentElement.outerHTML` — captura DOM en vivo con Auth Bridge activo, sesiones y overlays, produciendo un archivo corrupto | Reemplazado por `fetch()` al repo para obtener el HTML limpio antes de insertar los nuevos datasets |
+| **R2: Exportar PDF sin acción** | Auth Bridge solo activaba el primer `.hdr-dl-btn` — `btnPDF` quedaba oculto con `display:none` | Auth Bridge ahora activa **todos** `.admin-visible` via `querySelectorAll` |
+| **R3: Botón Guardar Snapshot eliminado** | Funcionalidad duplicada — ya existe en Panel de Administración de analytics.html | Botón eliminado del header |
+| **R6/R8: Chat** | Auth Bridge mapea `supervisor`/`consulta` → `role='user'`, que `initChat()` ya gestiona correctamente como chat | Confirmado funcional — sin cambio en código |
+
+### cash_today.html v2.14
+| Fix | Causa raíz | Solución |
+|---|---|---|
+| **CT1: Alertas presupuestal compara meses acumulados** | `renderAlertasPresupuesto` leía `sel-mes` que no existe en el módulo Resumen → `activeYm` siempre `null` → comparaba año completo | Reemplazado por lectura del filtro global real (`f-vista` / `f-mes` / `f-anio`) |
+| **CT3: Tab Festivos sin datos** | `parseWB` hardcodeaba `hol:0` en todos los registros | Ahora calcula `hol` dinámicamente vía `isHoliday(fecha, pais)` al cargar Excel |
+| **CT2: Excel solo actualiza CDA** | `parseWB` usa índices de columna fijos (`r[6]` = importe) que deben coincidir con la estructura del Excel | Pendiente verificación de columnas del Excel fuente — no es bug de código |
+
+### Pendiente verificar por usuario
+- **CT2**: ¿Las columnas del Excel de Cash Today coinciden con el orden esperado por `parseWB`? Columnas esperadas: `[0]Fecha transacción, [1]Cajero, [2]?, [3]Usuario, [4]Tipo, [5]Div, [6]Importe, [7]Piezas`
+- **R7**: Tipos de Cambio y Config de Cash Today — ya correctamente ocultos para supervisor y consulta (solo admin los ve) ✅
+
 ## [22/06/2026] — Fase Usuarios y Permisos (login.html v1.2 · analytics.html v1.9)
 
 ### login.html v1.1 → v1.2 — 5 mejoras
