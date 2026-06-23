@@ -3,6 +3,24 @@
 
 ---
 
+## [Bug Fix Sprint 4] — 22/06/2026 · Fixes definitivos
+
+| Archivo | SHA | Fix |
+|---|---|---|
+| `cash_today.html` | `bfe1a1114` | CRITICO: pdcAutoSetPais después de initFilters + eliminar dispatchEvent |
+| `index.html` | `9cc92958` | R1: aasync→async definitivo · R2: return guard en exportarPDF |
+| `analytics.html` | `01791a0c` | R5: toggle con indicadores visuales y tooltip |
+
+### Causa raíz de cada issue
+
+**Cash Today en blanco (URGENTE):** `pdcAutoSetPais()` se llamaba ANTES de `initFilters()`. El `el.dispatchEvent(new Event('change'))` en los selectores desencadenaba renders antes de que el dashboard estuviera inicializado — crash silencioso que dejaba todo en blanco. Fix: mover `pdcAutoSetPais()` después de `initFilters()+autoFilter()` y eliminar el `dispatchEvent`.
+
+**R1 Publicar GitHub:** Cada sprint había agregado `async` a la función acumulando `aasync`, luego `sync async`, luego `nc function` etc. El resultado era una declaración inválida. Fix definitivo: reemplazo directo del string exacto.
+
+**R2 exportarPDF:** `window.open()` devuelve `null` si es bloqueado — la función continuaba ejecutando y crasheaba. Fix: `return` inmediato después del `alert`.
+
+**R5 Toggle activo/inactivo:** El badge de estado es un botón funcional pero no era evidente visualmente. Fix: indicadores `▾`/`▸`, tooltip "Clic: activar o desactivar", y leyenda "(clic para cambiar)" en el encabezado de columna.
+
 ## [Bug Fix Sprint 3] — 22/06/2026 · Causas raíz definitivas resueltas
 
 ### Diagnóstico real de cada issue (con fix confirmado)
