@@ -54,6 +54,25 @@
 
 ---
 
+## [cash_today.html v2.13] — 22/06/2026 · Fase 3 Completa
+
+### Nuevas funcionalidades
+| # | Cambio | Detalle |
+|---|---|---|
+| 1 | **Tab 🗓 Festivos en nav** | Agregado entre Presupuesto y Config · activa `renderFestivos()` |
+| 2 | **page-festivos HTML** | Contenedor con `card-festivos`, `festivos-kpis`, `festivos-body` |
+| 3 | **renderFestivos scope** | `const d = fData` agregado para acceso correcto al dataset filtrado |
+| 4 | **validTabs actualizado** | `'festivos'` registrado → URL param `?tab=festivos` funcional |
+| 5 | **renderPage dispatch** | `p==='festivos' → renderFestivos()` agregado al switch de páginas |
+
+### Estado de los 4 ítems de Fase 3 al cierre
+| Ítem | Estado |
+|---|---|
+| Análisis de festivos | ✅ **Completado** — tab expuesto, función conectada, datos `hol` activos |
+| Alertas semáforo 85%/70% | ✅ **Ya funcionaba** — `renderAlertasPresupuestal` IIFE dentro de `renderResumen` |
+| Export PDF Cash Today | ✅ **Ya implementado** — `exportarPDF_CT()` + botón en header (v2.12) |
+| TC histórico 2024 | ✅ **Ya implementado** — `_TC_MENSUAL` 25 meses Ene 2024→Jun 2026 (v2.12) |
+
 ## [22/06/2026] — Fase 4 Pilar 2: Gestión de Usuarios + Regional HN + Perú datos reales
 
 ### analytics.html v1.7 → v1.8 — Tabla Gestión de Usuarios (ítem 4.4)
