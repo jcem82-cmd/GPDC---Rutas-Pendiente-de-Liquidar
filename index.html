@@ -3038,8 +3038,10 @@ async function exportarPDF() {
     userName = s.nombre ? s.nombre.split(' ').slice(0,2).join(' ') : ''; }catch(e){}
 
   const printWin = window.open('', '_blank', 'width=900,height=700');
-  if(!printWin){ alert('Habilite ventanas emergentes para exportar PDF.'); 
-    if(btn){ btn.textContent = '📄 Exportar PDF'; btn.disabled = false; } return; }
+  if(!printWin){
+    alert('No se pudo abrir la ventana de impresion.\nPermita ventanas emergentes para este sitio en la barra del navegador.');
+    if(btn){ btn.textContent = '📄 Exportar PDF'; btn.disabled = false; }
+    return; return; }
 
   printWin.document.write(`<!DOCTYPE html>
 <html lang="es">
@@ -3190,7 +3192,7 @@ function downloadDashboard() {
   }
 }
 
-aasync function publishToGitHub() {
+async function publishToGitHub() {
   if (!parsedFileData) { alert('Primero procesa un archivo Excel'); return; }
   const btn = document.getElementById('btnPublishGH');
   const origTxt = btn.textContent;
