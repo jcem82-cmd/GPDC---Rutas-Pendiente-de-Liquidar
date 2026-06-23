@@ -295,7 +295,7 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
 .hdr-dl-btn.admin-visible{display:flex;}
 .hdr-dl-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(14,165,233,.4);}
 /* ── EXPORT PDF ── */
-.pdf-btn{display:none;align-items:center;gap:7px;background:linear-gradient(135deg,#b91c1c,#dc2626);
+.pdf-btn{display:none!important;align-items:center;gap:7px;background:linear-gradient(135deg,#b91c1c,#dc2626);
   color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:.78rem;font-weight:700;
   font-family:var(--fn);cursor:pointer;transition:.15s;white-space:nowrap;letter-spacing:.02em}
 .pdf-btn:hover{background:linear-gradient(135deg,#991b1b,#b91c1c);transform:translateY(-1px)}
@@ -325,7 +325,7 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
     var unified = sessionStorage.getItem('pdc_session');
     if (unified) {
       var s = JSON.parse(unified);
-      u = JSON.stringify({ nombre: s.nombre, email: s.email, role: s.rol === 'admin' ? 'admin' : 'user' });
+      u = JSON.stringify({ nombre: s.nombre, email: s.email, role: s.rol });
       sessionStorage.setItem('pdc_user', u);
     } else {
       /* 2. Intentar leer token de URL (?pdc_token=...) — para acceso desde nueva pestaña */
@@ -334,7 +334,7 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
       if (token) {
         try {
           var t = JSON.parse(atob(token));
-          u = JSON.stringify({ nombre: t.nombre, email: t.email, role: t.rol === 'admin' ? 'admin' : 'user' });
+          u = JSON.stringify({ nombre: t.nombre, email: t.email, role: t.rol });
           sessionStorage.setItem('pdc_user', u);
           /* Limpiar token de la URL sin recargar */
           var clean = window.location.pathname + (params.get('tab') ? '?tab=' + params.get('tab') : '');
@@ -351,12 +351,18 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
     var sub = document.querySelector('.hdr-sub');
     if (sub) sub.textContent = 'Dashboard Operativo · Bienvenido, ' + data.nombre;
     if (data.role === 'admin') {
-      /* R2-FIX: mostrar todos los elementos admin (PDF + cualquier otro) */
+      /* R2-FIX: activar todos .admin-visible con !important */
       document.querySelectorAll('.admin-visible').forEach(function(el){
-        el.style.display = 'flex';
+        el.style.setProperty('display','flex','important');
       });
+      var btnPDF2 = document.getElementById('btnPDF');
+      if(btnPDF2) btnPDF2.style.setProperty('display','inline-flex','important');
       var tc = document.getElementById('tabTC');
-      if (tc) tc.style.display = '';
+      if(tc) tc.style.display = '';
+    } else {
+      /* Supervisor y consulta: ocultar Tipos de Cambio */
+      var tcHide = document.getElementById('tabTC');
+      if(tcHide) tcHide.style.display = 'none';
     }
     if (urlTab) {
       if (typeof ST === 'function') ST(urlTab);
@@ -3205,7 +3211,7 @@ function downloadDashboard() {
   }
 }
 
-async function publishToGitHub() {
+async async function publishToGitHub() {
   if (!parsedFileData) { alert('Primero procesa un archivo Excel'); return; }
   const btn = document.getElementById('btnPublishGH');
   const origTxt = btn.textContent;
