@@ -3,9 +3,18 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>PDC Analytics Center</title>
+<!-- PDC Analytics Center v2.0 · Grupo PDC · Departamento Financiero · 22/06/2026 -->
+<title>PDC Analytics Center · Grupo PDC</title>
+<meta name="description" content="Plataforma corporativa de Business Intelligence del Grupo PDC. Dashboards ejecutivos para el Departamento Financiero."/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#002060"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://pytsrgtcjytjztwdlvux.supabase.co https://api.github.com;"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap&font-display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -33,13 +42,26 @@
   --shadow-lg:0 12px 48px rgba(0,32,96,.16);
 }
 
+.skip-link{
+  position:absolute;left:-9999px;top:8px;z-index:9999;
+  background:var(--navy);color:var(--white);
+  padding:8px 18px;border-radius:8px;font-size:.85rem;font-weight:600;
+  text-decoration:none;white-space:nowrap;
+}
+.skip-link:focus{left:16px;outline:2px solid var(--sky);outline-offset:2px}
 body{
   font-family:'Inter',system-ui,sans-serif;
   font-size:14px;
   background:var(--bg);
   min-height:100vh;
+  min-height:100dvh;
   color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
 }
+:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 
 /* ══════════════════════════════
    HEADER
@@ -103,7 +125,7 @@ body{
   cursor:pointer;white-space:nowrap;
   transition:background .15s,color .15s;
 }
-.btn-logout:hover{background:rgba(255,255,255,.16);color:var(--white)}
+.btn-logout:hover,.btn-logout:focus-visible{background:rgba(255,255,255,.16);color:var(--white)}
 
 /* ══════════════════════════════
    HERO BANNER
@@ -225,6 +247,14 @@ body{
 .dash-card:nth-child(2){animation-delay:.1s}
 .dash-card:nth-child(3){animation-delay:.16s}
 .dash-card:hover{box-shadow:var(--shadow-md);transform:translateY(-3px)}
+.dash-card:hover,.dash-card:focus-within{will-change:transform}
+@media print{
+  .header,.page-footer,.admin-section,.btn-access,.btn-logout{display:none!important}
+  .main{padding:0!important}
+  .dash-card{box-shadow:none!important;border:1px solid #ccc;break-inside:avoid}
+  .hero{background:#002060!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff!important}
+}
 
 @keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes cardIn{
@@ -317,7 +347,7 @@ body{
   transition:background .15s,box-shadow .15s;
   white-space:nowrap;
 }
-.btn-access:hover{background:var(--navy2);box-shadow:0 4px 14px rgba(0,32,96,.25)}
+.btn-access:hover,.btn-access:focus-visible{background:var(--navy2);box-shadow:0 4px 14px rgba(0,32,96,.25)}
 
 /* Empty state */
 .empty-state{
@@ -372,7 +402,7 @@ body{
   transition:background .15s,border-color .15s,box-shadow .15s;
   text-decoration:none;color:inherit;
 }
-.admin-btn:hover{
+.admin-btn:hover,.admin-btn:focus-visible{
   background:var(--sky2);
   border-color:#b0d4f8;
   box-shadow:0 2px 10px rgba(0,32,96,.08);
@@ -474,7 +504,7 @@ body{
 <body>
 
 <!-- Loading overlay -->
-<div class="overlay" id="overlay">
+<div class="overlay" id="overlay" role="alert" aria-live="assertive" aria-label="Cargando PDC Analytics Center">
   <div class="overlay-logo">PDC</div>
   <div class="overlay-spinner"></div>
   <div class="overlay-text">Cargando portal...</div>
@@ -490,7 +520,7 @@ body{
   <span id="pdcToastIcon" style="font-size:1.1rem">✅</span>
   <div style="flex:1"><div id="pdcToastTitle" style="font-weight:700;margin-bottom:2px">Listo</div>
   <div id="pdcToastMsg" style="opacity:.7;font-size:.75rem">Operación completada</div></div>
-  <button onclick="pdcHideToast()" style="background:none;border:none;color:#fff;opacity:.5;cursor:pointer;font-size:1.1rem;padding:0 4px;line-height:1">×</button>
+  <button onclick="pdcHideToast()" type="button" aria-label="Cerrar notificación" style="background:none;border:none;color:#fff;opacity:.5;cursor:pointer;font-size:1.1rem;padding:0 4px;line-height:1">×</button>
 </div>
 <!-- ── Banner sesión expirando ── -->
 <div id="pdcSessionWarning" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9998;
@@ -498,11 +528,12 @@ body{
   font-family:'Inter',sans-serif;font-size:.78rem;font-weight:700;
   box-shadow:0 2px 8px rgba(0,0,0,.2)">
   ⚠️ Tu sesión expira en <span id="pdcSessionMins">15</span> minutos ·
-  <button onclick="pdcRenewSession()" style="background:#000;color:#f59e0b;border:none;border-radius:6px;padding:3px 12px;font-size:.75rem;font-weight:700;cursor:pointer;margin-left:8px">Renovar sesión</button>
+  <button onclick="pdcRenewSession()" type="button" aria-label="Renovar sesión activa" style="background:#000;color:#f59e0b;border:none;border-radius:6px;padding:3px 12px;font-size:.75rem;font-weight:700;cursor:pointer;margin-left:8px">Renovar sesión</button>
 </div>
 
 <!-- HEADER -->
-<header class="header">
+<a class="skip-link" href="#main-content">Saltar al contenido principal</a>
+<header class="header" role="banner">
   <div class="header-inner">
     <div class="logo-pill"><span class="logo-pill-text">PDC</span></div>
     <div class="h-divider"></div>
@@ -511,9 +542,9 @@ body{
       <div class="header-subtitle">Plataforma Corporativa de Business Intelligence</div>
     </div>
 
-    <nav class="header-nav" id="headerNav">
-      <button class="nav-item active" onclick="scrollToSection('dashboards')">📊 Mis Dashboards</button>
-      <button class="nav-item" id="navAdmin" style="display:none" onclick="scrollToSection('admin')">⚙️ Administración</button>
+    <nav class="header-nav" id="headerNav" role="navigation" aria-label="Navegación principal">
+      <button class="nav-item active" onclick="scrollToSection('dashboards')" type="button" aria-label="Ver mis dashboards">📊 Mis Dashboards</button>
+      <button class="nav-item" id="navAdmin" style="display:none" onclick="scrollToSection('admin')" type="button" aria-label="Ir al panel de administración">⚙️ Administración</button>
     </nav>
 
     <div class="h-divider"></div>
@@ -524,7 +555,7 @@ body{
         <div class="session-role" id="sRole"></div>
       </div>
       <div class="session-avatar" id="sAvatar">?</div>
-      <button class="btn-logout" id="btnLogout" type="button">
+      <button class="btn-logout" id="btnLogout" type="button" aria-label="Cerrar sesión">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 1.5H2A1 1 0 0 0 1 2.5v7a1 1 0 0 0 1 1h2.5M8 8.5l3-2.5M11 6l-3-2.5M11 6H4.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Salir
       </button>
@@ -546,7 +577,7 @@ body{
 </section>
 
 <!-- MAIN -->
-<main class="main">
+<main class="main" id="main-content" role="main">
 
   <!-- Dashboards section -->
   <div id="dashboards">
@@ -617,12 +648,12 @@ body{
 </main>
 
 <!-- FOOTER -->
-<footer class="page-footer">
+<footer class="page-footer" role="contentinfo">
   <div class="page-footer-inner">
     <div class="footer-brand">Grupo PDC · Departamento Financiero · © 2026 · Todos los derechos reservados</div>
     <div class="footer-right">
       <div class="footer-uptime"><span class="uptime-dot"></span>Sistema operativo</div>
-      <div class="footer-ver">PDC Analytics Center v1.0</div>
+      <div class="footer-ver">PDC Analytics Center v2.0</div>
     </div>
   </div>
 </footer>
@@ -1023,8 +1054,10 @@ function pdcRenewSession(){
       var accentClass = 'accent-' + dash.id;
       var card = document.createElement('div');
       card.className = 'dash-card';
+      card.setAttribute('role','article');
+      card.setAttribute('aria-label', dash.nombre + ' — Dashboard');
       card.innerHTML =
-        '<div class="card-accent '+accentClass+'"></div>'+
+        '<div class="card-accent '+accentClass+'" aria-hidden="true"></div>'+
         '<div class="card-body">'+
           '<div class="card-top">'+
             '<div class="card-icon">'+dash.icono+'</div>'+
@@ -1043,7 +1076,7 @@ function pdcRenewSession(){
         '</div>'+
         '<div class="card-footer">'+
           '<div class="card-update">🕐 Actualizado '+dash.actualizacion+'</div>'+
-          '<button class="btn-access" onclick="pdcNavigate(\''+dash.archivo+'\')">Acceder →</button>'+
+          '<button class="btn-access" type="button" aria-label="Acceder al dashboard" onclick="pdcNavigate(\''+dash.archivo+'\')">Acceder →</button>'+
         '</div>';
       grid.appendChild(card);
     });
