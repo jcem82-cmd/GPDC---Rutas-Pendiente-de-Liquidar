@@ -636,7 +636,7 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
               <th style="padding:9px 14px;text-align:center;font-weight:600">País / Región</th>
               <th style="padding:9px 14px;text-align:left;font-weight:600">Dashboards autorizados</th>
               <th style="padding:9px 14px;text-align:center;font-weight:600">Último acceso</th>
-              <th style="padding:9px 14px;text-align:center;font-weight:600">Estado</th>
+              <th style="padding:9px 14px;text-align:center;font-weight:600">Estado<br><span style="font-weight:400;font-size:.63rem;opacity:.65">(clic para cambiar)</span></th>
             </tr>
           </thead>
           <tbody id="userTableBody"></tbody>
@@ -1201,7 +1201,7 @@ function pdcRenewSession(){
             }).join('');
             var rowBg   = i % 2 === 0 ? '' : 'background:#f8faff';
             var isActive = userStates[u.email] !== false; /* activo por defecto */
-            var toggleLbl = isActive ? '🟢 Activo' : '🔴 Inactivo';
+            var toggleLbl = isActive ? '🟢 Activo ▾' : '🔴 Inactivo ▸';
             var toggleCls = isActive
               ? 'padding:3px 10px;border-radius:10px;font-size:.7rem;font-weight:700;background:var(--green);color:var(--green2);border:none;cursor:pointer;font-family:inherit'
               : 'padding:3px 10px;border-radius:10px;font-size:.7rem;font-weight:700;background:var(--red);color:var(--red2);border:none;cursor:pointer;font-family:inherit';
@@ -1220,7 +1220,7 @@ function pdcRenewSession(){
               '<td>'+dashChips+'</td>'+
               '<td style="text-align:center;font-size:.72rem">'+lastAccStr+'</td>'+
               '<td style="text-align:center">'+
-                '<button style="'+toggleCls+'" onclick="pdcToggleUser(\''+u.email+'\','+(!isActive)+',renderUserTable)">'+toggleLbl+'</button>'+
+                '<button title="Clic: activar o desactivar" style="'+toggleCls+'" onclick="pdcToggleUser(\''+u.email+'\','+(!isActive)+',renderUserTable)">'+toggleLbl+'</button>'+
               '</td>'+
               '</tr>';
           }).join('');
