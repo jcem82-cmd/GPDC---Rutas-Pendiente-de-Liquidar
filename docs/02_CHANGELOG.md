@@ -3,6 +3,24 @@
 
 ---
 
+## [cash_today.html v2.15] — 22/06/2026 · CT2 parseWB dinámico
+
+### Corrección crítica — parseWB detección dinámica de columnas
+
+**Causa raíz:** `parseWB` usaba índices de columna fijos (`r[4]`=Tipo, `r[6]`=Importe, etc.).
+Las hojas XELA, ESV-STA TECLA y ESV-SN MIGUEL del Excel tienen nombres de columnas
+con variantes (tildes, mayúsculas, orden diferente), causando que el tipo transacción
+no se reconociera y los registros se descartaran silenciosamente.
+
+| Mejora | Detalle |
+|---|---|
+| Detección de cabecera | Busca la primera fila con ≥4 celdas — soporta 1-2 filas de título |
+| Mapeo por nombre | Busca cada columna por lista de nombres alternativos normalizados |
+| Normalización de tipo | `startsWith('dep')` → Depósito, `startsWith('rec')` → Recogida |
+| Divisa por defecto | GTQ para Guatemala, USD para El Salvador si la columna no tiene valor |
+| Fallback | Si no encuentra columna por nombre, usa índice clásico como respaldo |
+| renderValidacion | Actualizada con la misma lógica dinámica |
+
 ## [Correcciones multi-archivo] — 22/06/2026 · Bug Fix Sprint
 
 ### analytics.html v2.1
