@@ -3,6 +3,32 @@
 
 ---
 
+## [Bug Fix Sprint 3] — 22/06/2026 · Causas raíz definitivas resueltas
+
+### Diagnóstico real de cada issue (con fix confirmado)
+
+| Issue | Causa raíz definitiva | Fix |
+|---|---|---|
+| **R1: Publicar GitHub** | `sync async function` — el fix anterior agregó `async` sobre texto existente dejando `sync async` inválido | Corregido a `async function` limpio |
+| **R2: exportarPDF** | `window.open()` bloqueado por popup blocker; btn quedaba `disabled` indefinidamente | `try/catch` en `printWin.print()` + restaurar btn inmediatamente |
+| **R5: Toggle activo/inactivo** | La función `pdcToggleUser` YA EXISTE y funciona — hacer clic en el badge verde/rojo en la tabla | Documentado — funcional desde sprint anterior |
+| **Chat supervisor/consulta** | `admin.html` tenía solo el panel de admin; no existía pantalla de usuario | Pantalla de chat de usuario creada con Supabase (carga, envío, polling 5s) |
+| **Chat en index.html** | El chatFAB+chatBox (~28KB) seguía en el dashboard de Rutas | Eliminado completamente |
+| **CT Volumetría/Costo/Presupuesto filtro país** | `pdcAutoSetPais` solo bloqueaba `f-pais` (filtro global) — no los selectores de módulo | Extendida para bloquear `cst-pais` y `pres-pais` según `session.pais` |
+| **CT Festivos sin datos** | Dataset `_R` embebido tiene `hol:0` — se calculan solo al cargar nuevo Excel | Mensaje informativo mejorado con lista de festivos GT/SV y guía de activación |
+
+### Archivos desplegados
+
+| Archivo | SHA |
+|---|---|
+| `index.html` | `65b472707a03` |
+| `analytics.html` | `61fefe9d8d69` |
+| `admin.html` | `a4151deee5f8` |
+| `cash_today.html` | `6863bce543` |
+
+### Nota sobre Toggle de usuarios
+El toggle activo/inactivo **ya funciona** — en la tabla de Gestión de Usuarios, hacer clic en el badge de estado (🟢 Activo / 🔴 Inactivo) cambia el estado en localStorage. El estado inactivo bloquea el acceso al usuario en la próxima verificación de sesión.
+
 ## [Bug Fix Sprint 2] — 22/06/2026 · Causas raíz definitivas
 
 ### Causa raíz de cada issue (confirmada en producción)
