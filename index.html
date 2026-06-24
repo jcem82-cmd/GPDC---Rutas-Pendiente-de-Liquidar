@@ -367,6 +367,10 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
     if (urlTab) {
       if (typeof ST === 'function') ST(urlTab);
       else setTimeout(function(){ if(typeof ST==='function') ST(urlTab); }, 500);
+    } else {
+      /* I3: activar Resumen General por defecto al cargar */
+      if (typeof ST === 'function') ST('resumen');
+      else setTimeout(function(){ if(typeof ST==='function') ST('resumen'); }, 300);
     }
   });
 })();
@@ -3042,7 +3046,7 @@ async function exportarPDF() {
   if(!printWin){
     alert('No se pudo abrir la ventana de impresion.\nEn Chrome: icono de popup en la barra de direcciones → Permitir siempre.');
     if(btn){ btn.textContent = '📄 Exportar PDF'; }
-    return; return; }
+    return; }
 
   printWin.document.write(`<!DOCTYPE html>
 <html lang="es">
@@ -3140,9 +3144,10 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#0d1b3e;backg
   printWin.document.close();
   printWin.focus();
   setTimeout(function(){
-    try{ printWin.print(); }catch(pe){}
+    try{ printWin.print(); }catch(pe){ console.warn('print blocked:', pe); }
     if(btn){ btn.textContent = '📄 Exportar PDF'; btn.disabled = false; }
   }, 800);
+  if(btn){ btn.textContent = '🖨️ Imprimiendo...'; }
   if(btn){ btn.textContent = '📄 Exportar PDF'; btn.disabled = false; }
 }
 
@@ -3196,8 +3201,8 @@ function downloadDashboard() {
 async function publishToGitHub() {
   if (!parsedFileData) { alert('Primero procesa un archivo Excel'); return; }
   const btn = document.getElementById('btnPublishGH');
-  const origTxt = btn.textContent;
-  btn.textContent = 'Publicando...'; btn.disabled = true;
+  const origTxt = btn.innerHTML;
+  btn.innerHTML = '⏳ Publicando...'; btn.disabled = true;
   try {
     const res = parsedFileData.result;
     const gtq = parseFloat(document.getElementById('tcGTQ').value)||7.63627;
@@ -3243,18 +3248,18 @@ async function publishToGitHub() {
       })
     });
     if(pushR.ok) {
-      btn.textContent='Publicado! (~2 min para ver cambios)';
+      btn.innerHTML='✅ Publicado (~2 min para ver cambios)';
       btn.style.background='#10b981';
-      setTimeout(()=>{btn.textContent=origTxt;btn.style.background='#4f46e5';btn.disabled=false;},6000);
+      setTimeout(()=>{btn.innerHTML=origTxt;btn.style.background='#4f46e5';btn.disabled=false;},6000);
     } else {
       const e = await pushR.json();
       throw new Error(e.message||'HTTP '+pushR.status);
     }
   } catch(e) {
     console.error('publishToGitHub:',e);
-    btn.textContent='Error: '+e.message.substring(0,35);
+    btn.innerHTML='❌ Error: '+e.message.substring(0,30);
     btn.style.background='#ef4444'; btn.disabled=false;
-    setTimeout(()=>{btn.textContent=origTxt;btn.style.background='#4f46e5';},5000);
+    setTimeout(()=>{btn.innerHTML=origTxt;btn.style.background='#4f46e5';btn.disabled=false;},5000);
   }
 }
 </script>
