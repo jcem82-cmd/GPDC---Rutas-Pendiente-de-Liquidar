@@ -219,30 +219,30 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
     <div class="kc pe anim" style="animation-delay:.05s">
       <div class="kc-flag">🇵🇪</div>
       <div class="kc-label">Rutas Pendientes</div>
-      <div class="kc-val">74</div>
-      <div class="kc-sub">Lima: 41 · Provincias: 33</div>
+      <div class="kc-val">4</div>
+      <div class="kc-sub">Lima Metro: 3 · Otras: 1</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--pe1)"></div></div>
     </div>
     <div class="kc r anim" style="animation-delay:.1s">
       <div class="kc-flag">⚠️</div>
       <div class="kc-label">Rutas Vencidas</div>
-      <div class="kc-val">12</div>
-      <div class="kc-sub">16.2% del total · ≥15 días</div>
-      <div class="kc-bar"><div class="kc-bar-fill" style="width:62%;background:var(--red2)"></div></div>
+      <div class="kc-val">4</div>
+      <div class="kc-sub">100% del total · 4–10 días</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--red2)"></div></div>
     </div>
     <div class="kc y anim" style="animation-delay:.15s">
       <div class="kc-flag">🕐</div>
       <div class="kc-label">En Proceso (8–14d)</div>
-      <div class="kc-val">18</div>
-      <div class="kc-sub">24.3% del total</div>
-      <div class="kc-bar"><div class="kc-bar-fill" style="width:31%;background:var(--yellow2)"></div></div>
+      <div class="kc-val">0</div>
+      <div class="kc-sub">0% del total</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:0%;background:var(--yellow2)"></div></div>
     </div>
-    <div class="kc g anim" style="animation-delay:.2s">
-      <div class="kc-flag">✅</div>
+    <div class="kc r anim" style="animation-delay:.2s">
+      <div class="kc-flag">🔴</div>
       <div class="kc-label">Al Día (≤7 días)</div>
-      <div class="kc-val">44</div>
-      <div class="kc-sub">59.5% del total</div>
-      <div class="kc-bar"><div class="kc-bar-fill" style="width:53%;background:var(--green2)"></div></div>
+      <div class="kc-val">0</div>
+      <div class="kc-sub">0% del total</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:0%;background:var(--green2)"></div></div>
     </div>
   </div>
 
@@ -250,21 +250,21 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
   <div class="grid-3" style="margin-bottom:28px">
     <div class="kc n anim" style="animation-delay:.22s">
       <div class="kc-label">Monto Pendiente</div>
-      <div class="kc-val-sm">S/ 1,492,234</div>
-      <div class="kc-sub">≈ USD 397,929 · Jun 2026</div>
+      <div class="kc-val-sm">S/ 134,816</div>
+      <div class="kc-sub">≈ USD 36,339 · Jun 2026</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--pe1)"></div></div>
     </div>
-    <div class="kc n anim" style="animation-delay:.27s">
+    <div class="kc r anim" style="animation-delay:.27s">
       <div class="kc-label">Monto Vencido</div>
-      <div class="kc-val-sm">S/ 240,339</div>
-      <div class="kc-sub">16.1% del monto total pendiente</div>
-      <div class="kc-bar"><div class="kc-bar-fill" style="width:16%;background:var(--red2)"></div></div>
+      <div class="kc-val-sm">S/ 134,816</div>
+      <div class="kc-sub">100% del monto total pendiente</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--red2)"></div></div>
     </div>
-    <div class="kc g anim" style="animation-delay:.32s">
+    <div class="kc r anim" style="animation-delay:.32s">
       <div class="kc-label">Efectividad Liquidación</div>
-      <div class="kc-val">83.8%</div>
-      <div class="kc-sub">Meta: ≥90% · Brecha: -6.2pp</div>
-      <div class="kc-bar"><div class="kc-bar-fill" style="width:84%;background:var(--green2)"></div></div>
+      <div class="kc-val">0.0%</div>
+      <div class="kc-sub">Meta: ≥90% · Brecha: -90.0pp</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:0%;background:var(--red2)"></div></div>
     </div>
   </div>
 
@@ -273,7 +273,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
     <div class="panel anim" style="animation-delay:.35s">
       <div class="panel-hdr">
         <div><div class="panel-title">Distribución por Estado · Junio 2026</div><div class="panel-sub">Rutas por antigüedad de liquidación</div></div>
-        <span class="bpe badge">74 rutas</span>
+        <span class="bpe badge">4 rutas</span>
       </div>
       <div class="panel-body">
         <div class="chart-wrap" style="height:220px"><canvas id="chartEstados"></canvas></div>
@@ -284,14 +284,11 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
         <div><div class="panel-title">Distribución Geográfica</div><div class="panel-sub">Rutas por zona</div></div>
       </div>
       <div class="panel-body" style="padding:14px 20px">
-        <div class="summary-row"><span class="summary-label">🏙️ Lima Metropolitana</span><span class="summary-value">48</span></div>
-        <div class="summary-row"><span class="summary-label">🏔️ Arequipa</span><span class="summary-value">12</span></div>
-        <div class="summary-row"><span class="summary-label">🌊 Trujillo</span><span class="summary-value">8</span></div>
-        <div class="summary-row"><span class="summary-label">🌿 Cusco</span><span class="summary-value">4</span></div>
-        <div class="summary-row"><span class="summary-label">📍 Otras ciudades</span><span class="summary-value">2</span></div>
+        <div class="summary-row"><span class="summary-label">🏙️ Lima Metropolitana</span><span class="summary-value">3</span></div>
+        <div class="summary-row"><span class="summary-label">📍 Otras ciudades</span><span class="summary-value">1</span></div>
         <div class="summary-row" style="margin-top:6px;border-top:2px solid var(--pe-light);padding-top:10px">
           <span style="font-weight:700;color:var(--pe1);font-size:.78rem">TOTAL</span>
-          <span style="font-weight:800;color:var(--pe1);font-size:.9rem">74</span>
+          <span style="font-weight:800;color:var(--pe1);font-size:.9rem">4</span>
         </div>
       </div>
     </div>
@@ -405,8 +402,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
   <div class="info-box anim" style="animation-delay:.4s">
     <div class="info-box-title">📋 Notas del análisis · Junio 2026</div>
     <div class="info-box-body">
-      La operación Perú muestra recuperación en junio (83.8%) luego del punto bajo de mayo (78.4%). El principal foco de atención es <strong>Ruta Sur EIRL</strong> en Arequipa con 4 rutas vencidas. Lima Metropolitana concentra el 64.9% del volumen operativo. Se recomienda activar seguimiento reforzado en Arequipa y Trujillo para la segunda quincena de junio.
-    </div>
+      La operación Perú al corte 18/06/2026 registra <strong>4 rutas pendientes</strong>, todas en estado vencido. El 100% de las rutas activas requiere gestión inmediata de liquidación. Monto pendiente: <strong>S/ 134,816</strong> (≈ USD 36,339). Efectividad actual: <strong>0.0%</strong> — por debajo de la meta del 90%.</div>
   </div>
 
 </div><!-- /page-analisis -->
@@ -418,7 +414,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
 
   <div class="update-wrap">
     <span class="update-lbl">Registro:</span>
-    <span class="update-val">74 rutas activas · Jun 2026</span>
+    <span class="update-val">4 rutas activas · Jun 2026</span>
   </div>
 
   <div class="sec-hdr"><span class="sec-title">Detalle de Rutas Pendientes</span><span class="sec-sub">Todas las rutas activas · Perú · Jun 2026</span></div>
@@ -508,7 +504,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
           <tr><td>Marzo 2026</td><td class="r">58</td><td class="r">5</td><td class="r">8.6%</td><td class="r">91.4%</td><td class="r">S/ 2,168,400</td><td><span class="badge bg">↗ OK</span></td></tr>
           <tr><td>Abril 2026</td><td class="r">71</td><td class="r">10</td><td class="r">14.1%</td><td class="r">85.9%</td><td class="r">S/ 2,657,900</td><td><span class="badge by">↘ Alerta</span></td></tr>
           <tr><td>Mayo 2026</td><td class="r">76</td><td class="r">16</td><td class="r">21.1%</td><td class="r">78.9%</td><td class="r">S/ 2,844,200</td><td><span class="badge br">↘ Crítico</span></td></tr>
-          <tr><td>Junio 2026</td><td class="r">74</td><td class="r">12</td><td class="r">16.2%</td><td class="r">83.8%</td><td class="r">S/ 2,847,320</td><td><span class="badge by">↗ Mejora</span></td></tr>
+          <tr><td>Junio 2026</td><td class="r">4</td><td class="r">4</td><td class="r">100%</td><td class="r">0.0%</td><td class="r">S/ 134,816</td><td><span class="badge br">↘ Crítico</span></td></tr>
           <tr class="total"><td>PROMEDIO 2026</td><td class="r">68</td><td class="r">10</td><td class="r">14.2%</td><td class="r">85.8%</td><td class="r">S/ 2,538,945</td><td></td></tr>
         </tbody>
       </table>
@@ -670,7 +666,7 @@ function renderCharts(page){
       type:'doughnut',
       data:{
         labels:['✅ Al Día (≤7d)','🕐 En Proceso (8–14d)','⚠️ Vencidas (≥15d)'],
-        datasets:[{ data:[39,23,12],
+        datasets:[{ data:[0,0,4],
           backgroundColor:[C.green, C.yellow, C.red],
           borderWidth:0, hoverOffset:8 }]
       },
