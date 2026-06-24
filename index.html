@@ -1420,7 +1420,7 @@ function pdcLogout(){
         </div>
         <div id="parse-progress" style="display: none; font-size: 0.72rem; color: var(--t3); margin-bottom: 8px; text-align: center;">⏳ Procesando archivo...</div>
         <div style="display:flex;gap:8px">
-          <button class="tc-btn" id="btnPublishGH" onclick="publishToGitHub()" style="background: rgb(79, 70, 229); flex: 1 1 0%; display: inline-flex; font-weight: 800;" disabled="">Publicando...</button>
+          <button class="tc-btn" id="btnPublishGH" onclick="publishToGitHub()" style="background: rgb(79, 70, 229); flex: 1 1 0%; display: inline-flex; font-weight: 800;">🚀 Publicar en GitHub</button>
           <button class="tc-btn" onclick="clearFile()" style="background:var(--t3)">✕ Cancelar</button>
         </div>
       </div>
@@ -3041,7 +3041,6 @@ async function exportarPDF() {
   try{ var s=JSON.parse(sessionStorage.getItem('pdc_session')||sessionStorage.getItem('pdc_user')||'{}');
     userName = s.nombre ? s.nombre.split(' ').slice(0,2).join(' ') : ''; }catch(e){}
 
-  if(btn){ btn.disabled = false; } /* R2: restaurar btn antes del open */
   const printWin = window.open('', '_blank', 'width=900,height=700');
   if(!printWin){
     alert('No se pudo abrir la ventana de impresion.\nEn Chrome: icono de popup en la barra de direcciones → Permitir siempre.');
@@ -3143,6 +3142,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#0d1b3e;backg
 
   printWin.document.close();
   printWin.focus();
+  if(btn){ btn.textContent = '🖨️ Abriendo...'; btn.disabled = true; }
   setTimeout(function(){
     try{ printWin.print(); }catch(pe){ console.warn('print blocked:', pe); }
     if(btn){ btn.textContent = '📄 Exportar PDF'; btn.disabled = false; }
