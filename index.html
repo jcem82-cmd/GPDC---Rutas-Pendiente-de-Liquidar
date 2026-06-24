@@ -1764,18 +1764,20 @@ function RD(){
     // Días Vencimiento → País → No. Ruta (individual)
     const rangos=['15 +','11 a 15','04 a 10','01 a 03','0 Tiempo'];
     rangos.forEach(rango=>{
-      const rr=FD.filter(r=>r.Rango===rango);
-      if(!rr.length)return;
+      const rr=FD.filter(r=>r.Rango===rango);           // Facturación (col I)
+      const rrD=FD.filter(r=>r['Rango Real']===rango);  // Despacho (col D)
+      if(!rr.length&&!rrD.length)return;
       const key='rg_'+rango;
-      addDR(body,rr,key,rango==='0 Tiempo'?'0 días (En Tiempo)':rango,'',0,SR(rango));
+      addDR(body,rr,key,rango==='0 Tiempo'?'0 días (En Tiempo)':rango,'',0,SR(rango),false,rrD);
       if(DX[key]){
         const paises=[...new Set(rr.map(r=>r.Pais))].sort();
         paises.forEach(pais=>{
           const pr=rr.filter(r=>r.Pais===pais);
+          const prD=rrD.filter(r=>r.Pais===pais);
           const pk=key+'_p_'+pais;
-          addDR(body,pr,pk,(FLAG[pais]||'')+' '+pais,'c1',1,SC(pr.filter(r=>r['Estado (Facturación)']==='Vencidas').length,pr.length));
+          addDR(body,pr,pk,(FLAG[pais]||'')+' '+pais,'c1',1,SC(pr.filter(r=>r['Estado (Facturación)']==='Vencidas').length,pr.length),false,prD);
           if(DX[pk]){
-            // Individual routes
+            // Individual routes (agrupadas por Rango Facturación)
             pr.sort((a,b)=>(b['Días']||0)-(a['Días']||0)).forEach(r=>{
               addLeafRoute(body,r);
             });
@@ -1809,9 +1811,9 @@ function RD(){
   }
 }
 
-function addDR(body,rows,key,label,cls,lvl,semCls,leaf=false){
+function addDR(body,rows,key,label,cls,lvl,semCls,leaf=false,rowsDesp=null){
   const vF=rows.filter(r=>r['Estado (Facturación)']==='Vencidas').length;
-  const vD=rows.filter(r=>r['Estado Real']==='Vencidas').length;
+  const vD=(rowsDesp||rows).filter(r=>r['Estado Real']==='Vencidas').length;
   const dias=(rows.reduce((s,r)=>s+(r['Días']||0),0)/rows.length).toFixed(1);
   const mvl=calcMV(rows);
   const usdV=rows.reduce((s,r)=>s+toUSD(r['Valor Asignado']||0,r.Moneda),0);
