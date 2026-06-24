@@ -225,21 +225,21 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
     </div>
     <div class="kc r anim" style="animation-delay:.1s">
       <div class="kc-flag">⚠️</div>
-      <div class="kc-label">Rutas Vencidas</div>
+      <div class="kc-label">Rutas Vencidas (Fac.)</div>
       <div class="kc-val">4</div>
-      <div class="kc-sub">100% del total · 4–10 días</div>
+      <div class="kc-sub">100% del total · Estado Facturación</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--red2)"></div></div>
     </div>
     <div class="kc y anim" style="animation-delay:.15s">
       <div class="kc-flag">🕐</div>
-      <div class="kc-label">En Proceso (8–14d)</div>
-      <div class="kc-val">0</div>
-      <div class="kc-sub">0% del total</div>
-      <div class="kc-bar"><div class="kc-bar-fill" style="width:0%;background:var(--yellow2)"></div></div>
+      <div class="kc-label">En Proceso (4–10d)</div>
+      <div class="kc-val">4</div>
+      <div class="kc-sub">100% del total · Rango Real</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--yellow2)"></div></div>
     </div>
-    <div class="kc r anim" style="animation-delay:.2s">
-      <div class="kc-flag">🔴</div>
-      <div class="kc-label">Al Día (≤7 días)</div>
+    <div class="kc g anim" style="animation-delay:.2s">
+      <div class="kc-flag">✅</div>
+      <div class="kc-label">Al Día (≤3 días)</div>
       <div class="kc-val">0</div>
       <div class="kc-sub">0% del total</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:0%;background:var(--green2)"></div></div>
@@ -307,15 +307,10 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
           <th class="r">Monto PEN</th><th class="r">% Total</th><th>Estado</th>
         </tr></thead>
         <tbody>
-          <tr><td>Transp. Los Andes SAC</td><td>Lima</td><td class="r">14</td><td class="r">3</td><td class="r">S/ 684,500</td><td class="r">24.0%</td><td><span class="badge by">⚠️ Alerta</span></td></tr>
-          <tr><td>Distribuciones Pacífico</td><td>Lima</td><td class="r">11</td><td class="r">1</td><td class="r">S/ 521,200</td><td class="r">18.3%</td><td><span class="badge bg">✅ OK</span></td></tr>
-          <tr><td>Ruta Sur EIRL</td><td>Arequipa</td><td class="r">9</td><td class="r">4</td><td class="r">S/ 398,750</td><td class="r">14.0%</td><td><span class="badge br">🔴 Crítico</span></td></tr>
-          <tr><td>Trans. Norte Express</td><td>Trujillo</td><td class="r">8</td><td class="r">2</td><td class="r">S/ 312,100</td><td class="r">11.0%</td><td><span class="badge by">⚠️ Alerta</span></td></tr>
-          <tr><td>Logística Andina SAC</td><td>Lima</td><td class="r">7</td><td class="r">0</td><td class="r">S/ 298,400</td><td class="r">10.5%</td><td><span class="badge bg">✅ OK</span></td></tr>
-          <tr><td>Carga Inca Perú</td><td>Cusco</td><td class="r">6</td><td class="r">1</td><td class="r">S/ 241,870</td><td class="r">8.5%</td><td><span class="badge bg">✅ OK</span></td></tr>
-          <tr><td>Distribuidora Lima Norte</td><td>Lima</td><td class="r">5</td><td class="r">0</td><td class="r">S/ 198,500</td><td class="r">7.0%</td><td><span class="badge bg">✅ OK</span></td></tr>
-          <tr><td>Otros transportistas</td><td>Varias</td><td class="r">14</td><td class="r">1</td><td class="r">S/ 192,000</td><td class="r">6.7%</td><td><span class="badge bn">— Varios</span></td></tr>
-          <tr class="total"><td colspan="2">TOTAL</td><td class="r">74</td><td class="r">12</td><td class="r">S/ 2,847,320</td><td class="r">100%</td><td></td></tr>
+          <tr><td>FRICH GROUP TRADEA S.A.C.</td><td>Loreto</td><td class="r">1</td><td class="r">1</td><td class="r">S/ 123,053</td><td class="r">91.3%</td><td><span class="badge by">⚠️ En Proceso</span></td></tr>
+          <tr><td>TRANSPORTES ITATI CARGO EIRL</td><td>Lima</td><td class="r">2</td><td class="r">2</td><td class="r">S/ 11,764</td><td class="r">8.7%</td><td><span class="badge by">⚠️ En Proceso</span></td></tr>
+          <tr><td>JUAN MANUEL MURAYARI VELA</td><td>Lima</td><td class="r">1</td><td class="r">1</td><td class="r">S/ 0</td><td class="r">0.0%</td><td><span class="badge by">⚠️ En Proceso</span></td></tr>
+          <tr class="total"><td colspan="2">TOTAL</td><td class="r">4</td><td class="r">4</td><td class="r">S/ 134,816</td><td class="r">100%</td><td></td></tr>
         </tbody>
       </table>
     </div>
@@ -666,7 +661,7 @@ function renderCharts(page){
       type:'doughnut',
       data:{
         labels:['✅ Al Día (≤7d)','🕐 En Proceso (8–14d)','⚠️ Vencidas (≥15d)'],
-        datasets:[{ data:[0,0,4],
+        datasets:[{ data:[0,4,0],
           backgroundColor:[C.green, C.yellow, C.red],
           borderWidth:0, hoverOffset:8 }]
       },
@@ -674,7 +669,7 @@ function renderCharts(page){
         responsive:true, maintainAspectRatio:false, cutout:'60%',
         plugins:{
           legend:{ position:'bottom', labels:{font:{family:"'Inter',sans-serif",size:11},color:C.text2,padding:14} },
-          tooltip:{ callbacks:{ label:function(ctx){ return ctx.label+': '+ctx.raw+' rutas ('+((ctx.raw/74)*100).toFixed(1)+'%)'; } } }
+          tooltip:{ callbacks:{ label:function(ctx){ return ctx.label+': '+ctx.raw+' rutas ('+((ctx.raw/4)*100).toFixed(1)+'%)'; } } }
         }
       }
     });
