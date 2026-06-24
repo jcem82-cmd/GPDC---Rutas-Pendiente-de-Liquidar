@@ -3,6 +3,17 @@
 
 ---
 
+## [Dashboard Rutas — Sprint Arquitectura] — 22/06/2026
+
+### 4 issues corregidos
+
+| # | Issue | Causa raíz | Fix |
+|---|---|---|---|
+| I1 | Publicar GitHub congelado | `btn.innerHTML` con ícono → `textContent` corrupta el restore; el `disabled=false` faltaba en el timeout de error | `innerHTML` para origTxt/restore en éxito y error; `disabled=false` en todos los caminos |
+| I2 | Exportar PDF sin acción | Doble `return; return;` dejaba la función colgada; el `btn.disabled=true` sin restore si el print fallaba silenciosamente | Limpiar doble return; feedback visual de impresión |
+| I3 | Dashboard carga sin mostrar nada | El Auth Bridge llama `ST(urlTab)` solo si hay `?tab=` en la URL. Sin parámetro, ningún tab se activa | `else ST('resumen')` al final del `DOMContentLoaded` |
+| I4 | Toggle Activo/Inactivo sin acción visual | `pdcShowToast` busca `getElementById('pdcToast')` que no existía en el HTML → retornaba sin feedback | Agregar `div#pdcToast` al HTML; guard antes de `pdcShowToast`; `userStates` releído en cada render |
+
 ## [Arquitectura Sprint Final] — 22/06/2026
 
 ### Causa raíz definitiva por issue
