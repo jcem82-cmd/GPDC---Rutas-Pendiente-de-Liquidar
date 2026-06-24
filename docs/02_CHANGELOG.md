@@ -3,97 +3,128 @@
 
 ---
 
-## [v1.5] — 24/06/2026 · Corrección Global de Datos + Unificación Motor de Cálculo ✅
+## [v1.5] — 24/06/2026 · Sesión de Corrección Global ✅
 
-### Resumen ejecutivo
-Auditoría completa de todos los módulos del Dashboard. Se identificó que el RAW embebido tenía datos del corte 11/06/2026. Se actualizaron los 4 datasets al corte 18/06/2026 y se unificó `renderTableros()` para consumir la misma fuente que el resto de módulos.
-
-### Archivos modificados
-| Archivo | Cambio |
-|---|---|
-| `index.html` | RAW, KPI_HIST, EFECT, KPI_TOTALS actualizados al corte 18/06/2026 |
-| `index.html` | `renderTableros()` unificado: usa `FD` en lugar de `RAW` directo |
-| `index.html` | `addDR()` + `RD()` modo rango: lógica independiente Facturación (col I) / Despacho (col D) |
-| `analytics.html` | Tarjeta HN eliminada → reemplazada por tarjeta ESV (El Salvador) |
-| `analytics.html` | Hero KPIs actualizados: 710→146, 36→87, 4→3 países |
-| `analytics.html` | Todas las tarjetas actualizadas al corte 24/06/2026 |
-
-### Motor de cálculo — Auditoría y resultado
-| Módulo | Función | Fuente | Estado |
-|---|---|---|---|
-| Resumen General KPIs | `RK()` | `FD` (notLiq) | ✅ Correcto |
-| Header badges | `AF()` | `FD` (notLiq) | ✅ Correcto |
-| Desglose por estado | `RDE()` | `FD` col J / col E | ✅ Correcto |
-| Country cards | `RCC()` | `FD` | ✅ Correcto |
-| Análisis por Canal | `RC()` | `FD` | ✅ Correcto |
-| Análisis por Área | `RD()` + `addDR()` | `FD` col I (Fac) / col D (Desp) | ✅ Corregido |
-| Transportistas | `RT()` | `FD` | ✅ Correcto |
-| Mapa de rutas | `RM()` | `FD` | ✅ Correcto |
-| Tableros | `renderTableros()` | `FD` (antes: `RAW` directo) | ✅ Unificado |
-| Tendencias | `RTend()` | `KPI_HIST` | ✅ Correcto |
-| Efectividad | `REf()` | `EFECT` | ✅ Correcto |
-
-### Valores del corte 24/06/2026
-| Indicador | Antes (11/06) | Ahora (18/06) |
+### Archivos modificados en esta sesión
+| Archivo | SHA final | Cambios |
 |---|---|---|
-| Total RAW | 680 | **620** |
+| `index.html` | `83aca5b30cfb` | RAW+KPI_HIST+EFECT+KPI_TOTALS actualizados · RD/addDR corregidos · renderTableros unificado |
+| `analytics.html` | `32d31f982a01` | Tarjeta HN→ESV · PDC_USERS · Hero KPIs · Panel Admin · CSS accent-elsalvador |
+| `login.html` | `f7d1c5e12290` | PDC_USERS: 'honduras'→'elsalvador' en arrays de dashboards |
+| `regional/index.html` | `e9e70a520afe` | 14 fixes: todos los KPIs, tablas, gráficas y datos JS actualizados |
+| `peru/index.html` | `73e234cd2f3f` | KPIs, transportistas reales, donut naranja, tabla actualizada |
+| `docs/01_MASTER_PROJECT_CONTEXT.md` | actualizado | v1.5 · SHAs correctos · estado completo |
+| `docs/02_CHANGELOG.md` | actualizado | este archivo |
+
+---
+
+### SPRINT 1 — Auditoría y corrección motor de cálculo (index.html)
+
+**Causa raíz:** RAW embebido tenía datos del corte 11/06/2026. Todos los módulos calculan correctamente desde `FD`, pero el dato estaba desactualizado.
+
+**Correcciones lógica RD() + addDR():**
+- `addDR()`: nuevo parámetro `rowsDesp=null` → `vD = (rowsDesp||rows).filter(r => r['Estado Real']==='Vencidas')`
+- `RD()` modo rango: `rr = FD.filter(r => r.Rango === rango)` para Facturación; `rrD = FD.filter(r => r['Rango Real'] === rango)` para Despacho — fuentes independientes
+- `renderTableros()`: unificado para usar `FD` en lugar de `RAW.filter(Estatus Real [60,63,67])`
+
+**Datasets actualizados (Excel 18/06/2026):**
+| Dataset | Registros | Cambio |
+|---|---|---|
+| RAW | 620 | era 680 (corte 11/06) |
+| KPI_HIST | 54 | mes Jun: vencidas 36→87, total 2066→3352 |
+| EFECT | 54 | mes Jun: mas15=5 |
+| KPI_TOTALS | dict | report_date: 24/06/2026 |
+
+**Valores corregidos (index.html):**
+| Indicador | Antes | Después |
+|---|---|---|
 | Total FD pendientes | 212 | **146** |
 | En Tiempo Facturación | 169 | **53** |
 | Vencidas Facturación | 43 | **93** |
 | Vencidas Despacho | 39 | **87** |
-| +15 Días (Rango Real) | 0 | **5** |
-| Países activos | 4 | **3** (GT, SV, PE) |
-| KPI_TOTALS report_date | 17/06/2026 | **24/06/2026** |
-
-### SHAs de producción (24/06/2026)
-| Archivo | SHA |
-|---|---|
-| `index.html` | `83aca5b30cfb` |
-| `analytics.html` | (deploy tarjeta ESV — este commit) |
+| +15 Días Rango Real | 0 | **5** |
 
 ---
 
-## [Dashboard Rutas — Sprint Arquitectura] — 22/06/2026
+### SPRINT 2 — Portal analytics.html
 
-### 4 issues corregidos
+**Causa raíz de tarjeta ESV invisible:** PDC_USERS en `login.html` construye la sesión con `['honduras']` — analytics.html busca `'elsalvador'` en `session.dashboards` y no lo encuentra → tarjeta invisible.
 
-| # | Issue | Causa raíz | Fix |
-|---|---|---|---|
-| I1 | Publicar GitHub congelado | `btn.innerHTML` con ícono → `textContent` corrupta el restore; el `disabled=false` faltaba en el timeout de error | `innerHTML` para origTxt/restore en éxito y error; `disabled=false` en todos los caminos |
-| I2 | Exportar PDF sin acción | Doble `return; return;` dejaba la función colgada; el `btn.disabled=true` sin restore si el print fallaba silenciosamente | Limpiar doble return; feedback visual de impresión |
-| I3 | Dashboard carga sin mostrar nada | El Auth Bridge llama `ST(urlTab)` solo si hay `?tab=` en la URL. Sin parámetro, ningún tab se activa | `else ST('resumen')` al final del `DOMContentLoaded` |
-| I4 | Toggle Activo/Inactivo sin acción visual | `pdcShowToast` busca `getElementById('pdcToast')` que no existía en el HTML → retornaba sin feedback | Agregar `div#pdcToast` al HTML; guard antes de `pdcShowToast`; `userStates` releído en cada render |
+**Fixes aplicados:**
 
-## [Arquitectura Sprint Final] — 22/06/2026
+1. **Tarjeta Honduras → El Salvador** en `PDC_DASHBOARDS`
+2. **CSS** `.accent-elsalvador` añadido
+3. **PDC_USERS en analytics.html**: `'honduras'→'elsalvador'` en usuarios regional/ESV
+4. **PDC_USERS en login.html**: ídem — LA FUENTE REAL DE LA SESIÓN
+5. **Panel Admin**: `Dashboard Honduras → Dashboard El Salvador`
+6. **Hero KPIs**: 710→146, 36→87, 4→3 países
+7. **Todas las tarjetas**: fechas y KPIs del corte 24/06/2026
 
-### Causa raíz definitiva por issue
-
-| Issue | Causa raíz confirmada | Fix |
+**Tarjetas finales analytics.html:**
+| ID | Nombre | KPIs |
 |---|---|---|
-| **R1 Publicar GitHub** | `decodeURIComponent(escape(atob(...)))` falla en archivos UTF-8 grandes (>500KB) — el decode corrompía caracteres multi-byte y el PUT resultante era inválido | `TextDecoder('utf-8')` sobre `Uint8Array` — correcto para cualquier tamaño |
-| **R2 Exportar PDF** | `btn.disabled=true` antes de `window.open` → si el popup fallaba, el botón quedaba bloqueado y el usuario no podía reintentar | `btn.disabled=false` antes del `window.open` + mensaje instructivo |
-| **CT Dashboard congelado** | `pdcAutoSetPais()` se llamaba ANTES de `initFilters()` → `onPaisChange()` corría con filtros no inicializados → crash total | Movida después de `initFilters()+autoFilter()` |
-| **CT dispatchEvent loop** | `dispatchEvent(new Event('change'))` en selectores de módulo provocaba re-renders en cascada | Eliminado completamente — solo `el.value` y `el.disabled` |
-| **CT Config visible supervisor/consulta** | No había código que ocultara el tab Config para no-admin | `pdcAutoSetPais` + `isAdmin block` ocultan `.ntab[onclick*='config']` |
-| **CT Festivos sin datos** | Dataset `_R` histórico tiene `hol:0` en todos los registros | Muestra calendario estático oficial GT/SV; datos reales al cargar Excel |
-
-## [Bug Fix Sprint 4] — 22/06/2026 · Fixes definitivos
-
-### Commits
-| Commit | Descripción |
-|---|---|
-| `3eee0e40` | feat(cash_today): semáforo de cupo por cajero en módulo Resumen |
+| rutas | Liquidación de Rutas | 146 · 3 · 87 |
+| cashtoday | Cash Today | 35k · 10 · 4 |
+| regional | Consolidado Regional | 146 · 3 · $1.4M |
+| peru | Perú | 4 · 4 · 0.0% |
+| **elsalvador** | **El Salvador** | **6 · 6 · $26,927** |
 
 ---
 
-## [v1.2] — 21/06/2026 · Dashboard Consolidado Regional ✅
-- `regional/index.html` creado · PDC_DASHBOARDS + admin panel actualizados
+### SPRINT 3 — peru/index.html
 
+**Dashboard completamente hardcodeado — datos correctos corte 18/06:**
+
+| Campo | Antes | Después |
+|---|---|---|
+| Rutas Pendientes | 74 | **4** |
+| Rutas Vencidas (Fac.) | 12 | **4** |
+| En Proceso (Rango Real 4-10d) | 0 | **4** (naranja, no rojo) |
+| Monto Pendiente | S/ 1,492,234 | **S/ 134,816** |
+| USD equiv | 397,929 | **36,339** |
+| Efectividad | 83.8% | **0.0%** |
+| Gráfica donut | [44,18,12] rojo | **[0,4,0] naranja** |
+| Transportistas | 8 ficticios | **3 reales del Excel** |
+| Distribución geo | Lima:48/Arequipa:12/Trujillo:8/Cusco:4/Otras:2 | **Lima:3/Otras:1** |
+
+**Transportistas reales:** FRICH GROUP (Loreto, S/123,053) · TRANSPORTES ITATI (Lima, S/11,764) · MURAYARI VELA (Lima, S/0)
+
+---
+
+### SPRINT 4 — regional/index.html (14 fixes)
+
+| Sección | Campo | Antes | Después |
+|---|---|---|---|
+| Header | Fechas | Datos:22jun · Rutas:11jun | **Datos:24jun · Rutas:18jun** |
+| Hero KPI | Rutas Pendientes | 680 | **146** |
+| Hero KPI | Desglose | GT:482·SV:124·PE:74 | **GT:136·SV:6·PE:4** |
+| Hero KPI | Vencidas | 39 | **87** |
+| Hero KPI | Desglose venc. | GT:22·SV:5·PE:12 | **GT:77·SV:6·PE:4** |
+| Tab Rutas | GT pendientes | 482 / 22 venc | **136 / 77** |
+| Tab Rutas | SV pendientes | 124 / 5 venc | **6 / 6** |
+| Tab Rutas | PE pendientes | 74 / 12 venc | **4 / 4** |
+| Tabla | Total regional | 680 / 39 | **146 / 87** |
+| Tab Por País GT | Pendientes/Venc | 482/22 | **136/77** |
+| Tab Por País SV | Pendientes/Venc | 124/5 | **6/6** |
+| Tab Por País PE | Pendientes/Venc | 74/12 | **4/4** |
+| Gráfica barras | Datos | [482,124,74]/[22,5,12] | **[136,6,4]/[77,6,4]** |
+| Dataset JS | D.rutas | todos viejos | **actualizados** |
+| Tendencia Jun | Vencidas/Total | 39/2713 | **87/3352** |
+
+---
+
+## [Sprint Arquitectura] — 22/06/2026
+
+| Issue | Causa raíz | Fix |
+|---|---|---|
+| Publicar GitHub congelado | `TextDecoder` UTF-8 decode corrupto en archivos >500KB | `TextDecoder('utf-8')` sobre `Uint8Array` |
+| Exportar PDF sin acción | Doble `return;` + `btn.disabled` sin restore | Limpieza de control de flujo |
+| Dashboard sin mostrar nada | Auth Bridge sin `else ST('resumen')` | Fallback a tab resumen |
+| Toggle sin feedback visual | `pdcShowToast` buscaba `#pdcToast` inexistente | Añadir div#pdcToast al HTML |
+
+## [v1.2] — 21/06/2026 · Consolidado Regional ✅
 ## [v1.1] — 21/06/2026 · Fase 1 completa ✅
-- Regex unificado · Toast · Session watcher · ?tab= cash_today · Login lockout + remember email
-
 ## [v1.0] — 20/06/2026 · Lanzamiento inicial ✅
-- login.html · analytics.html · Auth Bridge index.html + cash_today.html
 
 ---
-*PDC Analytics Center · Grupo PDC · Departamento Financiero*
+*PDC Analytics Center · Grupo PDC · Departamento Financiero · v1.5 · 24/06/2026*
