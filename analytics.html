@@ -697,11 +697,11 @@ var PDC_DASHBOARDS = [
     categoria: 'Financiero · Operativo',
     paises: { GT:'🇬🇹 Guatemala', ESV:'🇸🇻 El Salvador', PE:'🇵🇪 Perú', HN:'🇭🇳 Honduras' },
     kpis: [
-      { val:'710', lbl:'Rutas activas' },
-      { val:'4',   lbl:'Países' },
-      { val:'36',  lbl:'Vencidas' }
+      { val:'146', lbl:'Rutas activas' },
+      { val:'3',   lbl:'Países' },
+      { val:'87',  lbl:'Vencidas' }
     ],
-    actualizacion: '11 jun 2026',
+    actualizacion: '24 jun 2026',
     activo: true
   },
   {
@@ -729,11 +729,11 @@ var PDC_DASHBOARDS = [
     categoria: 'Ejecutivo · Regional',
     paises: { GT:'🇬🇹 Guatemala', ESV:'🇸🇻 El Salvador', PE:'🇵🇪 Perú', HN:'🇭🇳 Honduras' },
     kpis: [
-      { val:'680', lbl:'Rutas Pendientes' },
-      { val:'4', lbl:'Países' },
-      { val:'21.7M', lbl:'USD YTD' }
+      { val:'146', lbl:'Rutas Pendientes' },
+      { val:'3',   lbl:'Países' },
+      { val:'$1.4M', lbl:'USD YTD' }
     ],
-    actualizacion: '17 jun 2026',
+    actualizacion: '24 jun 2026',
     activo: true
   },
   {
@@ -745,11 +745,11 @@ var PDC_DASHBOARDS = [
     categoria: 'Operativo · Perú',
     paises: { PE:'🇵🇪 Perú' },
     kpis: [
-      { val:'74',    lbl:'Rutas activas' },
-      { val:'12',    lbl:'Vencidas' },
-      { val:'83.8%', lbl:'Efectividad' }
+      { val:'4',     lbl:'Rutas activas' },
+      { val:'4',     lbl:'Vencidas' },
+      { val:'0.0%',  lbl:'Efectividad' }
     ],
-    actualizacion: '21 jun 2026',
+    actualizacion: '24 jun 2026',
     activo: true
   },
   {
@@ -761,11 +761,11 @@ var PDC_DASHBOARDS = [
     categoria: 'Operativo · Honduras',
     paises: { HN:'🇭🇳 Honduras' },
     kpis: [
-      { val:'52',    lbl:'Rutas activas' },
-      { val:'8',     lbl:'Vencidas' },
-      { val:'84.6%', lbl:'Efectividad' }
+      { val:'0',   lbl:'Rutas activas' },
+      { val:'0',   lbl:'Vencidas' },
+      { val:'—',   lbl:'Efectividad' }
     ],
-    actualizacion: '21 jun 2026',
+    actualizacion: '24 jun 2026',
     activo: true
   }
 ];
@@ -1037,9 +1037,9 @@ function pdcRenewSession(){
   if(session.pais === 'regional'){
     var kpisEl = document.getElementById('hKpis');
     kpisEl.innerHTML = [
-      '<div class="hero-kpi"><div class="hero-kpi-val">710</div><div class="hero-kpi-lbl">Rutas activas</div></div>',
-      '<div class="hero-kpi"><div class="hero-kpi-val">36</div><div class="hero-kpi-lbl">Vencidas</div></div>',
-      '<div class="hero-kpi"><div class="hero-kpi-val">4</div><div class="hero-kpi-lbl">Países</div></div>',
+      '<div class="hero-kpi"><div class="hero-kpi-val">146</div><div class="hero-kpi-lbl">Rutas activas</div></div>',
+      '<div class="hero-kpi"><div class="hero-kpi-val">87</div><div class="hero-kpi-lbl">Vencidas</div></div>',
+      '<div class="hero-kpi"><div class="hero-kpi-val">3</div><div class="hero-kpi-lbl">Países</div></div>',
       '<div class="hero-kpi"><div class="hero-kpi-val">35k</div><div class="hero-kpi-lbl">Tx ATM</div></div>'
     ].join('');
   }
