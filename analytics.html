@@ -1225,6 +1225,7 @@ function pdcRenewSession(){
               '</tr>';
           }).join('');
         };
+        window.renderUserTable = renderUserTable; /* E3-FIX: exponer al scope global */
         setTimeout(renderUserTable, 0);
       }
     }
