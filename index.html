@@ -3147,8 +3147,6 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#0d1b3e;backg
     try{ printWin.print(); }catch(pe){ console.warn('print blocked:', pe); }
     if(btn){ btn.textContent = '📄 Exportar PDF'; btn.disabled = false; }
   }, 800);
-  if(btn){ btn.textContent = '🖨️ Imprimiendo...'; }
-  if(btn){ btn.textContent = '📄 Exportar PDF'; btn.disabled = false; }
 }
 
 function downloadDashboard() {
@@ -3257,9 +3255,11 @@ async function publishToGitHub() {
     }
   } catch(e) {
     console.error('publishToGitHub:',e);
-    btn.innerHTML='❌ Error: '+e.message.substring(0,30);
-    btn.style.background='#ef4444'; btn.disabled=false;
-    setTimeout(()=>{btn.innerHTML=origTxt;btn.style.background='#4f46e5';btn.disabled=false;},5000);
+    btn.innerHTML = origTxt;
+    btn.style.background = '#ef4444'; btn.disabled = false;
+    alert('Error al publicar en GitHub:\n' + (e.message||String(e)));
+    setTimeout(()=>{btn.style.background='#4f46e5';},4000);
+    /* OLD eliminado */ed=false;},5000);
   }
 }
 </script>
