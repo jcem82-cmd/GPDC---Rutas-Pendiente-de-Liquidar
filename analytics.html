@@ -773,23 +773,21 @@ var PDC_DASHBOARDS = [
 /* ── FUNCIONES SESIÓN ── */
 /* ── U4: Toggle activo/inactivo de usuario ── */
 function pdcToggleUser(email, setActive, callback){
+  var states = {};
+  try{ states = JSON.parse(localStorage.getItem('pdc_user_states')||'{}'); }catch(e){}
+  states[email] = !!setActive;
+  localStorage.setItem('pdc_user_states', JSON.stringify(states));
   try{
-    var states = JSON.parse(localStorage.getItem('pdc_user_states') || '{}');
-    states[email] = setActive;
-    localStorage.setItem('pdc_user_states', JSON.stringify(states));
-    /* Si se desactiva al usuario actualmente logueado → logout inmediato */
     var session = pdcGetSession();
-    if(session && session.email === email && !setActive){
-      pdcShowToast('⚠️','Usuario desactivado','Sesión cerrada por el administrador',3000);
-      setTimeout(pdcLogout, 2000);
-      return;
-    }
-    if(callback) callback();
-    if(document.getElementById('pdcToast')){
-      pdcShowToast(setActive?'🟢':'🔴',
-        setActive?'Usuario activado':'Usuario desactivado',email,3000);
-    }
-  }catch(e){ console.error('pdcToggleUser error:', e); }
+    if(session && session.email===email && !setActive){ setTimeout(pdcLogout,1500); return; }
+  }catch(e){}
+  if(typeof callback==='function') callback();
+  if(document.getElementById('pdcToast')){
+    pdcShowToast(setActive?'🟢':'🔴',
+      setActive?'Usuario activado':'Usuario desactivado', email, 2500);
+  } else {
+    alert((setActive?'✅ Activado':'🔴 Desactivado')+': '+email);
+  }
 }
 
 function pdcGetSession(){
