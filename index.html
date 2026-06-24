@@ -3149,7 +3149,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#0d1b3e;backg
   }, 800);
 }
 
-function downloadDashboard() {
+async function downloadDashboard() {
   var btn = document.querySelector('.hdr-dl-btn');
   var origText = btn.innerHTML;
   btn.innerHTML = '⏳ Descargando...';
