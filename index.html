@@ -3259,7 +3259,6 @@ async function publishToGitHub() {
     btn.style.background = '#ef4444'; btn.disabled = false;
     alert('Error al publicar en GitHub:\n' + (e.message||String(e)));
     setTimeout(()=>{btn.style.background='#4f46e5';},4000);
-    /* OLD eliminado */ed=false;},5000);
   }
 }
 </script>
