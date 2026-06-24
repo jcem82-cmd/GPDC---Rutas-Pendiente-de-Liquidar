@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v1.4 | **Última actualización:** 21/06/2026 | **Estado:** Producción ✅
+**Versión vigente:** v1.5 | **Última actualización:** 24/06/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -27,15 +27,16 @@ PDC Analytics Center
 │
 ├── regional/index.html     ← Consolidado Regional v1.0 · 4 países
 ├── peru/index.html         ← Dashboard Perú v1.0 · PEN · 4 módulos
-├── honduras/index.html     ← Dashboard Honduras v1.0 · HNL · 4 módulos
 │
 └── docs/
-    ├── MASTER_PROJECT_CONTEXT.md  (este archivo)
-    ├── CHANGELOG.md
-    ├── ROADMAP.md
-    ├── PROJECT_RULES.md
-    └── README.md
+    ├── 01_MASTER_PROJECT_CONTEXT.md  (este archivo)
+    ├── 02_CHANGELOG.md
+    ├── 03_ROADMAP.md
+    ├── 04_PROJECT_RULES.md
+    └── 05_README.md
 ```
+
+> **Nota v1.5:** La tarjeta Honduras fue reemplazada por El Salvador en el portal. Honduras permanece como módulo proyectado sin datos reales en el corte 24/06/2026.
 
 ### Flujo de sesión
 ```
@@ -43,7 +44,7 @@ login.html
     → sessionStorage[pdc_session]  (TTL 8h)
     → analytics.html  (portal hub)
          → sessionStorage[pdc_user]  (legacy compat)
-         → index.html / cash_today.html / regional / peru / honduras / admin.html
+         → index.html / cash_today.html / regional / peru / admin.html
 ```
 
 ### Arquitectura de módulos (regla permanente)
@@ -65,22 +66,20 @@ login.html
 | Dashboard Cash Today | .../cash_today.html |
 | Consolidado Regional | .../regional/index.html |
 | Dashboard Perú | .../peru/index.html |
-| Dashboard Honduras | .../honduras/index.html |
 | Panel Admin | .../admin.html |
 | Despliegue | GitHub Pages · GitHub Actions (~80s) |
 | Método de deploy | PUT directo vía GitHub REST API (Python urllib) |
 | Token GitHub (fragmentado) | `['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'].join('')` |
 
-### SHAs de producción (21/06/2026)
+### SHAs de producción (24/06/2026)
 | Archivo | SHA |
 |---|---|
-| analytics.html | e8627daf86b0 |
-| login.html | a247c989503e |
-| index.html | 804588b84744 |
-| cash_today.html | 97dcedfc11d4 |
-| regional/index.html | ce37ce4cf0c8 |
-| peru/index.html | f2e60e9c4eaf |
-| honduras/index.html | c2014b3adf9a |
+| `index.html` | `83aca5b30cfb` |
+| `analytics.html` | `a4d946240bd7` → actualizado en este sprint |
+| `cash_today.html` | `417505dc60b5` |
+| `admin.html` | `a4151deee5f8` |
+| `regional/index.html` | `ce37ce4cf0c8` |
+| `peru/index.html` | `f2e60e9c4eaf` |
 
 ---
 
@@ -103,202 +102,101 @@ login.html
 
 | Email | Nombre | Rol | Dashboards | País |
 |---|---|---|---|---|
-| juancarlos.escobar@grupopdc.com | Juan Carlos Escobar | admin | rutas · cashtoday · regional · peru · honduras | regional |
-| erwin.soto@grupopdc.com | Erwin Soto | supervisor | rutas · cashtoday · regional · peru · honduras | regional |
+| juancarlos.escobar@grupopdc.com | Juan Carlos Escobar | admin | rutas · cashtoday · regional · peru | regional |
+| erwin.soto@grupopdc.com | Erwin Soto | supervisor | rutas · cashtoday · regional · peru | regional |
 | francisco.aguilar@grupopdc.com | Francisco Aguilar | supervisor | rutas · cashtoday | GT |
 | liquidaciones.cda@grupopdc.com | TEAM GT | consulta | rutas · cashtoday | GT |
 | edy.lopez@grupopdc.com | Edy Lopez | consulta | rutas | GT |
 | joaquin.palma@grupopdc.com | Joaquin Palma | consulta | rutas · cashtoday | ESV |
 | liquidaciones.esv@grupopdc.com | TEAM ESV | consulta | rutas · cashtoday | ESV |
 | vinicio.sanabria@grupopdc.com | Vinicio Sanabria | consulta | rutas | GT |
-| claudio.rojas@grupopdc.com | Claudio Rojas | consulta | rutas · peru | PE |
-| jose.mallqui@grupopdc.com | Jose Mallqui | consulta | rutas · peru | PE |
-| transportes.peru@grupopdc.com | TEAM Peru | consulta | rutas · peru | PE |
-| carlos.reyes@grupopdc.com | Carlos Reyes | consulta | rutas · honduras | HN |
-| maria.funez@grupopdc.com | Maria Funez | consulta | rutas · honduras | HN |
-| liquidaciones.hn@grupopdc.com | TEAM Honduras | consulta | rutas · honduras | HN |
-
-### Permisos por rol
-| Función | admin | supervisor | consulta |
-|---|---|---|---|
-| Ver dashboards autorizados | ✅ | ✅ | ✅ |
-| Panel de Administración | ✅ | ❌ | ❌ |
-| Descargar snapshots / Export PDF | ✅ | ❌ | ❌ |
-| Actualizar datos (Excel / GitHub) | ✅ | ❌ | ❌ |
-| Chat de soporte | ✅ | ✅ | ✅ |
+| claudio.rojas@grupopdc.com | Claudio Rojas | consulta | rutas | PE |
+| jose.mallqui@grupopdc.com | Jose Mallqui | consulta | rutas | PE |
+| transportes.peru@grupopdc.com | TEAM Peru | consulta | rutas | PE |
 
 ---
 
-## 6. Gestión de Sesión
+## 6. Estado de Datos (corte 24/06/2026)
 
-- **Mecanismo:** `sessionStorage` (destruye al cerrar pestaña)
-- **Clave principal:** `pdc_session` — `{email, nombre, rol, dashboards, pais, sedes, ts}`
-- **Clave legacy:** `pdc_user` — `{nombre, email, role}` para compatibilidad dashboards existentes
-- **TTL:** 8 horas · Session watcher: verifica cada 60s, banner + toast a los 15 min restantes
-- **Renovación:** `pdcRenewSession()` resetea TTL sin re-login
-- **Guard:** toda página protegida verifica `pdc_session` al cargar → sin sesión → `login.html`
-- **Login features:** bloqueo 3 intentos (30s cooldown) · remember-email checkbox
+### Dashboard Liquidación de Rutas (index.html)
 
----
-
-## 7. Dashboards Integrados
-
-### 7.1 Liquidación de Rutas (`index.html` v12)
-- **Países:** GT · SV · PE · HN
-- **Datos:** 710 rutas activas · 36 vencidas · última carga 11/06/2026
-- **Constantes:** `RAW`, `KPI_TOTALS`, `KPI_HIST`, `EFECT`, `FX`, `FX_DEF`
-- **Auth Bridge:** v2.0 — IIFE al inicio del body
-- **Módulos:** Resumen · Análisis · Transportistas · Tendencias · Detalle · Tableros · Tipos de Cambio
-- **Export PDF:** botón `📄 Exportar PDF` en header (admin, visible solo en tab Resumen)
-  - `exportarPDF()` → ventana emergente con reporte A4 autocontenido → `window.print()`
-  - Incluye: header PDC, 6 KPI cards, detalle por país, footer corporativo
-- **Actualización:** self-service vía tab Tipos de Cambio → Actualizar Dashboard → GitHub API
-
-#### Reglas de extracción Excel (críticas)
-- `General (seguimiento)`: `dropna(subset=['Numero de Despacho'])` · `Cliente` (mayúscula)
-- País por `Moneda`: GTQ→GT, USD→SV, PEN→PE, HNL→HN
-- `Efectividad`: header fila índice 2 · datos desde índice 3
-- Eliminar filas con `total=0` antes de derivar `kpiData`
-- `KPI_HIST.vencidas` (mes activo) = max(EFECT.mas15, conteo real `Estado Real==='Vencidas'`)
-- `EFECT.mas15` = valor real de Efectividad **sin override**
-
-### 7.2 Cash Today (`cash_today.html` v2.8)
-- **Países:** GT · SV
-- **Dataset:** 35,089 transacciones Jun 2025 → Jun 2026 (al 11/06/2026)
-- **Módulos (11):** Resumen · Guatemala · El Salvador · Límites & KPIs · Tráfico · Comparador · Detalle · Volumetría · Costo Servicio · **Presupuesto** · Config
-- **TC mensual:** `_TC_MENSUAL` BANGUAT — 13 meses (Jun 2025 → Jun 2026)
-
-| Mes | TC GTQ/USD |
+| Indicador | Valor |
 |---|---|
-| 2025-06 | 7.69800 |
-| 2025-07 | 7.70200 |
-| 2025-08 | 7.70500 |
-| 2025-09 | 7.69900 |
-| 2025-10 | 7.69200 |
-| 2025-11 | 7.68400 |
-| 2025-12 | 7.67500 |
-| 2026-01 | 7.66614 |
-| 2026-02 | 7.66476 |
-| 2026-03 | 7.64677 |
-| 2026-04 | 7.63627 |
-| 2026-05 | 7.62240 |
-| 2026-06 | 7.62240 |
+| Total RAW (todas las rutas) | 620 |
+| **Total FD (pendientes de liquidar)** | **146** |
+| En Tiempo Facturación | 53 |
+| Vencidas Facturación (col J) | 93 |
+| Vencidas Despacho (col E) | 87 |
+| +15 Días (Rango Real, col D) | 5 |
+| Países activos | 3 (GT, SV, PE) |
+| KPI_TOTALS report_date | 24/06/2026 |
 
-- **Módulo Presupuesto:** constante `_PRESUPUESTO` · 24 filas (4 sedes × 6 meses 2026)
-  - Selectores: año + país (Consolidado / GT / SV)
-  - KPIs: cumplimiento %, presupuesto, recolectado, superávit/déficit
-  - Gráfica dual: barras presupuesto vs real + línea % cumplimiento
-  - Tabla sede × mes con semáforo verde ≥100% · amarillo ≥85% · rojo <85%
-
-### 7.3 Consolidado Regional (`regional/index.html` v1.0)
-- **Cobertura:** GT · SV · PE · HN
-- **Módulos:** 4 tabs — KPIs globales · por país · tendencias · mapa operativo
-
-### 7.4 Dashboard Perú (`peru/index.html` v1.0)
-- **Moneda:** PEN · TC referencial 3.75
-- **Paleta:** `--pe1:#8B1A1A` / `--pe2:#E8A020`
-- **KPIs:** 74 rutas · 12 vencidas · 83.8% efectividad · S/2,847,320
-- **Módulos:** Resumen · Análisis · Detalle Rutas · Tendencias
-
-### 7.5 Dashboard Honduras (`honduras/index.html` v1.0)
-- **Moneda:** HNL · TC referencial 24.80
-- **Paleta:** `--hn1:#003F8A` / `--hn2:#009E60`
-- **KPIs:** 52 rutas · 8 vencidas · 84.6% efectividad · L.3,124,680
-- **Módulos:** Resumen · Análisis · Detalle Rutas · Tendencias
+### Desglose por país (FD pendientes)
+| País | Rutas | Vencidas Despacho |
+|---|---|---|
+| Guatemala | 136 | 77 |
+| El Salvador | 6 | 6 |
+| Perú | 4 | 4 |
+| Honduras | 0 | 0 (proyectado) |
 
 ---
 
-## 8. Función de Descarga de Snapshots
+## 7. Motor de Cálculo — Fuente Única de Verdad
 
-`pdcDownload()` en `analytics.html`:
-1. `fetch(base + archivo)` → trae HTML fuente desde GitHub Pages
-2. Strip Auth Bridge con regex
-3. Agrega watermark `📸 SNAPSHOT PDC · fecha · Solo lectura · nombre`
-4. Descarga como blob local `text/html;charset=utf-8`
-
-**Deploy pattern (archivos grandes):**
-- Archivos < 1MB → Python urllib PUT directo
-- Archivos > 1MB (cash_today ~9MB) → blob API para GET + Python urllib para PUT
-- Nunca usar curl para archivos grandes (arg list too long)
-
----
-
-## 9. Chat de Soporte (Supabase)
-
-- Proyecto: `https://pytsrgtcjytjztwdlvux.supabase.co`
-- Tabla: `chat_messages` — `id (uuid)`, `sender_email`, `sender_nombre`, `sender_role`, `message`, `is_read`, `created_at`
-- Polling 3s (background) / 1.5s (chat abierto)
-- ⚠️ `id` es UUID — usar `created_at` para detectar mensajes nuevos, nunca comparar `id` con `>`
-- Supabase key (publishable): `sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj`
-
----
-
-## 10. Integraciones Externas
-
-- **Power Automate:** OneDrive (`/Reporte de Liquidaciones`) → notificación Teams canal "Dashboard KPIs"
-- **MS Teams:** canal "C & C | Liquidaciones" — subcanales: Dashboard KPIs · Reportes Mensuales · Alertas Vencidas
-
----
-
-## 11. Diseño Corporativo
-
-```css
-:root {
-  --navy:#002060;  --navy2:#003090;  --sky:#CFEEFC;
-  --green:#DCF0C6; --green2:#2D9E2D;
-  --yellow:#FFF4CC; --yellow2:#C48A00;
-  --red:#FFBDBD;   --red2:#CC0000;
-  --bg:#F0F4F8;    --card:#FFF;      --text:#0F1729; --text2:#5A6480;
-  --border:#E2E8F0; --radius:12px;
-  --shadow:0 2px 16px rgba(0,32,96,.08);
-}
-/* Paletas por país */
-/* GT: #002060 / #00B8D9 */
-/* SV: #E6501E / #FFAB00 */
-/* PE: --pe1:#8B1A1A / --pe2:#E8A020 */
-/* HN: --hn1:#003F8A / --hn2:#009E60 */
-/* Regional/Global: #5B2D8E / #A78BFA */
+**Regla absoluta:** todos los módulos consumen `FD = RAW.filter(notLiq)` donde:
+```javascript
+notLiq = d => d['Estado (Facturación)'] !== 'Liquidada' && d['Estado Real'] !== 'Liquidada'
 ```
 
-- **Logo PDC:** embebido en Base64 · `height:52px` · fondo blanco redondeado
-- **Fila consolidado:** siempre `background:#DCE8FE` + `color:var(--navy)` — nunca texto blanco
-- **Tráfico (Cash Today):** SVG puro — no migrar a Chart.js (canvas falla en `display:none`)
-- **Tipografía:** Inter · Google Fonts
+| Función | Módulo | Fuente | Columna |
+|---|---|---|---|
+| `AF()` | Filtro global + header badges | `RAW → FD` | — |
+| `RK()` | Resumen KPIs | `FD` | J (Fac), E (Desp), D (Rango Real) |
+| `RDE()` | Desglose por estado | `FD` | J / E |
+| `RCC()` | Country cards | `FD` | — |
+| `RC()` | Canal | `FD` | — |
+| `RD()` + `addDR()` | Análisis por Área | `FD` col I (Fac) / col D (Desp) — **independientes** | I / D |
+| `RT()` | Transportistas | `FD` | — |
+| `RM()` | Mapa rutas | `FD` | — |
+| `renderTableros()` | Tableros | `FD` (unificado v1.5) | — |
+| `RTend()` | Tendencias | `KPI_HIST` | — |
+| `REf()` | Efectividad | `EFECT` | — |
 
 ---
 
-## 12. Reglas de Desarrollo
+## 8. Reglas de Negocio Críticas
 
-1. **Nunca reconstruir** — modificaciones quirúrgicas con `assert OLD in html` antes de reemplazar
-2. Validar braces JS: strip strings/templates con `re.sub`, luego `count({) == count(})`
-3. Validar canvas IDs: `mkChart('id')` debe existir en HTML
-4. Respetar separación Depósito / Recogida en Cash Today
-5. Precisión decimal: GTQ=0dec · USD=2dec — uniforme en celdas y totales
-6. No hardcodear `tcGTQ` — usar `usd(r)` con `_TC_MENSUAL[r.ym]` y fallback
-7. No usar `localStorage`/`sessionStorage` dentro de artefactos Claude.ai
-8. Actualizar `CHANGELOG.md` al finalizar cada sesión con cambios
-9. Librerías canónicas: Chart.js 4.4.1 jsdelivr · SheetJS 0.20.0 cdn.sheetjs.com
-10. GitHub cancela runs intermedios cuando hay commits rápidos — comportamiento normal
+- **notLiq**: excluye rutas donde `Estado (Facturación) === 'Liquidada'` OR `Estado Real === 'Liquidada'`
+- **Vencidas Facturación**: `Estado (Facturación) === 'Vencidas'` (col J del Excel)
+- **Vencidas Despacho**: `Estado Real === 'Vencidas'` (col E del Excel)
+- **+15 Días**: `Rango Real === '15 +'` (col D del Excel)
+- **Análisis por Área modo Rango**: agrupador = `r.Rango` (Facturación); columna Despacho usa `r['Rango Real']` — fuentes independientes
+- **renderTableros()**: usa `FD` directamente (no filtra RAW con Estatus Real)
+- **Honduras**: datos proyectados, sin rutas reales en producción
 
 ---
 
-## 13. Estado Actual · 21/06/2026
+## 9. Portal analytics.html — Tarjetas (corte 24/06/2026)
 
-| Componente | Versión | Estado |
+| ID | Dashboard | KPIs mostrados |
 |---|---|---|
-| PDC Analytics Center (portal) | v1.4 | ✅ Producción |
-| login.html | v1.1 | ✅ 14 usuarios · bloqueo 3 intentos |
-| analytics.html | v1.3 | ✅ Toast · session watcher · 5 dashboards |
-| Dashboard Rutas (index.html) | v12 | ✅ + Export PDF ejecutivo |
-| Dashboard Cash Today | v2.8 | ✅ + Presupuesto + TC histórico 2025 |
-| Consolidado Regional | v1.0 | ✅ 4 países |
-| Dashboard Perú | v1.0 | ✅ PEN · 4 módulos |
-| Dashboard Honduras | v1.0 | ✅ HNL · 4 módulos |
+| `rutas` | Liquidación de Rutas | 146 rutas · 3 países · 87 vencidas |
+| `cashtoday` | Cash Today | 35k TX · 10 módulos · 4 sedes |
+| `regional` | Consolidado Regional | 146 rutas · 3 países · $1.4M USD |
+| `peru` | Perú · Liquidación de Rutas | 4 rutas · 4 vencidas · $26k USD |
+| `elsalvador` | El Salvador · Liquidación de Rutas | 6 rutas · 6 vencidas · $26,927 USD |
 
 ---
 
-## 14. Próximos Pasos
-Ver `ROADMAP.md`.
+## 10. Historial de versiones
 
-## 15. Historial de Cambios
-Ver `CHANGELOG.md`.
+| Versión | Fecha | Descripción |
+|---|---|---|
+| v1.5 | 24/06/2026 | Datasets actualizados al 18/06 · motor unificado · tarjeta HN→ESV |
+| v1.4 | 21/06/2026 | Sprint arquitectura · bugs PDF/GitHub/auth |
+| v1.2 | 21/06/2026 | Consolidado Regional |
+| v1.1 | 21/06/2026 | Fase 1 completa |
+| v1.0 | 20/06/2026 | Lanzamiento inicial |
+
+---
+*PDC Analytics Center · Grupo PDC · Departamento Financiero · v1.5 · 24/06/2026*
