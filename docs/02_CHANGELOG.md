@@ -3,6 +3,32 @@
 
 ---
 
+## [v2.8-CT] 25/06/2026 — Cash Today · Dataset actualizado + Festivos corregidos
+
+### Archivo modificado: `cash_today.html`
+
+### Dataset
+| Dataset | Versión anterior | Versión nueva |
+|---|---|---|
+| `_R` registros | 35,089 | **37,235** (+2,146) |
+| Rango XELA | Feb–May 2026 | **Feb–Jun 2026** |
+| Rango CDA/ESV | hasta 11/06/2026 | **hasta 24/06/2026** |
+| `hol=1` correctos | 121 (Semana Santa = hol=0 ❌) | **704 (Semana Santa = hol=1 ✅)** |
+
+### Correcciones
+| Bug | Causa raíz | Fix |
+|---|---|---|
+| XELA sin jun 2026 | `_R` desactualizado | Regenerado desde Excel 24/06/2026 |
+| ESV sin jun 2026 | `_R` desactualizado | Regenerado completo |
+| Módulo Festivos vacío | `_R` generado con calendario incorrecto — 2026-04-09/10/11 tenían `hol=0` | `hol` recalculado con `GT_HOL`/`SV_HOL` canónicos del JS |
+
+### Validación cruzada
+- ✅ 8 puntos de control validados contra Excel (diferencia $0.00)
+- ✅ `GT_HOL`/`SV_HOL` del JS = `hol` en `_R` (100% coincidencia)
+- ✅ Todas las funciones JS intactas
+
+---
+
 ## [v1.5] — 24/06/2026 · Sesión de Corrección Global ✅
 
 ### Archivos modificados en esta sesión
