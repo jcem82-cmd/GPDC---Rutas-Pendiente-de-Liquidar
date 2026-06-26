@@ -37,7 +37,7 @@ PDC Analytics Center
 ```
 
 > **Nota v1.6:** Módulo Festivos eliminado de Cash Today. Portadas actualizadas con datos reales (146 rutas, 3 países, 36k TX ATM).
-> Honduras permanece como proyectado sin datos reales en corte 24/06/2026.
+> Honduras permanece como proyectado sin datos reales en corte 25/06/2026.
 
 ### Flujo de sesión
 ```
@@ -65,7 +65,7 @@ login.html  →  sessionStorage[pdc_session] (TTL 8h)
 | Método | PUT directo vía GitHub REST API (Python urllib) |
 | Token (fragmentado) | `''.join(['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'])` |
 
-### SHAs de producción (24/06/2026) ← ACTUALES
+### SHAs de producción (25/06/2026) ← ACTUALES
 | Archivo | SHA |
 |---|---|
 | `index.html` | `83aca5b30cfb` |
@@ -74,7 +74,7 @@ login.html  →  sessionStorage[pdc_session] (TTL 8h)
 | `admin.html` | `a4151deee5f8` |
 | `regional/index.html` | `e9e70a520afe` |
 | `peru/index.html` | `73e234cd2f3f` |
-| `cash_today.html` | `eb28dc11796a` |
+| `cash_today.html` | `0117c2a71594` |
 | `docs/01_MASTER_PROJECT_CONTEXT.md` | `7532cc2275e1` (→ actualizado ahora) |
 | `docs/02_CHANGELOG.md` | `25f29d6ca864` (→ actualizado ahora) |
 
@@ -117,7 +117,7 @@ login.html  →  sessionStorage[pdc_session] (TTL 8h)
 
 ---
 
-## 6. Estado de Datos (corte 24/06/2026)
+## 6. Estado de Datos (corte 25/06/2026)
 
 ### Dashboard Liquidación de Rutas (index.html)
 
@@ -129,7 +129,7 @@ login.html  →  sessionStorage[pdc_session] (TTL 8h)
 | Vencidas Facturación (col J) | 93 |
 | Vencidas Despacho (col E) | 87 |
 | +15 Días Rango Real (col D) | 5 |
-| KPI_TOTALS.report_date | 24/06/2026 |
+| KPI_TOTALS.report_date | 25/06/2026 |
 | KPI_TOTALS.total_by_moneda | GTQ:2009 · USD:1002 · PEN:327 |
 
 ### Desglose por país (FD pendientes corte 18/06)
@@ -180,7 +180,7 @@ notLiq = d => d['Estado (Facturación)'] !== 'Liquidada' && d['Estado Real'] !==
 
 ---
 
-## 9. Portal analytics.html — Estado (24/06/2026)
+## 9. Portal analytics.html — Estado (25/06/2026)
 
 ### Tarjetas "Mis Dashboards"
 | ID | Nombre | KPIs | Archivo destino |
@@ -206,7 +206,7 @@ notLiq = d => d['Estado (Facturación)'] !== 'Liquidada' && d['Estado Real'] !==
 
 ---
 
-## 10. Dashboard Perú (peru/index.html) — Estado 24/06/2026
+## 10. Dashboard Perú (peru/index.html) — Estado 25/06/2026
 
 | KPI | Valor |
 |---|---|
@@ -227,7 +227,7 @@ notLiq = d => d['Estado (Facturación)'] !== 'Liquidada' && d['Estado Real'] !==
 
 ---
 
-## 11. Dashboard Regional (regional/index.html) — Estado 24/06/2026
+## 11. Dashboard Regional (regional/index.html) — Estado 25/06/2026
 
 | KPI Global | Valor |
 |---|---|
@@ -242,7 +242,7 @@ notLiq = d => d['Estado (Facturación)'] !== 'Liquidada' && d['Estado Real'] !==
 
 | Versión | Fecha | Descripción |
 |---|---|---|
-| v1.5 | 24/06/2026 | Auditoría completa · datasets 18/06 · motor unificado · tarjeta HN→ESV · peru/regional actualizados |
+| v1.5 | 25/06/2026 | Auditoría completa · datasets 18/06 · motor unificado · tarjeta HN→ESV · peru/regional actualizados |
 | v1.4 | 21/06/2026 | Sprint arquitectura · bugs PDF/GitHub/auth |
 | v1.2 | 21/06/2026 | Consolidado Regional |
 | v1.1 | 21/06/2026 | Fase 1 completa |
@@ -261,4 +261,4 @@ notLiq = d => d['Estado (Facturación)'] !== 'Liquidada' && d['Estado Real'] !==
 7. **PDC_USERS en login.html Y analytics.html** — siempre ambos
 
 ---
-*PDC Analytics Center · Grupo PDC · Departamento Financiero · v1.5 · 24/06/2026*
+*PDC Analytics Center · Grupo PDC · Departamento Financiero · v1.5 · 25/06/2026*
