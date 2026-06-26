@@ -39,13 +39,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#0a0f1e;color:#e2e8f0
 .conv-preview{font-size:.71rem;color:rgba(255,255,255,.32);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;margin-top:2px;}
 .conv-time{font-size:.62rem;color:rgba(255,255,255,.28);}
 .conv-unread{width:9px;height:9px;border-radius:50%;background:#38bdf8;position:absolute;right:14px;top:50%;transform:translateY(-50%);box-shadow:0 0 6px #38bdf8;}
-.chat-pane{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.chat-pane{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
 .chat-pane-header{padding:15px 22px;border-bottom:1px solid rgba(255,255,255,.06);background:#0d1425;
   display:flex;align-items:center;gap:12px;flex-shrink:0;}
 .pane-online{width:9px;height:9px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;}
 .pane-name{font-size:1rem;font-weight:700;}
 .pane-email{font-size:.72rem;color:rgba(255,255,255,.4);}
-.messages-area{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:12px;}
+.messages-area{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:12px;min-height:0;}
 .messages-area::-webkit-scrollbar{width:3px;}
 .messages-area::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);}
 .msg{max-width:74%;display:flex;flex-direction:column;gap:3px;}
@@ -388,7 +388,11 @@ async function loadMessages(email) {
       <div class="msg-meta">${isAdmin?'Tú (Admin)':m.sender_nombre} · ${t}</div>
     </div>`;
   }).join('');
-  setTimeout(function(){ area.scrollTop = area.scrollHeight; }, 50);
+  setTimeout(function(){
+    area.scrollTop = area.scrollHeight;
+    var lastEl = area.querySelector('.msg:last-child');
+    if(lastEl) lastEl.scrollIntoView({block:'end', behavior:'instant'});
+  }, 80);
 }
 
 async function sendReply() {
