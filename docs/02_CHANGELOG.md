@@ -3,6 +3,44 @@
 
 ---
 
+## [v2.9-CT] 25/06/2026 — Cash Today · Dataset correcto + CSS Presupuesto
+
+### SHAs de producción finales
+| Archivo | SHA |
+|---|---|
+| `cash_today.html` | `0117c2a71594` |
+| `analytics.html`  | `14c254be01b6` |
+| `login.html`      | `5b578731275b` |
+| `index.html`      | `83aca5b30cfb` |
+
+### Cambios aplicados en esta sesión
+| Cambio | Detalle |
+|---|---|
+| Dataset `_R` actualizado | 37,348 registros · jun-2026 correcto: CDA Q11.77M · XELA Q2.85M · STA $1.2M · SMG $304K |
+| Festivos `hol=1` corregido | 704 registros correctos (Semana Santa 09/10/11 abr + otros) |
+| CSS Presupuesto | `#page-presupuesto .kpi-val { font-size: clamp(13px,1.4vw,18px) }` — valores no desbordan tarjeta |
+| Portada `login.html` | Rutas activas 710→146 · Países 4→3 |
+| Portada `analytics.html` | TX ATM 35k→36k · fecha 24 jun 2026 |
+| Módulo Festivos | Permanece en el dashboard (no se elimina — estructuralmente entrelazado con Tráfico) |
+
+### Módulos Cash Today — estado final
+| Módulo | Estado |
+|---|---|
+| Resumen | ✅ Funcional |
+| Guatemala | ✅ Funcional |
+| El Salvador | ✅ Funcional |
+| Límites & KPIs | ✅ Funcional |
+| Tráfico | ✅ Funcional |
+| Comparador | ✅ Funcional |
+| Detalle | ✅ Funcional |
+| Volumetría | ✅ Funcional |
+| Costo Servicio | ✅ Funcional |
+| Presupuesto | ✅ Funcional · valores KPI adaptados |
+| Festivos | ⚠️ Presente · muestra referencia estática cuando no hay festivos en el período |
+| Config | ✅ Funcional |
+
+---
+
 ## [v2.9-CT] 25/06/2026 — Cash Today · Auditoría completa + Correcciones + Estética
 
 ### Archivos modificados
