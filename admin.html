@@ -388,11 +388,9 @@ async function loadMessages(email) {
       <div class="msg-meta">${isAdmin?'Tú (Admin)':m.sender_nombre} · ${t}</div>
     </div>`;
   }).join('');
-  setTimeout(function(){
+  requestAnimationFrame(function(){
     area.scrollTop = area.scrollHeight;
-    var lastEl = area.querySelector('.msg:last-child');
-    if(lastEl) lastEl.scrollIntoView({block:'end', behavior:'instant'});
-  }, 80);
+  });
 }
 
 async function sendReply() {
