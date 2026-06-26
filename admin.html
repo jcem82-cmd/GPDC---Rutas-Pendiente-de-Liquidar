@@ -232,7 +232,13 @@ function logout() { sessionStorage.removeItem('pdc_user'); window.location.href=
       var msgs = rows.filter(function(m){ return m.sender_role==='user'||m.sender_role==='admin'; });
       if(empty) empty.style.display = msgs.length ? 'none' : 'flex';
       msgs.forEach(function(m){ var el=renderMsg(m); if(el) container.appendChild(el); });
-      if(msgs.length){ lastTs = msgs[msgs.length-1].created_at; }
+      if(msgs.length){
+        var newTs = msgs[msgs.length-1].created_at;
+        var hasNew = lastTs && newTs > lastTs
+                     && msgs[msgs.length-1].sender_role !== 'admin';
+        if(hasNew){ playAlert(); }
+        lastTs = newTs;
+      }
       container.scrollTop = container.scrollHeight;
     }).catch(function(e){console.warn('loadMsgs:',e);});
   }
@@ -382,7 +388,7 @@ async function loadMessages(email) {
       <div class="msg-meta">${isAdmin?'Tú (Admin)':m.sender_nombre} · ${t}</div>
     </div>`;
   }).join('');
-  area.scrollTop = area.scrollHeight;
+  setTimeout(function(){ area.scrollTop = area.scrollHeight; }, 50);
 }
 
 async function sendReply() {
@@ -410,6 +416,7 @@ sb.channel('admin-realtime').on('postgres_changes',
   async (payload) => {
     const m = payload.new;
     if(m.sender_role !== 'admin') {
+      playAlert();
       showAlert(m.sender_nombre+': '+m.message.substring(0,55)+'...', m.sender_email);
       loadConversations();
       if(activeEmail===m.sender_email) await loadMessages(activeEmail);
