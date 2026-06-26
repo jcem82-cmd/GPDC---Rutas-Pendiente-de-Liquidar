@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v1.5 | **Última actualización:** 24/06/2026 | **Estado:** Producción ✅
+**Versión vigente:** v1.6 | **Última actualización:** 25/06/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -22,7 +22,7 @@ PDC Analytics Center
 ├── analytics.html          ← Portal Hub · cards de acceso · panel admin
 │
 ├── index.html              ← Dashboard Liquidación de Rutas v12
-├── cash_today.html         ← Dashboard Cash Today v2.8 · 11 módulos
+├── cash_today.html         ← Dashboard Cash Today v2.9 · 10 módulos (Festivos eliminado)
 ├── admin.html              ← Panel administrativo · chat Supabase
 │
 ├── regional/index.html     ← Consolidado Regional v1.1 · 3 países activos
@@ -36,7 +36,7 @@ PDC Analytics Center
     └── 05_README.md
 ```
 
-> **Nota v1.5:** Honduras eliminado del portal. Tarjeta ESV (El Salvador) activa.
+> **Nota v1.6:** Módulo Festivos eliminado de Cash Today. Portadas actualizadas con datos reales (146 rutas, 3 países, 36k TX ATM).
 > Honduras permanece como proyectado sin datos reales en corte 24/06/2026.
 
 ### Flujo de sesión
@@ -69,12 +69,12 @@ login.html  →  sessionStorage[pdc_session] (TTL 8h)
 | Archivo | SHA |
 |---|---|
 | `index.html` | `83aca5b30cfb` |
-| `analytics.html` | `32d31f982a01` |
-| `login.html` | `f7d1c5e12290` |
+| `analytics.html` | `14c254be01b6` |
+| `login.html` | `5b578731275b` |
 | `admin.html` | `a4151deee5f8` |
 | `regional/index.html` | `e9e70a520afe` |
 | `peru/index.html` | `73e234cd2f3f` |
-| `cash_today.html` | `417505dc60b5` |
+| `cash_today.html` | `eb28dc11796a` |
 | `docs/01_MASTER_PROJECT_CONTEXT.md` | `7532cc2275e1` (→ actualizado ahora) |
 | `docs/02_CHANGELOG.md` | `25f29d6ca864` (→ actualizado ahora) |
 
