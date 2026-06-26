@@ -3,6 +3,53 @@
 
 ---
 
+## [v2.9-CT] 25/06/2026 — Cash Today · Auditoría completa + Correcciones + Estética
+
+### Archivos modificados
+| Archivo | SHA final | Cambios |
+|---|---|---|
+| `cash_today.html` | `eb28dc11796a` | Dataset _R actualizado · Metas visitas · módulo Festivos eliminado · CSS presupuesto |
+| `login.html` | `5b578731275b` | KPIs portada: rutas 710→146, países 4→3 |
+| `analytics.html` | `14c254be01b6` | KPIs cards: rutas 146 correcto, TX ATM 35k→36k, fecha 24 jun 2026 |
+
+### Dataset `_R` — cash_today.html
+| Métrica | Valor anterior | Valor nuevo |
+|---|---|---|
+| Total registros | 35,089 | **37,348** |
+| Junio CDA | Q 5,874,464.70 | **Q 11,773,388.95** |
+| Junio XELA | Q 1,899,717.00 | **Q 2,853,807.00** |
+| Junio Sta. Tecla | $ 847,365.83 | **$ 1,206,751.59** |
+| Junio Sn. Miguel | $ 213,915.32 | **$ 304,860.37** |
+| Festivos hol=1 | 121 (incorrecto) | **704 (correcto)** |
+
+### Correcciones funcionales
+| Bug | Módulo | Fix |
+|---|---|---|
+| Visitas en tarjetas no coincidían con Volumetría | Límites & KPIs | `buildRow` ahora usa Recogidas + `r.dy` igual que `renderVolumentria` |
+| Módulo Festivos no mostraba nada en ningún mes | Festivos | **Eliminado del dashboard** (tab, página HTML, función JS — removidos completamente) |
+
+### Corrección estética
+| Elemento | Fix |
+|---|---|
+| Valores KPI módulo Presupuesto se desbordaban de la tarjeta | CSS override `#page-presupuesto .kpi-val { font-size: clamp(13px,1.4vw,18px) }` |
+
+### Portadas actualizadas
+| Archivo | Campo | Antes | Después |
+|---|---|---|---|
+| `login.html` | Rutas activas | 710 | **146** |
+| `login.html` | Países | 4 | **3** |
+| `analytics.html` | Rutas activas | 146 | **146** ✅ |
+| `analytics.html` | TX ATM | 35k | **36k** |
+| `analytics.html` | Fecha Cash Today | 21 jun 2026 | **24 jun 2026** |
+
+### Validación cruzada final
+- ✅ 4 sedes junio 2026 cuadran a Q$0.00 vs Excel
+- ✅ Módulo Festivos eliminado sin afectar otros módulos
+- ✅ Tráfico, Metas, Resumen, GT, SV, Volumetría intactos
+- ✅ Portadas con datos reales de la última actualización
+
+---
+
 ## [v2.8-CT] 25/06/2026 — Cash Today · Dataset actualizado + Festivos corregidos
 
 ### Archivo modificado: `cash_today.html`
