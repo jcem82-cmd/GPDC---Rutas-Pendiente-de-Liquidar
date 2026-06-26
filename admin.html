@@ -408,6 +408,10 @@ async function sendReply() {
   });
   if(error) { console.error('Reply error:', error); return; }
   await loadMessages(activeEmail);
+  setTimeout(function(){
+    var area = document.getElementById('msgArea');
+    if(area){ area.scrollTop = area.scrollHeight; }
+  }, 200);
 }
 
 // Realtime: new user messages
