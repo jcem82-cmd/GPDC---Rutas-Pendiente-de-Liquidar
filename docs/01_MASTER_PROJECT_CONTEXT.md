@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v1.6 | **Última actualización:** 25/06/2026 | **Estado:** Producción ✅
+**Versión vigente:** v1.7 | **Última actualización:** 26/06/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -68,13 +68,13 @@ login.html  →  sessionStorage[pdc_session] (TTL 8h)
 ### SHAs de producción (25/06/2026) ← ACTUALES
 | Archivo | SHA |
 |---|---|
-| `index.html` | `83aca5b30cfb` |
-| `analytics.html` | `14c254be01b6` |
+| `index.html` | `a12727975196` |
+| `analytics.html` | `c721f9f0cd99` |
 | `login.html` | `5b578731275b` |
 | `admin.html` | `a4151deee5f8` |
 | `regional/index.html` | `e9e70a520afe` |
 | `peru/index.html` | `73e234cd2f3f` |
-| `cash_today.html` | `0117c2a71594` |
+| `cash_today.html` | `168b45f2ef75` |
 | `docs/01_MASTER_PROJECT_CONTEXT.md` | `7532cc2275e1` (→ actualizado ahora) |
 | `docs/02_CHANGELOG.md` | `25f29d6ca864` (→ actualizado ahora) |
 
@@ -249,6 +249,38 @@ notLiq = d => d['Estado (Facturación)'] !== 'Liquidada' && d['Estado Real'] !==
 | v1.0 | 20/06/2026 | Lanzamiento inicial |
 
 ---
+
+## Centro de Comunicación — Widget Flotante (v2.0 · 26/06/2026)
+
+### Arquitectura
+- **`cc_widget.js`** — componente reutilizable autocontenido (IIFE)
+- **`assistant_avatar.png`** — avatar IA corporativo PDC Robot 3D
+- Se activa en cualquier dashboard con: `<script src="cc_widget.js"></script>`
+- Activo en: `index.html`, `cash_today.html`
+
+### SHAs producción
+| Archivo | SHA |
+|---|---|
+| `cc_widget.js` | `4206ff0e2212` |
+| `admin.html` | `58dfe775739a` |
+| `analytics.html` | `c721f9f0cd99` |
+| `assistant_avatar.png` | `4c5094b07f81` |
+| `index.html` | `a12727975196` |
+| `cash_today.html` | `168b45f2ef75` |
+
+### Funcionalidades activas
+- Botón FAB circular con avatar robot PDC y animaciones CSS (flotación, glow, pulso, saludo)
+- Ventana flotante 460px × 70vh · Minimizar / Restaurar / Cerrar
+- Una sola interfaz para todos los roles (admin, supervisor, consulta)
+- REST fetch directo a Supabase (no depende del SDK del host)
+- Polling 5s + Realtime Supabase · Sonido WebAudio · Toast · Badges
+
+### Reglas clave
+- **cc_widget.js** nunca modifica el dashboard host — usa `position:fixed` + prefijo `pdc-cc-`
+- Sesión leída de `sessionStorage` (`pdc_session` o `pdc_user`)
+- `ccOpen()` expuesto globalmente — llamable desde cualquier botón del dashboard
+- Futuros dashboards: solo 1 línea `<script src="cc_widget.js"></script>`
+
 
 ## 13. Instrucciones para nuevo chat
 
