@@ -3,6 +3,62 @@
 
 ---
 
+## [v2.0-CC] 26/06/2026 — Centro de Comunicación · Widget Flotante Corporativo
+
+### SHAs de producción
+| Archivo | SHA |
+|---|---|
+| `cc_widget.js` | `4206ff0e2212` |
+| `admin.html` | `58dfe775739a` |
+| `analytics.html` | `c721f9f0cd99` |
+| `assistant_avatar.png` | `4c5094b07f81` |
+| `index.html` | `a12727975196` |
+| `cash_today.html` | `168b45f2ef75` |
+
+### Cambios aplicados
+
+#### CR-001 / CR-002 — Centro de Comunicación Flotante
+| Cambio | Detalle |
+|---|---|
+| `cc_widget.js` creado | Componente flotante reutilizable · cualquier dashboard lo activa con 1 línea `<script>` |
+| `admin.html` rediseñado | Centro de Comunicación — pantalla full-screen eliminada · solo widget flotante |
+| `analytics.html` | Eliminada tarjeta "Chat de soporte" para supervisor/consulta · acceso via widget flotante |
+| `index.html` | Agregado `<script src="cc_widget.js">` al final del body |
+| `cash_today.html` | Agregado `<script src="cc_widget.js">` al final del body |
+| `assistant_avatar.png` | Avatar IA corporativo PDC Robot 3D con logo PDC Analytics Center |
+
+#### Funcionalidades del widget (cc_widget.js v2.0)
+| Funcionalidad | Estado |
+|---|---|
+| Botón FAB circular esquina inferior derecha | ✅ |
+| Avatar robot PDC corporativo en FAB y header | ✅ |
+| Animación flotación suave (3s loop) | ✅ |
+| Glow azul corporativo sincronizado | ✅ |
+| Pulso FAB al recibir mensaje nuevo | ✅ |
+| Animación saludo al abrir widget | ✅ |
+| Ventana flotante 460px × 70vh | ✅ |
+| Minimizar / Restaurar / Cerrar | ✅ |
+| Sidebar conversaciones (solo admin) | ✅ |
+| Una sola interfaz para todos los roles | ✅ |
+| Envío mensajes via REST fetch puro | ✅ |
+| Enter y botón Enviar funcionales | ✅ |
+| Auto-scroll requestAnimationFrame | ✅ |
+| Toast alerta visual | ✅ |
+| Sonido WebAudio API | ✅ |
+| Badge contador FAB y header | ✅ |
+| Polling 5s + Realtime Supabase | ✅ |
+| ccOpen() expuesto globalmente | ✅ |
+| Dashboard visible detrás del widget | ✅ |
+
+#### Arquitectura
+- `cc_widget.js` es autocontenido (IIFE, prefijo `pdc-cc-`)
+- No colisiona con estilos del dashboard host
+- Lee sesión de `sessionStorage` (`pdc_session` o `pdc_user`)
+- REST fetch directo a Supabase (sin depender del SDK del host)
+- Futuros dashboards: solo agregar `<script src="cc_widget.js"></script>`
+
+---
+
 ## [v2.9-CT] 25/06/2026 — Cash Today · Dataset correcto + CSS Presupuesto
 
 ### SHAs de producción finales
