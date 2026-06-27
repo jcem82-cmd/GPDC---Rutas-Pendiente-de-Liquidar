@@ -1127,25 +1127,23 @@ function pdcRenewSession(){
       if(panelSub)   panelSub.textContent   = 'Canal de comunicación con el equipo administrador';
       if(panelIcon)  panelIcon.textContent  = '💬';
       var secCount2 = document.querySelector('#admin .sec-count');
-      if(secCount2) secCount2.textContent = 'Chat de soporte';
+      if(secCount2) secCount2.textContent = 'Comunicación';
     }
 
     /* Acciones según rol */
     var adminActions = isAdmin ? [
       { icono:'📂', label:'Actualizar Rutas',      desc:'Subir Excel · Tipos de Cambio',  action:"pdcBridgeToTab('index.html','tiposcambio')" },
       { icono:'📊', label:'Actualizar Cash Today',  desc:'Cargar nuevo Excel · Config',    action:"pdcBridgeToTab('cash_today.html','config')" },
-      { icono:'💬', label:'Panel Administrativo',   desc:'Chat de soporte · Gestión',      action:"pdcNavigate('admin.html')" },
+      { icono:'💬', label:'Centro de Comunicación', desc:'Mensajería · Soporte corporativo', action:"if(window.ccOpen) ccOpen(); else window.location.href='admin.html'" },
       { icono:'⬇️', label:'Descargar Rutas',        desc:'Exportar snapshot del dashboard', action:"pdcDownload('index.html','Dashboard_Rutas_'+new Date().toISOString().slice(0,10)+'.html', this.closest('button'))" },
       { icono:'📋', label:'Descargar Cash Today',   desc:'Exportar snapshot del dashboard', action:"pdcDownload('cash_today.html','Dashboard_CashToday_'+new Date().toISOString().slice(0,10)+'.html', this.closest('button'))" },
       { icono:'🌎', label:'Consolidado Regional',   desc:'KPIs multi-país · 4 países',     action:"pdcNavigate('regional/index.html')" },
       { icono:'🇵🇪', label:'Dashboard Perú',         desc:'Liquidación de Rutas · PEN',     action:"pdcNavigate('peru/index.html')" },
       { icono:'🇸🇻', label:'Dashboard El Salvador',    desc:'Liquidación de Rutas · USD',     action:"pdcNavigate('index.html')" }
     ] : isSupervisor ? [
-      /* Supervisor — solo chat */
-      { icono:'💬', label:'Chat de soporte',        desc:'Consultas y comunicación con admin', action:"pdcNavigate('admin.html')" }
+      /* Supervisor — acceso via widget flotante */
     ] : [
-      /* Consulta — solo chat */
-      { icono:'💬', label:'Chat de soporte',        desc:'Enviar consulta al equipo administrador', action:"pdcNavigate('admin.html')" }
+      /* Consulta — acceso via widget flotante */
     ];
 
     var actionsEl = document.getElementById('adminActions');
