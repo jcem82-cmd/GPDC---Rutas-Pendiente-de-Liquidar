@@ -3,647 +3,705 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Centro de Comunicación · PDC</title>
+<title>Centro de Comunicación · PDC Analytics Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+/* ════════════════════════════════════════════════════════
+   PDC Analytics Center — Centro de Comunicación v2.0
+   Solo el componente flotante. Sin full-screen.
+   ════════════════════════════════════════════════════════ */
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#0a0f1e;color:#e2e8f0;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+html,body{width:100%;height:100%;font-family:'Plus Jakarta Sans',system-ui,sans-serif;}
+body{background:transparent;}
 
-/* ── TOPBAR ── */
-.topbar{background:linear-gradient(90deg,#001240,#002060);border-bottom:1px solid rgba(255,255,255,.08);
-  padding:11px 24px;display:flex;align-items:center;gap:14px;flex-shrink:0;}
-.topbar img{height:34px;background:#fff;border-radius:8px;padding:3px 8px;}
-.topbar-brand{display:flex;flex-direction:column;gap:2px;}
-.topbar-title{font-size:.95rem;font-weight:700;color:#fff;}
-.topbar-sub{font-size:.7rem;color:rgba(255,255,255,.4);}
-.badge{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-size:.62rem;font-weight:800;padding:3px 10px;border-radius:20px;}
-.tb-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
-.tb-user{font-size:.8rem;color:rgba(255,255,255,.5);}
-.tb-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;
-  font-family:inherit;font-size:.75rem;padding:7px 14px;border-radius:8px;cursor:pointer;transition:background .15s;}
-.tb-btn:hover{background:rgba(255,255,255,.16);}
-.tb-btn.primary{background:rgba(56,189,248,.15);border-color:#38bdf8;color:#38bdf8;}
-
-/* ── LAYOUT ── */
-.layout{display:flex;flex:1;overflow:hidden;position:relative;}
-
-/* ── SIDEBAR ── */
-.sidebar{width:290px;background:#0d1425;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;flex-shrink:0;}
-.sb-header{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;}
-.sb-title{font-size:.72rem;font-weight:700;letter-spacing:.1em;color:rgba(255,255,255,.4);text-transform:uppercase;}
-.unread-badge{background:#ef4444;color:#fff;font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:10px;display:none;}
-.conv-list{flex:1;overflow-y:auto;}
-.conv-list::-webkit-scrollbar{width:3px;}
-.conv-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);}
-.conv-item{padding:13px 16px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);
-  transition:background .15s;display:flex;align-items:center;gap:10px;position:relative;}
-.conv-item:hover{background:rgba(255,255,255,.04);}
-.conv-item.active{background:rgba(56,189,248,.09);border-left:3px solid #38bdf8;}
-.conv-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);
-  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.88rem;color:#fff;flex-shrink:0;}
-.conv-name{font-size:.84rem;font-weight:600;color:#e2e8f0;}
-.conv-preview{font-size:.71rem;color:rgba(255,255,255,.32);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;margin-top:2px;}
-.conv-time{font-size:.62rem;color:rgba(255,255,255,.28);}
-.conv-unread{width:9px;height:9px;border-radius:50%;background:#38bdf8;position:absolute;right:14px;top:50%;transform:translateY(-50%);box-shadow:0 0 6px #38bdf8;}
-
-/* ── MAIN AREA (detrás del chat) ── */
-.main-area{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:40px;}
-.main-welcome{text-align:center;}
-.main-welcome .ico{font-size:3.5rem;margin-bottom:16px;opacity:.3;}
-.main-welcome h2{font-size:1.3rem;font-weight:700;color:rgba(255,255,255,.35);margin-bottom:8px;}
-.main-welcome p{font-size:.85rem;color:rgba(255,255,255,.2);max-width:340px;line-height:1.6;}
-
-/* ══════════════════════════════════════════════
-   VENTANA FLOTANTE — CENTRO DE COMUNICACIÓN
-   ══════════════════════════════════════════════ */
-.cc-float{
+/* ══ BOTÓN FAB ══ */
+.pdc-fab{
   position:fixed;
-  bottom:20px;
-  right:20px;
+  bottom:24px;
+  right:24px;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#0ea5e9,#4f46e5);
+  border:none;
+  cursor:pointer;
+  box-shadow:0 8px 32px rgba(14,165,233,.45), 0 2px 8px rgba(0,0,0,.3);
+  z-index:9990;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:transform .2s, box-shadow .2s;
+  outline:none;
+}
+.pdc-fab:hover{
+  transform:scale(1.10);
+  box-shadow:0 12px 40px rgba(14,165,233,.6), 0 4px 12px rgba(0,0,0,.4);
+}
+.pdc-fab-avatar{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  background:rgba(255,255,255,.18);
+  border:2px solid rgba(255,255,255,.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.35rem;
+  color:#fff;
+  pointer-events:none;
+}
+.pdc-fab-badge{
+  position:absolute;
+  top:-3px;
+  right:-3px;
+  min-width:20px;
+  height:20px;
+  border-radius:10px;
+  background:#ef4444;
+  color:#fff;
+  font-size:.62rem;
+  font-weight:800;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:0 5px;
+  border:2px solid #0a0f1e;
+  pointer-events:none;
+}
+.pdc-fab-online{
+  position:absolute;
+  bottom:2px;
+  left:2px;
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:#10b981;
+  border:2px solid #0a0f1e;
+  box-shadow:0 0 8px #10b981;
+  pointer-events:none;
+}
+.pdc-fab.hidden{display:none;}
+
+/* ══ VENTANA FLOTANTE ══ */
+.pdc-cc{
+  position:fixed;
+  bottom:24px;
+  right:24px;
   width:460px;
   height:70vh;
   min-height:600px;
   max-height:800px;
-  max-width:30vw;
   background:#0d1425;
-  border:1px solid rgba(56,189,248,.25);
-  border-radius:16px;
-  box-shadow:0 24px 64px rgba(0,0,0,.7), 0 0 0 1px rgba(56,189,248,.1);
+  border:1px solid rgba(56,189,248,.22);
+  border-radius:18px;
+  box-shadow:0 32px 80px rgba(0,0,0,.75), 0 0 0 1px rgba(56,189,248,.08);
   display:flex;
   flex-direction:column;
-  z-index:1000;
+  z-index:9991;
   overflow:hidden;
-  transition:height .25s ease, opacity .2s ease;
+  transition:height .25s cubic-bezier(.4,0,.2,1);
 }
-.cc-float.minimized{
-  height:56px !important;
-  min-height:unset;
-}
-.cc-float.hidden{
-  display:none;
-}
+.pdc-cc.minimized{height:60px !important; min-height:unset;}
+.pdc-cc.hidden{display:none;}
 
-/* Header flotante */
-.cc-header{
-  background:linear-gradient(135deg,#001240,#002060);
+/* Header */
+.pdc-cc-hdr{
+  background:linear-gradient(135deg,#001240 0%,#002060 60%,#0d1a4a 100%);
+  border-bottom:1px solid rgba(255,255,255,.07);
   padding:0 16px;
-  height:56px;
+  height:60px;
   display:flex;
   align-items:center;
-  gap:10px;
+  gap:11px;
   flex-shrink:0;
-  cursor:default;
-  border-radius:16px 16px 0 0;
+  border-radius:18px 18px 0 0;
   user-select:none;
 }
-.cc-float.minimized .cc-header{border-radius:16px;}
-.cc-header-icon{width:32px;height:32px;background:rgba(56,189,248,.15);border:1px solid rgba(56,189,248,.3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
-.cc-header-info{flex:1;min-width:0;}
-.cc-header-title{font-size:.88rem;font-weight:700;color:#fff;}
-.cc-header-sub{font-size:.65rem;color:rgba(207,238,252,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cc-online{width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981;flex-shrink:0;}
-.cc-controls{display:flex;align-items:center;gap:6px;flex-shrink:0;}
-.cc-btn{width:28px;height:28px;border-radius:7px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;}
-.cc-btn:hover{background:rgba(255,255,255,.14);color:#fff;}
-.cc-btn.close:hover{background:rgba(239,68,68,.25);border-color:#ef4444;color:#ef4444;}
-
-/* Body flotante */
-.cc-body{display:flex;flex:1;overflow:hidden;min-height:0;}
-.cc-float.minimized .cc-body{display:none;}
-
-/* Panel izquierdo: lista conversaciones */
-.cc-sidebar{width:180px;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;flex-shrink:0;}
-.cc-sidebar-hdr{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.06);}
-.cc-sidebar-lbl{font-size:.65rem;font-weight:700;letter-spacing:.1em;color:rgba(255,255,255,.35);text-transform:uppercase;}
-.cc-conv-list{flex:1;overflow-y:auto;}
-.cc-conv-list::-webkit-scrollbar{width:2px;}
-.cc-conv-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);}
-.cc-conv-item{padding:10px 12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;display:flex;align-items:center;gap:8px;position:relative;}
-.cc-conv-item:hover{background:rgba(255,255,255,.04);}
-.cc-conv-item.active{background:rgba(56,189,248,.09);border-left:2px solid #38bdf8;}
-.cc-conv-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.72rem;color:#fff;flex-shrink:0;}
-.cc-conv-info{flex:1;min-width:0;}
-.cc-conv-name{font-size:.75rem;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cc-conv-prev{font-size:.63rem;color:rgba(255,255,255,.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cc-conv-dot{width:7px;height:7px;border-radius:50%;background:#38bdf8;position:absolute;right:8px;top:10px;box-shadow:0 0 5px #38bdf8;}
-
-/* Panel derecho: mensajes */
-.cc-chat{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;}
-.cc-chat-hdr{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);background:#0a0f1e;flex-shrink:0;display:flex;align-items:center;gap:8px;}
-.cc-pane-online{width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981;}
-.cc-pane-name{font-size:.82rem;font-weight:700;color:#e2e8f0;}
-.cc-pane-email{font-size:.65rem;color:rgba(255,255,255,.35);}
-.cc-no-conv{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;}
-.cc-no-conv .ico{font-size:2rem;opacity:.2;}
-.cc-no-conv .txt{font-size:.75rem;color:rgba(255,255,255,.2);text-align:center;padding:0 16px;}
-.cc-messages{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;min-height:0;}
-.cc-messages::-webkit-scrollbar{width:3px;}
-.cc-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);}
-.cc-msg{max-width:85%;display:flex;flex-direction:column;gap:2px;}
-.cc-msg.user{align-self:flex-start;}
-.cc-msg.admin{align-self:flex-end;}
-.cc-msg-bubble{padding:9px 12px;border-radius:14px;font-size:.78rem;line-height:1.5;word-break:break-word;}
-.cc-msg.user .cc-msg-bubble{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.07);color:#e2e8f0;border-radius:3px 14px 14px 14px;}
-.cc-msg.admin .cc-msg-bubble{background:linear-gradient(135deg,#1d4ed8,#4f46e5);color:#fff;border-radius:14px 3px 14px 14px;}
-.cc-msg-meta{font-size:.58rem;color:rgba(255,255,255,.28);}
-.cc-msg.admin .cc-msg-meta{text-align:right;}
-.cc-input-row{padding:10px 12px;border-top:1px solid rgba(255,255,255,.06);background:#0d1425;display:flex;gap:8px;flex-shrink:0;}
-.cc-admin-input{flex:1;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:10px;
-  color:#fff;font-family:inherit;font-size:.8rem;padding:9px 12px;outline:none;resize:none;transition:border-color .2s;max-height:80px;}
-.cc-admin-input:focus{border-color:#38bdf8;}
-.cc-admin-input::placeholder{color:rgba(255,255,255,.25);}
-.cc-send-btn{background:linear-gradient(135deg,#0ea5e9,#4f46e5);border:none;border-radius:10px;
-  color:#fff;font-weight:700;padding:9px 16px;cursor:pointer;font-size:.82rem;white-space:nowrap;transition:transform .15s,box-shadow .15s;}
-.cc-send-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(14,165,233,.4);}
-
-/* Botón FAB para reabrir */
-.cc-fab{
-  position:fixed;bottom:20px;right:20px;width:56px;height:56px;
-  border-radius:16px;background:linear-gradient(135deg,#0ea5e9,#4f46e5);
-  border:none;color:#fff;font-size:1.4rem;cursor:pointer;
-  box-shadow:0 8px 32px rgba(14,165,233,.4);
-  display:none;align-items:center;justify-content:center;
-  z-index:1000;transition:transform .15s;
+.pdc-cc.minimized .pdc-cc-hdr{border-radius:18px;}
+.pdc-cc-hdr-avatar{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#0ea5e9,#4f46e5);
+  border:2px solid rgba(255,255,255,.25);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.1rem;
+  flex-shrink:0;
 }
-.cc-fab:hover{transform:scale(1.08);}
-.cc-fab.visible{display:flex;}
-.cc-fab-badge{
-  position:absolute;top:-4px;right:-4px;
-  background:#ef4444;color:#fff;font-size:.55rem;font-weight:800;
-  padding:2px 5px;border-radius:10px;display:none;
+.pdc-cc-hdr-info{flex:1;min-width:0;}
+.pdc-cc-hdr-title{font-size:.88rem;font-weight:700;color:#fff;white-space:nowrap;}
+.pdc-cc-hdr-sub{font-size:.62rem;color:rgba(207,238,252,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pdc-cc-hdr-online{
+  width:8px;height:8px;border-radius:50%;
+  background:#10b981;box-shadow:0 0 7px #10b981;flex-shrink:0;
+}
+.pdc-cc-hdr-badge{
+  background:rgba(239,68,68,.9);color:#fff;font-size:.6rem;font-weight:800;
+  padding:2px 7px;border-radius:10px;display:none;flex-shrink:0;
+}
+.pdc-cc-controls{display:flex;gap:5px;flex-shrink:0;}
+.pdc-cc-btn{
+  width:26px;height:26px;border-radius:7px;
+  border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.65);
+  font-size:.8rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+.pdc-cc-btn:hover{background:rgba(255,255,255,.13);color:#fff;}
+.pdc-cc-btn.x:hover{background:rgba(239,68,68,.22);border-color:rgba(239,68,68,.5);color:#f87171;}
+
+/* Body */
+.pdc-cc-body{
+  display:flex;
+  flex:1;
+  overflow:hidden;
+  min-height:0;
+}
+.pdc-cc.minimized .pdc-cc-body{display:none;}
+
+/* Sidebar lista conversaciones */
+.pdc-cc-sb{
+  width:170px;
+  border-right:1px solid rgba(255,255,255,.06);
+  display:flex;
+  flex-direction:column;
+  flex-shrink:0;
+}
+/* Para usuarios no-admin: ocultar sidebar */
+.pdc-cc.role-user .pdc-cc-sb{display:none;}
+
+.pdc-cc-sb-hdr{
+  padding:10px 12px 8px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.pdc-cc-sb-lbl{font-size:.6rem;font-weight:700;letter-spacing:.1em;color:rgba(255,255,255,.3);text-transform:uppercase;}
+.pdc-cc-unread-total{
+  background:#ef4444;color:#fff;font-size:.58rem;font-weight:800;
+  padding:1px 6px;border-radius:8px;display:none;
+}
+.pdc-cc-convs{flex:1;overflow-y:auto;}
+.pdc-cc-convs::-webkit-scrollbar{width:2px;}
+.pdc-cc-convs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);}
+.pdc-cc-conv{
+  padding:9px 11px;
+  cursor:pointer;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  transition:background .15s;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  position:relative;
+}
+.pdc-cc-conv:hover{background:rgba(255,255,255,.04);}
+.pdc-cc-conv.active{background:rgba(56,189,248,.09);border-left:2px solid #38bdf8;}
+.pdc-cc-avatar{
+  width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,#3b82f6,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.7rem;color:#fff;flex-shrink:0;
+}
+.pdc-cc-conv-info{flex:1;min-width:0;}
+.pdc-cc-conv-name{font-size:.73rem;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pdc-cc-conv-prev{font-size:.6rem;color:rgba(255,255,255,.28);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pdc-cc-conv-dot{
+  position:absolute;right:7px;top:9px;
+  width:7px;height:7px;border-radius:50%;
+  background:#38bdf8;box-shadow:0 0 5px #38bdf8;
 }
 
-/* ── ALERT TOAST ── */
-.alert-toast{position:fixed;top:18px;right:18px;z-index:9999;background:linear-gradient(135deg,#0ea5e9,#4f46e5);
-  color:#fff;padding:14px 18px;border-radius:14px;font-size:.84rem;max-width:340px;
-  box-shadow:0 8px 32px rgba(0,0,0,.5);display:none;gap:12px;align-items:center;cursor:pointer;}
-.alert-toast.show{display:flex;animation:alertIn .4s cubic-bezier(.16,1,.3,1);}
-@keyframes alertIn{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:none}}
+/* Panel chat */
+.pdc-cc-chat{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;}
+.pdc-cc-chat-hdr{
+  padding:9px 13px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  background:rgba(10,15,30,.6);
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.pdc-cc-pane-dot{width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981;}
+.pdc-cc-pane-name{font-size:.8rem;font-weight:700;color:#e2e8f0;}
+.pdc-cc-pane-email{font-size:.62rem;color:rgba(255,255,255,.32);}
+.pdc-cc-noconv{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:8px;
+}
+.pdc-cc-noconv-ico{font-size:2rem;opacity:.18;}
+.pdc-cc-noconv-txt{font-size:.74rem;color:rgba(255,255,255,.2);text-align:center;padding:0 14px;line-height:1.5;}
 
-/* R-CHAT roles */
-[data-role="supervisor"] .admin-only,
-[data-role="consulta"] .admin-only{display:none!important;}
-[data-role="supervisor"] .user-chat-only,
-[data-role="consulta"] .user-chat-only{display:flex!important;}
+/* Mensajes */
+.pdc-cc-msgs{
+  flex:1;
+  overflow-y:auto;
+  padding:12px 13px;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  min-height:0;
+}
+.pdc-cc-msgs::-webkit-scrollbar{width:3px;}
+.pdc-cc-msgs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.pdc-msg{max-width:84%;display:flex;flex-direction:column;gap:2px;}
+.pdc-msg.user{align-self:flex-start;}
+.pdc-msg.admin{align-self:flex-end;}
+.pdc-msg-bubble{
+  padding:9px 12px;border-radius:14px;
+  font-size:.78rem;line-height:1.5;word-break:break-word;
+}
+.pdc-msg.user .pdc-msg-bubble{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.07);
+  color:#e2e8f0;
+  border-radius:3px 14px 14px 14px;
+}
+.pdc-msg.admin .pdc-msg-bubble{
+  background:linear-gradient(135deg,#1d4ed8,#4f46e5);
+  color:#fff;
+  border-radius:14px 3px 14px 14px;
+}
+.pdc-msg-meta{font-size:.57rem;color:rgba(255,255,255,.28);}
+.pdc-msg.admin .pdc-msg-meta{text-align:right;}
 
-/* ── PANTALLA USUARIO ── */
-.user-chat-wrap{display:none;flex-direction:column;height:100vh;background:#f0f4f8;font-family:inherit}
-.uc-header{background:#002060;padding:14px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0}
-.uc-logo{background:#fff;border-radius:8px;padding:4px 12px;font-weight:800;color:#002060;font-size:.95rem}
-.uc-title{flex:1}
-.uc-title-main{font-size:.9rem;font-weight:700;color:#fff}
-.uc-title-sub{font-size:.72rem;color:rgba(207,238,252,.7)}
-.uc-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
-.uc-msg{max-width:72%;padding:10px 14px;border-radius:12px;font-size:.82rem;line-height:1.5}
-.uc-msg.from-me{align-self:flex-end;background:#002060;color:#fff;border-bottom-right-radius:3px}
-.uc-msg.from-admin{align-self:flex-start;background:#fff;color:#0f1729;border:1px solid #e2e8f0;border-bottom-left-radius:3px}
-.uc-msg-time{font-size:.65rem;opacity:.6;margin-top:3px;text-align:right}
-.uc-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#5a6480;gap:8px}
-.uc-footer{padding:14px 16px;background:#fff;border-top:1px solid #e2e8f0;display:flex;gap:10px;flex-shrink:0}
-.uc-input{flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:.82rem;font-family:inherit;outline:none;resize:none;min-height:42px;max-height:100px}
-.uc-input:focus{border-color:#002060}
-.uc-send{background:#002060;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit}
-.uc-send:hover{background:#003090}
-.uc-send:disabled{opacity:.5;cursor:not-allowed}
+/* Input */
+.pdc-cc-input-row{
+  padding:10px 12px;
+  border-top:1px solid rgba(255,255,255,.06);
+  background:#0d1425;
+  display:flex;
+  gap:8px;
+  flex-shrink:0;
+}
+.pdc-cc-inp{
+  flex:1;
+  background:rgba(255,255,255,.07);
+  border:1.5px solid rgba(255,255,255,.11);
+  border-radius:10px;
+  color:#fff;
+  font-family:inherit;
+  font-size:.79rem;
+  padding:9px 12px;
+  outline:none;
+  resize:none;
+  transition:border-color .2s;
+  max-height:76px;
+}
+.pdc-cc-inp:focus{border-color:#38bdf8;}
+.pdc-cc-inp::placeholder{color:rgba(255,255,255,.22);}
+.pdc-cc-send{
+  background:linear-gradient(135deg,#0ea5e9,#4f46e5);
+  border:none;border-radius:10px;
+  color:#fff;font-weight:700;
+  padding:9px 15px;cursor:pointer;
+  font-size:.8rem;white-space:nowrap;
+  font-family:inherit;
+  transition:transform .15s, box-shadow .15s;
+}
+.pdc-cc-send:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(14,165,233,.4);}
+.pdc-cc-send:disabled{opacity:.45;cursor:not-allowed;transform:none;}
 
-@media(max-width:900px){
-  .cc-float{width:calc(100vw - 40px);max-width:none;right:20px;}
-  .cc-sidebar{width:140px;}
+/* ══ TOAST ALERTA ══ */
+.pdc-toast{
+  position:fixed;top:18px;right:18px;z-index:9999;
+  background:linear-gradient(135deg,#0ea5e9,#4f46e5);
+  color:#fff;padding:13px 17px;border-radius:14px;
+  font-size:.82rem;max-width:340px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+  display:none;gap:11px;align-items:center;cursor:pointer;
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+}
+.pdc-toast.show{display:flex;animation:toastIn .4s cubic-bezier(.16,1,.3,1);}
+@keyframes toastIn{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:none}}
+
+@media(max-width:860px){
+  .pdc-cc{width:calc(100vw - 40px);max-width:none;}
+  .pdc-cc-sb{width:130px;}
+}
+@media(max-width:520px){
+  .pdc-cc-sb{display:none !important;}
 }
 </style>
 </head>
 <body>
 
-<!-- ALERT TOAST -->
-<div class="alert-toast" id="alertToast" onclick="dismissAlert()">
-  <span style="font-size:1.4rem;flex-shrink:0;">💬</span>
-  <div><div style="font-weight:700;margin-bottom:2px;">Nuevo mensaje</div>
-       <div id="alertText" style="opacity:.85;font-size:.78rem;"></div></div>
-  <span style="margin-left:auto;opacity:.5;font-size:.9rem;">✕</span>
+<!-- ══ TOAST ALERTA ══ -->
+<div class="pdc-toast" id="pdcToast">
+  <span style="font-size:1.3rem;flex-shrink:0;">💬</span>
+  <div>
+    <div style="font-weight:700;margin-bottom:2px;">Nuevo mensaje</div>
+    <div id="pdcToastText" style="opacity:.85;font-size:.76rem;"></div>
+  </div>
+  <span style="margin-left:auto;opacity:.45;font-size:.85rem;">✕</span>
 </div>
 
-<!-- ══ PANTALLA USUARIO (supervisor / consulta) ══ -->
-<div class="user-chat-wrap user-chat-only" id="userChatWrap">
-  <div class="uc-header">
-    <div class="uc-logo">PDC</div>
-    <div class="uc-title">
-      <div class="uc-title-main">💬 Chat de Soporte</div>
-      <div class="uc-title-sub">Comunicación con Administración PDC</div>
-    </div>
-    <span id="ucUserName" style="font-size:.78rem;color:rgba(207,238,252,.8);margin-right:8px"></span>
-    <button onclick="sessionStorage.removeItem('pdc_user');window.location.href='analytics.html'" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);border-radius:7px;padding:6px 12px;font-size:.75rem;font-family:inherit;cursor:pointer">Salir</button>
-  </div>
-  <div class="uc-messages" id="ucMessages">
-    <div class="uc-empty" id="ucEmpty">
-      <div style="font-size:2.5rem">💬</div>
-      <div style="font-weight:600;color:#0f1729">Chat de Soporte PDC</div>
-      <div style="font-size:.8rem;text-align:center;max-width:280px">Envía tu consulta o comentario al equipo de administración.</div>
-    </div>
-  </div>
-  <div class="uc-footer">
-    <textarea class="uc-input" id="ucInput" placeholder="Escribe tu mensaje..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ucSendMsg();}"></textarea>
-    <button class="uc-send" id="ucSendBtn" onclick="ucSendMsg()">Enviar</button>
-  </div>
-</div>
-
-<!-- ══ PANTALLA ADMIN ══ -->
-<div class="admin-only">
-
-<!-- TOPBAR -->
-<div class="topbar">
-  <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAEfAkUDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9U6KKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAoor8/wDXP+CvHhnQtb1DTZPh3q0slncSW7OuoRYYoxUkfL7V24bB18Y2qEea25lOpCn8bsfoBRX54/8AD43wt/0TjWP/AAYRf/E0f8PjfC3/AETjWP8AwYRf/E13f2JmH/Pp/h/mZfWqP8x+h1FfFHwT/wCCnfh/41/FTw74Is/A2paZc6zOYEu574=" alt="PDC"/>
-  <div class="topbar-brand">
-    <div class="topbar-title">Centro de Comunicación</div>
-    <div class="topbar-sub">Mensajería · Soporte · Comunicación Corporativa</div>
-  </div>
-  <span class="badge">👑 ADMIN</span>
-  <div class="tb-right">
-    <span class="tb-user" id="adminNameTB"></span>
-    <button class="tb-btn primary" onclick="window.location.href='index.html'">📊 Dashboard</button>
-    <button class="tb-btn" onclick="logout()">Salir</button>
-  </div>
-</div>
-
-<!-- LAYOUT -->
-<div class="layout">
-  <!-- Sidebar izquierdo principal -->
-  <div class="sidebar">
-    <div class="sb-header">
-      <div class="sb-title">💬 Conversaciones</div>
-      <span class="unread-badge" id="globalUnread">0</span>
-    </div>
-    <div class="conv-list" id="convList">
-      <div style="padding:18px 16px;font-size:.78rem;color:rgba(255,255,255,.25);">Cargando...</div>
-    </div>
-  </div>
-
-  <!-- Área principal -->
-  <div class="main-area">
-    <div class="main-welcome">
-      <div class="ico">💬</div>
-      <h2>Centro de Comunicación PDC</h2>
-      <p>Selecciona una conversación en el panel lateral o haz clic en el botón flotante para responder mensajes.</p>
-    </div>
-  </div>
-</div>
-
-<!-- ══ VENTANA FLOTANTE ══ -->
-<div class="cc-float" id="ccFloat">
-  <!-- Header -->
-  <div class="cc-header">
-    <div class="cc-header-icon">💬</div>
-    <div class="cc-header-info">
-      <div class="cc-header-title">Centro de Comunicación</div>
-      <div class="cc-header-sub">Mensajería · Soporte · PDC</div>
-    </div>
-    <div class="cc-online" id="ccOnline"></div>
-    <div class="cc-controls">
-      <button class="cc-btn" onclick="ccMinimize()" title="Minimizar">─</button>
-      <button class="cc-btn close" onclick="ccClose()" title="Cerrar">✕</button>
-    </div>
-  </div>
-  <!-- Body -->
-  <div class="cc-body">
-    <!-- Lista de conversaciones mini -->
-    <div class="cc-sidebar">
-      <div class="cc-sidebar-hdr"><div class="cc-sidebar-lbl">Usuarios</div></div>
-      <div class="cc-conv-list" id="ccConvList">
-        <div style="padding:12px;font-size:.72rem;color:rgba(255,255,255,.25);">Cargando...</div>
-      </div>
-    </div>
-    <!-- Chat -->
-    <div class="cc-chat" id="ccChat">
-      <div class="cc-no-conv" id="ccNoConv">
-        <div class="ico">💬</div>
-        <div class="txt">Selecciona una conversación</div>
-      </div>
-      <!-- El chat-hdr y mensajes se inyectan dinámicamente -->
-    </div>
-  </div>
-</div>
-
-<!-- FAB para reabrir -->
-<button class="cc-fab" id="ccFab" onclick="ccOpen()" title="Abrir Centro de Comunicación">
-  💬
-  <span class="cc-fab-badge" id="ccFabBadge"></span>
+<!-- ══ BOTÓN FAB ══ -->
+<button class="pdc-fab hidden" id="pdcFab" onclick="ccOpen()" title="Abrir Centro de Comunicación">
+  <div class="pdc-fab-avatar">💬</div>
+  <span class="pdc-fab-badge" id="pdcFabBadge"></span>
+  <span class="pdc-fab-online"></span>
 </button>
 
-</div><!-- /admin-only -->
+<!-- ══ VENTANA FLOTANTE — CENTRO DE COMUNICACIÓN ══ -->
+<div class="pdc-cc hidden" id="pdcCC">
 
-<script>
-const { createClient } = supabase;
-const sb = createClient('https://pytsrgtcjytjztwdlvux.supabase.co', 'sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj');
+  <!-- Header -->
+  <div class="pdc-cc-hdr">
+    <div class="pdc-cc-hdr-avatar">💬</div>
+    <div class="pdc-cc-hdr-info">
+      <div class="pdc-cc-hdr-title">Centro de Comunicación</div>
+      <div class="pdc-cc-hdr-sub">Mensajería · Soporte · PDC Analytics Center</div>
+    </div>
+    <div class="pdc-cc-hdr-online"></div>
+    <span class="pdc-cc-hdr-badge" id="pdcHdrBadge"></span>
+    <div class="pdc-cc-controls">
+      <button class="pdc-cc-btn" onclick="ccMinimize()" title="Minimizar">─</button>
+      <button class="pdc-cc-btn x" onclick="ccClose()" title="Cerrar">✕</button>
+    </div>
+  </div>
 
-let currentAdmin = null;
-let activeEmail  = null;
-let activeNombre = null;
-let alertTimer   = null;
-let globalUnread = 0;
-let ccMinimized  = false;
-let ccClosed     = false;
-let fabUnread    = 0;
+  <!-- Body -->
+  <div class="pdc-cc-body">
 
-// ── AUTH ──
-const uStr = sessionStorage.getItem('pdc_user');
-if(!uStr) { window.location.replace('login.html'); }
-else {
-  currentAdmin = JSON.parse(uStr);
-  if(currentAdmin.role !== 'admin' && currentAdmin.role !== 'supervisor' && currentAdmin.role !== 'consulta') {
-    window.location.replace('login.html');
-  }
-  if(currentAdmin.role === 'supervisor' || currentAdmin.role === 'consulta') {
-    document.documentElement.setAttribute('data-role', currentAdmin.role);
-  }
-  var nameEl = document.getElementById('adminNameTB');
-  if(nameEl) nameEl.textContent = currentAdmin.nombre;
-}
-
-function logout() { sessionStorage.removeItem('pdc_user'); window.location.href='login.html'; }
-
-// ── VENTANA FLOTANTE: controles ──
-function ccMinimize() {
-  ccMinimized = !ccMinimized;
-  const fl = document.getElementById('ccFloat');
-  fl.classList.toggle('minimized', ccMinimized);
-}
-function ccClose() {
-  ccClosed = true;
-  document.getElementById('ccFloat').classList.add('hidden');
-  document.getElementById('ccFab').classList.add('visible');
-}
-function ccOpen() {
-  ccClosed = false;
-  ccMinimized = false;
-  const fl = document.getElementById('ccFloat');
-  fl.classList.remove('hidden', 'minimized');
-  document.getElementById('ccFab').classList.remove('visible');
-  fabUnread = 0;
-  const badge = document.getElementById('ccFabBadge');
-  badge.style.display='none';
-}
-
-// ── CHAT USUARIO (supervisor/consulta) ──
-(function initUserChat(){
-  if(currentAdmin.role !== 'supervisor' && currentAdmin.role !== 'consulta') return;
-  var nm = document.getElementById('ucUserName');
-  if(nm) nm.textContent = currentAdmin.nombre;
-  var SUPA_URL = 'https://pytsrgtcjytjztwdlvux.supabase.co';
-  var SUPA_KEY = 'sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj';
-  var HDRS = {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'};
-  var lastTs = null;
-  function fmt(ts){ var d=new Date(ts); return d.toLocaleTimeString('es-GT',{hour:'2-digit',minute:'2-digit'}); }
-  function renderMsg(m){
-    var isMine = m.sender_role === 'user' && m.sender_email === currentAdmin.email;
-    var isAdmin = m.sender_role === 'admin';
-    if(!isMine && !isAdmin) return;
-    if(isAdmin && m.sender_email !== currentAdmin.email && !m.message.includes('[To:'+currentAdmin.email)) return;
-    var cls = isMine ? 'from-me' : 'from-admin';
-    var txt = m.message.replace(/^\[To:[^\]]+\]\s*/,'');
-    var div = document.createElement('div');
-    div.className = 'uc-msg '+cls;
-    div.innerHTML = '<div>'+txt.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')+'</div>'
-      +'<div class="uc-msg-time">'+fmt(m.created_at)+'</div>';
-    return div;
-  }
-  function loadMsgs(){
-    fetch(SUPA_URL+'/rest/v1/chat_messages?sender_email=eq.'+encodeURIComponent(currentAdmin.email)
-      +'&order=created_at.asc&limit=100',{headers:HDRS})
-    .then(function(r){return r.json();})
-    .then(function(rows){
-      var container = document.getElementById('ucMessages');
-      var empty = document.getElementById('ucEmpty');
-      if(!container) return;
-      Array.from(container.querySelectorAll('.uc-msg')).forEach(function(el){el.remove();});
-      var msgs = rows.filter(function(m){ return m.sender_role==='user'||m.sender_role==='admin'; });
-      if(empty) empty.style.display = msgs.length ? 'none' : 'flex';
-      msgs.forEach(function(m){ var el=renderMsg(m); if(el) container.appendChild(el); });
-      if(msgs.length){
-        var newTs = msgs[msgs.length-1].created_at;
-        var hasNew = lastTs && newTs > lastTs && msgs[msgs.length-1].sender_role !== 'admin';
-        if(hasNew){ playAlert(); }
-        lastTs = newTs;
-      }
-      container.scrollTop = container.scrollHeight;
-    }).catch(function(e){console.warn('loadMsgs:',e);});
-  }
-  window.ucSendMsg = function(){
-    var inp = document.getElementById('ucInput');
-    var btn = document.getElementById('ucSendBtn');
-    var txt = (inp ? inp.value : '').trim();
-    if(!txt) return;
-    if(btn) btn.disabled = true;
-    fetch(SUPA_URL+'/rest/v1/chat_messages',{
-      method:'POST', headers:{...HDRS,'Prefer':'return=minimal'},
-      body:JSON.stringify({
-        sender_email: currentAdmin.email, sender_nombre: currentAdmin.nombre,
-        sender_role: 'user', message: txt, is_read: false
-      })
-    }).then(function(){
-      if(inp){ inp.value=''; inp.style.height='auto'; }
-      if(btn) btn.disabled = false;
-      loadMsgs();
-    }).catch(function(e){ console.warn('send:',e); if(btn) btn.disabled = false; });
-  };
-  loadMsgs();
-  setInterval(loadMsgs, 5000);
-})();
-
-// ── AUDIO ALERT ──
-function playAlert() {
-  try {
-    const ctx = new(window.AudioContext||window.webkitAudioContext)();
-    [880,660,440].forEach((f,i) => {
-      const o=ctx.createOscillator(), g=ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.frequency.value=f; g.gain.setValueAtTime(0.25,ctx.currentTime+i*0.12);
-      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.12+0.25);
-      o.start(ctx.currentTime+i*0.12); o.stop(ctx.currentTime+i*0.12+0.25);
-    });
-  } catch(e){}
-}
-
-function showAlert(text, email) {
-  document.getElementById('alertText').textContent = text;
-  const el = document.getElementById('alertToast');
-  el.classList.add('show');
-  el.onclick = () => { dismissAlert(); if(email) openConv(email); };
-  clearTimeout(alertTimer);
-  alertTimer = setTimeout(dismissAlert, 6000);
-  playAlert();
-  globalUnread++;
-  const gb = document.getElementById('globalUnread');
-  gb.style.display='flex'; gb.textContent=globalUnread;
-  // Si el float está cerrado, incrementar badge del FAB
-  if(ccClosed){
-    fabUnread++;
-    const badge = document.getElementById('ccFabBadge');
-    badge.textContent = fabUnread;
-    badge.style.display = 'block';
-  }
-}
-
-function dismissAlert() { document.getElementById('alertToast').classList.remove('show'); }
-
-// ── CARGAR CONVERSACIONES (sidebar principal + cc-sidebar) ──
-async function loadConversations() {
-  const { data } = await sb.from('chat_messages')
-    .select('sender_email,sender_nombre,sender_role,message,created_at,is_read')
-    .order('created_at', {ascending:false});
-  if(!data) return;
-
-  const map = {};
-  data.forEach(m => {
-    if(m.sender_role === 'admin') return;
-    if(!map[m.sender_email]) {
-      map[m.sender_email] = {nombre:m.sender_nombre, lastMsg:m.message, lastTime:m.created_at, unread:0};
-    }
-    if(!m.is_read) map[m.sender_email].unread++;
-  });
-
-  const emails = Object.keys(map);
-
-  // Sidebar principal
-  const list = document.getElementById('convList');
-  if(!emails.length) {
-    list.innerHTML='<div style="padding:18px 16px;font-size:.78rem;color:rgba(255,255,255,.25);">Sin mensajes aún</div>';
-  } else {
-    list.innerHTML = emails.map(email => {
-      const c=map[email];
-      const ini=c.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-      const t=new Date(c.lastTime).toLocaleTimeString('es-GT',{hour:'2-digit',minute:'2-digit'});
-      return `<div class="conv-item ${activeEmail===email?'active':''}" onclick="openConv('${email}')">
-        <div class="conv-avatar">${ini}</div>
-        <div style="flex:1;min-width:0">
-          <div class="conv-name">${c.nombre}</div>
-          <div class="conv-preview">${c.lastMsg}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-          <div class="conv-time">${t}</div>
-          ${c.unread>0?'<div class="conv-unread"></div>':''}
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  // CC-sidebar (ventana flotante)
-  const ccList = document.getElementById('ccConvList');
-  if(!emails.length) {
-    ccList.innerHTML='<div style="padding:12px;font-size:.72rem;color:rgba(255,255,255,.25);">Sin mensajes</div>';
-  } else {
-    ccList.innerHTML = emails.map(email => {
-      const c=map[email];
-      const ini=c.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-      return `<div class="cc-conv-item ${activeEmail===email?'active':''}" onclick="openConv('${email}')">
-        <div class="cc-conv-avatar">${ini}</div>
-        <div class="cc-conv-info">
-          <div class="cc-conv-name">${c.nombre}</div>
-          <div class="cc-conv-prev">${c.lastMsg}</div>
-        </div>
-        ${c.unread>0?'<div class="cc-conv-dot"></div>':''}
-      </div>`;
-    }).join('');
-  }
-}
-
-// ── ABRIR CONVERSACIÓN ──
-async function openConv(email) {
-  const item = document.querySelector(`.conv-item[onclick="openConv('${email}')"] .conv-name`);
-  activeEmail  = email;
-  activeNombre = item ? item.textContent : email;
-
-  await sb.from('chat_messages').update({is_read:true}).eq('sender_email',email).eq('sender_role','user').eq('is_read',false);
-  loadConversations();
-
-  // Inyectar panel de chat en la ventana flotante
-  const ccChat = document.getElementById('ccChat');
-  ccChat.innerHTML = `
-    <div class="cc-chat-hdr">
-      <div class="cc-pane-online"></div>
-      <div>
-        <div class="cc-pane-name">${activeNombre}</div>
-        <div class="cc-pane-email">${email}</div>
+    <!-- Sidebar conversaciones (solo admin ve múltiples convs) -->
+    <div class="pdc-cc-sb" id="pdcSidebar">
+      <div class="pdc-cc-sb-hdr">
+        <span class="pdc-cc-sb-lbl">Usuarios</span>
+        <span class="pdc-cc-unread-total" id="pdcSbUnread"></span>
+      </div>
+      <div class="pdc-cc-convs" id="pdcConvList">
+        <div style="padding:12px 11px;font-size:.7rem;color:rgba(255,255,255,.22);">Cargando...</div>
       </div>
     </div>
-    <div class="cc-messages" id="ccMsgArea"></div>
-    <div class="cc-input-row">
-      <textarea class="cc-admin-input" id="ccAdminInp" placeholder="Responder a ${activeNombre}..." rows="1"
-        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendReply();}"></textarea>
-      <button class="cc-send-btn" onclick="sendReply()">Enviar ↑</button>
-    </div>`;
 
-  // Si el float estaba minimizado/cerrado, restaurarlo
-  if(ccClosed) ccOpen();
-  if(ccMinimized) { ccMinimized=false; document.getElementById('ccFloat').classList.remove('minimized'); }
+    <!-- Panel chat -->
+    <div class="pdc-cc-chat" id="pdcChatPane">
+      <div class="pdc-cc-noconv" id="pdcNoConv">
+        <div class="pdc-cc-noconv-ico">💬</div>
+        <div class="pdc-cc-noconv-txt">Selecciona una conversación para responder</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   PDC Analytics Center — Centro de Comunicación v2.0
+   CR-002 — Una sola interfaz para todos los roles
+   ════════════════════════════════════════════════════════ */
+
+const { createClient } = supabase;
+const sb = createClient(
+  'https://pytsrgtcjytjztwdlvux.supabase.co',
+  'sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj'
+);
+
+/* ── Estado global ── */
+let currentUser  = null;
+let activeEmail  = null;
+let activeNombre = null;
+let toastTimer   = null;
+let fabUnread    = 0;
+let headerUnread = 0;
+let isMinimized  = false;
+let isClosed     = true;   // arranca cerrado, FAB visible
+
+/* ── Autenticación ── */
+(function init(){
+  const raw = sessionStorage.getItem('pdc_session') || sessionStorage.getItem('pdc_user');
+  if(!raw){ window.location.replace('login.html'); return; }
+  try { currentUser = JSON.parse(raw); } catch(e){ window.location.replace('login.html'); return; }
+  if(!currentUser){ window.location.replace('login.html'); return; }
+
+  /* Normalizar campo rol */
+  if(!currentUser.rol && currentUser.role) currentUser.rol = currentUser.role;
+  if(!currentUser.email && currentUser.sender_email) currentUser.email = currentUser.sender_email;
+
+  /* Modo usuario no-admin: ocultar sidebar, abrir directamente su conversación */
+  const isAdmin = currentUser.rol === 'admin';
+  if(!isAdmin){
+    document.getElementById('pdcCC').classList.add('role-user');
+  }
+
+  /* Mostrar FAB */
+  document.getElementById('pdcFab').classList.remove('hidden');
+
+  /* Iniciar polling y realtime */
+  if(isAdmin){
+    loadConversations();
+    setInterval(loadConversations, 5000);
+  } else {
+    /* Usuario: abrir su propia conversación automáticamente al abrir el CC */
+    loadConversations();
+    setInterval(loadConversations, 5000);
+  }
+
+  /* Realtime */
+  sb.channel('pdc-cc-realtime').on('postgres_changes',
+    {event:'INSERT', schema:'public', table:'chat_messages'},
+    async (payload) => {
+      const m = payload.new;
+      if(isAdmin){
+        if(m.sender_role !== 'admin'){
+          playAlert();
+          showToast(m.sender_nombre + ': ' + m.message.substring(0,55) + '…', m.sender_email);
+          loadConversations();
+          if(activeEmail === m.sender_email) await loadMessages(activeEmail);
+        } else if(activeEmail && m.sender_email === activeEmail){
+          await loadMessages(activeEmail);
+        }
+      } else {
+        /* Usuario: recibe respuesta del admin */
+        if(m.sender_role === 'admin' && m.sender_email === currentUser.email){
+          playAlert();
+          showToast('Administración PDC: ' + m.message.replace(/^\[To:[^\]]+\]\s*/,'').substring(0,55) + '…', null);
+          if(activeEmail === currentUser.email) await loadMessages(currentUser.email);
+        }
+      }
+    }
+  ).subscribe();
+
+})();
+
+/* ── Controles FAB / Ventana ── */
+function ccOpen(){
+  isClosed = false; isMinimized = false;
+  document.getElementById('pdcCC').classList.remove('hidden','minimized');
+  document.getElementById('pdcFab').classList.add('hidden');
+  fabUnread = 0;
+  document.getElementById('pdcFabBadge').style.display = 'none';
+
+  /* Si usuario no-admin: abrir su conversación directamente */
+  if(currentUser.rol !== 'admin' && !activeEmail){
+    openConv(currentUser.email);
+  }
+}
+function ccMinimize(){
+  isMinimized = !isMinimized;
+  document.getElementById('pdcCC').classList.toggle('minimized', isMinimized);
+}
+function ccClose(){
+  isClosed = true; isMinimized = false;
+  document.getElementById('pdcCC').classList.add('hidden');
+  document.getElementById('pdcFab').classList.remove('hidden');
+}
+
+/* ── Audio ── */
+function playAlert(){
+  try{
+    const ctx = new(window.AudioContext||window.webkitAudioContext)();
+    [880,660,440].forEach((f,i)=>{
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value=f;
+      g.gain.setValueAtTime(0.22, ctx.currentTime+i*0.12);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+i*0.12+0.22);
+      o.start(ctx.currentTime+i*0.12);
+      o.stop(ctx.currentTime+i*0.12+0.22);
+    });
+  }catch(e){}
+}
+
+/* ── Toast ── */
+function showToast(text, email){
+  const toast = document.getElementById('pdcToast');
+  document.getElementById('pdcToastText').textContent = text;
+  toast.classList.add('show');
+  toast.onclick = ()=>{ dismissToast(); if(email) openConv(email); else if(isClosed) ccOpen(); };
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(dismissToast, 6000);
+
+  /* Badge FAB si está cerrado */
+  if(isClosed){
+    fabUnread++;
+    const badge = document.getElementById('pdcFabBadge');
+    badge.textContent = fabUnread > 9 ? '9+' : fabUnread;
+    badge.style.display = 'flex';
+  }
+
+  /* Badge header */
+  headerUnread++;
+  const hb = document.getElementById('pdcHdrBadge');
+  hb.textContent = headerUnread > 9 ? '9+' : headerUnread;
+  hb.style.display = 'flex';
+}
+function dismissToast(){ document.getElementById('pdcToast').classList.remove('show'); }
+
+/* ── Cargar conversaciones (admin: lista / usuario: la suya) ── */
+async function loadConversations(){
+  const isAdmin = currentUser.rol === 'admin';
+
+  if(isAdmin){
+    const { data } = await sb.from('chat_messages')
+      .select('sender_email,sender_nombre,sender_role,message,created_at,is_read')
+      .order('created_at',{ascending:false});
+    if(!data) return;
+
+    const map = {};
+    data.forEach(m=>{
+      if(m.sender_role === 'admin') return;
+      if(!map[m.sender_email]){
+        map[m.sender_email] = {nombre:m.sender_nombre, lastMsg:m.message, lastTime:m.created_at, unread:0};
+      }
+      if(!m.is_read) map[m.sender_email].unread++;
+    });
+
+    const emails = Object.keys(map);
+    const convList = document.getElementById('pdcConvList');
+
+    if(!emails.length){
+      convList.innerHTML = '<div style="padding:12px 11px;font-size:.7rem;color:rgba(255,255,255,.22);">Sin mensajes aún</div>';
+      return;
+    }
+
+    let totalUnread = 0;
+    convList.innerHTML = emails.map(email=>{
+      const c = map[email];
+      totalUnread += c.unread;
+      const ini = c.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+      return `<div class="pdc-cc-conv ${activeEmail===email?'active':''}" onclick="openConv('${email}')">
+        <div class="pdc-cc-avatar">${ini}</div>
+        <div class="pdc-cc-conv-info">
+          <div class="pdc-cc-conv-name">${c.nombre}</div>
+          <div class="pdc-cc-conv-prev">${c.lastMsg.replace(/^\[To:[^\]]+\]\s*/,'')}</div>
+        </div>
+        ${c.unread>0?'<div class="pdc-cc-conv-dot"></div>':''}
+      </div>`;
+    }).join('');
+
+    const sb_badge = document.getElementById('pdcSbUnread');
+    if(totalUnread > 0){ sb_badge.textContent = totalUnread; sb_badge.style.display='flex'; }
+    else { sb_badge.style.display='none'; }
+
+  } else {
+    /* Usuario no-admin: si ya hay conversación activa, recargar mensajes */
+    if(activeEmail) await loadMessages(activeEmail);
+  }
+}
+
+/* ── Abrir conversación ── */
+async function openConv(email){
+  /* Para usuario no-admin, siempre su propio email */
+  const isAdmin = currentUser.rol === 'admin';
+  if(!isAdmin) email = currentUser.email;
+
+  /* Buscar nombre */
+  let nombre = email;
+  if(isAdmin){
+    const item = document.querySelector(`.pdc-cc-conv[onclick="openConv('${email}')"] .pdc-cc-conv-name`);
+    if(item) nombre = item.textContent;
+  } else {
+    nombre = currentUser.nombre || currentUser.email;
+  }
+
+  activeEmail  = email;
+  activeNombre = nombre;
+
+  /* Marcar leídos (admin) */
+  if(isAdmin){
+    await sb.from('chat_messages')
+      .update({is_read:true})
+      .eq('sender_email', email)
+      .eq('sender_role','user')
+      .eq('is_read', false);
+    loadConversations();
+  }
+
+  /* Resetear badge header al abrir */
+  headerUnread = 0;
+  document.getElementById('pdcHdrBadge').style.display = 'none';
+
+  /* Inyectar panel chat */
+  const pane = document.getElementById('pdcChatPane');
+  pane.innerHTML = `
+    <div class="pdc-cc-chat-hdr">
+      <div class="pdc-cc-pane-dot"></div>
+      <div>
+        <div class="pdc-cc-pane-name">${isAdmin ? nombre : 'Administración PDC'}</div>
+        <div class="pdc-cc-pane-email">${isAdmin ? email : 'Soporte · PDC Analytics Center'}</div>
+      </div>
+    </div>
+    <div class="pdc-cc-msgs" id="pdcMsgArea"></div>
+    <div class="pdc-cc-input-row">
+      <textarea class="pdc-cc-inp" id="pdcInp"
+        placeholder="${isAdmin ? 'Responder a '+nombre+'...' : 'Escribe tu mensaje...'}"
+        rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
+      <button class="pdc-cc-send" id="pdcSendBtn" onclick="sendMsg()">Enviar ↑</button>
+    </div>`;
 
   await loadMessages(email);
 }
 
-// ── CARGAR MENSAJES ──
-async function loadMessages(email) {
+/* ── Cargar mensajes ── */
+async function loadMessages(email){
   const { data, error } = await sb.from('chat_messages')
     .select('*')
     .eq('sender_email', email)
-    .order('created_at', {ascending:true});
+    .order('created_at',{ascending:true});
 
-  if(error) { console.error(error); return; }
+  if(error){ console.error(error); return; }
 
-  const area = document.getElementById('ccMsgArea');
+  const area = document.getElementById('pdcMsgArea');
   if(!area) return;
-  if(!data||!data.length) { area.innerHTML='<div style="flex:1;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.22);font-size:.78rem;">Sin mensajes aún</div>'; return; }
 
-  area.innerHTML = data.map(m => {
-    const isAdmin = m.sender_role==='admin';
-    const text = isAdmin ? m.message.replace(/^\[To:[^\]]+\]\s*/,'') : m.message;
+  if(!data || !data.length){
+    area.innerHTML = '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.2);font-size:.76rem;padding:20px;">Sin mensajes aún. ¡Escribe el primero!</div>';
+    return;
+  }
+
+  area.innerHTML = data.map(m=>{
+    const isAdminMsg = m.sender_role === 'admin';
+    const text = isAdminMsg
+      ? m.message.replace(/^\[To:[^\]]+\]\s*/,'')
+      : m.message;
     const t = new Date(m.created_at).toLocaleString('es-GT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-    return `<div class="cc-msg ${isAdmin?'admin':'user'}">
-      <div class="cc-msg-bubble">${text}</div>
-      <div class="cc-msg-meta">${isAdmin?'Tú (Admin)':m.sender_nombre} · ${t}</div>
+    const who = isAdminMsg ? (currentUser.rol==='admin' ? 'Tú (Admin)' : 'Administración PDC') : m.sender_nombre;
+    return `<div class="pdc-msg ${isAdminMsg?'admin':'user'}">
+      <div class="pdc-msg-bubble">${text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div>
+      <div class="pdc-msg-meta">${who} · ${t}</div>
     </div>`;
   }).join('');
 
-  requestAnimationFrame(function(){
-    area.scrollTop = area.scrollHeight;
-  });
+  requestAnimationFrame(()=>{ area.scrollTop = area.scrollHeight; });
 }
 
-// ── ENVIAR RESPUESTA ──
-async function sendReply() {
-  const inp = document.getElementById('ccAdminInp');
-  if(!inp||!activeEmail) return;
+/* ── Enviar mensaje ── */
+async function sendMsg(){
+  const inp = document.getElementById('pdcInp');
+  const btn = document.getElementById('pdcSendBtn');
+  if(!inp || !activeEmail) return;
   const text = inp.value.trim();
   if(!text) return;
-  inp.value='';
 
-  const { error } = await sb.from('chat_messages').insert({
-    sender_email: activeEmail,
-    sender_nombre: currentAdmin.nombre,
-    sender_role: 'admin',
-    message: '[To:'+activeEmail+'] '+text,
-    is_read: true
-  });
-  if(error) { console.error('Reply error:', error); return; }
+  inp.value = '';
+  if(btn) btn.disabled = true;
+
+  const isAdmin = currentUser.rol === 'admin';
+  const payload = isAdmin
+    ? { sender_email: activeEmail, sender_nombre: currentUser.nombre, sender_role:'admin',
+        message:'[To:'+activeEmail+'] '+text, is_read:true }
+    : { sender_email: currentUser.email, sender_nombre: currentUser.nombre||currentUser.email,
+        sender_role:'user', message:text, is_read:false };
+
+  const { error } = await sb.from('chat_messages').insert(payload);
+  if(error){ console.error(error); }
+
+  if(btn) btn.disabled = false;
   await loadMessages(activeEmail);
 }
 
-// ── REALTIME ──
-sb.channel('admin-realtime').on('postgres_changes',
-  {event:'INSERT',schema:'public',table:'chat_messages'},
-  async (payload) => {
-    const m = payload.new;
-    if(m.sender_role !== 'admin') {
-      playAlert();
-      showAlert(m.sender_nombre+': '+m.message.substring(0,55)+'...', m.sender_email);
-      loadConversations();
-      if(activeEmail===m.sender_email) await loadMessages(activeEmail);
-    } else if(activeEmail && m.sender_email===activeEmail) {
-      await loadMessages(activeEmail);
-    }
-  }).subscribe();
-
-// ── INIT ──
-loadConversations();
+/* Alias para compatibilidad con código legacy */
+async function sendReply(){ return sendMsg(); }
 </script>
 </body>
 </html>
