@@ -197,3 +197,22 @@ Al finalizar cada sesión de desarrollo:
 - Sin dependencias externas — `window.print()` nativo
 - `@page{size:A4;margin:12mm 14mm}` forzado
 - Botón `admin-visible` — solo admin lo ve
+
+## REGLA #14 — VALIDACIÓN DE SINTAXIS JS CON NODE (agregada 03/07/2026)
+
+Tras incidente de producción (dashboard en blanco por SyntaxError no detectado por conteo de llaves):
+
+**Obligatorio antes de cualquier deploy que modifique bloques `const` (`_R`, `_TC_MENSUAL`, `_COSTOS`, `_M`):**
+
+```bash
+node --check script_extraido.js
+```
+
+El balance de llaves `{`/`}` NO detecta: comas mal ubicadas, tokens huérfanos, comentarios seguidos de coma, ni otros errores de sintaxis que invalidan el bloque `<script>` completo.
+
+**Protocolo:**
+1. Extraer todos los `<script>...</script>` del HTML final
+2. Ejecutar `node --check` sobre cada uno
+3. Solo desplegar si no hay errores
+4. Espaciar deploys consecutivos (evitar condición de carrera en workflow de GitHub Pages)
+
