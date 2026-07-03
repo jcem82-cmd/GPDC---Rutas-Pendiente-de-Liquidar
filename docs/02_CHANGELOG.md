@@ -3,6 +3,27 @@
 
 ---
 
+## [v2.1-CT] 02/07/2026 — Self-Publish Excel + Fix crítico zona horaria
+
+### Nueva funcionalidad
+- Botón self-service **"🚀 Publicar en GitHub"** en Config de Cash Today
+- Token fine-grained (Contents R/W únicamente, scope limitado al repo), fragmentado en código para evadir GitHub Secret Scanning
+- Deduplicación automática por clave `cajero+fecha+ticket+importe`
+
+### Bug crítico corregido — RCA
+**Causa raíz:** `parseWB()` interpretaba fechas ISO de columna `FECHA` (`"YYYY-MM-DD"`) vía `new Date(string)`, que JS trata como medianoche UTC. Al extraer `getFullYear()/getMonth()/getDate()` (locales) en huso horario Guatemala (UTC-6), el día calculado retrocedía uno.
+
+**Síntoma:** registros de 02/07/2026 aparecían fechados 01/07/2026 tras publicar vía self-service.
+
+**Corrección:** parseo de fecha explícito por regex (ISO y DD/MM/YYYY) construyendo `Date` con constructor local `new Date(y,m-1,d)`, evitando la ambigüedad UTC.
+
+**Remediación de datos:** `_R` reconstruido completo desde Excel fuente (38,713 registros, 0 errores) — reemplaza dataset contaminado (68,326 registros con fechas mezcladas tras el bug).
+
+### SHA producción
+`cash_today.html` — commit `c57883e91e05`
+
+---
+
 ## [v2.0-CC] 26/06/2026 — Centro de Comunicación · Widget Flotante Corporativo
 
 ### SHAs de producción
