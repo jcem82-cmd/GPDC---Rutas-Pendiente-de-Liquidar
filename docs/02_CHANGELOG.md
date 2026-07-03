@@ -3,6 +3,33 @@
 
 ---
 
+## [v2.2-CT] 02/07/2026 — Fix crítico: merge self-publish + persistencia TC
+
+### RCA
+| # | Causa raíz | Síntoma |
+|---|---|---|
+| 1 | Merge de `publishToGitHub()` comparó contra base de datos inconsistente | Dataset híbrido corrupto (68,581 registros no reconciliables tras 2 publicaciones) |
+| 2 | `_TC_MENSUAL` nunca se incluía en el payload de publicación | Tipos de cambio actualizados en Excel nunca persistían en producción |
+
+### Correcciones aplicadas
+- Clave de deduplicación normalizada por timestamp epoch (`Date.parse`) — inmune a diferencias de formato entre exportaciones de Excel
+- `publishToGitHub()` ahora reconstruye y persiste también el bloque `_TC_MENSUAL`
+- `_R` reconstruido limpio desde Excel fuente: **38,868 registros, 0 errores**
+- `_TC_MENSUAL` actualizado: jun-2026 corregido a 7.61812, jul-2026 agregado (7.62342, proyección corporativa)
+
+### Validación de integridad — Santa Tecla / San Miguel
+| Sede | Día | Total | Txns | Prom/txn |
+|---|---|---|---|---|
+| Santa Tecla | 01/07 | $63,401.16 | 97 | $653.62 |
+| Santa Tecla | 02/07 | $72,021.85 | 131 | $549.79 |
+| San Miguel | 01/07 | $21,536.40 | 19 | $1,133.49 |
+| San Miguel | 02/07 | $12,089.51 | 20 | $604.48 |
+
+### SHA producción
+`cash_today.html` — commit `1582edbcfd88`
+
+---
+
 ## [v2.1-CT] 02/07/2026 — Self-Publish Excel + Fix crítico zona horaria
 
 ### Nueva funcionalidad
