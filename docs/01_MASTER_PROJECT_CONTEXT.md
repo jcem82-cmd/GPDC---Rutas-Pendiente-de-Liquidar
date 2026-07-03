@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v1.7 | **Última actualización:** 26/06/2026 | **Estado:** Producción ✅
+**Versión vigente:** v1.8 | **Última actualización:** 03/07/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -74,7 +74,7 @@ login.html  →  sessionStorage[pdc_session] (TTL 8h)
 | `admin.html` | `a4151deee5f8` |
 | `regional/index.html` | `e9e70a520afe` |
 | `peru/index.html` | `73e234cd2f3f` |
-| `cash_today.html` | `168b45f2ef75` |
+| `cash_today.html` | `713f4fea1c90` |
 | `docs/01_MASTER_PROJECT_CONTEXT.md` | `7532cc2275e1` (→ actualizado ahora) |
 | `docs/02_CHANGELOG.md` | `25f29d6ca864` (→ actualizado ahora) |
 
@@ -266,7 +266,7 @@ notLiq = d => d['Estado (Facturación)'] !== 'Liquidada' && d['Estado Real'] !==
 | `analytics.html` | `c721f9f0cd99` |
 | `assistant_avatar.png` | `4c5094b07f81` |
 | `index.html` | `a12727975196` |
-| `cash_today.html` | `168b45f2ef75` |
+| `cash_today.html` | `713f4fea1c90` |
 
 ### Funcionalidades activas
 - Botón FAB circular con avatar robot PDC y animaciones CSS (flotación, glow, pulso, saludo)
@@ -280,6 +280,22 @@ notLiq = d => d['Estado (Facturación)'] !== 'Liquidada' && d['Estado Real'] !==
 - Sesión leída de `sessionStorage` (`pdc_session` o `pdc_user`)
 - `ccOpen()` expuesto globalmente — llamable desde cualquier botón del dashboard
 - Futuros dashboards: solo 1 línea `<script src="cc_widget.js"></script>`
+
+
+## Regla de Validación Obligatoria (agregada 03/07/2026)
+
+Tras un incidente de producción (dashboard en blanco por `SyntaxError` no detectado), se establece:
+
+⚠️ **Toda reconstrucción de bloques `const` en `cash_today.html` (`_R`, `_TC_MENSUAL`, `_COSTOS`, `_M`) debe validarse con `node --check archivo.js` antes de cualquier deploy.**
+
+El balance de llaves `{`/`}` **no es suficiente** — no detecta comas mal ubicadas, tokens huérfanos, ni otros errores de sintaxis que invalidan todo el bloque `<script>` y dejan el dashboard completamente en blanco.
+
+**Protocolo de deploy actualizado:**
+1. Modificar el bloque necesario
+2. Extraer todos los `<script>...</script>` del HTML final
+3. Ejecutar `node --check` sobre cada uno
+4. Solo desplegar si retorna sin errores
+5. Evitar deploys consecutivos muy próximos en el tiempo (riesgo de condición de carrera en el workflow de GitHub Pages)
 
 
 ## 13. Instrucciones para nuevo chat
