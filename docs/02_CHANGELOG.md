@@ -3,6 +3,28 @@
 
 ---
 
+## [v2.3-CT] 03/07/2026 — HOTFIX: SyntaxError crítico en producción
+
+### RCA
+| # | Causa raíz | Síntoma |
+|---|---|---|
+| 1 | Coma inválida insertada tras comentarios `/* */` en reconstrucción de `_TC_MENSUAL` | `SyntaxError` invalidó todo el bloque `<script>` — dashboard completamente en blanco |
+| 2 | Condición de carrera: dos deploys casi simultáneos (fix + hotfix) | Workflow "Deploy Dashboard" falló silenciosamente en el paso "Deploy to GitHub Pages" — el hotfix no llegó a publicarse en el primer intento |
+
+### Corrección aplicada
+- Reconstrucción de `_TC_MENSUAL` con sintaxis válida (comentarios sin coma trailing)
+- Validación de sintaxis con **Node.js `--check`** sobre ambos bloques `<script>` — confirmado sin errores
+- Re-disparo manual del workflow "Deploy Dashboard" tras confirmar el fallo — segundo intento exitoso
+- Verificación cruzada vía GitHub Actions API (status `success`)
+
+### Lección aprendida — proceso reforzado
+⚠️ **Nueva regla de validación obligatoria:** toda reconstrucción de bloques `const` en `cash_today.html` debe validarse con `node --check` antes de deploy — el balance de llaves `{`/`}` **no es suficiente** para detectar errores de sintaxis (comas mal ubicadas, tokens huérfanos, etc.)
+
+### SHA producción final
+`cash_today.html` — `713f4fea1c907e3b7a00fc8c3d797649393e28d2`
+
+---
+
 ## [v2.2-CT] 02/07/2026 — Fix crítico: merge self-publish + persistencia TC
 
 ### RCA
