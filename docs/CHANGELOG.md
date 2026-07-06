@@ -1,3 +1,26 @@
+## [06/07/2026] — Fix: Token GitHub self-publish revocado (401 Bad credentials)
+
+### Corrección de errores — `index.html`
+
+**Síntoma reportado:** Al publicar actualización de Excel vía botón "🚀 Publicar en GitHub" (módulo Tipos de Cambio), error: `Error al publicar en GitHub: Error leyendo fuente: 401`.
+
+**RCA:**
+- Verificación directa contra GitHub API confirmó `401 Bad credentials` en el token embebido fragmentado (`_tR1` y `_t`, función `publishToGitHub()`, líneas ~3211 y ~3239).
+- Token admin server-side (respaldo) validado con `200 OK` en la misma cuenta → descartada revocación general de cuenta; el problema era específico del token client-side embebido en `index.html`.
+- Causa más probable: exposición del token en texto plano (aunque fragmentado) dentro de un archivo público servido por GitHub Pages, sujeto a revocación por Secret Scanning — mismo patrón de riesgo ya documentado para `cash_today.html`.
+
+**Corrección aplicada:**
+- Generado nuevo token fine-grained (scope exclusivo a este repo, permiso `Contents: Read and write`).
+- Reemplazo quirúrgico de las 2 ocurrencias del token fragmentado (`_tR1` línea ~3211, `_t` línea ~3239) — ninguna otra línea modificada.
+- Validado: `node --check` sobre `publishToGitHub()` → sintaxis correcta. Balance de llaves del archivo verificado idéntico al original (desbalance preexistente por literales de string, no introducido por el cambio).
+- Deploy confirmado exitoso vía GitHub Actions (`Deploy Dashboard` → `success`).
+
+**Alcance:** Únicamente `index.html`. Sin cambios en diseño, estructura, lógica de negocio ni otros módulos.
+
+**Recomendación (no implementada, pendiente autorización):** Migrar el flujo de auto-publicación a un backend intermedio (Cloudflare Worker / función serverless) que custodie el token fuera del HTML público, eliminando el riesgo estructural de exposición y revocación recurrente.
+
+---
+
 ## [22/06/2026] — Fase Usuarios y Permisos (login.html v1.2 · analytics.html v1.9)
 
 ### login.html v1.1 → v1.2 — 5 mejoras
