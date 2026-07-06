@@ -659,6 +659,7 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
   </div>
 </footer>
 
+<script src="js/pdc_data_bridge.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════════
    PDC Analytics Center — Portal Principal
@@ -733,7 +734,7 @@ var PDC_DASHBOARDS = [
     kpis: [
       { val:'146', lbl:'Rutas Pendientes' },
       { val:'3',   lbl:'Países' },
-      { val:'$1.4M', lbl:'USD YTD' }
+      { val:'$1.4M', lbl:'Monto Pendiente' }
     ],
     actualizacion: '24 jun 2026',
     activo: true
@@ -1074,6 +1075,7 @@ function pdcRenewSession(){
       card.className = 'dash-card';
       card.setAttribute('role','article');
       card.setAttribute('aria-label', dash.nombre + ' — Dashboard');
+      card.setAttribute('data-dash-id', dash.id);
       card.innerHTML =
         '<div class="card-accent '+accentClass+'" aria-hidden="true"></div>'+
         '<div class="card-body">'+
@@ -1097,6 +1099,67 @@ function pdcRenewSession(){
           '<button class="btn-access" type="button" aria-label="Acceder al dashboard" onclick="pdcNavigate(\''+dash.archivo+'\')">Acceder →</button>'+
         '</div>';
       grid.appendChild(card);
+    });
+  }
+
+  /* ── PDC DATA BRIDGE — sincronización dinámica de KPIs (fuente única: index.html) ──
+     Los valores de arriba (hardcodeados en PDC_DASHBOARDS) son solo el estado inicial
+     mientras carga. En cuanto responde el fetch, se sobreescriben con datos en vivo.
+     Si el fetch falla, se conservan los valores de referencia (fallback silencioso). */
+  if (typeof PDCBridge !== 'undefined') {
+    PDCBridge.load().then(function (data) {
+
+      /* Hero KPIs (solo usuarios con acceso regional) */
+      if (session.pais === 'regional') {
+        var reg = PDCBridge.kpis(data, null);
+        var heroVals = document.querySelectorAll('#hKpis .hero-kpi-val');
+        if (heroVals[0]) heroVals[0].textContent = reg.activas;
+        if (heroVals[1]) heroVals[1].textContent = reg.vencidas;
+        if (heroVals[2]) heroVals[2].textContent = reg.paises;
+        /* heroVals[3] = Tx ATM (Cash Today) — fuera de alcance de este bridge */
+      }
+
+      /* Tarjetas: mapeo dashboard → filtro de país sobre el mismo dataset RAW */
+      var PAIS_POR_DASH = {
+        rutas: null,        /* consolidado */
+        regional: null,     /* consolidado */
+        peru: 'Perú',
+        elsalvador: 'El Salvador'
+        /* cashtoday: no aplica — dataset independiente (cash_today.html), fuera de alcance */
+      };
+
+      Object.keys(PAIS_POR_DASH).forEach(function (dashId) {
+        var cardEl = grid.querySelector('.dash-card[data-dash-id="' + dashId + '"]');
+        if (!cardEl) return;
+        var k = PDCBridge.kpis(data, PAIS_POR_DASH[dashId]);
+        var valEls = cardEl.querySelectorAll('.ckpi-val');
+
+        if (dashId === 'rutas' && valEls.length === 3) {
+          valEls[0].textContent = k.activas;
+          valEls[1].textContent = k.paises;
+          valEls[2].textContent = k.vencidas;
+        } else if (dashId === 'regional' && valEls.length === 3) {
+          valEls[0].textContent = k.activas;
+          valEls[1].textContent = k.paises;
+          valEls[2].textContent = PDCBridge.fmtMoney(k.montoUSD);
+        } else if (dashId === 'peru' && valEls.length === 3) {
+          valEls[0].textContent = k.activas;
+          valEls[1].textContent = k.vencidas;
+          valEls[2].textContent = k.efectividad.toFixed(1) + '%';
+        } else if (dashId === 'elsalvador' && valEls.length === 3) {
+          valEls[0].textContent = k.activas;
+          valEls[1].textContent = k.vencidas;
+          valEls[2].textContent = PDCBridge.fmtMoney(k.montoUSD);
+        }
+
+        if (k.reportDate) {
+          var updEl = cardEl.querySelector('.card-update');
+          if (updEl) updEl.innerHTML = '🕐 Actualizado ' + k.reportDate;
+        }
+      });
+
+    }).catch(function (err) {
+      console.warn('PDCBridge: no se pudo sincronizar KPIs en vivo, se muestran valores de referencia.', err);
     });
   }
 
