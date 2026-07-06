@@ -284,7 +284,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
   <div class="sec-hdr"><span class="sec-title">Liquidación de Rutas · Resumen Regional</span><span class="sec-sub">Estado de rutas pendientes de liquidar por país · Junio 2026</span></div>
 
   <!-- KPIs de rutas por país -->
-  <div class="grid-4" style="margin-bottom:28px">
+  <div class="grid-3" style="margin-bottom:28px">
     <div class="kc r anim" style="animation-delay:.05s">
       <div class="kc-flag">🇬🇹</div>
       <div class="kc-label">Guatemala · Pendientes</div>
@@ -305,13 +305,6 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
       <div class="kc-val" id="kpiPE">4</div>
       <div class="kc-sub"><span class="badge br" id="kpiPEVenc">4 vencidas</span></div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:3%;background:var(--pe1)"></div></div>
-    </div>
-    <div class="kc g anim" style="animation-delay:.2s">
-      <div class="kc-flag">🇭🇳</div>
-      <div class="kc-label">Honduras · Pendientes</div>
-      <div class="kc-val">—</div>
-      <div class="kc-sub"><span class="badge bn">Proyectado</span></div>
-      <div class="kc-bar"><div class="kc-bar-fill" style="width:0%;background:var(--hn1)"></div></div>
     </div>
   </div>
 
@@ -360,13 +353,6 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
             <td class="r" style="font-weight:700" id="canalPE_tot">4</td>
             <td class="r"><span class="badge br" id="canalPE_venc">4</span></td>
             <td id="canalPE_estado"><span class="badge br">⚠ Crítico</span></td>
-          </tr>
-          <tr>
-            <td>🇭🇳 Honduras</td><td>HNL</td>
-            <td class="r">—</td><td class="r">—</td><td class="r">—</td>
-            <td class="r" style="font-weight:700">—</td>
-            <td class="r"><span class="badge bn">—</span></td>
-            <td><span class="badge bn">🔜 Proyectado</span></td>
           </tr>
           <tr class="total">
             <td colspan="5">TOTAL REGIONAL</td>
@@ -495,8 +481,8 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
     <span class="badge bn">GTQ · Moneda local</span>
   </div>
   <div class="grid-4" style="margin-bottom:20px">
-    <div class="kc r"><div class="kc-label">Rutas Pendientes</div><div class="kc-val">136</div><div class="kc-sub">Jun 2026</div></div>
-    <div class="kc r"><div class="kc-label">Rutas Vencidas</div><div class="kc-val">77</div><div class="kc-sub">56.6% de pendientes</div></div>
+    <div class="kc r"><div class="kc-label">Rutas Pendientes</div><div class="kc-val" id="pPaisGT_pend">136</div><div class="kc-sub" id="pPaisGT_pendSub">Jun 2026</div></div>
+    <div class="kc r"><div class="kc-label">Rutas Vencidas</div><div class="kc-val" id="pPaisGT_venc">77</div><div class="kc-sub" id="pPaisGT_vencSub">56.6% de pendientes</div></div>
     <div class="kc g"><div class="kc-label">Efectivo Jun 2026</div><div class="kc-val-sm">USD 949,926</div><div class="kc-sub">1,008 transacciones</div></div>
     <div class="kc n"><div class="kc-label">Efectivo YTD 2026</div><div class="kc-val-sm">USD 10,479,907</div><div class="kc-sub">Ene–Jun 2026</div></div>
   </div>
@@ -509,8 +495,8 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
     <span class="badge bn">USD · Economía dolarizada</span>
   </div>
   <div class="grid-4" style="margin-bottom:20px">
-    <div class="kc r"><div class="kc-label">Rutas Pendientes</div><div class="kc-val">6</div><div class="kc-sub">Jun 2026</div></div>
-    <div class="kc r"><div class="kc-label">Rutas Vencidas</div><div class="kc-val">6</div><div class="kc-sub">100% de pendientes</div></div>
+    <div class="kc r"><div class="kc-label">Rutas Pendientes</div><div class="kc-val" id="pPaisSV_pend">6</div><div class="kc-sub" id="pPaisSV_pendSub">Jun 2026</div></div>
+    <div class="kc r"><div class="kc-label">Rutas Vencidas</div><div class="kc-val" id="pPaisSV_venc">6</div><div class="kc-sub" id="pPaisSV_vencSub">100% de pendientes</div></div>
     <div class="kc g"><div class="kc-label">Efectivo Jun 2026</div><div class="kc-val-sm">USD 821,012</div><div class="kc-sub">1,090 transacciones</div></div>
     <div class="kc n"><div class="kc-label">Efectivo YTD 2026</div><div class="kc-val-sm">USD 11,198,233</div><div class="kc-sub">Ene–Jun 2026</div></div>
   </div>
@@ -522,25 +508,11 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
     <div class="country-line"></div>
     <span class="badge bn">PEN · TC: 3.529</span>
   </div>
-  <div class="grid-4" style="margin-bottom:20px">
-    <div class="kc r"><div class="kc-label">Rutas Pendientes</div><div class="kc-val">4</div><div class="kc-sub">Jun 2026</div></div>
-    <div class="kc r"><div class="kc-label">Rutas Vencidas</div><div class="kc-val">4</div><div class="kc-sub">100% de pendientes</div></div>
+  <div class="grid-4" style="margin-bottom:32px">
+    <div class="kc r"><div class="kc-label">Rutas Pendientes</div><div class="kc-val" id="pPaisPE_pend">4</div><div class="kc-sub" id="pPaisPE_pendSub">Jun 2026</div></div>
+    <div class="kc r"><div class="kc-label">Rutas Vencidas</div><div class="kc-val" id="pPaisPE_venc">4</div><div class="kc-sub" id="pPaisPE_vencSub">100% de pendientes</div></div>
     <div class="kc n"><div class="kc-label">Efectivo ATM</div><div class="kc-val">—</div><div class="kc-sub">No operativo aún</div></div>
     <div class="kc n"><div class="kc-label">Cash Today</div><div class="kc-val">—</div><div class="kc-sub">En roadmap</div></div>
-  </div>
-
-  <!-- HONDURAS -->
-  <div class="country-header anim">
-    <span class="country-flag-lg">🇭🇳</span>
-    <span class="country-name">Honduras</span>
-    <div class="country-line"></div>
-    <span class="badge bn">HNL · Proyectado</span>
-  </div>
-  <div class="grid-4" style="margin-bottom:32px">
-    <div class="kc n"><div class="kc-label">Rutas Pendientes</div><div class="kc-val">—</div><div class="kc-sub">Operación proyectada</div></div>
-    <div class="kc n"><div class="kc-label">Rutas Vencidas</div><div class="kc-val">—</div><div class="kc-sub">Proyectado disponibles</div></div>
-    <div class="kc n"><div class="kc-label">Efectivo ATM</div><div class="kc-val">—</div><div class="kc-sub">Sin datos disponibles</div></div>
-    <div class="kc n"><div class="kc-label">Estado</div><div class="kc-val" style="font-size:1rem">Proyectado</div><div class="kc-sub">Operación en plan de expansión</div></div>
   </div>
 
 </div>
@@ -553,6 +525,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
   </div>
 </footer>
 
+<script>var PDC_MASTER_PATH = '../index.html';</script>
 <script src="../js/pdc_data_bridge.js"></script>
 <script>
 /* ══ DATOS EMBEBIDOS ══ */
@@ -764,6 +737,21 @@ function pdcApplyLiveData(data){
   setTxt('kpiSVVenc', byPais['El Salvador'].venc+' vencidas');
   setTxt('kpiPE', byPais['Perú'].pend);
   setTxt('kpiPEVenc', byPais['Perú'].venc+' vencidas');
+
+  /* Pestaña "Por País" (page-paises) — mismos valores, otras tarjetas */
+  var pctVenc = function(v,t){ return t ? Math.round(v/t*1000)/10 : 0; };
+  setTxt('pPaisGT_pend', byPais['Guatemala'].pend);
+  setTxt('pPaisGT_pendSub', (data.KPI_TOTALS && data.KPI_TOTALS.report_month) || 'Mes actual');
+  setTxt('pPaisGT_venc', byPais['Guatemala'].venc);
+  setTxt('pPaisGT_vencSub', pctVenc(byPais['Guatemala'].venc, byPais['Guatemala'].pend)+'% de pendientes');
+  setTxt('pPaisSV_pend', byPais['El Salvador'].pend);
+  setTxt('pPaisSV_pendSub', (data.KPI_TOTALS && data.KPI_TOTALS.report_month) || 'Mes actual');
+  setTxt('pPaisSV_venc', byPais['El Salvador'].venc);
+  setTxt('pPaisSV_vencSub', pctVenc(byPais['El Salvador'].venc, byPais['El Salvador'].pend)+'% de pendientes');
+  setTxt('pPaisPE_pend', byPais['Perú'].pend);
+  setTxt('pPaisPE_pendSub', (data.KPI_TOTALS && data.KPI_TOTALS.report_month) || 'Mes actual');
+  setTxt('pPaisPE_venc', byPais['Perú'].venc);
+  setTxt('pPaisPE_vencSub', pctVenc(byPais['Perú'].venc, byPais['Perú'].pend)+'% de pendientes');
 
   /* ── Tabla "Resumen por País y Canal" — desglose por Canal2 ── */
   var CODE_MAP = { GT:'Guatemala', SV:'El Salvador', PE:'Perú' };
