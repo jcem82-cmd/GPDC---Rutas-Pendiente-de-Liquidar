@@ -1,3 +1,24 @@
+## [06/07/2026] — Punto 1 completado: tabla "Resumen por Pais y Canal" (regional/index.html) conectada en vivo
+
+### Mejora funcional - Extension de pdcApplyLiveData() (regional/index.html)
+
+**Nota:** esta tabla NUNCA tuvo datos reales en Detalle/Mayoristas/Distribuidores (placeholders "—" desde su creacion) - no era una regresion, era una funcionalidad incompleta que se completo en esta sesion.
+
+**Solucion:** se agrego mapeo del campo `Canal2` de `RAW` (`190040 DETALLE`, `190030 MAYORISTAS`, `190070 DISTRIBUIDORES`) filtrado por pais, reutilizando el fetch ya existente de `PDCBridge` (cero llamadas de red adicionales). Estado (Critico/Alerta/Estable) ahora es dinamico segun % de vencidas (>=15% Critico, 5-14% Alerta, <5% Estable) en vez de "Critico" fijo para las 3 filas.
+
+**Validado (Node, datos reales 30/06/2026):**
+- Guatemala: Detalle 47(17%) · Mayoristas 86(32%) · Distribuidores 104(38%) · Total 273 · Vencidas 4 -> Estable
+- El Salvador: Mayoristas 36(55%) · Distribuidores 1(2%) · Total 66 · Vencidas 3 -> Estable
+- Peru: Detalle 1(1%) · Distribuidores 151(99%) · Total 152 · Vencidas 23 -> Critico
+
+**Hallazgo de calidad de datos (flag, no corregido - fuera de alcance):** un registro de El Salvador tiene `Canal2` con un valor de fecha invalida (`Sun Dec 31 1899...`, artefacto tipico de celda vacia mal serializada por SheetJS/Excel). No afecta el calculo (cae fuera de las 3 categorias, correctamente excluido), pero se recomienda revisar esa fila en el Excel fuente.
+
+**Alcance:** unicamente `regional/index.html` (ids en 4 filas x 6 celdas + extension de `pdcApplyLiveData()`). Cero cambios de diseno/HTML fuera de agregar atributos `id`.
+
+**Pendientes restantes (sin cambio, ver puntos 2 y 3 ya documentados):** Cash Today (costo de performance, requiere autorizacion de estrategia) y el historico real de 6 meses por pais (requiere nueva funcionalidad de persistencia, el dato no existe hoy en ningun archivo).
+
+---
+
 ## [06/07/2026] — Fase 2: peru/index.html y regional/index.html conectados a fuente unica de verdad
 
 ### Mejora funcional / Arquitectura - Reconstruccion de capa de datos (no de diseno)
