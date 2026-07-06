@@ -12,7 +12,13 @@
    ═══════════════════════════════════════════════════════════════ */
 var PDCBridge = (function () {
 
-  var MASTER_FILE = 'index.html';
+  /* MASTER_FILE se resuelve así:
+     1) Si la página define `var PDC_MASTER_PATH` ANTES de este script, se usa esa ruta
+        (necesario para archivos en subcarpetas, ej. regional/index.html -> '../index.html').
+     2) Si no, cae a 'index.html' (correcto solo para archivos en la raíz del repo, ej. analytics.html).
+     BUG CORREGIDO: antes se usaba 'index.html' fijo, lo que en subcarpetas apuntaba
+     al propio archivo (self-fetch) en vez de al maestro real. */
+  var MASTER_FILE = (typeof PDC_MASTER_PATH !== 'undefined' && PDC_MASTER_PATH) ? PDC_MASTER_PATH : 'index.html';
   var cache = null;
 
   /* Extrae un bloque `const NOMBRE = {...};` o `[...]` del HTML fuente */
