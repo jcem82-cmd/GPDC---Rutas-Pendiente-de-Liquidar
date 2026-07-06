@@ -1,3 +1,38 @@
+## [06/07/2026] — Fase 2: peru/index.html y regional/index.html conectados a fuente unica de verdad
+
+### Mejora funcional / Arquitectura - Reconstruccion de capa de datos (no de diseno)
+
+**Contexto:** Fase 1 (mismo dia) sincronizo las tarjetas del Hub. Esta Fase 2 va a la raiz real: los dashboards completos de Peru y Regional tenian su propio dataset embebido, curado a mano el 24/06, totalmente desconectado de `index.html`. Al abrir el dashboard completo (no solo la tarjeta), se veian numeros viejos e incluso invertidos (ej. Guatemala vencidas: 77 en el dashboard vs 4 reales).
+
+**RCA adicional encontrado:** el criterio de "vencidas" usado en el dataset viejo de `regional/index.html` correspondia a `Estado Real`, mientras que el criterio oficial (el que coincide con el panel de carga de Excel: 30 vencidas) es `Estado (Facturacion)`. Unificado en esta fase.
+
+**Solucion aplicada (reutilizando el modulo ya existente `js/pdc_data_bridge.js` - cero codigo de fetch/parse duplicado):**
+
+`peru/index.html`:
+- 10 bloques HTML (antes texto estatico) ahora con `id` y se llenan en runtime: Rutas Pendientes, Vencidas (Fac.), En Proceso (4-10d), Al Dia (<=3d), Monto Pendiente, Monto Vencido, Efectividad, badge total, Distribucion Geografica (Lima/Otras), tabla Top Transportistas (top 5 por monto, generada dinamicamente).
+- `RUTAS_DETALLE` (tab Detalle) reconstruido 100% desde `RAW` filtrado por Pais='Peru' - de 58 registros curados a mano a 152 registros reales.
+- `D.zonas` (grafica de zonas) calculado en vivo - de 6 zonas fijas a 19 zonas reales detectadas.
+- Series historicas de 6 meses (`D.rutasTotal`, `D.rutasVencidas`, `D.efectividad`, `D.montoPEN`): se refresca UNICAMENTE el ultimo punto (mes activo) con el dato real; los 5 meses previos se conservan como historial (no hay fuente en vivo para reconstruir meses pasados - decision de integridad de datos, no un descuido).
+
+`regional/index.html`:
+- Tarjetas headline (Rutas Pendientes/Vencidas Regional) y las 3 tarjetas por pais (GT/SV/PE) ahora con `id`, calculadas en vivo desde `RAW`. Honduras se mantiene en 0/Proyectado (no tiene datos reales en RAW, correcto).
+- `D.rutas.{GT,SV,PE}` y el ultimo punto de la serie de 6 meses se actualizan en vivo con el mismo criterio unificado de vencidas.
+
+**Validado antes de deploy:**
+- `node --check` en todos los bloques `<script>` de ambos archivos: sintaxis correcta.
+- Prueba funcional en Node ejecutando `pdcApplyLiveData()` real contra el dataset real de `index.html`: resultados verificados byte a byte contra el calculo de referencia en Python (Peru: 152 pend/23 venc/98.7% efectividad; Regional: GT 273/4, SV 66/3, PE 152/23, total 491/30).
+- Fallback: si el fetch a `index.html` falla, ambos dashboards conservan los valores de referencia sin romperse (try/catch en cada capa).
+
+**Incidencia de deploy:** el push disparo el mismo problema de concurrencia de GitHub Actions ya documentado (`cancel-in-progress`) - 2 intentos de `workflow_dispatch` fallaron antes de que el tercero completara exitosamente. Refuerza la recomendacion ya registrada de cambiar `cancel-in-progress` a `false` en `.github/workflows/deploy.yml`.
+
+**Alcance de esta fase:** `peru/index.html`, `regional/index.html`. Ningun cambio de diseno, color, layout ni HTML fuera de agregar atributos `id` a elementos ya existentes (visualmente identicos).
+
+**Pendiente (documentado, no implementado sin autorizacion):**
+- Tabla "Resumen por Pais y Canal" en `regional/index.html` (desglose Detalle/Mayoristas/Distribuidores por pais) sigue estatica - requiere mapear el campo `Canal2` de RAW, mayor complejidad, no incluido en este alcance.
+- Cash Today (`cashtoday` card + `D.cashGT/cashSV` + Efectivo YTD) sigue manual - fuera de alcance (dataset independiente en `cash_today.html`, ~10MB).
+
+---
+
 ## [06/07/2026] — Arquitectura: Fuente Unica de Verdad para tarjetas del Hub (analytics.html)
 
 ### Mejora funcional / Arquitectura - Nuevo modulo: js/pdc_data_bridge.js
