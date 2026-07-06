@@ -1,3 +1,26 @@
+## [06/07/2026] — BUG CRITICO corregido: PDCBridge nunca funciono en subcarpetas + Honduras eliminado
+
+### Correccion de errores - Root Cause Analysis
+
+**Sintoma reportado (con capturas):** Consolidado Regional seguia mostrando 146/87 y "Resumen por Pais y Canal" seguia con placeholders "-", pese a las Fases 1 y 2 ya desplegadas. `index.html` (Liquidacion de Rutas) si mostraba los datos correctos (491/30).
+
+**RCA (causa raiz real):** `js/pdc_data_bridge.js` usaba `fetch('index.html')` con ruta relativa fija. Este codigo se ejecuta tambien desde `regional/index.html` y `peru/index.html`, que viven en subcarpetas. Al resolver una ruta relativa, el navegador NO busca el archivo maestro en la raiz - busca `index.html` relativo a la carpeta actual, que en este caso apunta al PROPIO archivo (self-fetch). Como `regional/index.html` no tiene `const RAW`, la extraccion regresaba vacio, la funcion detectaba "sin datos" y se detenia en silencio, dejando los valores de referencia (los viejos) intactos. Esto explica por que index.html (raiz) funcionaba bien pero regional/peru (subcarpetas) nunca se actualizaron desde que se desplego la Fase 2.
+
+**Correccion aplicada:**
+- `js/pdc_data_bridge.js`: la ruta del archivo maestro ahora se resuelve via `PDC_MASTER_PATH` (variable global opcional definida por cada pagina antes de incluir el script), con fallback a `'index.html'` para archivos en la raiz.
+- `regional/index.html` y `peru/index.html`: se agrego `var PDC_MASTER_PATH = '../index.html';` antes del include del bridge.
+- Se detecto y corrigio ademas una pestana no instrumentada en la Fase 2: **"Por Pais"** (`page-paises`), que tiene sus propias tarjetas GT/SV/PE independientes de las de "Liquidacion de Rutas". Ahora tambien se actualiza en vivo.
+
+**Cambio adicional autorizado explicitamente por el usuario:** Honduras eliminado por completo de `regional/index.html` (tarjeta en tab "Liquidacion de Rutas", fila en tabla "Resumen por Pais y Canal", seccion completa en tab "Por Pais") - no hay movimiento real de rutas para ese pais. Grid ajustado de 4 a 3 columnas donde aplico. Cash Today y Efectivo ATM de Honduras no se tocaron (no eran points de esta correccion).
+
+**Validado antes de deploy:**
+- `node --check` en los 5 bloques script de cada archivo.
+- Prueba funcional en Node con datos reales (30/06/2026): Regional 491/30, Por Pais GT 273/4 - SV 66/3 - PE 152/23, tabla de canales GT total 273/venc 4 - coincide exacto con `index.html` (Image 4 del reporte del usuario).
+
+**Alcance:** `js/pdc_data_bridge.js`, `regional/index.html`, `peru/index.html`. Eliminacion de Honduras autorizada explicitamente por el usuario en esta conversacion - no es un cambio de diseno no autorizado.
+
+---
+
 ## [06/07/2026] — Punto 1 completado: tabla "Resumen por Pais y Canal" (regional/index.html) conectada en vivo
 
 ### Mejora funcional - Extension de pdcApplyLiveData() (regional/index.html)
