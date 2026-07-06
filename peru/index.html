@@ -219,29 +219,29 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
     <div class="kc pe anim" style="animation-delay:.05s">
       <div class="kc-flag">🇵🇪</div>
       <div class="kc-label">Rutas Pendientes</div>
-      <div class="kc-val">4</div>
-      <div class="kc-sub">Lima Metro: 3 · Otras: 1</div>
+      <div class="kc-val" id="kpiPend">4</div>
+      <div class="kc-sub" id="kpiPendSub">Lima Metro: 3 · Otras: 1</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--pe1)"></div></div>
     </div>
     <div class="kc r anim" style="animation-delay:.1s">
       <div class="kc-flag">⚠️</div>
       <div class="kc-label">Rutas Vencidas (Fac.)</div>
-      <div class="kc-val">4</div>
-      <div class="kc-sub">100% del total · Estado Facturación</div>
+      <div class="kc-val" id="kpiVenc">4</div>
+      <div class="kc-sub" id="kpiVencSub">100% del total · Estado Facturación</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--red2)"></div></div>
     </div>
     <div class="kc y anim" style="animation-delay:.15s">
       <div class="kc-flag">🕐</div>
       <div class="kc-label">En Proceso (4–10d)</div>
-      <div class="kc-val">4</div>
-      <div class="kc-sub">100% del total · Rango Real</div>
+      <div class="kc-val" id="kpiProceso">4</div>
+      <div class="kc-sub" id="kpiProcesoSub">100% del total · Rango Real</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--yellow2)"></div></div>
     </div>
     <div class="kc g anim" style="animation-delay:.2s">
       <div class="kc-flag">✅</div>
       <div class="kc-label">Al Día (≤3 días)</div>
-      <div class="kc-val">0</div>
-      <div class="kc-sub">0% del total</div>
+      <div class="kc-val" id="kpiAlDia">0</div>
+      <div class="kc-sub" id="kpiAlDiaSub">0% del total</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:0%;background:var(--green2)"></div></div>
     </div>
   </div>
@@ -250,20 +250,20 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
   <div class="grid-3" style="margin-bottom:28px">
     <div class="kc n anim" style="animation-delay:.22s">
       <div class="kc-label">Monto Pendiente</div>
-      <div class="kc-val-sm">S/ 134,816</div>
-      <div class="kc-sub">≈ USD 36,339 · Jun 2026</div>
+      <div class="kc-val-sm" id="kpiMontoPend">S/ 134,816</div>
+      <div class="kc-sub" id="kpiMontoPendSub">≈ USD 36,339 · Jun 2026</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--pe1)"></div></div>
     </div>
     <div class="kc r anim" style="animation-delay:.27s">
       <div class="kc-label">Monto Vencido</div>
-      <div class="kc-val-sm">S/ 134,816</div>
-      <div class="kc-sub">100% del monto total pendiente</div>
+      <div class="kc-val-sm" id="kpiMontoVenc">S/ 134,816</div>
+      <div class="kc-sub" id="kpiMontoVencSub">100% del monto total pendiente</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--red2)"></div></div>
     </div>
     <div class="kc r anim" style="animation-delay:.32s">
       <div class="kc-label">Efectividad Liquidación</div>
-      <div class="kc-val">0.0%</div>
-      <div class="kc-sub">Meta: ≥90% · Brecha: -90.0pp</div>
+      <div class="kc-val" id="kpiEfect">0.0%</div>
+      <div class="kc-sub" id="kpiEfectSub">Meta: ≥90% · Brecha: -90.0pp</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:0%;background:var(--red2)"></div></div>
     </div>
   </div>
@@ -273,7 +273,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
     <div class="panel anim" style="animation-delay:.35s">
       <div class="panel-hdr">
         <div><div class="panel-title">Distribución por Estado · Junio 2026</div><div class="panel-sub">Rutas por antigüedad de liquidación</div></div>
-        <span class="bpe badge">4 rutas</span>
+        <span class="bpe badge" id="badgeTotalRutas">4 rutas</span>
       </div>
       <div class="panel-body">
         <div class="chart-wrap" style="height:220px"><canvas id="chartEstados"></canvas></div>
@@ -284,11 +284,11 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
         <div><div class="panel-title">Distribución Geográfica</div><div class="panel-sub">Rutas por zona</div></div>
       </div>
       <div class="panel-body" style="padding:14px 20px">
-        <div class="summary-row"><span class="summary-label">🏙️ Lima Metropolitana</span><span class="summary-value">3</span></div>
-        <div class="summary-row"><span class="summary-label">📍 Otras ciudades</span><span class="summary-value">1</span></div>
+        <div class="summary-row"><span class="summary-label">🏙️ Lima Metropolitana</span><span class="summary-value" id="zonaLima">3</span></div>
+        <div class="summary-row"><span class="summary-label">📍 Otras ciudades</span><span class="summary-value" id="zonaOtras">1</span></div>
         <div class="summary-row" style="margin-top:6px;border-top:2px solid var(--pe-light);padding-top:10px">
           <span style="font-weight:700;color:var(--pe1);font-size:.78rem">TOTAL</span>
-          <span style="font-weight:800;color:var(--pe1);font-size:.9rem">4</span>
+          <span style="font-weight:800;color:var(--pe1);font-size:.9rem" id="zonaTotal">4</span>
         </div>
       </div>
     </div>
@@ -306,7 +306,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
           <th class="r">Rutas</th><th class="r">Vencidas</th>
           <th class="r">Monto PEN</th><th class="r">% Total</th><th>Estado</th>
         </tr></thead>
-        <tbody>
+        <tbody id="tblTransportistasBody">
           <tr><td>FRICH GROUP TRADEA S.A.C.</td><td>Loreto</td><td class="r">1</td><td class="r">1</td><td class="r">S/ 123,053</td><td class="r">91.3%</td><td><span class="badge by">⚠️ En Proceso</span></td></tr>
           <tr><td>TRANSPORTES ITATI CARGO EIRL</td><td>Lima</td><td class="r">2</td><td class="r">2</td><td class="r">S/ 11,764</td><td class="r">8.7%</td><td><span class="badge by">⚠️ En Proceso</span></td></tr>
           <tr><td>JUAN MANUEL MURAYARI VELA</td><td>Lima</td><td class="r">1</td><td class="r">1</td><td class="r">S/ 0</td><td class="r">0.0%</td><td><span class="badge by">⚠️ En Proceso</span></td></tr>
@@ -517,6 +517,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
   </div>
 </footer>
 
+<script src="../js/pdc_data_bridge.js"></script>
 <script>
 /* ══ DATOS ══ */
 var MESES = ['Ene','Feb','Mar','Abr','May','Jun'];
@@ -841,6 +842,110 @@ function resetFiltros(){
   renderDetalle(RUTAS_DETALLE);
 }
 
+/* ══ SINCRONIZACIÓN EN VIVO (PDCBridge) — fuente única: index.html ══
+   Recalcula los KPIs de Resumen, zonas, transportistas y Detalle
+   desde el dataset real. Si el fetch falla, se conservan los
+   valores de referencia (fallback silencioso) y el dashboard
+   sigue funcionando exactamente igual que antes. */
+function pdcApplyLiveData(data){
+  var RAW = data.RAW || [];
+  var rows = RAW.filter(function(r){ return r['Pais']==='Perú' && PDCBridge.notLiq(r); });
+  if(!rows.length) return; /* sin datos reales -> se conservan los valores de referencia */
+
+  var pend = rows.length;
+  var venc = rows.filter(function(r){ return r['Estado (Facturación)']==='Vencidas'; }).length;
+  var enProceso = rows.filter(function(r){ return r['Rango Real']==='04 a 10'; }).length;
+  var alDia = rows.filter(function(r){ return r['Rango Real']==='0 Tiempo' || r['Rango Real']==='01 a 03'; }).length;
+  var montoPend = rows.reduce(function(a,r){ return a+(r['Valor Asignado']||0); }, 0);
+  var montoVenc = rows.filter(function(r){ return r['Estado (Facturación)']==='Vencidas'; })
+                       .reduce(function(a,r){ return a+(r['Valor Asignado']||0); }, 0);
+  var efect = pend ? Math.round((alDia/pend)*1000)/10 : 0;
+
+  /* Zonas (parseando "Ubicación Geografica": "100 LIMA" -> "LIMA") */
+  var zonas = {};
+  rows.forEach(function(r){
+    var raw = (r['Ubicación Geografica']||'OTRAS').replace(/^\d+\s*/,'').trim() || 'OTRAS';
+    zonas[raw] = (zonas[raw]||0) + 1;
+  });
+  var limaCount = 0, otrasCount = 0;
+  Object.keys(zonas).forEach(function(z){
+    if(z.indexOf('LIMA')>-1) limaCount += zonas[z]; else otrasCount += zonas[z];
+  });
+
+  /* Transportistas (top 5 por monto) */
+  var transpMap = {};
+  rows.forEach(function(r){
+    var t = r['Transportista'] || '(Sin transportista)';
+    if(!transpMap[t]) transpMap[t] = { rutas:0, vencidas:0, monto:0, zona:(r['Ubicación Geografica']||'').replace(/^\d+\s*/,'').trim() };
+    transpMap[t].rutas++;
+    if(r['Estado (Facturación)']==='Vencidas') transpMap[t].vencidas++;
+    transpMap[t].monto += (r['Valor Asignado']||0);
+  });
+  var transpArr = Object.keys(transpMap).map(function(t){ return Object.assign({nombre:t}, transpMap[t]); })
+    .sort(function(a,b){ return b.monto - a.monto; }).slice(0,5);
+
+  /* RUTAS_DETALLE completo (fuente real) */
+  var bucket = function(rr){
+    if(rr==='15 +' || rr==='11 a 15') return 'Vencida';
+    if(rr==='04 a 10') return 'En Proceso';
+    return 'Al Día';
+  };
+  RUTAS_DETALLE = rows.map(function(r){
+    return {
+      despacho: 'PE-'+r['Numero de Despacho'],
+      transp: r['Transportista']||'',
+      zona: (r['Ubicación Geografica']||'').replace(/^\d+\s*/,'').trim(),
+      dias: r['Dias Real'],
+      monto: r['Valor Asignado']||0,
+      estado: bucket(r['Rango Real'])
+    };
+  });
+
+  /* Refrescar SOLO el mes actual en las series historicas (se conserva historial previo) */
+  var last = D.rutasTotal.length-1;
+  D.rutasTotal[last] = pend;
+  D.rutasVencidas[last] = venc;
+  D.efectividad[last] = efect;
+  D.montoPEN[last] = montoPend;
+  D.zonas = zonas;
+
+  /* Inyectar en el DOM */
+  var setTxt = function(id, val){ var el=document.getElementById(id); if(el) el.textContent = val; };
+  setTxt('kpiPend', pend);
+  setTxt('kpiPendSub', 'Lima: '+limaCount+' · Otras: '+otrasCount);
+  setTxt('kpiVenc', venc);
+  setTxt('kpiVencSub', (pend?Math.round(venc/pend*1000)/10:0)+'% del total · Estado Facturación');
+  setTxt('kpiProceso', enProceso);
+  setTxt('kpiProcesoSub', (pend?Math.round(enProceso/pend*1000)/10:0)+'% del total · Rango Real');
+  setTxt('kpiAlDia', alDia);
+  setTxt('kpiAlDiaSub', (pend?Math.round(alDia/pend*1000)/10:0)+'% del total');
+  setTxt('kpiMontoPend', fmtPEN(montoPend));
+  setTxt('kpiMontoPendSub', '≈ '+fmtUSD(montoPend)+' · '+(data.KPI_TOTALS.report_date||''));
+  setTxt('kpiMontoVenc', fmtPEN(montoVenc));
+  setTxt('kpiMontoVencSub', (montoPend?Math.round(montoVenc/montoPend*1000)/10:0)+'% del monto total pendiente');
+  setTxt('kpiEfect', efect.toFixed(1)+'%');
+  setTxt('kpiEfectSub', 'Meta: ≥90% · Brecha: '+(efect-90).toFixed(1)+'pp');
+  setTxt('badgeTotalRutas', pend+' rutas');
+  setTxt('zonaLima', limaCount);
+  setTxt('zonaOtras', otrasCount);
+  setTxt('zonaTotal', pend);
+
+  var tbody = document.getElementById('tblTransportistasBody');
+  if(tbody){
+    var rowsHtml = transpArr.map(function(t){
+      var pct = montoPend ? Math.round(t.monto/montoPend*1000)/10 : 0;
+      var estCls = t.vencidas>0 ? 'br' : 'by';
+      var estTxt = t.vencidas>0 ? '⚠️ Vencida' : '🕐 En Proceso';
+      return '<tr><td>'+t.nombre+'</td><td>'+t.zona+'</td><td class="r">'+t.rutas+'</td>'+
+             '<td class="r">'+t.vencidas+'</td><td class="r">'+fmtPEN(t.monto)+'</td>'+
+             '<td class="r">'+pct+'%</td><td><span class="badge '+estCls+'">'+estTxt+'</span></td></tr>';
+    }).join('');
+    rowsHtml += '<tr class="total"><td colspan="2">TOTAL</td><td class="r">'+pend+'</td>'+
+                '<td class="r">'+venc+'</td><td class="r">'+fmtPEN(montoPend)+'</td><td class="r">100%</td><td></td></tr>';
+    tbody.innerHTML = rowsHtml;
+  }
+}
+
 /* ══ INIT ══ */
 (function(){
   /* Usuario en header */
@@ -849,17 +954,32 @@ function resetFiltros(){
     if(!s) s=JSON.parse(sessionStorage.getItem('pdc_user'));
     if(s&&s.nombre){ document.getElementById('hdrUser').textContent=s.nombre.split(' ').slice(0,2).join(' '); }
   }catch(e){}
-  /* Tab por URL */
-  try{
-    var tab=new URLSearchParams(window.location.search).get('tab');
-    var valid=['resumen','analisis','detalle','tendencias'];
-    if(tab&&valid.indexOf(tab)>-1){
-      var el=document.querySelector('.ntab[onclick*="\''+tab+'\'"]');
-      goPage(tab,el);
-    } else {
-      renderCharts('resumen');
-    }
-  }catch(e){ renderCharts('resumen'); }
+
+  function startRender(){
+    /* Tab por URL */
+    try{
+      var tab=new URLSearchParams(window.location.search).get('tab');
+      var valid=['resumen','analisis','detalle','tendencias'];
+      if(tab&&valid.indexOf(tab)>-1){
+        var el=document.querySelector('.ntab[onclick*="\''+tab+'\'"]');
+        goPage(tab,el);
+      } else {
+        renderCharts('resumen');
+      }
+    }catch(e){ renderCharts('resumen'); }
+  }
+
+  if(typeof PDCBridge !== 'undefined'){
+    PDCBridge.load().then(function(data){
+      try{ pdcApplyLiveData(data); }catch(e){ console.warn('PDCBridge: error aplicando datos en vivo, se usan valores de referencia.', e); }
+      startRender();
+    }).catch(function(err){
+      console.warn('PDCBridge: no se pudo leer index.html en vivo, se muestran valores de referencia.', err);
+      startRender();
+    });
+  } else {
+    startRender();
+  }
 })();
 </script>
 </body>
