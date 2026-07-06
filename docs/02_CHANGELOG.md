@@ -1,3 +1,27 @@
+## [06/07/2026] — BUG CRITICO: sobre-conteo en _R por bug de deduplicacion en self-publish
+
+### Correccion de errores - Root Cause Analysis + reemplazo de dataset
+
+**Sintoma reportado (con capturas y Excel fuente):** Volumetria mostraba montos mensuales distintos a los pivotes de control del usuario (Image 1). El propio `index.html` de Rutas no estaba involucrado - este bug es exclusivo de `cash_today.html`.
+
+**RCA:**
+1. Verificado con el Excel real subido por el usuario: los totales mensuales por sede (CDA, Xela, Santa Tecla, San Miguel) coinciden EXACTO con los 4 pivotes de control del usuario (validado cifra por cifra en las 4 sedes).
+2. El `_R` desplegado tenia 100,321 registros; el Excel fuente solo genera 39,190. Desglose por sede mostro el desplegado con ~2.5x mas registros que el Excel fuente en cada sede.
+3. Causa raiz localizada en `publishToGitHub()`: la funcion de auto-publicacion hace deduplicacion via `_normKey = cajero + fecha_epoch + ticket + IMPORTE`. Al incluir el **importe** como parte de la clave de identidad de una transaccion, cualquier correccion retroactiva de monto en JDE (comun en el flujo operativo) hace que el sistema trate la transaccion corregida como "nueva" en vez de como una actualizacion - el registro viejo (con el monto incorrecto) nunca se elimina y el nuevo se agrega al lado, duplicando el conteo. Esto se acumula con cada publicacion sucesiva (hubo 2 publicaciones solo hoy).
+
+**Correccion aplicada (alcance de esta sesion):**
+- Reconstruido `_R` completo desde el Excel fuente verificado (39,190 registros, 4 sedes: CDA, Xela, Santa Tecla, San Miguel), reemplazando por completo (no append) el dataset desplegado.
+- Validado node --check en el script principal antes de publicar.
+- Validado cifra por cifra contra los 4 pivotes de control del usuario: coincidencia exacta en las 4 sedes, todos los meses disponibles.
+- Deploy confirmado exitoso.
+
+**Pendiente - causa raiz de fondo (NO corregido en esta sesion, requiere autorizacion explicita):**
+La funcion `publishToGitHub()` (boton de auto-publicacion en Config) seguira produciendo este mismo problema en cada futura publicacion mientras la clave de deduplicacion (`_normKey`) incluya el importe. La correccion de fondo es cambiar la clave de identidad de una transaccion a algo inmutable (ej. cajero + fecha_epoch + numero de ticket, SIN el importe), y tratar coincidencias de esa clave con importe distinto como una ACTUALIZACION (reemplazar el registro viejo) en vez de una insercion nueva. Esto toca el boton de publicacion (modulo distinto al solicitado hoy) y requiere autorizacion aparte antes de implementarse.
+
+**Alcance de esta sesion:** unicamente `cash_today.html`, bloque `const _R`. No se toco `_COSTOS`, `_TC_MENSUAL` ni ningun otro modulo (fuera del reporte del usuario).
+
+---
+
 # 02 — CHANGELOG
 ## PDC Analytics Center · Historial de Versiones
 
