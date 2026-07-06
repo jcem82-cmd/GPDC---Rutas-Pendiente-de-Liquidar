@@ -214,15 +214,15 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
     <div class="kc n anim" style="animation-delay:.05s">
       <div class="kc-flag">🌎</div>
       <div class="kc-label">Rutas Pendientes · Regional</div>
-      <div class="kc-val">146</div>
-      <div class="kc-sub">GT: 136 · SV: 6 · PE: 4</div>
+      <div class="kc-val" id="kpiRegPend">146</div>
+      <div class="kc-sub" id="kpiRegPendSub">GT: 136 · SV: 6 · PE: 4</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--navy)"></div></div>
     </div>
     <div class="kc r anim" style="animation-delay:.1s">
       <div class="kc-flag">⚠️</div>
       <div class="kc-label">Rutas Vencidas · Regional</div>
-      <div class="kc-val">87</div>
-      <div class="kc-sub">GT: 77 · SV: 6 · PE: 4</div>
+      <div class="kc-val" id="kpiRegVenc">87</div>
+      <div class="kc-sub" id="kpiRegVencSub">GT: 77 · SV: 6 · PE: 4</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--red2)"></div></div>
     </div>
     <div class="kc g anim" style="animation-delay:.15s">
@@ -288,22 +288,22 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
     <div class="kc r anim" style="animation-delay:.05s">
       <div class="kc-flag">🇬🇹</div>
       <div class="kc-label">Guatemala · Pendientes</div>
-      <div class="kc-val">136</div>
-      <div class="kc-sub"><span class="badge br">77 vencidas</span></div>
+      <div class="kc-val" id="kpiGT">136</div>
+      <div class="kc-sub"><span class="badge br" id="kpiGTVenc">77 vencidas</span></div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--gt1)"></div></div>
     </div>
     <div class="kc r anim" style="animation-delay:.1s">
       <div class="kc-flag">🇸🇻</div>
       <div class="kc-label">El Salvador · Pendientes</div>
-      <div class="kc-val">6</div>
-      <div class="kc-sub"><span class="badge br">6 vencidas</span></div>
+      <div class="kc-val" id="kpiSV">6</div>
+      <div class="kc-sub"><span class="badge br" id="kpiSVVenc">6 vencidas</span></div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:4%;background:var(--sv1)"></div></div>
     </div>
     <div class="kc r anim" style="animation-delay:.15s">
       <div class="kc-flag">🇵🇪</div>
       <div class="kc-label">Perú · Pendientes</div>
-      <div class="kc-val">4</div>
-      <div class="kc-sub"><span class="badge br">4 vencidas</span></div>
+      <div class="kc-val" id="kpiPE">4</div>
+      <div class="kc-sub"><span class="badge br" id="kpiPEVenc">4 vencidas</span></div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:3%;background:var(--pe1)"></div></div>
     </div>
     <div class="kc g anim" style="animation-delay:.2s">
@@ -553,6 +553,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
   </div>
 </footer>
 
+<script src="../js/pdc_data_bridge.js"></script>
 <script>
 /* ══ DATOS EMBEBIDOS ══ */
 var D = {
@@ -725,6 +726,46 @@ function renderCharts(page){
   }
 }
 
+/* ══ SINCRONIZACIÓN EN VIVO (PDCBridge) — fuente única: index.html ══
+   Recalcula Rutas Pendientes/Vencidas regional y por país (GT/SV/PE).
+   Honduras y Cash Today quedan fuera de este alcance (sin datos reales
+   de Rutas en RAW / dataset independiente respectivamente). */
+function pdcApplyLiveData(data){
+  var RAW = data.RAW || [];
+  var byPais = {};
+  ['Guatemala','El Salvador','Perú'].forEach(function(p){
+    var rows = RAW.filter(function(r){ return r['Pais']===p && PDCBridge.notLiq(r); });
+    byPais[p] = {
+      pend: rows.length,
+      venc: rows.filter(function(r){ return r['Estado (Facturación)']==='Vencidas'; }).length
+    };
+  });
+  if(!(byPais['Guatemala'].pend || byPais['El Salvador'].pend || byPais['Perú'].pend)) return;
+
+  var totalPend = byPais['Guatemala'].pend + byPais['El Salvador'].pend + byPais['Perú'].pend;
+  var totalVenc = byPais['Guatemala'].venc + byPais['El Salvador'].venc + byPais['Perú'].venc;
+
+  /* Refrescar SOLO el mes actual de las series historicas (se conserva historial previo) */
+  D.rutas.GT.pendientes = byPais['Guatemala'].pend; D.rutas.GT.vencidas = byPais['Guatemala'].venc;
+  D.rutas.SV.pendientes = byPais['El Salvador'].pend; D.rutas.SV.vencidas = byPais['El Salvador'].venc;
+  D.rutas.PE.pendientes = byPais['Perú'].pend; D.rutas.PE.vencidas = byPais['Perú'].venc;
+  var last = D.rutasTotal.length-1;
+  D.rutasTotal[last] = totalPend;
+  D.rutasVencidas[last] = totalVenc;
+
+  var setTxt = function(id, val){ var el=document.getElementById(id); if(el) el.textContent = val; };
+  setTxt('kpiRegPend', totalPend);
+  setTxt('kpiRegPendSub', 'GT: '+byPais['Guatemala'].pend+' · SV: '+byPais['El Salvador'].pend+' · PE: '+byPais['Perú'].pend);
+  setTxt('kpiRegVenc', totalVenc);
+  setTxt('kpiRegVencSub', 'GT: '+byPais['Guatemala'].venc+' · SV: '+byPais['El Salvador'].venc+' · PE: '+byPais['Perú'].venc);
+  setTxt('kpiGT', byPais['Guatemala'].pend);
+  setTxt('kpiGTVenc', byPais['Guatemala'].venc+' vencidas');
+  setTxt('kpiSV', byPais['El Salvador'].pend);
+  setTxt('kpiSVVenc', byPais['El Salvador'].venc+' vencidas');
+  setTxt('kpiPE', byPais['Perú'].pend);
+  setTxt('kpiPEVenc', byPais['Perú'].venc+' vencidas');
+}
+
 /* ══ INIT ══ */
 (function(){
   /* Usuario en header */
@@ -733,17 +774,32 @@ function renderCharts(page){
     if(!s) s=JSON.parse(sessionStorage.getItem('pdc_user'));
     if(s&&s.nombre){ document.getElementById('hdrUser').textContent=s.nombre.split(' ').slice(0,2).join(' '); }
   }catch(e){}
-  /* Tab por URL */
-  try{
-    var tab=new URLSearchParams(window.location.search).get('tab');
-    var valid=['resumen','rutas','cashtoday','paises'];
-    if(tab&&valid.indexOf(tab)>-1){
-      var el=document.querySelector('.ntab[onclick*="\''+tab+'\'"]');
-      goPage(tab,el);
-    } else {
-      renderCharts('resumen');
-    }
-  }catch(e){ renderCharts('resumen'); }
+
+  function startRender(){
+    /* Tab por URL */
+    try{
+      var tab=new URLSearchParams(window.location.search).get('tab');
+      var valid=['resumen','rutas','cashtoday','paises'];
+      if(tab&&valid.indexOf(tab)>-1){
+        var el=document.querySelector('.ntab[onclick*="\''+tab+'\'"]');
+        goPage(tab,el);
+      } else {
+        renderCharts('resumen');
+      }
+    }catch(e){ renderCharts('resumen'); }
+  }
+
+  if(typeof PDCBridge !== 'undefined'){
+    PDCBridge.load().then(function(data){
+      try{ pdcApplyLiveData(data); }catch(e){ console.warn('PDCBridge: error aplicando datos en vivo, se usan valores de referencia.', e); }
+      startRender();
+    }).catch(function(err){
+      console.warn('PDCBridge: no se pudo leer index.html en vivo, se muestran valores de referencia.', err);
+      startRender();
+    });
+  } else {
+    startRender();
+  }
 })();
 </script>
 </body>
