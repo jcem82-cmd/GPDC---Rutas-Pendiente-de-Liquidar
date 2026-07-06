@@ -1,3 +1,33 @@
+## [06/07/2026] — Arquitectura: Fuente Unica de Verdad para tarjetas del Hub (analytics.html)
+
+### Mejora funcional / Arquitectura - Nuevo modulo: js/pdc_data_bridge.js
+
+**Sintoma reportado:** Las tarjetas del Hub (Liquidacion de Rutas, El Salvador, Peru, Consolidado Regional) mostraban numeros desactualizados (146/87 del corte 18/06) mientras el dashboard real ya tenia datos del corte 30/06 (491/30). Requeria edicion manual de analytics.html en cada actualizacion de Excel.
+
+**RCA:** Los KPIs de cada tarjeta estaban hardcodeados como texto literal en el array `PDC_DASHBOARDS` de `analytics.html` (`kpis: [{val:'146', lbl:'Rutas activas'}, ...]`), sin ninguna conexion al dataset real de `index.html`. Cada actualizacion de Excel requeria editar manualmente 5 bloques de texto - exactamente el patron que ya se habia corregido antes y volvia a romperse.
+
+**Solucion aplicada (arquitectura):**
+- Nuevo modulo reutilizable `js/pdc_data_bridge.js` (PDCBridge): en tiempo de ejecucion hace `fetch('index.html')`, extrae `RAW`, `KPI_TOTALS` y `FX_DEF` (estos ultimos no son JSON valido por contener expresiones como `1/7.63627`, se evaluan como literal JS de fuente propia y confiable), y calcula KPIs por pais con la misma regla de negocio del dashboard principal:
+  - Activas = no liquidada en Facturacion NI en Despacho (`notLiq`)
+  - Vencidas = `Estado (Facturacion) === 'Vencidas'` (validado contra el panel de carga: 491/30 coincide exacto)
+  - Efectividad = % de rutas con `Rango Real` en ('0 Tiempo','01 a 03') sobre el total activas
+  - Monto = suma de `Valor Asignado` convertido a USD via `FX_DEF`
+- `analytics.html`: las tarjetas `rutas`, `elsalvador`, `peru` y `regional` (todas las que se alimentan de `index.html`) ahora se pintan primero con el valor de referencia (fallback instantaneo) y se sobreescriben en cuanto responde el fetch - sin bloquear el render inicial. Si el fetch falla, se conserva el valor de referencia silenciosamente (no rompe la pagina).
+- Corregida etiqueta enganosa: 3er KPI de "Consolidado Regional" decia "USD YTD" pero en realidad mostraba monto pendiente de rutas (no el YTD real de Cash Today, que es un dataset distinto) - renombrado a "Monto Pendiente" para reflejar honestamente lo que se calcula.
+- Validado con Python + Node antes de deploy: los 4 valores (Regional/GT/SV/PE) coinciden exactamente entre el calculo de referencia y `PDCBridge.kpis()`.
+
+**Validado y desplegado:**
+- `node --check` en script principal de `analytics.html` y en `js/pdc_data_bridge.js`: sintaxis correcta.
+- Deploy confirmado exitoso via GitHub Actions.
+
+**Alcance de esta fase:** Unicamente `analytics.html` (agregado `<script src="js/pdc_data_bridge.js">` + logica de sincronizacion) y el nuevo archivo `js/pdc_data_bridge.js`. Ninguna otra logica, diseno o modulo tocado.
+
+**Fuera de alcance de esta fase (documentado como pendiente, ver ROADMAP):**
+- La tarjeta `cashtoday` sigue con valores manuales (36k/10/4) - su fuente (`cash_today.html`, ~10MB) no se integra aun al bridge por costo de performance de cargarlo en cada visita al Hub.
+- `peru/index.html` y `regional/index.html` (los dashboards completos, no solo la tarjeta del Hub) mantienen su propio dataset embebido, independiente y desactualizado (curado a mano el 24/06/2026, no conectado a `index.html`). El Hub ahora SIEMPRE mostrara el numero correcto en la tarjeta, pero si el usuario entra al dashboard completo de Peru o Regional, vera datos internos distintos (mas antiguos). Esta es una duplicacion de arquitectura mas profunda -  reconstruir la capa de datos de esos 2 archivos completos para que tambien consuman `index.html` en vivo - que requiere su propia fase de trabajo (touch a mas archivos, logica de negocio interna de cada uno) y no fue autorizada en este alcance.
+
+---
+
 ## [06/07/2026] — Fix: Deploy de GitHub Pages fallido tras publicacion de Excel
 
 ### Correccion de errores - Infraestructura CI/CD (sin cambios de codigo)
