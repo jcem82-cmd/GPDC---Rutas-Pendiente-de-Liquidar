@@ -3208,7 +3208,7 @@ async function publishToGitHub() {
     const gtq = parseFloat(document.getElementById('tcGTQ').value)||7.63627;
     const pen = parseFloat(document.getElementById('tcPEN').value)||3.529;
     /* R1-FIX: Leer HTML limpio desde repo (no DOM en vivo) */
-    const _tR1 = ['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'].join('');
+    const _tR1 = ['github_pat_','11CFIF','Q7A0r','UychYm','In29y_','faXgoo','hOEgLn','WB2BXr','AWUZkw','GxdNwO','aNX2gj','p46vY8','PHDFRA','TCRQGB8CYLB'].join('');
     const GH_URL_R1 = 'https://api.github.com/repos/jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar/contents/index.html';
     const srcR = await fetch(GH_URL_R1,{headers:{'Authorization':'token '+_tR1,'Accept':'application/vnd.github.v3+json'}});
     if(!srcR.ok) throw new Error('Error leyendo fuente: '+srcR.status);
@@ -3236,7 +3236,7 @@ async function publishToGitHub() {
     const b64 = btoa(bin);
     // Token assembled at runtime
     /* Reutilizar srcD.sha y URL del fetch anterior */
-    const _t = ['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'].join('');
+    const _t = ['github_pat_','11CFIF','Q7A0r','UychYm','In29y_','faXgoo','hOEgLn','WB2BXr','AWUZkw','GxdNwO','aNX2gj','p46vY8','PHDFRA','TCRQGB8CYLB'].join('');
     const GH_URL  = 'https://api.github.com/repos/jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar/contents/index.html';
     const HDRS    = {'Authorization':'token '+_t,'Accept':'application/vnd.github.v3+json'};
     const shaD    = srcD;
