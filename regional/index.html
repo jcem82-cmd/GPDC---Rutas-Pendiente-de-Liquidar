@@ -336,30 +336,30 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
         <tbody>
           <tr>
             <td>🇬🇹 Guatemala</td><td>GTQ</td>
-            <td class="r">— <span style="color:var(--text2)">(—)</span></td>
-            <td class="r">— <span style="color:var(--text2)">(—)</span></td>
-            <td class="r">— <span style="color:var(--text2)">(—)</span></td>
-            <td class="r" style="font-weight:700">136</td>
-            <td class="r"><span class="badge br">77</span></td>
-            <td><span class="badge br">⚠ Crítico</span></td>
+            <td class="r" id="canalGT_det">— <span style="color:var(--text2)">(—)</span></td>
+            <td class="r" id="canalGT_may">— <span style="color:var(--text2)">(—)</span></td>
+            <td class="r" id="canalGT_dis">— <span style="color:var(--text2)">(—)</span></td>
+            <td class="r" style="font-weight:700" id="canalGT_tot">136</td>
+            <td class="r"><span class="badge br" id="canalGT_venc">77</span></td>
+            <td id="canalGT_estado"><span class="badge br">⚠ Crítico</span></td>
           </tr>
           <tr>
             <td>🇸🇻 El Salvador</td><td>USD</td>
-            <td class="r">— <span style="color:var(--text2)">(—)</span></td>
-            <td class="r">— <span style="color:var(--text2)">(—)</span></td>
-            <td class="r">— <span style="color:var(--text2)">(—)</span></td>
-            <td class="r" style="font-weight:700">6</td>
-            <td class="r"><span class="badge br">6</span></td>
-            <td><span class="badge br">⚠ Crítico</span></td>
+            <td class="r" id="canalSV_det">— <span style="color:var(--text2)">(—)</span></td>
+            <td class="r" id="canalSV_may">— <span style="color:var(--text2)">(—)</span></td>
+            <td class="r" id="canalSV_dis">— <span style="color:var(--text2)">(—)</span></td>
+            <td class="r" style="font-weight:700" id="canalSV_tot">6</td>
+            <td class="r"><span class="badge br" id="canalSV_venc">6</span></td>
+            <td id="canalSV_estado"><span class="badge br">⚠ Crítico</span></td>
           </tr>
           <tr>
             <td>🇵🇪 Perú</td><td>PEN</td>
-            <td class="r">— <span style="color:var(--text2)">(—)</span></td>
-            <td class="r">— <span style="color:var(--text2)">(—)</span></td>
-            <td class="r">— <span style="color:var(--text2)">(—)</span></td>
-            <td class="r" style="font-weight:700">4</td>
-            <td class="r"><span class="badge br">4</span></td>
-            <td><span class="badge br">⚠ Crítico</span></td>
+            <td class="r" id="canalPE_det">— <span style="color:var(--text2)">(—)</span></td>
+            <td class="r" id="canalPE_may">— <span style="color:var(--text2)">(—)</span></td>
+            <td class="r" id="canalPE_dis">— <span style="color:var(--text2)">(—)</span></td>
+            <td class="r" style="font-weight:700" id="canalPE_tot">4</td>
+            <td class="r"><span class="badge br" id="canalPE_venc">4</span></td>
+            <td id="canalPE_estado"><span class="badge br">⚠ Crítico</span></td>
           </tr>
           <tr>
             <td>🇭🇳 Honduras</td><td>HNL</td>
@@ -370,8 +370,8 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
           </tr>
           <tr class="total">
             <td colspan="5">TOTAL REGIONAL</td>
-            <td class="r">146</td>
-            <td class="r">87</td>
+            <td class="r" id="canalTOT_tot">146</td>
+            <td class="r" id="canalTOT_venc">87</td>
             <td></td>
           </tr>
         </tbody>
@@ -764,6 +764,44 @@ function pdcApplyLiveData(data){
   setTxt('kpiSVVenc', byPais['El Salvador'].venc+' vencidas');
   setTxt('kpiPE', byPais['Perú'].pend);
   setTxt('kpiPEVenc', byPais['Perú'].venc+' vencidas');
+
+  /* ── Tabla "Resumen por País y Canal" — desglose por Canal2 ── */
+  var CODE_MAP = { GT:'Guatemala', SV:'El Salvador', PE:'Perú' };
+  var canalBucket = function(canal2){
+    canal2 = (canal2||'').toUpperCase();
+    if(canal2.indexOf('DETALLE')>-1) return 'det';
+    if(canal2.indexOf('MAYORISTAS')>-1) return 'may';
+    if(canal2.indexOf('DISTRIBUIDORES')>-1) return 'dis';
+    return null; /* otros canales (Autoservicios, B2B, etc.) no entran en estas 3 columnas */
+  };
+  Object.keys(CODE_MAP).forEach(function(code){
+    var pais = CODE_MAP[code];
+    var rows = RAW.filter(function(r){ return r['Pais']===pais && PDCBridge.notLiq(r); });
+    var counts = { det:0, may:0, dis:0 };
+    rows.forEach(function(r){
+      var b = canalBucket(r['Canal2']);
+      if(b) counts[b]++;
+    });
+    var pend = rows.length;
+    var venc = rows.filter(function(r){ return r['Estado (Facturación)']==='Vencidas'; }).length;
+    var pctVenc = pend ? (venc/pend*100) : 0;
+
+    var fmtCell = function(n){ return n>0 ? n+' <span style="color:var(--text2)">('+Math.round(n/pend*100)+'%)</span>' : '— <span style="color:var(--text2)">(—)</span>'; };
+    var elDet = document.getElementById('canal'+code+'_det'); if(elDet) elDet.innerHTML = fmtCell(counts.det);
+    var elMay = document.getElementById('canal'+code+'_may'); if(elMay) elMay.innerHTML = fmtCell(counts.may);
+    var elDis = document.getElementById('canal'+code+'_dis'); if(elDis) elDis.innerHTML = fmtCell(counts.dis);
+    setTxt('canal'+code+'_tot', pend);
+    setTxt('canal'+code+'_venc', venc);
+
+    var estadoEl = document.getElementById('canal'+code+'_estado');
+    if(estadoEl){
+      if(pctVenc >= 15){ estadoEl.innerHTML = '<span class="badge br">⚠ Crítico</span>'; }
+      else if(pctVenc >= 5){ estadoEl.innerHTML = '<span class="badge by">🕐 Alerta</span>'; }
+      else { estadoEl.innerHTML = '<span class="badge bg">✅ Estable</span>'; }
+    }
+  });
+  setTxt('canalTOT_tot', totalPend);
+  setTxt('canalTOT_venc', totalVenc);
 }
 
 /* ══ INIT ══ */
