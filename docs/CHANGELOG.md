@@ -1,3 +1,29 @@
+## [06/07/2026] — Fix: Deploy de GitHub Pages fallido tras publicacion de Excel
+
+### Correccion de errores - Infraestructura CI/CD (sin cambios de codigo)
+
+**Sintoma reportado:** Usuario subio Excel nuevo (491 rutas, corte 30/06/2026), publico via boton "Publicar en GitHub" (ya con el token corregido), pero el dashboard en vivo no reflejo los nuevos datos.
+
+**RCA:**
+1. Confirmado via API: el commit del usuario (08e5fa3038) llego correctamente al repo, contenido verificado directamente (RAW: 491 registros, KPI_TOTALS.report_date: 30/06/2026, hdr-fecha: 30/06/2026). El boton de publicacion funciono correctamente end-to-end.
+2. El workflow Deploy Dashboard (GitHub Actions) para ese commit fallo en el paso "Deploy to GitHub Pages" (falla rapida, ~6s, ambas veces).
+3. Causa raiz: el workflow usa concurrency con cancel-in-progress: true. Dos publicaciones ocurrieron en una ventana corta (fix de token + commit del usuario), y la cancelacion por concurrencia dejo un estado de despliegue de Pages inconsistente a nivel de backend de GitHub. Un re-run del job fallido reutiliza contexto (incluido el token OIDC de Pages) que quedo invalido, por lo que el re-run tambien fallo.
+4. Confirmado: workflow_dispatch (disparar una ejecucion nueva desde cero, no un re-run del job fallido) genero un despliegue limpio, conclusion success.
+
+**Correccion aplicada:**
+- Disparo de un run nuevo via workflow_dispatch sobre el commit 08e5fa3038, deploy exitoso confirmado.
+- Verificado contenido servido coincide con el commit (491 rutas, 30/06/2026) directamente contra el repositorio.
+- Nota operativa: este mismo repo tambien reporta un bug cosmetico preexistente no relacionado. El tag title del documento queda fijo en una fecha antigua (08/06/2026) porque el flujo de publicacion solo actualiza id=hdr-fecha, no el title. No afecta datos ni funcionalidad, documentado como recomendacion.
+
+**Alcance:** Ninguna linea de codigo modificada. Accion exclusivamente a nivel de CI/CD (GitHub Actions).
+
+**Recomendacion (no implementada, pendiente autorizacion):**
+- Cambiar cancel-in-progress a false en .github/workflows/deploy.yml, o encolar en vez de cancelar, para evitar que publicaciones cercanas en el tiempo dejen despliegues de Pages en estado inconsistente.
+- Anadir step de verificacion post-deploy que confirme automaticamente que el contenido servido coincide con el commit, con reintento automatico via workflow_dispatch si no coincide.
+- Corregir el title del documento para que se actualice junto con hdr-fecha en el mismo regex de publicacion.
+
+---
+
 ## [06/07/2026] — Fix: Token GitHub self-publish revocado (401 Bad credentials)
 
 ### Corrección de errores — `index.html`
