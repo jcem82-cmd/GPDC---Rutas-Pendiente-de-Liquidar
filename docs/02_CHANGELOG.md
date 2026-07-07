@@ -1,3 +1,22 @@
+## [07/07/2026] — Causa raiz corregida: bug de deduplicacion en publishToGitHub()
+
+### Correccion de errores - cierre del ciclo RCA iniciado el 06/07/2026
+
+**Alcance:** unicamente `cash_today.html`, funcion `publishToGitHub()`, bloque de deduplicacion (`_normKey` + logica de merge). Ningun otro archivo, diseno o funcionalidad modificado.
+
+**Correccion aplicada:**
+- `_normKey` ya NO incluye el importe en la clave de identidad de una transaccion. Ahora es: `cajero + fecha_epoch + numero_ticket` (inmutable).
+- Nueva logica de merge: si la clave ya existe y el importe cambio, se **reemplaza** el registro (actualizacion - corrige montos retroactivos de JDE), no se inserta uno nuevo. Si la clave no existe, se agrega como registro nuevo.
+- Mensajes de status y commit actualizados para reportar "nuevos" y "actualizados" por separado.
+
+**Validado antes de deploy:**
+- `node --check` en los 5 bloques script.
+- Prueba funcional en Node simulando el escenario exacto que causaba el bug: mismo cajero+fecha+ticket con importe corregido -> resultado: 1 actualizado, 1 nuevo (genuino), 0 duplicados. Total de registros correcto (2, no 3).
+
+**Impacto:** las proximas publicaciones de Excel via el boton de Config ya no duplicaran registros cuando existan correcciones retroactivas de monto en JDE. Cierra el ciclo completo del incidente iniciado con el reporte de Volumetria incorrecta (ver entrada anterior del 06/07/2026).
+
+---
+
 ## [06/07/2026] — BUG CRITICO: sobre-conteo en _R por bug de deduplicacion en self-publish
 
 ### Correccion de errores - Root Cause Analysis + reemplazo de dataset
