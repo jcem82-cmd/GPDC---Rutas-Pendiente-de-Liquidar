@@ -1,3 +1,29 @@
+## [07/07/2026] — CIERRE DEFINITIVO: fusion/deduplicacion eliminada por completo
+
+### Correccion de errores - RCA final del ciclo de incidentes 06-07/07/2026
+
+**Confirmado con el usuario:** cada Excel publicado es un export historico COMPLETO (no incremental). Ejemplo: hoy se publico el corte al 06/07; manana se publicara el corte al 07/07, y asi sucesivamente. Santa Tecla siempre arranca jun-2025, San Miguel jul-2025, CDA ene-2026 - coincide con el inicio real de cada operacion en cada archivo.
+
+**Historial completo del ciclo (para trazabilidad):**
+1. v1 (dedup con importe en la clave) -> sobre-conteo al corregir montos retroactivos en JDE.
+2. v2 (dedup sin importe, con ticket) -> perdida silenciosa de registros cuando el ticket no es unico (frecuente en El Salvador).
+3. **v3 (esta correccion): eliminada la fusion por completo.** Cada publicacion REEMPLAZA el dataset entero con el Excel recien cargado. Es mas simple, mas robusto, y elimina de raiz toda la categoria de bugs de merge/dedup.
+
+**Cambios aplicados:**
+- `_R` reemplazado con dataset validado desde el Excel del usuario (corte 06/07/2026): 39,417 registros.
+- `publishToGitHub()`: eliminada la funcion `_normKey` y la logica de merge/indexByKey. Ahora es `currentR = newRecs;` (reemplazo directo).
+- Mensajes de status y commit actualizados: ya no reportan "nuevos/actualizados", reportan el total del dataset reemplazado.
+- Manejo de nulos ahora exhaustivo en la reconstruccion Python (campo por campo con `pd.notna()`), validado con `allow_nan=False` para garantizar cero tokens NaN invalidos.
+
+**Validado antes de deploy:**
+- Totales por sede/mes verificados cifra por cifra contra el pivote de control del usuario: coincidencia exacta en CDA, Xela, Santa Tecla, San Miguel (incluyendo el corte actualizado de julio).
+- `JSON.parse()` estricto en Node (no Python) sobre el `_R` final: 39,417 registros, sin errores.
+- `node --check` en los 5 bloques de script.
+
+**Alcance:** unicamente `cash_today.html` (bloque `_R` + funcion `publishToGitHub()`). Ningun otro modulo, diseno o archivo tocado.
+
+---
+
 ## [07/07/2026] — Causa raiz corregida: bug de deduplicacion en publishToGitHub()
 
 ### Correccion de errores - cierre del ciclo RCA iniciado el 06/07/2026
