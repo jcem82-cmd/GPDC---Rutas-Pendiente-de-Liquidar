@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v1.8 | **Última actualización:** 03/07/2026 | **Estado:** Producción ✅
+**Versión vigente:** v2.0 | **Última actualización:** 07/07/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -11,6 +11,8 @@
 
 **Principio rector:** una plataforma, no dashboards individuales. Todo nuevo dashboard se integra sin modificar la arquitectura existente.
 
+**Cambio de arquitectura más importante de esta versión:** se introdujo **`js/pdc_data_bridge.js`** (PDCBridge) — módulo compartido que convierte `index.html` en la **fuente única de verdad real** (no solo declarada) para todos los KPIs de Rutas. Antes, cada tarjeta y cada dashboard país tenía sus propios números escritos a mano; ahora se calculan en tiempo de ejecución leyendo `index.html` en vivo. Ver §7.
+
 ---
 
 ## 2. Arquitectura del Sistema
@@ -19,25 +21,31 @@
 PDC Analytics Center
 │
 ├── login.html              ← Autenticación única · 14 usuarios · 3 roles
-├── analytics.html          ← Portal Hub · cards de acceso · panel admin
+├── analytics.html          ← Portal Hub · cards con KPIs EN VIVO vía PDCBridge
 │
-├── index.html              ← Dashboard Liquidación de Rutas v12
-├── cash_today.html         ← Dashboard Cash Today v2.9 · 10 módulos (Festivos eliminado)
+├── index.html              ← Dashboard Liquidación de Rutas (fuente única de verdad)
+├── cash_today.html         ← Dashboard Cash Today · dataset propio (no conectado a PDCBridge)
 ├── admin.html              ← Panel administrativo · chat Supabase
 │
-├── regional/index.html     ← Consolidado Regional v1.1 · 3 países activos
-├── peru/index.html         ← Dashboard Perú v1.1 · PEN
+├── regional/index.html     ← Consolidado Regional · KPIs EN VIVO vía PDCBridge (GT·SV·PE)
+├── peru/index.html         ← Dashboard Perú · KPIs EN VIVO vía PDCBridge
+├── honduras/index.html     ← Existe en el repo pero SIN tarjeta en portal (sin datos reales)
+│
+├── js/
+│   ├── pdc_data_bridge.js  ← Fuente única de verdad — fetch + cálculo de KPIs Rutas
+│   ├── auth.js
+│   └── users.js
 │
 └── docs/
     ├── 01_MASTER_PROJECT_CONTEXT.md  ← este archivo
-    ├── 02_CHANGELOG.md
+    ├── 02_CHANGELOG.md               ← historial detallado de Cash Today
+    ├── CHANGELOG.md                  ← historial detallado de Rutas/PDCBridge/Hub
     ├── 03_ROADMAP.md
     ├── 04_PROJECT_RULES.md
     └── 05_README.md
 ```
 
-> **Nota v1.6:** Módulo Festivos eliminado de Cash Today. Portadas actualizadas con datos reales (146 rutas, 3 países, 36k TX ATM).
-> Honduras permanece como proyectado sin datos reales en corte 25/06/2026.
+> **Honduras:** eliminado por completo de `regional/index.html` (tarjeta, tabla "Resumen por País y Canal", sección "Por País") — no hay movimiento real de rutas para ese país. `honduras/index.html` sigue existiendo como archivo pero no tiene tarjeta de acceso en el portal.
 
 ### Flujo de sesión
 ```
@@ -55,28 +63,30 @@ login.html  →  sessionStorage[pdc_session] (TTL 8h)
 |---|---|
 | Repo | `jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar` (branch: main) |
 | Live Portal | https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/analytics.html |
-| Login | .../login.html |
-| Dashboard Rutas | .../index.html |
-| Dashboard Cash Today | .../cash_today.html |
-| Consolidado Regional | .../regional/index.html |
-| Dashboard Perú | .../peru/index.html |
-| Panel Admin | .../admin.html |
-| Despliegue | GitHub Pages · GitHub Actions (~80s) |
-| Método | PUT directo vía GitHub REST API (Python urllib) |
-| Token (fragmentado) | `''.join(['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'])` |
+| Despliegue | GitHub Pages · GitHub Actions (`.github/workflows/deploy.yml`) |
+| Método | PUT directo vía GitHub REST API |
+| Archivos grandes (>1MB, ej. `cash_today.html`) | Git Trees API → blob SHA → `GET /git/blobs/{sha}` con `Accept: application/vnd.github.raw` |
 
-### SHAs de producción (25/06/2026) ← ACTUALES
+### ⚠️ Incidencia conocida de CI/CD — GitHub Actions
+El workflow usa `concurrency: {group:"pages", cancel-in-progress:true}`. Publicaciones cercanas en el tiempo pueden cancelar un deploy a medias y dejar el siguiente en estado inconsistente (falla rápida en el paso "Deploy to GitHub Pages"). **Recuperación:** disparar `workflow_dispatch` (ejecución nueva, no "rerun") vía API. Puede requerir 2-3 intentos si el problema es de fondo (backend de GitHub), no solo de Actions.
+**Recomendación pendiente (no implementada):** cambiar `cancel-in-progress` a `false`.
+
+### SHAs de producción (07/07/2026) ← ACTUALES
 | Archivo | SHA |
 |---|---|
-| `index.html` | `a12727975196` |
-| `analytics.html` | `c721f9f0cd99` |
-| `login.html` | `5b578731275b` |
-| `admin.html` | `a4151deee5f8` |
-| `regional/index.html` | `e9e70a520afe` |
-| `peru/index.html` | `73e234cd2f3f` |
-| `cash_today.html` | `713f4fea1c90` |
-| `docs/01_MASTER_PROJECT_CONTEXT.md` | `7532cc2275e1` (→ actualizado ahora) |
-| `docs/02_CHANGELOG.md` | `25f29d6ca864` (→ actualizado ahora) |
+| `index.html` | `1aa6b778f6e0` |
+| `analytics.html` | `b93b84a065d6` |
+| `login.html` | `e982a6a8b0e5` |
+| `admin.html` | `58dfe775739a` |
+| `regional/index.html` | `ec0156003e5a` |
+| `peru/index.html` | `70588d72c6ba` |
+| `honduras/index.html` | `c2014b3adf9a` |
+| `cash_today.html` | `bbe49d240e0c` |
+| `js/pdc_data_bridge.js` | `174ac5c4cb3d` |
+| `js/auth.js` | `451f86c4c443` |
+| `js/users.js` | `2f35ca816e6b` |
+
+**Tokens:** ambos ecosistemas (Rutas `index.html` self-publish y Cash Today `cash_today.html` self-publish) usan tokens fine-grained fragmentados embebidos en cada archivo, con permiso `Contents: Read/Write` restringido a este repo. **Ambos han sido rotados al menos una vez en esta versión** por revocación de GitHub (Secret Scanning) o por incidentes de datos. No asumir que un token documentado en una sesión anterior sigue vigente — verificar contra la API (`GET /user` o `/repos/.../contents`) antes de usarlo; si devuelve `401 Bad credentials`, pedir uno nuevo a Charly (ver protocolo en §8).
 
 ---
 
@@ -85,228 +95,147 @@ login.html  →  sessionStorage[pdc_session] (TTL 8h)
 | Capa | Tecnología | Versión |
 |---|---|---|
 | Frontend | HTML5 · CSS3 · JavaScript ES6+ vanilla | — |
-| Gráficas | Chart.js · jsdelivr CDN | **4.4.1** |
-| Excel/datos | SheetJS · cdn.sheetjs.com | **0.20.0** |
+| Gráficas | Chart.js · jsdelivr CDN | 4.4.1 |
+| Excel/datos | SheetJS · cdn.sheetjs.com | 0.20.0 |
 | Tipografía | Inter · Google Fonts | 300–800 |
 | Chat soporte | Supabase | `pytsrgtcjytjztwdlvux.supabase.co` |
 | Hosting | GitHub Pages | — |
-| Deploy | GitHub REST API v3 · Python urllib | — |
 
 ---
 
-## 5. Usuarios y Roles (14 usuarios)
+## 5. Usuarios y Roles
 
-| Email | Nombre | Rol | Dashboards | País |
-|---|---|---|---|---|
-| juancarlos.escobar@grupopdc.com | Juan Carlos Escobar | admin | rutas · cashtoday · regional · peru · **elsalvador** | regional |
-| erwin.soto@grupopdc.com | Erwin Soto | supervisor | rutas · cashtoday · regional · peru · **elsalvador** | regional |
-| francisco.aguilar@grupopdc.com | Francisco Aguilar | supervisor | rutas · cashtoday | GT |
-| liquidaciones.cda@grupopdc.com | TEAM GT | consulta | rutas · cashtoday | GT |
-| edy.lopez@grupopdc.com | Edy Lopez | consulta | rutas | GT |
-| joaquin.palma@grupopdc.com | Joaquin Palma | consulta | rutas · cashtoday · **elsalvador** | ESV |
-| liquidaciones.esv@grupopdc.com | TEAM ESV | consulta | rutas · cashtoday · **elsalvador** | ESV |
-| vinicio.sanabria@grupopdc.com | Vinicio Sanabria | consulta | rutas | GT |
-| claudio.rojas@grupopdc.com | Claudio Rojas | consulta | rutas · peru | PE |
-| jose.mallqui@grupopdc.com | Jose Mallqui | consulta | rutas · peru | PE |
-| transportes.peru@grupopdc.com | TEAM Peru | consulta | rutas · peru | PE |
-| carlos.reyes@grupopdc.com | Carlos Reyes | consulta | rutas | HN |
-| maria.funez@grupopdc.com | Maria Funez | consulta | rutas | HN |
-| liquidaciones.hn@grupopdc.com | TEAM Honduras | consulta | rutas | HN |
-
-> ⚠️ **CRÍTICO:** PDC_USERS está definido en **DOS archivos**: `login.html` (construye la sesión) y `analytics.html` (referencia). Siempre actualizar **ambos** al modificar usuarios o dashboards.
+Sin cambios en esta versión respecto a la lista de 14 usuarios documentada previamente. `PDC_USERS` sigue definido en **dos archivos**: `login.html` (construye la sesión) y `analytics.html` (referencia) — **siempre actualizar ambos** al modificar usuarios o dashboards.
 
 ---
 
-## 6. Estado de Datos (corte 25/06/2026)
-
-### Dashboard Liquidación de Rutas (index.html)
+## 6. Estado de Datos — Rutas (corte 30/06/2026, `index.html`)
 
 | Indicador | Valor |
 |---|---|
-| Total RAW | 620 registros |
-| **Total FD (pendientes)** | **146** |
-| En Tiempo Facturación (col J) | 53 |
-| Vencidas Facturación (col J) | 93 |
-| Vencidas Despacho (col E) | 87 |
-| +15 Días Rango Real (col D) | 5 |
-| KPI_TOTALS.report_date | 25/06/2026 |
-| KPI_TOTALS.total_by_moneda | GTQ:2009 · USD:1002 · PEN:327 |
+| Total RAW | 491 registros |
+| Pendientes (activas) | 491 |
+| Vencidas Facturación | 30 (6.1%) |
+| Vencidas Despacho | 12 (2.4%) |
+| +15 días vencidas | 1 |
+| Valor total (USD equiv.) | $4.93M |
 
-### Desglose por país (FD pendientes corte 18/06)
-| País | Rutas | Vencidas Despacho |
-|---|---|---|
-| Guatemala | 136 | 77 |
-| El Salvador | 6 | 6 |
-| Perú | 4 | 4 |
-| Honduras | 0 | 0 (proyectado) |
+### Desglose por país (validado, fuente: PDCBridge en vivo)
+| País | Activas | Vencidas Fact. | Vencidas Desp. | Monto USD |
+|---|---|---|---|---|
+| Guatemala | 273 | 4 (1.5%) | 3 (1.1%) | $3.31M |
+| El Salvador | 66 | 3 (4.5%) | 2 (3.0%) | $763.7K |
+| Perú | 152 | 23 (15.1%) | 7 (4.6%) | $851.7K |
+| Honduras | — | — | — | Sin datos reales — eliminado del portal |
 
 ---
 
-## 7. Motor de Cálculo — Fuente Única de Verdad
+## 7. Motor de Cálculo — Fuente Única de Verdad (ACTUALIZADO v2.0)
 
-**Regla absoluta:** `FD = RAW.filter(notLiq)` donde:
+### 7.1 Regla de negocio (sin cambios, validada exhaustivamente esta versión)
 ```javascript
 notLiq = d => d['Estado (Facturación)'] !== 'Liquidada' && d['Estado Real'] !== 'Liquidada'
+Vencidas (oficial) = d['Estado (Facturación)'] === 'Vencidas'   // coincide con panel de carga Excel
+Vencidas Despacho  = d['Estado Real'] === 'Vencidas'            // metrica independiente, NO intercambiable
 ```
 
-| Función | Módulo | Fuente | Columna |
-|---|---|---|---|
-| `AF()` | Filtro global + header | `RAW → FD` | — |
-| `RK()` | Resumen KPIs | `FD` | J (Fac), E (Desp), D (Rango Real) |
-| `RDE()` | Desglose por estado | `FD` | J / E |
-| `RCC()` | Country cards | `FD` | — |
-| `RC()` | Canal | `FD` | — |
-| `RD()` + `addDR()` | Análisis Área | `FD` col I (Fac) / col D (Desp) **independientes** |
-| `RT()` | Transportistas | `FD` | — |
-| `RM()` | Mapa | `FD` | — |
-| `renderTableros()` | Tableros | `FD` (unificado v1.5) | — |
-| `RTend()` | Tendencias | `KPI_HIST` | — |
-| `REf()` | Efectividad | `EFECT` | — |
+### 7.2 PDCBridge — arquitectura nueva (`js/pdc_data_bridge.js`)
+Módulo compartido, reutilizable, que en tiempo de ejecución:
+1. Hace `fetch()` de `index.html` (ruta resuelta vía variable `PDC_MASTER_PATH`, definida ANTES del `<script src="js/pdc_data_bridge.js">` en cada página — `'index.html'` en la raíz, `'../index.html'` en subcarpetas).
+2. Extrae `RAW`, `KPI_TOTALS`, `FX_DEF` del HTML fuente (`FX_DEF` no es JSON válido — contiene expresiones tipo `1/7.63627` — se evalúa como literal JS controlado, no con `JSON.parse`).
+3. Calcula KPIs por país con `PDCBridge.kpis(data, pais)`.
+
+**Consumido por:**
+- `analytics.html` — tarjetas `rutas`, `elsalvador`, `peru`, `regional` + hero KPIs regionales.
+- `regional/index.html` — headline, tarjetas GT/SV/PE, tabla "Resumen por País y Canal" (desglose por `Canal2`), pestaña "Por País".
+- `peru/index.html` — Resumen completo (7 KPIs), zonas, top transportistas, tabla Detalle, con refresco del punto actual en las series históricas de 6 meses (el histórico previo se conserva, no se recalcula — no hay fuente para reconstruirlo).
+
+**⚠️ Bug ya corregido (no repetir):** la primera versión de `pdc_data_bridge.js` usaba `fetch('index.html')` con ruta fija — funcionaba en la raíz pero causaba auto-fetch (self-fetch) en subcarpetas. Corregido con `PDC_MASTER_PATH`.
+
+### 7.3 Pendiente — no conectado aún a PDCBridge
+- **Cash Today** (tarjeta del Hub + Efectivo YTD en Regional): dataset independiente (~11-20MB), no se integra por costo de performance de descargarlo en cada visita al Hub. Recomendación pendiente: generar un `cash_summary.json` liviano al publicar.
+- **`peru/index.html` y `regional/index.html` como dashboards completos** (más allá de los KPIs ya conectados): estos SÍ están conectados para sus KPIs principales, PERO la tabla "Resumen por País y Canal" de Regional y algunos gráficos de tendencia histórica de Perú aún usan datos parcialmente estáticos donde no hay fuente histórica disponible.
 
 ---
 
-## 8. Reglas de Negocio Críticas
+## 8. Cash Today — Arquitectura de Publicación (REESCRITO v2.0 — cambio crítico)
+
+### 8.1 Naturaleza de los datos
+**Cada Excel publicado es un export histórico COMPLETO, no incremental.** Confirmado con el propietario: cada corte diario re-exporta todo el histórico desde el inicio real de cada operación (Santa Tecla desde jun-2025, San Miguel desde jul-2025, CDA desde ene-2026).
+
+### 8.2 `publishToGitHub()` — lógica actual (reescrita 07/07/2026)
+```javascript
+currentR = newRecs;  // reemplazo directo y completo — SIN fusión, SIN deduplicación
+```
+
+**Historial de por qué se llegó a esto (no volver a intentar "merge inteligente"):**
+| Versión | Clave de identidad | Resultado |
+|---|---|---|
+| v1 (original) | cajero+fecha+ticket+**importe** | Corrección retroactiva de monto en JDE → registro viejo nunca se elimina → **sobre-conteo** |
+| v2 | cajero+fecha+ticket (sin importe) | Ticket no es único de forma confiable (muchos en blanco, sobre todo El Salvador) → transacciones distintas colisionan → **pérdida silenciosa de datos** |
+| **v3 (actual)** | — sin clave — | **Reemplazo total del dataset en cada publicación.** Elimina la categoría entera de bug. |
+
+### 8.3 Estado de datos (corte 06/07/2026)
+| Sede | Registros | Total GTQ/USD (ene-jul 2026) |
+|---|---|---|
+| CDA | — | Q79,320,976.47 |
+| Xela | — | Q14,728,587.00 |
+| Santa Tecla | — | $21,562,942.95 (incluye histórico desde jun-2025) |
+| San Miguel | — | $4,651,735.48 (incluye histórico desde jul-2025) |
+| **Total `_R`** | **39,417 registros** | — |
+
+### 8.4 Lección operativa clave
+Toda reconstrucción de `_R` vía Python (flujo alterno: usuario sube Excel a este chat) debe:
+1. Usar `pd.notna()` en **cada campo**, no solo en el importe — un campo de texto vacío (`Nombre usuario`) serializado sin chequeo produce `NaN` literal (inválido en JSON estricto, aunque Python lo acepta silenciosamente vía `allow_nan=True`).
+2. Validar con `json.dump(..., allow_nan=False)` para forzar un error si algo se escapa.
+3. Validar el resultado final con `JSON.parse()` en **Node**, no solo con `json.loads()` de Python — Python es permisivo con `NaN`/`Infinity`, el navegador no.
+
+---
+
+## 9. Reglas de Negocio Críticas (Rutas)
 
 | Regla | Detalle |
 |---|---|
 | **notLiq** | Excluye Estado(Fac)=Liquidada OR Estado Real=Liquidada |
-| **Vencidas Facturación** | `Estado (Facturación) === 'Vencidas'` (col J) |
-| **Vencidas Despacho** | `Estado Real === 'Vencidas'` (col E) |
-| **+15 Días** | `Rango Real === '15 +'` (col D) |
-| **Análisis Área modo Rango** | Facturación usa `r.Rango` (col I); Despacho usa `r['Rango Real']` (col D) — fuentes independientes |
-| **renderTableros()** | Usa `FD` (no filtra RAW directo) |
-| **PDC_USERS dual** | Siempre actualizar login.html Y analytics.html |
-| **Honduras** | Proyectado — sin datos reales, sin tarjeta en portal |
+| **Vencidas (oficial/hub/cards)** | `Estado (Facturación) === 'Vencidas'` |
+| **Vencidas Despacho** | `Estado Real === 'Vencidas'` — métrica independiente, NO intercambiable |
+| **PDC_USERS dual** | Siempre actualizar `login.html` Y `analytics.html` |
+| **Honduras** | Sin datos reales — eliminado de Regional; `honduras/index.html` existe pero sin tarjeta |
+| **PDC_MASTER_PATH** | Obligatorio definir antes de incluir `js/pdc_data_bridge.js` en cualquier archivo fuera de la raíz |
 
 ---
 
-## 9. Portal analytics.html — Estado (25/06/2026)
+## 10. Validación Obligatoria antes de cualquier deploy
 
-### Tarjetas "Mis Dashboards"
-| ID | Nombre | KPIs | Archivo destino |
-|---|---|---|---|
-| `rutas` | Liquidación de Rutas | 146 rutas · 3 países · 87 vencidas | `index.html` |
-| `cashtoday` | Cash Today | 35k TX · 10 módulos · 4 sedes | `cash_today.html` |
-| `regional` | Consolidado Regional | 146 rutas · 3 países · $1.4M | `regional/index.html` |
-| `peru` | Perú · Liquidación de Rutas | 4 rutas · 4 vencidas | `peru/index.html` |
-| `elsalvador` | El Salvador · Liquidación de Rutas | 6 rutas · 6 vencidas · $26,927 | `index.html` |
-
-### Hero KPIs (header portal)
-| KPI | Valor |
-|---|---|
-| Rutas activas | 146 |
-| Vencidas | 87 |
-| Países | 3 |
-| Tx ATM | 35k |
-
-### Panel Administración (admin)
-- Actualizar Rutas, Actualizar Cash Today, Panel Administrativo
-- Descargar Rutas, Descargar Cash Today
-- Consolidado Regional, Dashboard Perú, **Dashboard El Salvador**
+1. Modificar el bloque necesario (quirúrgico, nunca reconstruir)
+2. Extraer todos los `<script>...</script>` del HTML final
+3. Ejecutar `node --check` sobre cada uno
+4. Si el bloque contiene datos (`_R`, `RAW`, etc.), validar también con `JSON.parse()` estricto en Node
+5. Obtener SHA fresco inmediatamente antes de cada PUT
+6. Evitar deploys consecutivos muy próximos (riesgo de condición de carrera en Pages — ver §3). Si falla, usar `workflow_dispatch`, no "rerun".
 
 ---
 
-## 10. Dashboard Perú (peru/index.html) — Estado 25/06/2026
-
-| KPI | Valor |
-|---|---|
-| Rutas Pendientes | 4 |
-| Rutas Vencidas (Fac.) | 4 |
-| En Proceso (4-10d) Rango Real | 4 (100%) |
-| Al Día | 0 |
-| Monto Pendiente | S/ 134,816 ≈ USD 36,339 |
-| Efectividad | 0.0% · Brecha: -90pp |
-| Lima Metro | 3 · Otras: 1 |
-
-**Transportistas reales:**
-| Transportista | Zona | Rutas | Monto |
-|---|---|---|---|
-| FRICH GROUP TRADEA S.A.C. | Loreto | 1 | S/ 123,053 |
-| TRANSPORTES ITATI CARGO EIRL | Lima | 2 | S/ 11,764 |
-| JUAN MANUEL MURAYARI VELA | Lima | 1 | S/ 0 |
-
----
-
-## 11. Dashboard Regional (regional/index.html) — Estado 25/06/2026
-
-| KPI Global | Valor |
-|---|---|
-| Rutas Pendientes Regional | 146 (GT:136 · SV:6 · PE:4) |
-| Rutas Vencidas Regional | 87 (GT:77 · SV:6 · PE:4) |
-| Efectivo Recolectado Jun | USD 1,770,938 (GT:949,926 · SV:821,012) |
-| Efectivo YTD 2026 | USD 21,678,140 (GT:10.48M · SV:11.20M) |
-
----
-
-## 12. Historial de versiones
+## 11. Historial de versiones
 
 | Versión | Fecha | Descripción |
 |---|---|---|
-| v1.5 | 25/06/2026 | Auditoría completa · datasets 18/06 · motor unificado · tarjeta HN→ESV · peru/regional actualizados |
-| v1.4 | 21/06/2026 | Sprint arquitectura · bugs PDF/GitHub/auth |
-| v1.2 | 21/06/2026 | Consolidado Regional |
-| v1.1 | 21/06/2026 | Fase 1 completa |
+| **v2.0** | **07/07/2026** | **PDCBridge (fuente única de verdad Rutas) · Honduras eliminado de Regional · Cash Today: publicación por reemplazo total (fin del ciclo de bugs de deduplicación) · rotación de tokens** |
+| v1.8 | 03/07/2026 | Regla de validación `node --check` obligatoria tras incidente de SyntaxError |
+| v1.5 | 25/06/2026 | Auditoría completa · datasets 18/06 · tarjeta HN→ESV |
 | v1.0 | 20/06/2026 | Lanzamiento inicial |
 
 ---
 
-## Centro de Comunicación — Widget Flotante (v2.0 · 26/06/2026)
-
-### Arquitectura
-- **`cc_widget.js`** — componente reutilizable autocontenido (IIFE)
-- **`assistant_avatar.png`** — avatar IA corporativo PDC Robot 3D
-- Se activa en cualquier dashboard con: `<script src="cc_widget.js"></script>`
-- Activo en: `index.html`, `cash_today.html`
-
-### SHAs producción
-| Archivo | SHA |
-|---|---|
-| `cc_widget.js` | `4206ff0e2212` |
-| `admin.html` | `58dfe775739a` |
-| `analytics.html` | `c721f9f0cd99` |
-| `assistant_avatar.png` | `4c5094b07f81` |
-| `index.html` | `a12727975196` |
-| `cash_today.html` | `713f4fea1c90` |
-
-### Funcionalidades activas
-- Botón FAB circular con avatar robot PDC y animaciones CSS (flotación, glow, pulso, saludo)
-- Ventana flotante 460px × 70vh · Minimizar / Restaurar / Cerrar
-- Una sola interfaz para todos los roles (admin, supervisor, consulta)
-- REST fetch directo a Supabase (no depende del SDK del host)
-- Polling 5s + Realtime Supabase · Sonido WebAudio · Toast · Badges
-
-### Reglas clave
-- **cc_widget.js** nunca modifica el dashboard host — usa `position:fixed` + prefijo `pdc-cc-`
-- Sesión leída de `sessionStorage` (`pdc_session` o `pdc_user`)
-- `ccOpen()` expuesto globalmente — llamable desde cualquier botón del dashboard
-- Futuros dashboards: solo 1 línea `<script src="cc_widget.js"></script>`
-
-
-## Regla de Validación Obligatoria (agregada 03/07/2026)
-
-Tras un incidente de producción (dashboard en blanco por `SyntaxError` no detectado), se establece:
-
-⚠️ **Toda reconstrucción de bloques `const` en `cash_today.html` (`_R`, `_TC_MENSUAL`, `_COSTOS`, `_M`) debe validarse con `node --check archivo.js` antes de cualquier deploy.**
-
-El balance de llaves `{`/`}` **no es suficiente** — no detecta comas mal ubicadas, tokens huérfanos, ni otros errores de sintaxis que invalidan todo el bloque `<script>` y dejan el dashboard completamente en blanco.
-
-**Protocolo de deploy actualizado:**
-1. Modificar el bloque necesario
-2. Extraer todos los `<script>...</script>` del HTML final
-3. Ejecutar `node --check` sobre cada uno
-4. Solo desplegar si retorna sin errores
-5. Evitar deploys consecutivos muy próximos en el tiempo (riesgo de condición de carrera en el workflow de GitHub Pages)
-
-
-## 13. Instrucciones para nuevo chat
+## 12. Instrucciones para nuevo chat
 
 1. **Pegar este documento** al inicio del chat
-2. **Token GitHub:** `''.join(['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'])`
-3. **Supabase:** `https://pytsrgtcjytjztwdlvux.supabase.co` · key: `sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj`
-4. **NUNCA reconstruir** — solo modificaciones quirúrgicas
-5. **Siempre leer el archivo de producción** antes de editar
-6. **SHA fresco** antes de cada PUT
-7. **PDC_USERS en login.html Y analytics.html** — siempre ambos
+2. **Tokens:** NO asumir que un token de una sesión anterior sigue vigente — han rotado varias veces por revocación de GitHub. Verificar contra la API antes de usar; si da 401, pedir uno nuevo.
+3. **NUNCA reconstruir código** — solo modificaciones quirúrgicas. Documentación (este archivo, CHANGELOG) sí se reescribe completa cuando hay cambios de arquitectura.
+4. **Siempre leer el archivo de producción fresco** antes de editar (SHA + contenido)
+5. **`node --check` + `JSON.parse()` estricto** antes de cualquier deploy con datos
+6. **PDC_USERS en login.html Y analytics.html** — siempre ambos
+7. **Cash Today: publicación = reemplazo total.** No reintroducir lógica de merge/deduplicación.
 
 ---
-*PDC Analytics Center · Grupo PDC · Departamento Financiero · v1.5 · 25/06/2026*
+*PDC Analytics Center · Grupo PDC · Departamento Financiero · v2.0 · 07/07/2026*
