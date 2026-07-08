@@ -1,3 +1,32 @@
+## [08/07/2026] — BUG DE RAIZ EN parseWB(): nunca antes activado, no relacionado a incidentes previos
+
+### Correccion de errores - bug latente en el parser de Excel del navegador
+
+**Sintoma:** al publicar el Excel del corte 07/07/2026, los montos aparecieron ~1000x mas pequenos (ej. Q72,757 en vez de Q6,152,924 para CDA-enero) y las fechas en formato invertido (DD/MM/YYYY en vez de YYYY-MM-DD), con hora y dia de la semana vacios.
+
+**Importante - NO relacionado con los incidentes de deduplicacion (06-07/07):** ese ciclo ya esta cerrado y funcionando (reemplazo total, sin merge). Este es un bug DISTINTO, en la funcion `parseWB()` (lectura de Excel en el navegador), nunca antes activado.
+
+**RCA:**
+1. Verificado con `openpyxl` el formato real de celda del Excel: `Importe` con formato `#,##0.00` (separador de miles) y `Fecha transaccion` con formato `dd/mm/yyyy hh:mm:ss` (slash). El valor subyacente en ambos casos es correcto - el problema es 100% de interpretacion en el navegador.
+2. Con `raw:false`, SheetJS devuelve el texto FORMATEADO segun el formato de celda, no el valor crudo. Excels anteriores no tenian separador de miles visible, por lo que este bug jamas se activo hasta ahora.
+3. Bug 1 (importe): `parseFloat(texto.replace(',','.'))` convertia la PRIMERA coma en punto. Con "14,205.00" (miles) resultaba en "14.205.00" -> parseFloat truncaba a 14.205.
+4. Bug 2 (fecha): el parser solo reconocia ISO (`YYYY-MM-DD`) y `DD-MM-YYYY` (guion). El formato `DD/MM/YYYY` (slash) no coincidia con ningun patron, caia a `new Date(fdStr)` que JS interpreta como MM/DD/YYYY (invalido para dia=20) -> fecha invalida -> hora y dia de semana en blanco. Ademas el campo `f` final se construia del texto crudo sin normalizar, nunca desde la fecha ya parseada.
+
+**Correccion aplicada (`parseWB()`):**
+- Importe: se eliminan TODAS las comas (separador de miles) antes de `parseFloat`, en vez de convertir la primera a punto decimal.
+- Fecha: agregado patron para `DD/MM/YYYY HH:MM:SS` (slash), ademas de los ya existentes (ISO, DD-MM-YYYY guion).
+- Campo `f` ahora se normaliza SIEMPRE a partir de la fecha ya parseada (formato estandar `YYYY-MM-DD HH:MM:SS`), con fallback al texto crudo solo si el parseo falla - corrige la causa raiz para cualquier formato de Excel futuro, no solo este caso puntual.
+- `_R` reemplazado con dataset limpio reconstruido via Python (39,586 registros, corte 07/07/2026), validado cifra por cifra: CDA Q79,848,712.02 total (incluye julio actualizado), Xela Q14,797,032.00, Santa Tecla $21,596,191.64, San Miguel $4,664,330.17.
+
+**Validado antes de deploy:**
+- Prueba funcional en Node simulando el caso exacto que fallaba ("14,205.00" + "20/01/2026 09:47:27") -> resultado correcto (imp:14205, f:'2026-01-20 09:47:27', hr:9, dia:'martes').
+- Confirmado que los formatos anteriores (ISO, DD-MM-YYYY guion) siguen funcionando sin regresion.
+- `node --check` en los 5 bloques de script + `JSON.parse()` estricto sobre `_R` final.
+
+**Alcance:** unicamente `parseWB()` (parser de Excel client-side) + bloque `_R`. Ningun otro modulo tocado.
+
+---
+
 ## [07/07/2026] — CIERRE DEFINITIVO: fusion/deduplicacion eliminada por completo
 
 ### Correccion de errores - RCA final del ciclo de incidentes 06-07/07/2026
