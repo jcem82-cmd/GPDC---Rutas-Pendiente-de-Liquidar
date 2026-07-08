@@ -227,7 +227,23 @@ Toda reconstrucción de `_R` vía Python (flujo alterno: usuario sube Excel a es
 
 ---
 
-## 12. Instrucciones para nuevo chat
+## 13. Consolidación de Documentación (08/07/2026)
+
+Existían **dos sets paralelos de documentación** (`docs/00-07_*.md` numerado y `docs/*.md` sin numerar) creados por sesiones distintas que no sabían de la existencia del otro. Diagnóstico y resolución:
+
+| Par | Resultado |
+|---|---|
+| `MASTER_PROJECT_CONTEXT.md` vs `01_...md` | Mismo alcance (duplicado) → sin numerar marcado obsoleto |
+| `CHANGELOG.md` vs `02_...md` | **Contenido único en ambos** → fusionados en `02_CHANGELOG.md` (40 entradas, cronológico) → sin numerar marcado obsoleto |
+| `ROADMAP.md` vs `03_...md` | Idénticos (0 diferencias) → sin numerar marcado obsoleto |
+| `PROJECT_RULES.md` vs `04_...md` | Numerado es superset (tiene Regla #14 adicional) → sin numerar marcado obsoleto |
+| `README.md` vs `05_...md` | Numerado es superset (tiene mapa de docs adicional) → sin numerar marcado obsoleto |
+
+**A partir de ahora, el set numerado (`docs/00-07_*.md`) es el único vigente.** Los archivos sin numerar se conservan solo por trazabilidad de Git, con una nota de obsolescencia en cada uno.
+
+---
+
+## 14. Instrucciones para nuevo chat
 
 1. **Pegar este documento** al inicio del chat
 2. **Tokens:** NO asumir que un token de una sesión anterior sigue vigente — han rotado varias veces por revocación de GitHub. Verificar contra la API antes de usar; si da 401, pedir uno nuevo.
