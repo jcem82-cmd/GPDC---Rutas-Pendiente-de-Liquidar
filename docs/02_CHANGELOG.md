@@ -1,3 +1,22 @@
+## [08/07/2026] — Tarjeta Cash Today conectada en vivo via cash_summary.json
+
+### Mejora funcional - nuevo archivo liviano, sin impacto de performance
+
+**Contexto:** la tarjeta "Cash Today" y el hero "Tx ATM" en analytics.html mostraban '36k' fijo, escrito a mano, nunca conectado (dato real detectado: 28,263 transacciones ano 2026 - GT 12,776 + ESV 15,487, validado contra Volumetria).
+
+**Solucion aplicada (Opcion B ya propuesta, autorizada por el usuario):**
+- `cash_today.html` -> `publishToGitHub()`: al publicar el dataset completo, ahora TAMBIEN genera y publica `cash_summary.json` (archivo nuevo, ~150 bytes) con: `report_date`, `anio`, `transacciones_anio` (Depositos del anio mas reciente presente en _R), `sedes` (4), `modulos` (10).
+- `analytics.html`: nuevo fetch independiente (no depende de PDCBridge, fuente de datos distinta) que lee `cash_summary.json` y actualiza la tarjeta Cash Today + hero Tx ATM. Fallback silencioso al valor de referencia si falla.
+- `cash_summary.json` creado ahora mismo con el valor real vigente (28,263 transacciones, corte 07/07/2026) para que el Hub muestre el dato correcto de inmediato, sin esperar la proxima publicacion.
+
+**Por que no afecta el rendimiento:** `cash_summary.json` pesa ~150 bytes vs los ~11MB de `cash_today.html`. El Portal sigue sin descargar el archivo completo de Cash Today en ningun escenario.
+
+**Validado:** `node --check` en ambos archivos. Verificado el contenido publicado de `cash_summary.json` contra el repo tras el deploy.
+
+**Alcance:** `cash_today.html` (solo la funcion `publishToGitHub()`) + `analytics.html` (solo el nuevo fetch) + `cash_summary.json` (nuevo). Ningun otro modulo tocado.
+
+---
+
 ## [08/07/2026] — BUG DE RAIZ EN parseWB(): nunca antes activado, no relacionado a incidentes previos
 
 ### Correccion de errores - bug latente en el parser de Excel del navegador
