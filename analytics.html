@@ -1163,6 +1163,32 @@ function pdcRenewSession(){
     });
   }
 
+  /* ── Cash Today — sincronización vía cash_summary.json ──
+     Archivo liviano (~200 bytes), independiente de PDCBridge (fuente de
+     datos distinta). NO descarga cash_today.html completo (~11MB) —
+     evita penalizar el rendimiento del Portal para todos los usuarios.
+     Si falla, se conserva el valor de referencia (fallback silencioso). */
+  fetch('cash_summary.json?_=' + Date.now())
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (cs) {
+      var cardEl = grid.querySelector('.dash-card[data-dash-id="cashtoday"]');
+      if (cardEl) {
+        var valEls = cardEl.querySelectorAll('.ckpi-val');
+        if (valEls[0]) valEls[0].textContent = PDCBridge && PDCBridge.fmtMoney ? cs.transacciones_anio.toLocaleString() : cs.transacciones_anio;
+        if (cs.report_date) {
+          var updEl = cardEl.querySelector('.card-update');
+          if (updEl) updEl.innerHTML = '🕐 Actualizado ' + cs.report_date;
+        }
+      }
+      if (session.pais === 'regional') {
+        var heroVals = document.querySelectorAll('#hKpis .hero-kpi-val');
+        if (heroVals[3]) heroVals[3].textContent = cs.transacciones_anio.toLocaleString();
+      }
+    })
+    .catch(function (err) {
+      console.warn('cash_summary.json: no se pudo sincronizar, se muestra valor de referencia.', err);
+    });
+
   /* Panel por rol: admin ve todo · supervisor solo chat · consulta solo chat */
   if(session.rol === 'admin' || session.rol === 'supervisor' || session.rol === 'consulta'){
     document.getElementById('admin').style.display = '';
