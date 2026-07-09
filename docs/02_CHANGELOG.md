@@ -1,3 +1,23 @@
+## [09/07/2026] — login.html: landing con estadisticas fijas, ultimo rincon sin conectar
+
+### Correccion de errores - ultimo modulo con numeros hardcodeados
+
+**Sintoma:** la pagina de acceso (login.html, landing previa al login) mostraba 146 rutas / 3 paises / 14 usuarios, mientras que el Portal (analytics.html, post-login) ya mostraba 621/150/3/28,263 correctamente via PDCBridge. Ademas la descripcion del modulo Rutas seguia listando "GT · SV · PE · HN" pese a que Honduras ya se elimino de Regional.
+
+**RCA:** login.html nunca fue tocado durante la implementacion de PDCBridge (Fase 1-2) porque el foco estuvo en analytics.html, regional/peru/index.html. Era el unico archivo restante con estadisticas de landing 100% estaticas. Ademas, el conteo de "14 usuarios" ya estaba desactualizado por su cuenta (PDC_USERS tiene 15 registros reales) - la landing ni siquiera se mantenia sincronizada manualmente.
+
+**Correccion aplicada:**
+- Agregado `PDC_MASTER_PATH='index.html'` + include de `js/pdc_data_bridge.js`.
+- "Rutas activas" y "Paises" ahora se calculan via `PDCBridge.kpis()`, misma fuente unica que el resto de la plataforma.
+- "Usuarios" ahora se cuenta directo de `PDC_USERS.length` (sin fetch adicional, ya esta en memoria) - nunca mas se desincroniza al agregar/quitar usuarios.
+- Eliminada mencion a Honduras en la descripcion del modulo Rutas ("GT · SV · PE · HN" -> "GT · SV · PE").
+
+**Validado:** verificado contra index.html en vivo: 621 activas, 3 paises (El Salvador, Guatemala, Peru) - coincide con lo ya visto en el Portal. `node --check` en los 3 bloques de script.
+
+**Alcance:** unicamente `login.html`. Ningun otro archivo tocado.
+
+---
+
 # 02 — CHANGELOG
 ## PDC Analytics Center · Historial de Versiones (CONSOLIDADO)
 
