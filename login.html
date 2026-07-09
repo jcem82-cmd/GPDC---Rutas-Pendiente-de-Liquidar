@@ -329,7 +329,7 @@ body{
         <div class="chip-icon">🚚</div>
         <div class="chip-info">
           <div class="chip-name">Liquidación de Rutas</div>
-          <div class="chip-desc">GT · SV · PE · HN — Rutas pendientes y vencidas</div>
+          <div class="chip-desc">GT · SV · PE — Rutas pendientes y vencidas</div>
         </div>
       </div>
       <div class="module-chip">
@@ -345,15 +345,15 @@ body{
   <div>
     <div class="stats-row">
       <div class="stat-item">
-        <span class="stat-val">146</span>
+        <span class="stat-val" id="statRutas">146</span>
         <span class="stat-lbl">Rutas activas</span>
       </div>
       <div class="stat-item">
-        <span class="stat-val">3</span>
+        <span class="stat-val" id="statPaises">3</span>
         <span class="stat-lbl">Países</span>
       </div>
       <div class="stat-item">
-        <span class="stat-val">14</span>
+        <span class="stat-val" id="statUsuarios">14</span>
         <span class="stat-lbl">Usuarios</span>
       </div>
     </div>
@@ -451,6 +451,8 @@ body{
   </div>
 </div>
 
+<script>var PDC_MASTER_PATH = 'index.html';</script>
+<script src="js/pdc_data_bridge.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════
    PDC Analytics Center — Auth System
@@ -674,6 +676,28 @@ function showError(msg){
   errText.textContent = msg;
   errMsg.classList.add('visible');
 }
+
+/* ── Sincronización de estadísticas de la landing (login) ──
+   Usuarios: cuenta real de PDC_USERS (ya está en memoria, sin fetch).
+   Rutas activas / Países: PDCBridge, misma fuente única que el resto
+   de la plataforma. Fallback silencioso a los valores de referencia
+   si el fetch falla — la página de login sigue funcionando igual. */
+(function(){
+  var elUsuarios = document.getElementById('statUsuarios');
+  if(elUsuarios) elUsuarios.textContent = PDC_USERS.length;
+
+  if(typeof PDCBridge !== 'undefined'){
+    PDCBridge.load().then(function(data){
+      var k = PDCBridge.kpis(data, null);
+      var elRutas = document.getElementById('statRutas');
+      var elPaises = document.getElementById('statPaises');
+      if(elRutas) elRutas.textContent = k.activas;
+      if(elPaises) elPaises.textContent = k.paises;
+    }).catch(function(err){
+      console.warn('PDCBridge: no se pudo sincronizar estadísticas de landing, se muestran valores de referencia.', err);
+    });
+  }
+})();
 </script>
 </body>
 </html>
