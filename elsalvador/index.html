@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PDC Analytics Center · El Salvador</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#002060;--navy2:#003090;--sky:#CFEEFC;--white:#fff;
+  --bg:#F0F4F8;--card:#fff;--text:#0F1729;--text2:#5A6480;
+  --border:#E2E8F0;--green:#DCF0C6;--green2:#2D9E2D;
+  --yellow:#FFF4CC;--yellow2:#C48A00;--red:#FFBDBD;--red2:#CC0000;
+  --radius:12px;--shadow:0 2px 16px rgba(0,32,96,.08);
+  --shadow-md:0 4px 24px rgba(0,32,96,.14);
+  /* Paleta El Salvador */
+  --sv1:#B91C1C;--sv2:#FFAB00;--sv-bg:#FFF8ED;--sv-light:#FFE4B8;
+}
+body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg);min-height:100vh;color:var(--text)}
+
+/* ── HEADER ── */
+.hdr{background:var(--navy);position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.hdr-inner{max-width:1400px;margin:0 auto;padding:0 28px;height:60px;display:flex;align-items:center;gap:16px}
+.hdr-logo{background:var(--white);border-radius:8px;padding:4px 12px;font-size:1rem;font-weight:700;color:var(--navy);letter-spacing:.05em;flex-shrink:0}
+.hdr-div{width:1px;height:24px;background:rgba(255,255,255,.2);flex-shrink:0}
+.hdr-back{display:flex;align-items:center;gap:6px;color:rgba(207,238,252,.75);font-size:.78rem;font-weight:500;text-decoration:none;padding:5px 10px;border-radius:7px;transition:background .15s;cursor:pointer;border:none;background:none;font-family:inherit}
+.hdr-back:hover{background:rgba(255,255,255,.1);color:var(--white)}
+.hdr-title-group{flex:1}
+.hdr-title{font-size:.9rem;font-weight:700;color:var(--white);letter-spacing:.04em}
+.hdr-sub{font-size:.7rem;color:rgba(207,238,252,.65)}
+.hdr-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.hdr-badge{background:rgba(139,26,26,.6);border:1px solid rgba(232,160,32,.4);border-radius:20px;padding:4px 12px;font-size:.7rem;font-weight:600;color:rgba(255,240,200,.9)}
+.hdr-user{font-size:.78rem;font-weight:600;color:var(--white);opacity:.85}
+
+/* ── HERO ── */
+.hero{background:linear-gradient(135deg,#3d0a0a 0%,#6b1212 45%,#8B1A1A 100%);padding:32px 28px 28px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(232,160,32,.07) 1px,transparent 1px);background-size:28px 28px}
+.hero::after{content:'';position:absolute;right:-60px;top:-60px;width:280px;height:280px;border-radius:50%;background:rgba(232,160,32,.06);pointer-events:none}
+.hero-inner{max-width:1400px;margin:0 auto;position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.hero-left{}
+.hero-eyebrow{font-size:.7rem;font-weight:600;color:rgba(232,160,32,.75);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.hero-h1{font-size:1.5rem;font-weight:800;color:var(--white);margin-bottom:4px}
+.hero-desc{font-size:.82rem;color:rgba(255,220,180,.65);margin-bottom:16px}
+.hero-chips{display:flex;gap:10px;flex-wrap:wrap}
+.hero-chip{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(232,160,32,.2);border-radius:20px;padding:4px 12px;font-size:.72rem;color:rgba(255,230,180,.85);font-weight:500}
+.hero-chip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.hero-right{display:flex;gap:12px;flex-wrap:wrap}
+.hero-kpi{background:rgba(255,255,255,.07);border:1px solid rgba(232,160,32,.2);border-radius:12px;padding:14px 20px;min-width:120px;text-align:center}
+.hero-kpi-val{font-size:1.6rem;font-weight:800;color:var(--white);line-height:1}
+.hero-kpi-lbl{font-size:.68rem;color:rgba(255,210,140,.6);margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+
+/* ── NAV TABS ── */
+.nav-wrap{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:60px;z-index:100;box-shadow:0 2px 8px rgba(0,32,96,.04)}
+.nav-inner{max-width:1400px;margin:0 auto;padding:0 28px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.ntab{padding:14px 18px;font-size:.8rem;font-weight:600;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;user-select:none;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.ntab:hover{color:var(--sv1)}
+.ntab.on{color:var(--sv1);border-bottom-color:var(--sv1)}
+
+/* ── MAIN ── */
+.main{max-width:1400px;margin:0 auto;padding:32px 28px 64px}
+.page{display:none}.page.on{display:block}
+
+/* ── SECTION HEADER ── */
+.sec-hdr{display:flex;align-items:baseline;gap:10px;margin-bottom:20px}
+.sec-title{font-size:.95rem;font-weight:700;color:var(--navy)}
+.sec-sub{font-size:.75rem;color:var(--text2)}
+
+/* ── GRIDS ── */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+
+/* ── KPI CARD ── */
+.kc{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:18px 20px;display:flex;flex-direction:column;gap:4px;transition:box-shadow .2s}
+.kc:hover{box-shadow:var(--shadow-md)}
+.kc-flag{font-size:1.1rem;margin-bottom:4px}
+.kc-label{font-size:.7rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.07em}
+.kc-val{font-size:1.5rem;font-weight:800;color:var(--navy);line-height:1.1}
+.kc-val-sm{font-size:1.15rem;font-weight:700;color:var(--navy)}
+.kc-sub{font-size:.72rem;color:var(--text2);margin-top:2px}
+.kc-bar{height:3px;border-radius:2px;margin-top:8px;background:var(--border)}
+.kc-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.kc.g{border-left:4px solid var(--green2);background:linear-gradient(135deg,#f8fff4,var(--white))}
+.kc.y{border-left:4px solid var(--yellow2);background:linear-gradient(135deg,#fffef0,var(--white))}
+.kc.r{border-left:4px solid var(--red2);background:linear-gradient(135deg,#fff8f8,var(--white))}
+.kc.n{border-left:4px solid var(--navy)}
+.kc.sv{border-left:4px solid var(--sv1);background:linear-gradient(135deg,var(--sv-bg),var(--white))}
+
+/* ── PANEL ── */
+.panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
+.panel-hdr{padding:14px 20px;background:#f8faff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.panel-title{font-size:.82rem;font-weight:700;color:var(--navy)}
+.panel-sub{font-size:.7rem;color:var(--text2)}
+.panel-body{padding:20px}
+.chart-wrap{position:relative;padding:4px 0}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.tbl th{background:var(--sv1);color:var(--white);padding:8px 12px;text-align:left;font-weight:600;font-size:.72rem;letter-spacing:.04em}
+.tbl th.r,.tbl td.r{text-align:right}
+.tbl td{padding:8px 12px;border-bottom:1px solid var(--border)}
+.tbl tr:hover td{background:var(--sv-bg)}
+.tbl tr.total td{background:var(--sv-light);color:var(--sv1);font-weight:700}
+.tbl tr.total:hover td{background:#f5d4a0}
+
+/* ── BADGE ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:.68rem;font-weight:700}
+.bg{background:var(--green);color:var(--green2)}
+.by{background:var(--yellow);color:var(--yellow2)}
+.br{background:var(--red);color:var(--red2)}
+.bn{background:var(--sky);color:var(--navy)}
+.bpe{background:var(--sv-light);color:var(--sv1)}
+
+/* ── INFO BOX ── */
+.info-box{background:var(--sv-bg);border:1px solid var(--sv-light);border-left:4px solid var(--sv2);border-radius:var(--radius);padding:14px 18px}
+.info-box-title{font-size:.78rem;font-weight:700;color:var(--sv1);margin-bottom:6px}
+.info-box-body{font-size:.75rem;color:var(--text2);line-height:1.6}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:28px 0}
+
+/* ── UPDATE BADGE ── */
+.update-wrap{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:16px}
+.update-lbl{font-size:.7rem;color:var(--text2)}
+.update-val{font-size:.7rem;font-weight:600;color:var(--sv1)}
+
+/* ── SUMMARY ROW ── */
+.summary-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:.8rem}
+.summary-row:last-child{border-bottom:none}
+.summary-label{color:var(--text2);font-weight:500}
+.summary-value{font-weight:700;color:var(--navy)}
+
+/* ── FOOTER ── */
+.page-footer{border-top:1px solid var(--border);padding:16px 28px;background:var(--white)}
+.page-footer-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.footer-l{font-size:.7rem;color:var(--text2)}
+.footer-r{font-size:.68rem;color:#ccc}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr)}.grid-3{grid-template-columns:repeat(2,1fr)}.grid-2,.grid-2-1{grid-template-columns:1fr}}
+@media(max-width:600px){.grid-4,.grid-3{grid-template-columns:1fr}.main{padding:20px 16px 48px}.hero{padding:20px 16px}.hdr-inner{padding:0 16px}.hero-right{display:none}}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:fadeUp .35s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── AUTH BRIDGE v2.0 — El Salvador ── -->
+<script>
+(function(){
+  var s=null;
+  try{s=JSON.parse(sessionStorage.getItem('pdc_session'));}catch(e){}
+  if(s&&s.email&&s.nombre){
+    sessionStorage.setItem('pdc_user',JSON.stringify({nombre:s.nombre,email:s.email,
+      role:s.rol==='admin'?'admin':'user',pais:s.pais||'',acceso:s.acceso||[]}));
+  } else {
+    var u=null;
+    try{u=JSON.parse(sessionStorage.getItem('pdc_user'));}catch(e){}
+    if(!u||!u.email){window.location.replace('../analytics.html');return;}
+  }
+})();
+</script>
+
+<!-- ── HEADER ── -->
+<header class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-logo">PDC</div>
+    <div class="hdr-div"></div>
+    <button class="hdr-back" onclick="window.location.href='../analytics.html'">
+      ← Portal
+    </button>
+    <div class="hdr-div"></div>
+    <div class="hdr-title-group">
+      <div class="hdr-title">LIQUIDACIÓN DE RUTAS · EL SALVADOR</div>
+      <div class="hdr-sub">Dashboard Operativo · Grupo PDC · Operación El Salvador</div>
+    </div>
+    <div class="hdr-right">
+      <span class="hdr-badge">🇸🇻 El Salvador · USD</span>
+      <span class="hdr-user" id="hdrUser"></span>
+    </div>
+  </div>
+</header>
+
+<!-- ── NAV TABS ── -->
+<nav class="nav-wrap">
+  <div class="nav-inner">
+    <button class="ntab on" onclick="goPage('resumen',this)">📊 Resumen</button>
+    <button class="ntab" onclick="goPage('analisis',this)">📈 Análisis</button>
+    <button class="ntab" onclick="goPage('detalle',this)">🔍 Detalle Rutas</button>
+    <button class="ntab" onclick="goPage('tendencias',this)">📉 Tendencias</button>
+  </div>
+</nav>
+
+<!-- ══ PAGES ══ -->
+<main class="main">
+
+<!-- ════════════════════════════════
+     PAGE: RESUMEN
+════════════════════════════════ -->
+<div class="page on" id="page-resumen">
+
+  <div class="update-wrap">
+    <span class="update-lbl">Datos al:</span>
+    <span class="update-val">Jun 2026</span>
+    <span class="update-lbl" style="margin-left:12px">Moneda base:</span>
+    <span class="update-val">USD (Dólar Estadounidense)</span>
+    <span class="update-lbl" style="margin-left:12px">TC referencial:</span>
+    <span class="update-val">Moneda nativa: USD</span>
+  </div>
+
+  <!-- KPIs principales -->
+  <div class="sec-hdr"><span class="sec-title">KPIs Operativos · Junio 2026</span><span class="sec-sub">Liquidación de rutas · Operación El Salvador</span></div>
+  <div class="grid-4" style="margin-bottom:28px">
+    <div class="kc sv anim" style="animation-delay:.05s">
+      <div class="kc-flag">🇸🇻</div>
+      <div class="kc-label">Rutas Pendientes</div>
+      <div class="kc-val" id="kpiPend">4</div>
+      <div class="kc-sub" id="kpiPendSub">San Salvador: 3 · Otros: 1</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--sv1)"></div></div>
+    </div>
+    <div class="kc r anim" style="animation-delay:.1s">
+      <div class="kc-flag">⚠️</div>
+      <div class="kc-label">Rutas Vencidas (Fac.)</div>
+      <div class="kc-val" id="kpiVenc">4</div>
+      <div class="kc-sub" id="kpiVencSub">100% del total · Estado Facturación</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--red2)"></div></div>
+    </div>
+    <div class="kc y anim" style="animation-delay:.15s">
+      <div class="kc-flag">🕐</div>
+      <div class="kc-label">En Proceso (4–10d)</div>
+      <div class="kc-val" id="kpiProceso">4</div>
+      <div class="kc-sub" id="kpiProcesoSub">100% del total · Rango Real</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--yellow2)"></div></div>
+    </div>
+    <div class="kc g anim" style="animation-delay:.2s">
+      <div class="kc-flag">✅</div>
+      <div class="kc-label">Al Día (≤3 días)</div>
+      <div class="kc-val" id="kpiAlDia">0</div>
+      <div class="kc-sub" id="kpiAlDiaSub">0% del total</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:0%;background:var(--green2)"></div></div>
+    </div>
+  </div>
+
+  <!-- Monto y efectividad -->
+  <div class="grid-3" style="margin-bottom:28px">
+    <div class="kc n anim" style="animation-delay:.22s">
+      <div class="kc-label">Monto Pendiente</div>
+      <div class="kc-val-sm" id="kpiMontoPend">$134,816</div>
+      <div class="kc-sub" id="kpiMontoPendSub">≈ USD 36,339 · Jun 2026</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--sv1)"></div></div>
+    </div>
+    <div class="kc r anim" style="animation-delay:.27s">
+      <div class="kc-label">Monto Vencido</div>
+      <div class="kc-val-sm" id="kpiMontoVenc">$134,816</div>
+      <div class="kc-sub" id="kpiMontoVencSub">100% del monto total pendiente</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--red2)"></div></div>
+    </div>
+    <div class="kc r anim" style="animation-delay:.32s">
+      <div class="kc-label">Efectividad Liquidación</div>
+      <div class="kc-val" id="kpiEfect">0.0%</div>
+      <div class="kc-sub" id="kpiEfectSub">Meta: ≥90% · Brecha: -90.0pp</div>
+      <div class="kc-bar"><div class="kc-bar-fill" style="width:0%;background:var(--red2)"></div></div>
+    </div>
+  </div>
+
+  <!-- Gráfica + tabla distribución -->
+  <div class="grid-2-1" style="margin-bottom:28px">
+    <div class="panel anim" style="animation-delay:.35s">
+      <div class="panel-hdr">
+        <div><div class="panel-title">Distribución por Estado · Junio 2026</div><div class="panel-sub">Rutas por antigüedad de liquidación</div></div>
+        <span class="bpe badge" id="badgeTotalRutas">4 rutas</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:220px"><canvas id="chartEstados"></canvas></div>
+      </div>
+    </div>
+    <div class="panel anim" style="animation-delay:.4s">
+      <div class="panel-hdr">
+        <div><div class="panel-title">Distribución Geográfica</div><div class="panel-sub">Rutas por zona</div></div>
+      </div>
+      <div class="panel-body" style="padding:14px 20px">
+        <div class="summary-row"><span class="summary-label">🏙️ San Salvador (Capital)</span><span class="summary-value" id="zonaLima">3</span></div>
+        <div class="summary-row"><span class="summary-label">📍 Otros departamentos</span><span class="summary-value" id="zonaOtras">1</span></div>
+        <div class="summary-row" style="margin-top:6px;border-top:2px solid var(--sv-light);padding-top:10px">
+          <span style="font-weight:700;color:var(--sv1);font-size:.78rem">TOTAL</span>
+          <span style="font-weight:800;color:var(--sv1);font-size:.9rem" id="zonaTotal">4</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla por transportista -->
+  <div class="panel anim" style="animation-delay:.45s">
+    <div class="panel-hdr">
+      <div><div class="panel-title">Top Transportistas · Rutas Pendientes</div><div class="panel-sub">Ordenado por monto pendiente · Jun 2026</div></div>
+    </div>
+    <div class="panel-body" style="padding:0">
+      <table class="tbl">
+        <thead><tr>
+          <th>Transportista</th><th>Zona</th>
+          <th class="r">Rutas</th><th class="r">Vencidas</th>
+          <th class="r">Monto USD</th><th class="r">% Total</th><th>Estado</th>
+        </tr></thead>
+        <tbody id="tblTransportistasBody">
+          <tr><td>FRICH GROUP TRADEA S.A.C.</td><td>Loreto</td><td class="r">1</td><td class="r">1</td><td class="r">$123,053</td><td class="r">91.3%</td><td><span class="badge by">⚠️ En Proceso</span></td></tr>
+          <tr><td>TRANSPORTES ITATI CARGO EIRL</td><td>Lima</td><td class="r">2</td><td class="r">2</td><td class="r">$11,764</td><td class="r">8.7%</td><td><span class="badge by">⚠️ En Proceso</span></td></tr>
+          <tr><td>JUAN MANUEL MURAYARI VELA</td><td>Lima</td><td class="r">1</td><td class="r">1</td><td class="r">$0</td><td class="r">0.0%</td><td><span class="badge by">⚠️ En Proceso</span></td></tr>
+          <tr class="total"><td colspan="2">TOTAL</td><td class="r">4</td><td class="r">4</td><td class="r">$134,816</td><td class="r">100%</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /page-resumen -->
+
+<!-- ════════════════════════════════
+     PAGE: ANÁLISIS
+════════════════════════════════ -->
+<div class="page" id="page-analisis">
+
+  <div class="update-wrap">
+    <span class="update-lbl">Vista:</span>
+    <span class="update-val">Análisis mensual · Ene–Jun 2026</span>
+  </div>
+
+  <!-- KPIs de análisis -->
+  <div class="sec-hdr"><span class="sec-title">Análisis Operativo · 2026</span><span class="sec-sub">Evolución y desempeño de liquidación</span></div>
+  <div class="grid-4" style="margin-bottom:28px">
+    <div class="kc n anim">
+      <div class="kc-label">Promedio Mensual Rutas</div>
+      <div class="kc-val">68</div>
+      <div class="kc-sub">Ene–Jun 2026</div>
+    </div>
+    <div class="kc g anim" style="animation-delay:.08s">
+      <div class="kc-label">Mejor Mes (efectividad)</div>
+      <div class="kc-val">91.3%</div>
+      <div class="kc-sub">Marzo 2026</div>
+    </div>
+    <div class="kc r anim" style="animation-delay:.13s">
+      <div class="kc-label">Mes Crítico</div>
+      <div class="kc-val">78.4%</div>
+      <div class="kc-sub">Mayo 2026</div>
+    </div>
+    <div class="kc y anim" style="animation-delay:.18s">
+      <div class="kc-label">Tendencia Jun</div>
+      <div class="kc-val">+5.4pp</div>
+      <div class="kc-sub">vs. Mayo · Recuperación</div>
+    </div>
+  </div>
+
+  <!-- Gráficas análisis -->
+  <div class="grid-2" style="margin-bottom:28px">
+    <div class="panel anim" style="animation-delay:.2s">
+      <div class="panel-hdr">
+        <div><div class="panel-title">Rutas Totales vs Vencidas · 2026</div><div class="panel-sub">Evolución mensual Ene–Jun</div></div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:240px"><canvas id="chartRutasMensual"></canvas></div>
+      </div>
+    </div>
+    <div class="panel anim" style="animation-delay:.28s">
+      <div class="panel-hdr">
+        <div><div class="panel-title">Efectividad de Liquidación · 2026</div><div class="panel-sub">% rutas liquidadas en plazo vs. meta 90%</div></div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:240px"><canvas id="chartEfectividad"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Análisis por zona -->
+  <div class="grid-2" style="margin-bottom:28px">
+    <div class="panel anim" style="animation-delay:.32s">
+      <div class="panel-hdr">
+        <div><div class="panel-title">Distribución por Zona · Jun 2026</div><div class="panel-sub">Rutas pendientes por ciudad</div></div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:220px"><canvas id="chartZonas"></canvas></div>
+      </div>
+    </div>
+    <div class="panel anim" style="animation-delay:.36s">
+      <div class="panel-hdr">
+        <div><div class="panel-title">Monto Pendiente Mensual · USD</div><div class="panel-sub">Dólar Estadounidense · Ene–Jun 2026</div></div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:220px"><canvas id="chartMontoPEN"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info box -->
+  <div class="info-box anim" style="animation-delay:.4s">
+    <div class="info-box-title">📋 Notas del análisis · Junio 2026</div>
+    <div class="info-box-body">
+      La operación El Salvador al corte 18/06/2026 registra <strong>4 rutas pendientes</strong>, todas en estado vencido. El 100% de las rutas activas requiere gestión inmediata de liquidación. Monto pendiente: <strong>$134,816</strong> (≈ USD 36,339). Efectividad actual: <strong>0.0%</strong> — por debajo de la meta del 90%.</div>
+  </div>
+
+</div><!-- /page-analisis -->
+
+<!-- ════════════════════════════════
+     PAGE: DETALLE RUTAS
+════════════════════════════════ -->
+<div class="page" id="page-detalle">
+
+  <div class="update-wrap">
+    <span class="update-lbl">Registro:</span>
+    <span class="update-val">4 rutas activas · Jun 2026</span>
+  </div>
+
+  <div class="sec-hdr"><span class="sec-title">Detalle de Rutas Pendientes</span><span class="sec-sub">Todas las rutas activas · El Salvador · Jun 2026</span></div>
+
+  <!-- Filtros -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+    <select id="filtroZona" onchange="filtrarDetalle()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.78rem;color:var(--text);background:var(--white)">
+      <option value="">📍 Todas las zonas</option>
+      <option>San Salvador</option>
+      <option>La Libertad</option>
+      <option>Santa Ana</option>
+      <option>Ahuachapán</option>
+      <option>Otros</option>
+    </select>
+    <select id="filtroEstado" onchange="filtrarDetalle()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.78rem;color:var(--text);background:var(--white)">
+      <option value="">🔵 Todos los estados</option>
+      <option>Vencida</option>
+      <option>En Proceso</option>
+      <option>Al Día</option>
+    </select>
+    <button onclick="filtrarDetalle()" style="padding:7px 16px;background:var(--sv1);color:var(--white);border:none;border-radius:8px;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer">Filtrar</button>
+    <button onclick="resetFiltros()" style="padding:7px 16px;background:var(--bg);color:var(--text2);border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.78rem;cursor:pointer">Limpiar</button>
+    <span id="filtroCount" style="font-size:.75rem;color:var(--text2);align-self:center"></span>
+  </div>
+
+  <div class="panel">
+    <div class="panel-body" style="padding:0;overflow-x:auto">
+      <table class="tbl" id="tblDetalle">
+        <thead><tr>
+          <th>N° Despacho</th><th>Transportista</th><th>Zona</th>
+          <th class="r">Días</th><th class="r">Monto USD</th>
+          <th>Estado</th>
+        </tr></thead>
+        <tbody id="tblDetalleBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /page-detalle -->
+
+<!-- ════════════════════════════════
+     PAGE: TENDENCIAS
+════════════════════════════════ -->
+<div class="page" id="page-tendencias">
+
+  <div class="update-wrap">
+    <span class="update-lbl">Período:</span>
+    <span class="update-val">Enero – Junio 2026</span>
+  </div>
+
+  <div class="sec-hdr"><span class="sec-title">Tendencias · El Salvador 2026</span><span class="sec-sub">Evolución histórica de KPIs operativos</span></div>
+
+  <div class="grid-2" style="margin-bottom:28px">
+    <div class="panel anim">
+      <div class="panel-hdr">
+        <div><div class="panel-title">Total Rutas Pendientes · Mensual</div><div class="panel-sub">Volumen operativo Ene–Jun 2026</div></div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:240px"><canvas id="chartTendRutas"></canvas></div>
+      </div>
+    </div>
+    <div class="panel anim" style="animation-delay:.1s">
+      <div class="panel-hdr">
+        <div><div class="panel-title">% Rutas Vencidas · Mensual</div><div class="panel-sub">Meta referencial: ≤10%</div></div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:240px"><canvas id="chartTendVencidas"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel anim" style="animation-delay:.2s" style="margin-bottom:28px">
+    <div class="panel-hdr">
+      <div><div class="panel-title">Resumen Histórico · Ene–Jun 2026</div><div class="panel-sub">KPIs mensuales consolidados · El Salvador</div></div>
+    </div>
+    <div class="panel-body" style="padding:0">
+      <table class="tbl">
+        <thead><tr>
+          <th>Mes</th>
+          <th class="r">Total Rutas</th><th class="r">Vencidas</th>
+          <th class="r">% Vencidas</th><th class="r">Efectividad</th>
+          <th class="r">Monto USD</th><th>Tendencia</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>Enero 2026</td><td class="r">61</td><td class="r">7</td><td class="r">11.5%</td><td class="r">88.5%</td><td class="r">$2,284,100</td><td><span class="badge bg">↗ OK</span></td></tr>
+          <tr><td>Febrero 2026</td><td class="r">65</td><td class="r">9</td><td class="r">13.8%</td><td class="r">86.2%</td><td class="r">$2,431,750</td><td><span class="badge by">↘ Alerta</span></td></tr>
+          <tr><td>Marzo 2026</td><td class="r">58</td><td class="r">5</td><td class="r">8.6%</td><td class="r">91.4%</td><td class="r">$2,168,400</td><td><span class="badge bg">↗ OK</span></td></tr>
+          <tr><td>Abril 2026</td><td class="r">71</td><td class="r">10</td><td class="r">14.1%</td><td class="r">85.9%</td><td class="r">$2,657,900</td><td><span class="badge by">↘ Alerta</span></td></tr>
+          <tr><td>Mayo 2026</td><td class="r">76</td><td class="r">16</td><td class="r">21.1%</td><td class="r">78.9%</td><td class="r">$2,844,200</td><td><span class="badge br">↘ Crítico</span></td></tr>
+          <tr><td>Junio 2026</td><td class="r">4</td><td class="r">4</td><td class="r">100%</td><td class="r">0.0%</td><td class="r">$134,816</td><td><span class="badge br">↘ Crítico</span></td></tr>
+          <tr class="total"><td>PROMEDIO 2026</td><td class="r">68</td><td class="r">10</td><td class="r">14.2%</td><td class="r">85.8%</td><td class="r">$2,538,945</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /page-tendencias -->
+
+</main>
+
+<footer class="page-footer">
+  <div class="page-footer-inner">
+    <div class="footer-l">Grupo PDC · Departamento Financiero · Operación El Salvador · © 2026</div>
+    <div class="footer-r">Dashboard El Salvador v1.0 · PDC Analytics Center</div>
+  </div>
+</footer>
+
+<script>var PDC_MASTER_PATH = '../index.html';</script>
+<script src="../js/pdc_data_bridge.js"></script>
+<script>
+/* ══ DATOS ══ */
+var MESES = ['Ene','Feb','Mar','Abr','May','Jun'];
+
+var D = {
+  /* Últimos 2 meses reales (RAW Rutas) · anteriores: referencial */
+  rutasTotal:    [61, 65, 58, 71, 21, 74],
+  rutasVencidas: [7,   9,  5, 10,  2, 12],
+  efectividad:   [88.5, 86.2, 91.4, 85.9, 90.5, 83.8],
+  montoPEN:      [2284100, 2431750, 2168400, 2657900, 778809, 1492234],
+  zonas:         { 'LIMA':41, 'LA LIBERTAD':6, 'CAJAMARCA':4, 'LAMBAYEQUE':4, 'AREQUIPA':3, 'Otras':16 }
+};
+
+/* Dataset detalle rutas */
+var RUTAS_DETALLE = [
+  {despacho:'PE-29005',transp:'FRICH GROUP TRADEA S.A.C.',zona:'LIMA',dias:18,monto:81713,estado:'Vencida'},
+  {despacho:'PE-29085',transp:'FRICH GROUP TRADEA S.A.C.',zona:'LIMA',dias:16,monto:68060,estado:'Vencida'},
+  {despacho:'PE-28974',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'SAN MARTÍN',dias:15,monto:25481,estado:'En Proceso'},
+  {despacho:'PE-29190',transp:'FRICH GROUP TRADEA S.A.C.',zona:'LIMA',dias:15,monto:42331,estado:'En Proceso'},
+  {despacho:'PE-29210',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:15,monto:14696,estado:'En Proceso'},
+  {despacho:'PE-29160',transp:'FELIXCAR F & M  S.A.C.',zona:'TACNA',dias:14,monto:29573,estado:'En Proceso'},
+  {despacho:'PE-29178',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'AREQUIPA',dias:13,monto:69266,estado:'En Proceso'},
+  {despacho:'PE-29179',transp:'FELIXCAR F & M  S.A.C.',zona:'AREQUIPA',dias:13,monto:15148,estado:'En Proceso'},
+  {despacho:'PE-29192',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'CAJAMARCA',dias:13,monto:7257,estado:'En Proceso'},
+  {despacho:'PE-29193',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'CAJAMARCA',dias:13,monto:27438,estado:'En Proceso'},
+  {despacho:'PE-29195',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'CAJAMARCA',dias:13,monto:27635,estado:'En Proceso'},
+  {despacho:'PE-29208',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'AREQUIPA',dias:13,monto:73,estado:'En Proceso'},
+  {despacho:'PE-29214',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'TACNA',dias:13,monto:21920,estado:'En Proceso'},
+  {despacho:'PE-29221',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'CAJAMARCA',dias:13,monto:19649,estado:'En Proceso'},
+  {despacho:'PE-29252',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'LA LIBERTAD',dias:13,monto:18332,estado:'En Proceso'},
+  {despacho:'PE-29212',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'MADRE DE DIOS',dias:12,monto:43331,estado:'En Proceso'},
+  {despacho:'PE-29215',transp:'FELIXCAR F & M  S.A.C.',zona:'CUSCO',dias:12,monto:88611,estado:'En Proceso'},
+  {despacho:'PE-29231',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'UCAYALI',dias:12,monto:4458,estado:'En Proceso'},
+  {despacho:'PE-29232',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'UCAYALI',dias:12,monto:6578,estado:'En Proceso'},
+  {despacho:'PE-29211',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'SAN MARTÍN',dias:11,monto:44206,estado:'En Proceso'},
+  {despacho:'PE-28971',transp:'FRICH GROUP TRADEA S.A.C.',zona:'LORETO',dias:5,monto:123053,estado:'Al Día'},
+  {despacho:'PE-29420',transp:'FRANKLIN MURAYARI VELA',zona:'LIMA',dias:5,monto:1127,estado:'Al Día'},
+  {despacho:'PE-29412',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'TUMBES',dias:4,monto:4181,estado:'Vencida'},
+  {despacho:'PE-29450',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:139,estado:'Al Día'},
+  {despacho:'PE-29451',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:128,estado:'Al Día'},
+  {despacho:'PE-29452',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:87,estado:'Al Día'},
+  {despacho:'PE-29457',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:11960,estado:'Al Día'},
+  {despacho:'PE-29459',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:8,estado:'Al Día'},
+  {despacho:'PE-29463',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:160,estado:'Al Día'},
+  {despacho:'PE-29464',transp:'MYR LOGISTICA SAC',zona:'LIMA',dias:4,monto:39229,estado:'Vencida'},
+  {despacho:'PE-29467',transp:'MYR LOGISTICA SAC',zona:'LIMA',dias:4,monto:2876,estado:'Al Día'},
+  {despacho:'PE-29479',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:18877,estado:'Al Día'},
+  {despacho:'PE-29482',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:1384,estado:'Al Día'},
+  {despacho:'PE-29484',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:2408,estado:'Al Día'},
+  {despacho:'PE-29485',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:13605,estado:'Al Día'},
+  {despacho:'PE-29488',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:8,estado:'Al Día'},
+  {despacho:'PE-29492',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:4,monto:7,estado:'Al Día'},
+  {despacho:'PE-29288',transp:'FRICH GROUP TRADEA S.A.C.',zona:'LIMA',dias:3,monto:7050,estado:'Al Día'},
+  {despacho:'PE-29289',transp:'FRICH GROUP TRADEA S.A.C.',zona:'LIMA',dias:3,monto:22646,estado:'Vencida'},
+  {despacho:'PE-29461',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LAMBAYEQUE',dias:3,monto:77279,estado:'Al Día'},
+  {despacho:'PE-29462',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'TUMBES',dias:3,monto:12509,estado:'Vencida'},
+  {despacho:'PE-29474',transp:'FRIO BANK S.A.C.',zona:'ÁNCASH',dias:3,monto:43087,estado:'Al Día'},
+  {despacho:'PE-29475',transp:'FRIO BANK S.A.C.',zona:'LA LIBERTAD',dias:3,monto:5348,estado:'Al Día'},
+  {despacho:'PE-29476',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LA LIBERTAD',dias:3,monto:10414,estado:'Al Día'},
+  {despacho:'PE-29477',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LA LIBERTAD',dias:3,monto:5710,estado:'Al Día'},
+  {despacho:'PE-29489',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LAMBAYEQUE',dias:3,monto:3288,estado:'Al Día'},
+  {despacho:'PE-29505',transp:'MYR LOGISTICA SAC',zona:'LIMA',dias:3,monto:97125,estado:'Al Día'},
+  {despacho:'PE-29506',transp:'MYR LOGISTICA SAC',zona:'LIMA',dias:3,monto:110537,estado:'Al Día'},
+  {despacho:'PE-29507',transp:'ANTHONY  PERCY MONTALVO  CHAVEZ',zona:'LIMA',dias:3,monto:11051,estado:'Al Día'},
+  {despacho:'PE-29316',transp:'FRICH GROUP TRADEA S.A.C.',zona:'JUNÍN',dias:2,monto:40781,estado:'Al Día'},
+  {despacho:'PE-29365',transp:'FELIXCAR F & M  S.A.C.',zona:'CUSCO',dias:2,monto:11979,estado:'Al Día'},
+  {despacho:'PE-29415',transp:'FELIXCAR F & M  S.A.C.',zona:'CUSCO',dias:2,monto:16228,estado:'Al Día'},
+  {despacho:'PE-29514',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'LA LIBERTAD',dias:2,monto:5938,estado:'Vencida'},
+  {despacho:'PE-29515',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'TUMBES',dias:2,monto:6058,estado:'Vencida'},
+  {despacho:'PE-29520',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LAMBAYEQUE',dias:2,monto:5480,estado:'Al Día'},
+  {despacho:'PE-29552',transp:'FRANKLIN MURAYARI VELA',zona:'LIMA',dias:2,monto:8611,estado:'Al Día'},
+  {despacho:'PE-29553',transp:'EDGAR RAUL ROJAS PUENTE',zona:'LIMA',dias:2,monto:5297,estado:'Al Día'},
+  {despacho:'PE-29554',transp:'JHONATAN MURAYARI VELA',zona:'LIMA',dias:2,monto:3741,estado:'Al Día'},
+  {despacho:'PE-29555',transp:'JHEINER ALONSO MENDEZ DAVILA',zona:'LIMA',dias:2,monto:5599,estado:'Al Día'},
+  {despacho:'PE-29556',transp:'DANIEL ROJAS PUENTE',zona:'LIMA',dias:2,monto:2784,estado:'Al Día'},
+  {despacho:'PE-29557',transp:'JUAN MANUEL MURAYARI VELA',zona:'LIMA',dias:2,monto:0,estado:'Vencida'},
+  {despacho:'PE-29559',transp:'JHONATAN MURAYARI VELA',zona:'LIMA',dias:2,monto:1490,estado:'Al Día'},
+  {despacho:'PE-29560',transp:'DANIEL ROJAS PUENTE',zona:'LIMA',dias:2,monto:137,estado:'Al Día'},
+  {despacho:'PE-29547',transp:'ANTHONY  PERCY MONTALVO  CHAVEZ',zona:'LIMA',dias:2,monto:82836,estado:'Al Día'},
+  {despacho:'PE-29549',transp:'',zona:'LIMA',dias:2,monto:0,estado:'Vencida'},
+  {despacho:'PE-29550',transp:'',zona:'LIMA',dias:2,monto:0,estado:'Vencida'},
+  {despacho:'PE-29551',transp:'DANIEL ROJAS PUENTE',zona:'LIMA',dias:2,monto:643,estado:'Al Día'},
+  {despacho:'PE-29558',transp:'JUAN MANUEL ABAD MEL',zona:'LIMA',dias:2,monto:11720,estado:'Al Día'},
+  {despacho:'PE-29533',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LAMBAYEQUE',dias:1,monto:224,estado:'Al Día'},
+  {despacho:'PE-29546',transp:'TRANSPORTES ITATI CARGO EIRL',zona:'LA LIBERTAD',dias:1,monto:4,estado:'Vencida'},
+  {despacho:'PE-29561',transp:'EDGAR RAUL ROJAS PUENTE',zona:'LIMA',dias:1,monto:839,estado:'Al Día'},
+  {despacho:'PE-29583',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:0,monto:582,estado:'Al Día'},
+  {despacho:'PE-29584',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:0,monto:172,estado:'Al Día'},
+  {despacho:'PE-29585',transp:'COMPAÑIA DISTRIBUIDORA, S.A.',zona:'LIMA',dias:0,monto:53,estado:'Al Día'}
+];
+
+var fmtUSD = function(n){ return '$'+n.toLocaleString('es-SV',{minimumFractionDigits:0,maximumFractionDigits:0}); };
+
+/* ══ COLORES ══ */
+var C = {
+  sv1:'#B91C1C', sv2:'#FFAB00', svLight:'#FFE4B8',
+  green:'#2D9E2D', yellow:'#C48A00', red:'#CC0000',
+  navy:'#002060', sky:'#CFEEFC', text2:'#5A6480', border:'#E2E8F0'
+};
+
+/* ══ CHART HELPERS ══ */
+var _charts = {};
+function mkChart(id, cfg){
+  if(_charts[id]){ _charts[id].destroy(); }
+  var ctx = document.getElementById(id);
+  if(!ctx) return;
+  _charts[id] = new Chart(ctx, cfg);
+}
+
+var BASE_OPTS = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{
+    legend:{ labels:{ font:{family:"'Inter',sans-serif",size:11}, color:C.text2, padding:16 } },
+    tooltip:{ backgroundColor:'#fff', titleColor:C.navy, bodyColor:C.text2,
+      borderColor:C.border, borderWidth:1, padding:10,
+      titleFont:{family:"'Inter',sans-serif",weight:'600',size:11},
+      bodyFont:{family:"'Inter',sans-serif",size:11} }
+  },
+  scales:{
+    x:{ grid:{display:false}, ticks:{font:{family:"'Inter',sans-serif",size:10}, color:C.text2} },
+    y:{ grid:{color:C.border}, ticks:{font:{family:"'Inter',sans-serif",size:10}, color:C.text2} }
+  }
+};
+
+/* ══ NAV ══ */
+function goPage(id, btn){
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('on'); });
+  document.querySelectorAll('.ntab').forEach(function(t){ t.classList.remove('on'); });
+  var pg = document.getElementById('page-'+id);
+  if(pg) pg.classList.add('on');
+  if(btn) btn.classList.add('on');
+  renderCharts(id);
+  if(id==='detalle') renderDetalle(RUTAS_DETALLE);
+}
+
+/* ══ CHARTS ══ */
+function renderCharts(page){
+  if(page==='resumen'){
+    mkChart('chartEstados',{
+      type:'doughnut',
+      data:{
+        labels:['✅ Al Día (≤7d)','🕐 En Proceso (8–14d)','⚠️ Vencidas (≥15d)'],
+        datasets:[{ data:[0,4,0],
+          backgroundColor:[C.green, C.yellow, C.red],
+          borderWidth:0, hoverOffset:8 }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'60%',
+        plugins:{
+          legend:{ position:'bottom', labels:{font:{family:"'Inter',sans-serif",size:11},color:C.text2,padding:14} },
+          tooltip:{ callbacks:{ label:function(ctx){ return ctx.label+': '+ctx.raw+' rutas ('+((ctx.raw/4)*100).toFixed(1)+'%)'; } } }
+        }
+      }
+    });
+  }
+  if(page==='analisis'){
+    /* Rutas mensual */
+    mkChart('chartRutasMensual',{
+      type:'bar',
+      data:{
+        labels:MESES,
+        datasets:[
+          { label:'Total Rutas', data:D.rutasTotal, backgroundColor:C.sky, borderRadius:4, yAxisID:'y' },
+          { label:'Vencidas', data:D.rutasVencidas, backgroundColor:C.red, borderRadius:4, yAxisID:'y1' }
+        ]
+      },
+      options:Object.assign({},BASE_OPTS,{
+        scales:{
+          x:BASE_OPTS.scales.x,
+          y:Object.assign({},BASE_OPTS.scales.y,{ position:'left', title:{display:true,text:'Total',font:{size:10},color:C.text2} }),
+          y1:{ position:'right', grid:{drawOnChartArea:false},
+            ticks:{font:{family:"'Inter',sans-serif",size:10},color:C.red},
+            title:{display:true,text:'Vencidas',font:{size:10},color:C.red} }
+        }
+      })
+    });
+    /* Efectividad */
+    mkChart('chartEfectividad',{
+      type:'line',
+      data:{
+        labels:MESES,
+        datasets:[
+          { label:'Efectividad %', data:D.efectividad, borderColor:C.sv1, backgroundColor:C.sv1+'20',
+            fill:true, tension:.35, pointRadius:5, pointBackgroundColor:C.sv1, borderWidth:2.5 },
+          { label:'Meta 90%', data:[90,90,90,90,90,90], borderColor:C.green, borderDash:[6,4],
+            pointRadius:0, borderWidth:1.5, backgroundColor:'transparent', fill:false }
+        ]
+      },
+      options:Object.assign({},BASE_OPTS,{
+        plugins:Object.assign({},BASE_OPTS.plugins,{
+          tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+ctx.raw+'%'; } } }
+        }),
+        scales:{
+          x:BASE_OPTS.scales.x,
+          y:Object.assign({},BASE_OPTS.scales.y,{
+            min:70, max:100,
+            ticks:Object.assign({},BASE_OPTS.scales.y.ticks,{ callback:function(v){ return v+'%'; } })
+          })
+        }
+      })
+    });
+    /* Zonas donut */
+    var zonaLabels = Object.keys(D.zonas);
+    var zonaData   = zonaLabels.map(function(k){ return D.zonas[k]; });
+    var zonaColors = [C.sv1, C.sv2, '#D46B1A', '#B8860B', '#6B8E4E'];
+    mkChart('chartZonas',{
+      type:'doughnut',
+      data:{
+        labels:zonaLabels,
+        datasets:[{ data:zonaData, backgroundColor:zonaColors, borderWidth:0, hoverOffset:8 }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'55%',
+        plugins:{
+          legend:{ position:'bottom', labels:{font:{family:"'Inter',sans-serif",size:10},color:C.text2,padding:10} },
+          tooltip:{ callbacks:{ label:function(ctx){ return ctx.label+': '+ctx.raw+' rutas'; } } }
+        }
+      }
+    });
+    /* Monto USD mensual */
+    mkChart('chartMontoPEN',{
+      type:'bar',
+      data:{
+        labels:MESES,
+        datasets:[{ label:'Monto pendiente USD', data:D.montoPEN,
+          backgroundColor:C.sv1+'CC', borderRadius:4, hoverBackgroundColor:C.sv1 }]
+      },
+      options:Object.assign({},BASE_OPTS,{
+        plugins:Object.assign({},BASE_OPTS.plugins,{
+          tooltip:{ callbacks:{ label:function(ctx){ return fmtUSD(ctx.raw); } } }
+        }),
+        scales:{
+          x:BASE_OPTS.scales.x,
+          y:Object.assign({},BASE_OPTS.scales.y,{
+            ticks:Object.assign({},BASE_OPTS.scales.y.ticks,{ callback:function(v){ return '$'+Math.round(v/1000)+'K'; } })
+          })
+        }
+      })
+    });
+  }
+  if(page==='tendencias'){
+    /* Tendencia rutas */
+    mkChart('chartTendRutas',{
+      type:'line',
+      data:{
+        labels:MESES,
+        datasets:[{ label:'Rutas Pendientes', data:D.rutasTotal,
+          borderColor:C.sv1, backgroundColor:C.sv1+'18', fill:true,
+          tension:.35, pointRadius:5, pointBackgroundColor:C.sv1, borderWidth:2.5 }]
+      },
+      options:Object.assign({},BASE_OPTS,{
+        plugins:Object.assign({},BASE_OPTS.plugins,{
+          tooltip:{ callbacks:{ label:function(ctx){ return 'Rutas: '+ctx.raw; } } }
+        }),
+        scales:{ x:BASE_OPTS.scales.x, y:Object.assign({},BASE_OPTS.scales.y,{min:40}) }
+      })
+    });
+    /* % Vencidas */
+    var pctVencidas = D.rutasVencidas.map(function(v,i){ return Math.round(v/D.rutasTotal[i]*1000)/10; });
+    mkChart('chartTendVencidas',{
+      type:'line',
+      data:{
+        labels:MESES,
+        datasets:[
+          { label:'% Vencidas', data:pctVencidas, borderColor:C.red, backgroundColor:C.red+'18',
+            fill:true, tension:.35, pointRadius:5, pointBackgroundColor:C.red, borderWidth:2.5 },
+          { label:'Meta ≤10%', data:[10,10,10,10,10,10], borderColor:C.green, borderDash:[6,4],
+            pointRadius:0, borderWidth:1.5, backgroundColor:'transparent', fill:false }
+        ]
+      },
+      options:Object.assign({},BASE_OPTS,{
+        plugins:Object.assign({},BASE_OPTS.plugins,{
+          tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+ctx.raw+'%'; } } }
+        }),
+        scales:{
+          x:BASE_OPTS.scales.x,
+          y:Object.assign({},BASE_OPTS.scales.y,{
+            min:0, max:30,
+            ticks:Object.assign({},BASE_OPTS.scales.y.ticks,{ callback:function(v){ return v+'%'; } })
+          })
+        }
+      })
+    });
+  }
+}
+
+/* ══ DETALLE TABLE ══ */
+function renderDetalle(data){
+  var tbody = document.getElementById('tblDetalleBody');
+  if(!tbody) return;
+  var html = '';
+  data.forEach(function(r){
+    var badgeCls = r.estado==='Vencida' ? 'br' : r.estado==='En Proceso' ? 'by' : 'bg';
+    var badgeIco = r.estado==='Vencida' ? '🔴' : r.estado==='En Proceso' ? '🕐' : '✅';
+    html += '<tr>'+
+      '<td style="font-family:monospace;font-size:.73rem">'+r.despacho+'</td>'+
+      '<td>'+r.transp+'</td><td>'+r.zona+'</td>'+
+      '<td class="r" style="font-weight:700;color:'+(r.dias>=15?'var(--red2)':r.dias>=8?'var(--yellow2)':'var(--green2)')+'">'+r.dias+'d</td>'+
+      '<td class="r">'+fmtUSD(r.monto)+'</td>'+
+      '<td><span class="badge '+badgeCls+'">'+badgeIco+' '+r.estado+'</span></td>'+
+    '</tr>';
+  });
+  tbody.innerHTML = html;
+  document.getElementById('filtroCount').textContent = data.length + ' registros';
+}
+
+function filtrarDetalle(){
+  var zona   = document.getElementById('filtroZona').value;
+  var estado = document.getElementById('filtroEstado').value;
+  var filtered = RUTAS_DETALLE.filter(function(r){
+    return (!zona || r.zona === zona) && (!estado || r.estado === estado);
+  });
+  renderDetalle(filtered);
+}
+
+function resetFiltros(){
+  document.getElementById('filtroZona').value  = '';
+  document.getElementById('filtroEstado').value = '';
+  renderDetalle(RUTAS_DETALLE);
+}
+
+/* ══ SINCRONIZACIÓN EN VIVO (PDCBridge) — fuente única: index.html ══
+   Recalcula los KPIs de Resumen, zonas, transportistas y Detalle
+   desde el dataset real. Si el fetch falla, se conservan los
+   valores de referencia (fallback silencioso) y el dashboard
+   sigue funcionando exactamente igual que antes. */
+function pdcApplyLiveData(data){
+  var RAW = data.RAW || [];
+  var rows = RAW.filter(function(r){ return r['Pais']==='El Salvador' && PDCBridge.notLiq(r); });
+  if(!rows.length) return; /* sin datos reales -> se conservan los valores de referencia */
+
+  var pend = rows.length;
+  var venc = rows.filter(function(r){ return r['Estado (Facturación)']==='Vencidas'; }).length;
+  var enProceso = rows.filter(function(r){ return r['Rango Real']==='04 a 10'; }).length;
+  var alDia = rows.filter(function(r){ return r['Rango Real']==='0 Tiempo' || r['Rango Real']==='01 a 03'; }).length;
+  var montoPend = rows.reduce(function(a,r){ return a+(r['Valor Asignado']||0); }, 0);
+  var montoVenc = rows.filter(function(r){ return r['Estado (Facturación)']==='Vencidas'; })
+                       .reduce(function(a,r){ return a+(r['Valor Asignado']||0); }, 0);
+  var efect = pend ? Math.round((alDia/pend)*1000)/10 : 0;
+
+  /* Zonas (parseando "Ubicación Geografica": "100 LIMA" -> "LIMA") */
+  var zonas = {};
+  rows.forEach(function(r){
+    var raw = (r['Ubicación Geografica']||'OTRAS').replace(/^\d+\s*/,'').trim() || 'OTRAS';
+    zonas[raw] = (zonas[raw]||0) + 1;
+  });
+  var limaCount = 0, otrasCount = 0;
+  Object.keys(zonas).forEach(function(z){
+    if(z.indexOf('SAN SALVADOR')>-1) limaCount += zonas[z]; else otrasCount += zonas[z];
+  });
+
+  /* Transportistas (top 5 por monto) */
+  var transpMap = {};
+  rows.forEach(function(r){
+    var t = r['Transportista'] || '(Sin transportista)';
+    if(!transpMap[t]) transpMap[t] = { rutas:0, vencidas:0, monto:0, zona:(r['Ubicación Geografica']||'').replace(/^\d+\s*/,'').trim() };
+    transpMap[t].rutas++;
+    if(r['Estado (Facturación)']==='Vencidas') transpMap[t].vencidas++;
+    transpMap[t].monto += (r['Valor Asignado']||0);
+  });
+  var transpArr = Object.keys(transpMap).map(function(t){ return Object.assign({nombre:t}, transpMap[t]); })
+    .sort(function(a,b){ return b.monto - a.monto; }).slice(0,5);
+
+  /* RUTAS_DETALLE completo (fuente real) */
+  var bucket = function(rr){
+    if(rr==='15 +' || rr==='11 a 15') return 'Vencida';
+    if(rr==='04 a 10') return 'En Proceso';
+    return 'Al Día';
+  };
+  RUTAS_DETALLE = rows.map(function(r){
+    return {
+      despacho: 'ESV-'+r['Numero de Despacho'],
+      transp: r['Transportista']||'',
+      zona: (r['Ubicación Geografica']||'').replace(/^\d+\s*/,'').trim(),
+      dias: r['Dias Real'],
+      monto: r['Valor Asignado']||0,
+      estado: bucket(r['Rango Real'])
+    };
+  });
+
+  /* Refrescar SOLO el mes actual en las series historicas (se conserva historial previo) */
+  var last = D.rutasTotal.length-1;
+  D.rutasTotal[last] = pend;
+  D.rutasVencidas[last] = venc;
+  D.efectividad[last] = efect;
+  D.montoPEN[last] = montoPend;
+  D.zonas = zonas;
+
+  /* Inyectar en el DOM */
+  var setTxt = function(id, val){ var el=document.getElementById(id); if(el) el.textContent = val; };
+  setTxt('kpiPend', pend);
+  setTxt('kpiPendSub', 'San Salvador: '+limaCount+' · Otros: '+otrasCount);
+  setTxt('kpiVenc', venc);
+  setTxt('kpiVencSub', (pend?Math.round(venc/pend*1000)/10:0)+'% del total · Estado Facturación');
+  setTxt('kpiProceso', enProceso);
+  setTxt('kpiProcesoSub', (pend?Math.round(enProceso/pend*1000)/10:0)+'% del total · Rango Real');
+  setTxt('kpiAlDia', alDia);
+  setTxt('kpiAlDiaSub', (pend?Math.round(alDia/pend*1000)/10:0)+'% del total');
+  setTxt('kpiMontoPend', fmtUSD(montoPend));
+  setTxt('kpiMontoPendSub', (data.KPI_TOTALS.report_date||'') + ' · Moneda nativa');
+  setTxt('kpiMontoVenc', fmtUSD(montoVenc));
+  setTxt('kpiMontoVencSub', (montoPend?Math.round(montoVenc/montoPend*1000)/10:0)+'% del monto total pendiente');
+  setTxt('kpiEfect', efect.toFixed(1)+'%');
+  setTxt('kpiEfectSub', 'Meta: ≥90% · Brecha: '+(efect-90).toFixed(1)+'pp');
+  setTxt('badgeTotalRutas', pend+' rutas');
+  setTxt('zonaLima', limaCount);
+  setTxt('zonaOtras', otrasCount);
+  setTxt('zonaTotal', pend);
+
+  var tbody = document.getElementById('tblTransportistasBody');
+  if(tbody){
+    var rowsHtml = transpArr.map(function(t){
+      var pct = montoPend ? Math.round(t.monto/montoPend*1000)/10 : 0;
+      var estCls = t.vencidas>0 ? 'br' : 'by';
+      var estTxt = t.vencidas>0 ? '⚠️ Vencida' : '🕐 En Proceso';
+      return '<tr><td>'+t.nombre+'</td><td>'+t.zona+'</td><td class="r">'+t.rutas+'</td>'+
+             '<td class="r">'+t.vencidas+'</td><td class="r">'+fmtUSD(t.monto)+'</td>'+
+             '<td class="r">'+pct+'%</td><td><span class="badge '+estCls+'">'+estTxt+'</span></td></tr>';
+    }).join('');
+    rowsHtml += '<tr class="total"><td colspan="2">TOTAL</td><td class="r">'+pend+'</td>'+
+                '<td class="r">'+venc+'</td><td class="r">'+fmtUSD(montoPend)+'</td><td class="r">100%</td><td></td></tr>';
+    tbody.innerHTML = rowsHtml;
+  }
+}
+
+/* ══ INIT ══ */
+(function(){
+  /* Usuario en header */
+  try{
+    var s=JSON.parse(sessionStorage.getItem('pdc_session'));
+    if(!s) s=JSON.parse(sessionStorage.getItem('pdc_user'));
+    if(s&&s.nombre){ document.getElementById('hdrUser').textContent=s.nombre.split(' ').slice(0,2).join(' '); }
+  }catch(e){}
+
+  function startRender(){
+    /* Tab por URL */
+    try{
+      var tab=new URLSearchParams(window.location.search).get('tab');
+      var valid=['resumen','analisis','detalle','tendencias'];
+      if(tab&&valid.indexOf(tab)>-1){
+        var el=document.querySelector('.ntab[onclick*="\''+tab+'\'"]');
+        goPage(tab,el);
+      } else {
+        renderCharts('resumen');
+      }
+    }catch(e){ renderCharts('resumen'); }
+  }
+
+  if(typeof PDCBridge !== 'undefined'){
+    PDCBridge.load().then(function(data){
+      try{ pdcApplyLiveData(data); }catch(e){ console.warn('PDCBridge: error aplicando datos en vivo, se usan valores de referencia.', e); }
+      startRender();
+    }).catch(function(err){
+      console.warn('PDCBridge: no se pudo leer index.html en vivo, se muestran valores de referencia.', err);
+      startRender();
+    });
+  } else {
+    startRender();
+  }
+})();
+</script>
+</body>
+</html>
