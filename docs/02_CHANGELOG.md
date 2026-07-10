@@ -1,3 +1,30 @@
+## [09/07/2026] — Restriccion de acceso por pais: usuarios consulta/supervisor ya no ven paises fuera de su asignacion
+
+### Correccion de errores - permisos existentes en PDC_USERS nunca se enforzaban en los dashboards
+
+**Sintoma reportado:** usuarios con pais asignado en PDC_USERS (ej. Joaquin Palma/pais:ESV, Vinicio Sanabria/pais:GT, Claudio Rojas/pais:PE) podian ver TODOS los paises en el dashboard de Rutas y en el modulo de Volumetria de Cash Today, en vez de solo el suyo.
+
+**RCA:**
+- `index.html`: el Auth Bridge solo guardaba `{nombre,email,role}` en sesion - el campo `pais` de `PDC_USERS` nunca llegaba al dashboard. El filtro de pais (`#fP`) quedaba abierto para cualquiera porque la pagina no tenia forma de saber a que pais restringir.
+- `cash_today.html`: el campo `pais` SI llegaba a la sesion, pero solo se usaba para un texto de referencia de festivos - nunca para restringir el filtro principal (`#f-pais`) ni el de Volumetria (`#vol-chart-pais`).
+- Confirmado: la tarjeta "El Salvador" que ven Joaquin Palma/TEAM ESV apuntaba al mismo `index.html` sin diferenciacion real - se resuelve automaticamente con este fix.
+
+**Correccion aplicada (ambos archivos, alcance quirurgico):**
+- `index.html`: Auth Bridge ahora incluye `pais` en la sesion. Si el usuario tiene pais asignado (GT/ESV/PE), se eliminan las demas opciones del selector `#fP`, se fija el valor y se deshabilita, luego se dispara `AF()` (funcion existente, sin modificar) para aplicar el filtro.
+- `cash_today.html`: mismo patron sobre `#f-pais` (filtro principal) y `#vol-chart-pais` (Volumetria), disparando `onPaisChange()` y `renderVolChartOnly()` (funciones existentes, sin modificar).
+- Usuarios sin pais asignado (admin, regional) no se ven afectados - siguen viendo todos los paises igual que hoy.
+
+**Validado antes de deploy:**
+- `node --check` en todos los bloques de ambos archivos.
+- Prueba funcional en Node simulando un `<select>` real: confirmado que solo queda la opcion del pais asignado, seleccionada y deshabilitada, para usuarios GT y ESV.
+
+**Usuarios cuyo acceso queda correctamente restringido con este fix (ninguno se edito individualmente, es automatico via su campo `pais` ya existente):**
+Francisco Aguilar, TEAM GT, Edy Lopez, Vinicio Sanabria -> Guatemala. Joaquin Palma, TEAM ESV -> El Salvador (ambos dashboards). Claudio Rojas, Jose Mallqui -> Peru.
+
+**Alcance:** `index.html` (Auth Bridge + 1 bloque nuevo), `cash_today.html` (Auth Bridge + 1 bloque nuevo). Cero cambios en AF(), onPaisChange(), renderVolChartOnly(), calculo de datos o diseno.
+
+---
+
 ## [09/07/2026] — Limpieza final Honduras: 3 usuarios eliminados + hub.html (prototipo huerfano) eliminado
 
 ### Mejora funcional / Limpieza - cierre del barrido de consistencia Honduras
