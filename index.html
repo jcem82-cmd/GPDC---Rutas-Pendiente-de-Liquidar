@@ -325,7 +325,7 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
     var unified = sessionStorage.getItem('pdc_session');
     if (unified) {
       var s = JSON.parse(unified);
-      u = JSON.stringify({ nombre: s.nombre, email: s.email, role: s.rol });
+      u = JSON.stringify({ nombre: s.nombre, email: s.email, role: s.rol, pais: s.pais });
       sessionStorage.setItem('pdc_user', u);
     } else {
       /* 2. Intentar leer token de URL (?pdc_token=...) — para acceso desde nueva pestaña */
@@ -334,7 +334,7 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
       if (token) {
         try {
           var t = JSON.parse(atob(token));
-          u = JSON.stringify({ nombre: t.nombre, email: t.email, role: t.rol });
+          u = JSON.stringify({ nombre: t.nombre, email: t.email, role: t.rol, pais: t.pais });
           sessionStorage.setItem('pdc_user', u);
           /* Limpiar token de la URL sin recargar */
           var clean = window.location.pathname + (params.get('tab') ? '?tab=' + params.get('tab') : '');
@@ -371,6 +371,26 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
       /* I3: activar Resumen General por defecto al cargar */
       if (typeof ST === 'function') ST('resumen');
       else setTimeout(function(){ if(typeof ST==='function') ST('resumen'); }, 300);
+    }
+
+    /* RESTRICCIÓN POR PAÍS (agregada 09/07/2026): si el usuario tiene un país
+       asignado (GT/ESV/PE), se bloquea el filtro de país a esa opción única.
+       No modifica AF(), el cálculo de datos ni ningún otro comportamiento —
+       solo restringe qué opciones puede seleccionar el usuario en el filtro
+       ya existente. Admin y usuarios sin país (regional) ven todo, sin cambios. */
+    var PAIS_MAP = { GT: 'Guatemala', ESV: 'El Salvador', PE: 'Perú' };
+    if (data.pais && PAIS_MAP[data.pais]) {
+      var fPEl = document.getElementById('fP');
+      if (fPEl) {
+        Array.prototype.slice.call(fPEl.options).forEach(function(opt){
+          if (opt.value !== PAIS_MAP[data.pais]) opt.remove();
+        });
+        fPEl.value = PAIS_MAP[data.pais];
+        fPEl.disabled = true;
+        fPEl.title = 'Acceso restringido a ' + PAIS_MAP[data.pais];
+        var applyRestriction = function(){ if (typeof AF === 'function') AF(); else setTimeout(applyRestriction, 200); };
+        applyRestriction();
+      }
     }
   });
 })();
