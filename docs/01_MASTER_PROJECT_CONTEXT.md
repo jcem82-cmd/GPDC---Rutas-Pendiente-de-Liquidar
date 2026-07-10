@@ -71,20 +71,27 @@ login.html  →  sessionStorage[pdc_session] (TTL 8h)
 El workflow usa `concurrency: {group:"pages", cancel-in-progress:true}`. Publicaciones cercanas en el tiempo pueden cancelar un deploy a medias y dejar el siguiente en estado inconsistente (falla rápida en el paso "Deploy to GitHub Pages"). **Recuperación:** disparar `workflow_dispatch` (ejecución nueva, no "rerun") vía API. Puede requerir 2-3 intentos si el problema es de fondo (backend de GitHub), no solo de Actions.
 **Recomendación pendiente (no implementada):** cambiar `cancel-in-progress` a `false`.
 
-### SHAs de producción (07/07/2026) ← ACTUALES
+### SHAs de producción (09/07/2026) ← ACTUALES
 | Archivo | SHA |
 |---|---|
-| `index.html` | `1aa6b778f6e0` |
-| `analytics.html` | `b93b84a065d6` |
-| `login.html` | `e982a6a8b0e5` |
+| `index.html` | `2a6b15bdf358` |
+| `analytics.html` | `9e674d60ecc2` |
+| `login.html` | `0096f0b23f43` |
 | `admin.html` | `58dfe775739a` |
 | `regional/index.html` | `ec0156003e5a` |
 | `peru/index.html` | `70588d72c6ba` |
 | `honduras/index.html` | `c2014b3adf9a` |
-| `cash_today.html` | `bbe49d240e0c` |
+| `cash_today.html` | `aaa129e02a65` |
 | `js/pdc_data_bridge.js` | `174ac5c4cb3d` |
 | `js/auth.js` | `451f86c4c443` |
 | `js/users.js` | `2f35ca816e6b` |
+| `cash_summary.json` | `dbd36921d44a` |
+
+### Sesión 09/07/2026 — cierre de barrido de consistencia
+- `login.html`: estadísticas de landing (rutas/países/usuarios) conectadas vía PDCBridge + `PDC_USERS.length`. Mención a Honduras eliminada de la descripción del módulo Rutas.
+- Eliminados 3 usuarios sin operación real: Carlos Reyes, Maria Funez, TEAM Honduras (`pais:'HN'`) de `PDC_USERS` en `login.html` y `analytics.html`.
+- **`hub.html` eliminado del repositorio** — prototipo de Hub anterior a `analytics.html`, huérfano (sin enlaces activos, base de usuarios propia desactualizada).
+- `analytics.html`: descripción de "Consolidado Regional" corregida (ya no menciona Honduras).
 
 **Tokens:** ambos ecosistemas (Rutas `index.html` self-publish y Cash Today `cash_today.html` self-publish) usan tokens fine-grained fragmentados embebidos en cada archivo, con permiso `Contents: Read/Write` restringido a este repo. **Ambos han sido rotados al menos una vez en esta versión** por revocación de GitHub (Secret Scanning) o por incidentes de datos. No asumir que un token documentado en una sesión anterior sigue vigente — verificar contra la API (`GET /user` o `/repos/.../contents`) antes de usarlo; si devuelve `401 Bad credentials`, pedir uno nuevo a Charly (ver protocolo en §8).
 
