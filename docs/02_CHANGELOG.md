@@ -1,3 +1,28 @@
+## [10/07/2026] — Nueva funcionalidad: elsalvador/index.html - dashboard dedicado para El Salvador
+
+### Nueva funcionalidad (no correccion) - autorizada explicitamente por el usuario
+
+**Contexto:** la tarjeta "El Salvador" en el Hub apuntaba al mismo `index.html` generico (ya filtrado por pais via la restriccion de sesion), por lo que ambas tarjetas llevaban al mismo dashboard. Perú, en cambio, ya tenia su propio archivo dedicado (`peru/index.html`) con diseno, zonas y tablas propias.
+
+**Solucion aplicada:** construido `elsalvador/index.html` replicando fielmente el patron de `peru/index.html`:
+- Mismo esquema de tabs (Resumen, Analisis, Detalle, Tendencias), mismos componentes (tarjetas KPI, donut de estados, tabla de transportistas, tabla de detalle con filtros).
+- Colores propios (`--sv1`/`--sv2`, rojo/ambar, distinto al burdeos/dorado de Peru).
+- Moneda nativa USD (sin conversion, a diferencia de Peru que muestra PEN + equivalente USD).
+- Zona geografica: "San Salvador (Capital)" vs "Otros departamentos" (mismo patron binario que Peru usa con "Lima Metropolitana vs Otras"), calculado en vivo desde el campo `Ubicación Geografica` de `RAW`.
+- Conectado a `PDCBridge` desde el inicio (a diferencia de Peru, que se conecto en una fase posterior) - no arrastra el mismo problema de dataset propio desactualizado.
+
+**`analytics.html`:** la tarjeta "El Salvador" ahora apunta a `elsalvador/index.html` en vez de `index.html` - queda simetrica con el patron de Peru. La tarjeta generica "Liquidacion de Rutas" no se toco (sigue llevando a `index.html`, ya filtrado por pais via sesion).
+
+**Validado antes de deploy:**
+- `node --check` en los 5 bloques de script.
+- Prueba funcional en Node contra datos reales de El Salvador: 131 pendientes, 12 vencidas fact., 8 en proceso, 121 al dia, $411,998 monto pendiente, $35,941 monto vencido, 92.4% efectividad, San Salvador 9 / Otros 122 - coincide exacto con el calculo de referencia validado previamente.
+
+**Limitacion conocida (heredada del mismo patron de Peru, no es un defecto nuevo):** las series historicas de 6 meses (graficas de tendencia en tabs Analisis/Tendencias) usan valores de referencia para los 5 meses anteriores al actual - no existe fuente de datos historica real para reconstruirlos, igual que en `peru/index.html`. Solo el mes actual se actualiza en vivo.
+
+**Alcance:** archivo nuevo `elsalvador/index.html` + 1 linea modificada en `analytics.html` (campo `archivo` de la tarjeta). Ningun otro modulo tocado.
+
+---
+
 ## [09/07/2026] — Restriccion de acceso por pais: usuarios consulta/supervisor ya no ven paises fuera de su asignacion
 
 ### Correccion de errores - permisos existentes en PDC_USERS nunca se enforzaban en los dashboards
