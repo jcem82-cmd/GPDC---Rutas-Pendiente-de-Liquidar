@@ -9,6 +9,7 @@
 <style>
 :root{
   --navy:#0f2340;
+  --white:#fff;
   --navy2:#16325c;
   --blue:#2563eb;
   --blue-light:#eaf1fd;
@@ -55,6 +56,20 @@ a{color:var(--blue);}
 .topbar-brand{display:flex;align-items:center;gap:16px;}
 .logo-badge{background:#fff;border-radius:10px;padding:8px 16px;display:flex;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.18);flex-shrink:0;}
 .logo-badge svg{display:block;height:36px;width:auto;}
+
+/* ── HEADER SLIM COMPARTIDO (homologado con peru/elsalvador/cash_today) ── */
+.hdr{background:var(--navy);position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.hdr-inner{max-width:1400px;margin:0 auto;padding:0 28px;height:60px;display:flex;align-items:center;gap:16px}
+.hdr-logo{background:var(--white);border-radius:8px;padding:4px 12px;font-size:1rem;font-weight:700;color:var(--navy);letter-spacing:.05em;flex-shrink:0}
+.hdr-div{width:1px;height:24px;background:rgba(255,255,255,.2);flex-shrink:0}
+.hdr-back{display:flex;align-items:center;gap:6px;color:rgba(207,238,252,.75);font-size:.78rem;font-weight:500;text-decoration:none;padding:5px 10px;border-radius:7px;transition:background .15s;cursor:pointer;border:none;background:none;font-family:inherit}
+.hdr-back:hover{background:rgba(255,255,255,.1);color:var(--white)}
+.hdr-title-group{flex:1}
+.hdr-title{font-size:.9rem;font-weight:700;color:var(--white);letter-spacing:.04em}
+.hdr-sub{font-size:.7rem;color:rgba(207,238,252,.65)}
+.hdr-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.hdr-badge{background:rgba(37,99,235,.35);border:1px solid rgba(37,99,235,.5);border-radius:20px;padding:4px 12px;font-size:.7rem;font-weight:600;color:rgba(230,240,255,.95)}
+.hdr-user{font-size:.78rem;font-weight:600;color:var(--white);opacity:.85}
 .rule-banner{
   background:#fff;border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:var(--radius);
   padding:12px 16px;margin-bottom:20px;font-size:12.5px;color:var(--gray-600);box-shadow:var(--shadow);
@@ -177,24 +192,22 @@ table.data-table tbody td.motivo-cell{white-space:normal;max-width:260px;min-wid
 })();
 </script>
 
-<div class="topbar">
-  <div class="topbar-inner">
-    <div class="topbar-brand">
-      <div class="logo-badge">
-        <div class="hdr-logo-text" style="font-weight:800;font-size:20px;letter-spacing:.5px;color:#0f2340;">PDC</div>
-      </div>
-      <button onclick="window.location.href='analytics.html'" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600;">← Portal</button>
-      <div>
-        <h1>Dashboard Ejecutivo — Cartas de Salida</h1>
-        <div class="badge-live" id="corteBadge">Corte al —</div>
-      </div>
+<header class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-logo">PDC</div>
+    <div class="hdr-div"></div>
+    <button class="hdr-back" onclick="window.location.href='analytics.html'">← Portal</button>
+    <div class="hdr-div"></div>
+    <div class="hdr-title-group">
+      <div class="hdr-title">DASHBOARD EJECUTIVO · CARTAS DE SALIDA</div>
+      <div class="hdr-sub">Departamento de Liquidaciones · Grupo PDC</div>
     </div>
-    <div class="meta-right">
-      Departamento de Liquidaciones<br>
-      Registros procesados: <b id="totalRowsBadge">—</b>
+    <div class="hdr-right">
+      <span class="hdr-badge" id="corteBadge">Corte al —</span>
+      <span class="hdr-user" id="hdrUser"></span>
     </div>
   </div>
-</div>
+</header>
 
 <div class="wrap">
 
@@ -427,7 +440,12 @@ const DATA = {"cols":["no","liqIdx","fechaEntrega","ruta","pilotoIdx","placas","
 
   document.getElementById('corteBadge').textContent = 'Corte al ' + fmtDateEs(meta.corte);
   document.getElementById('footerCorte').textContent = 'Corte al ' + fmtDateEs(meta.corte);
-  document.getElementById('totalRowsBadge').textContent = meta.totalRows.toLocaleString('es-GT');
+  var _totalRowsBadgeEl = document.getElementById('totalRowsBadge');
+  if(_totalRowsBadgeEl) _totalRowsBadgeEl.textContent = meta.totalRows.toLocaleString('es-GT');
+  try{
+    var _s = JSON.parse(sessionStorage.getItem('pdc_session'));
+    if(_s && _s.nombre) document.getElementById('hdrUser').textContent = _s.nombre.split(' ').slice(0,2).join(' ');
+  }catch(e){}
 
   function fmtDateEs(iso){
     if(!iso) return '—';
