@@ -79,7 +79,7 @@ a{color:var(--blue);}
 .filters{
   background:#fff;border:1px solid var(--border);border-radius:var(--radius);
   padding:14px 16px;margin-bottom:20px;box-shadow:var(--shadow);
-  display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;position:sticky;top:8px;z-index:50;
+  display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;position:sticky;top:68px;z-index:50;
 }
 .f-group{display:flex;flex-direction:column;gap:4px;min-width:130px;}
 .f-group label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--gray-600);}
@@ -306,8 +306,13 @@ table.data-table tbody td.motivo-cell{white-space:normal;max-width:260px;min-wid
   <div class="section-title"><span>Tendencia y estatus</span><span class="line"></span></div>
   <div class="charts-grid">
     <div class="card">
-      <h3>Cartas emitidas por año y mes</h3>
-      <div class="card-sub">Volumen mensual de cartas de salida — filtro actual</div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <div>
+          <h3>Cartas emitidas por mes</h3>
+          <div class="card-sub">Volumen mensual — año seleccionado, sobre el filtro actual</div>
+        </div>
+        <select id="trend-year" style="border:1px solid var(--gray-200);border-radius:7px;padding:6px 10px;font-size:12.5px;font-weight:600;color:var(--navy);background:#fff;"></select>
+      </div>
       <div class="chart-box tall"><canvas id="chartTrend"></canvas></div>
     </div>
     <div class="card">
@@ -553,9 +558,12 @@ const DATA = {"cols":["no","liqIdx","fechaEntrega","ruta","pilotoIdx","placas","
   }
 
   let chartTrend, chartEstatus, chartMotivos, chartPilotos, chartTransportes, chartAging;
+  let lastFilteredRows = [];
+  let trendYear = null;
 
   function refresh(){
     const filtered = rawRows.filter(matchesFilters);
+    lastFilteredRows = filtered;
     document.getElementById('filtersCount').textContent = fmtInt(filtered.length) + ' de ' + fmtInt(rawRows.length) + ' cartas';
     computeKPIs(filtered);
     renderTrend(filtered);
@@ -604,26 +612,35 @@ const DATA = {"cols":["no","liqIdx","fechaEntrega","ruta","pilotoIdx","placas","
   }
 
   function renderTrend(rows){
-    const map = {};
+    /* Poblar el selector de año una sola vez, con todos los años presentes en el dataset completo */
+    const selYear = document.getElementById('trend-year');
+    if(!selYear.options.length){
+      const allYears = Array.from(new Set(rawRows.map(r=>rowGet(r,'anio')).filter(a=>a!=null))).sort((a,b)=>b-a);
+      allYears.forEach(y=>{ const o=document.createElement('option'); o.value=y; o.textContent=y; selYear.appendChild(o); });
+      const currentYear = new Date().getFullYear();
+      trendYear = allYears.includes(currentYear) ? currentYear : allYears[0];
+      selYear.value = trendYear;
+      selYear.addEventListener('change', e=>{ trendYear = parseInt(e.target.value,10); renderTrend(lastFilteredRows); });
+    }
+
+    const counts = new Array(12).fill(0);
     for(const r of rows){
       const a = rowGet(r,'anio'), m = rowGet(r,'mes');
-      if(a==null||m==null) continue;
-      const key = a+'-'+String(m).padStart(2,'0');
-      map[key] = (map[key]||0)+1;
+      if(a==null||m==null||a!==trendYear) continue;
+      counts[m-1]++;
     }
-    const keys = Object.keys(map).sort();
-    const labels = keys.map(k=>{ const [y,m]=k.split('-'); return MESES[parseInt(m,10)]+" '"+y.slice(2); });
-    const values = keys.map(k=>map[k]);
+    const labels = MESES.slice(1);
+    const values = counts;
 
     if(chartTrend) chartTrend.destroy();
     chartTrend = new Chart(document.getElementById('chartTrend'), {
       type:'bar',
-      data:{ labels, datasets:[{label:'Cartas emitidas', data:values, backgroundColor:COLORS.blue, borderRadius:2}] },
+      data:{ labels, datasets:[{label:'Cartas emitidas', data:values, backgroundColor:COLORS.blue, borderRadius:6, maxBarThickness:44}] },
       options:{
         responsive:true, maintainAspectRatio:false,
         interaction:{mode:'index', intersect:false},
         plugins:{legend:{display:false}},
-        scales:{ x:{ticks:{autoSkip:true, maxRotation:0, font:{size:10}}}, y:{beginAtZero:true, ticks:{precision:0}} }
+        scales:{ x:{grid:{display:false}, ticks:{font:{size:11}}}, y:{beginAtZero:true, ticks:{precision:0}, grid:{color:'#f0f2f5'}} }
       }
     });
   }
