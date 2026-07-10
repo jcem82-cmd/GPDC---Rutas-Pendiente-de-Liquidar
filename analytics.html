@@ -270,6 +270,7 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 .accent-peru{background:linear-gradient(90deg,#8B1A1A 0%,#E8A020 100%)}
 .accent-honduras{background:linear-gradient(90deg,#003F8A 0%,#009E60 100%)}
 .accent-elsalvador{background:linear-gradient(90deg,#0F47AF 0%,#E63946 100%)}
+.accent-cartas_salida{background:linear-gradient(90deg,#7C2D12 0%,#F59E0B 100%)}
 .accent-regional{background:linear-gradient(90deg,#002060 0%,#5B2D8E 60%,#E6501E 100%)}
 
 /* Card body */
@@ -673,18 +674,18 @@ var PDC_SESSION_TTL = 8 * 60 * 60 * 1000;
 
 /* ── REGISTRO DE DASHBOARDS ── */
 var PDC_USERS = [
-  { email:'juancarlos.escobar@grupopdc.com', pass:'PDC.Admin@2026',     nombre:'Juan Carlos Escobar', rol:'admin',      dashboards:['rutas','cashtoday','regional','peru','elsalvador'], pais:'regional', sedes:'todas' },
-  { email:'erwin.soto@grupopdc.com',         pass:'PDC.Sup.Reg@2026',   nombre:'Erwin Soto',          rol:'supervisor', dashboards:['rutas','cashtoday','regional','peru','elsalvador'], pais:'regional', sedes:'todas' },
-  { email:'andre.reyes@grupopdc.com',        pass:'PDC.Sup.Reg2@2026',  nombre:'Andre Reyes',         rol:'supervisor', dashboards:['rutas','cashtoday','regional','peru','elsalvador'], pais:'regional', sedes:'todas' },
-  { email:'francisco.aguilar@grupopdc.com',  pass:'PDC.Sup.GT@2026',    nombre:'Francisco Aguilar',   rol:'supervisor', dashboards:['rutas','cashtoday'], pais:'GT',       sedes:['CDA'] },
-  { email:'liquidaciones.cda@grupopdc.com',  pass:'PDC.TeamGT@2026',    nombre:'TEAM GT',             rol:'consulta',   dashboards:['rutas','cashtoday'], pais:'GT',       sedes:['CDA','XELA'] },
-  { email:'edy.lopez@grupopdc.com',          pass:'PDC.Con.GT@2026',    nombre:'Edy Lopez',           rol:'consulta',   dashboards:['rutas'],             pais:'GT',       sedes:['CDA'] },
-  { email:'joaquin.palma@grupopdc.com',      pass:'PDC.Con.ESV@2026',   nombre:'Joaquin Palma',       rol:'consulta',   dashboards:['rutas','cashtoday','elsalvador'], pais:'ESV', sedes:['Sta.Tecla','Sn.Miguel'] },
-  { email:'liquidaciones.esv@grupopdc.com',  pass:'PDC.TeamESV@2026',   nombre:'TEAM ESV',            rol:'consulta',   dashboards:['rutas','cashtoday','elsalvador'], pais:'ESV', sedes:['Sta.Tecla','Sn.Miguel'] },
-  { email:'vinicio.sanabria@grupopdc.com',   pass:'PDC.Con.GT2@2026',   nombre:'Vinicio Sanabria',    rol:'consulta',   dashboards:['rutas'],             pais:'GT',       sedes:['CDA'] },
-  { email:'claudio.rojas@grupopdc.com',      pass:'PDC.Con.PE@2026',    nombre:'Claudio Rojas',       rol:'consulta',   dashboards:['rutas','peru'],      pais:'PE',       sedes:['Peru'] },
-  { email:'jose.mallqui@grupopdc.com',       pass:'PDC.Con.PE2@2026',   nombre:'Jose Mallqui',        rol:'consulta',   dashboards:['rutas','peru'],      pais:'PE',       sedes:['Peru'] },
-  { email:'transportes.peru@grupopdc.com',   pass:'PDC.TeamPE@2026',    nombre:'TEAM Peru',           rol:'consulta',   dashboards:['rutas','peru'],      pais:'PE',       sedes:['Peru'] },
+  { email:'juancarlos.escobar@grupopdc.com', pass:'PDC.Admin@2026',     nombre:'Juan Carlos Escobar', rol:'admin',      dashboards:['rutas','cashtoday','regional','peru','elsalvador','cartas_salida'], pais:'regional', sedes:'todas' },
+  { email:'erwin.soto@grupopdc.com',         pass:'PDC.Sup.Reg@2026',   nombre:'Erwin Soto',          rol:'supervisor', dashboards:['rutas','cashtoday','regional','peru','elsalvador','cartas_salida'], pais:'regional', sedes:'todas' },
+  { email:'andre.reyes@grupopdc.com',        pass:'PDC.Sup.Reg2@2026',  nombre:'Andre Reyes',         rol:'supervisor', dashboards:['rutas','cashtoday','regional','peru','elsalvador','cartas_salida'], pais:'regional', sedes:'todas' },
+  { email:'francisco.aguilar@grupopdc.com',  pass:'PDC.Sup.GT@2026',    nombre:'Francisco Aguilar',   rol:'supervisor', dashboards:['rutas','cashtoday','cartas_salida'], pais:'GT',       sedes:['CDA'] },
+  { email:'liquidaciones.cda@grupopdc.com',  pass:'PDC.TeamGT@2026',    nombre:'TEAM GT',             rol:'consulta',   dashboards:['rutas','cashtoday','cartas_salida'], pais:'GT',       sedes:['CDA','XELA'] },
+  { email:'edy.lopez@grupopdc.com',          pass:'PDC.Con.GT@2026',    nombre:'Edy Lopez',           rol:'consulta',   dashboards:['rutas','cartas_salida'],             pais:'GT',       sedes:['CDA'] },
+  { email:'joaquin.palma@grupopdc.com',      pass:'PDC.Con.ESV@2026',   nombre:'Joaquin Palma',       rol:'consulta',   dashboards:['rutas','cashtoday','elsalvador','cartas_salida'], pais:'ESV', sedes:['Sta.Tecla','Sn.Miguel'] },
+  { email:'liquidaciones.esv@grupopdc.com',  pass:'PDC.TeamESV@2026',   nombre:'TEAM ESV',            rol:'consulta',   dashboards:['rutas','cashtoday','elsalvador','cartas_salida'], pais:'ESV', sedes:['Sta.Tecla','Sn.Miguel'] },
+  { email:'vinicio.sanabria@grupopdc.com',   pass:'PDC.Con.GT2@2026',   nombre:'Vinicio Sanabria',    rol:'consulta',   dashboards:['rutas','cartas_salida'],             pais:'GT',       sedes:['CDA'] },
+  { email:'claudio.rojas@grupopdc.com',      pass:'PDC.Con.PE@2026',    nombre:'Claudio Rojas',       rol:'consulta',   dashboards:['rutas','peru','cartas_salida'],      pais:'PE',       sedes:['Peru'] },
+  { email:'jose.mallqui@grupopdc.com',       pass:'PDC.Con.PE2@2026',   nombre:'Jose Mallqui',        rol:'consulta',   dashboards:['rutas','peru','cartas_salida'],      pais:'PE',       sedes:['Peru'] },
+  { email:'transportes.peru@grupopdc.com',   pass:'PDC.TeamPE@2026',    nombre:'TEAM Peru',           rol:'consulta',   dashboards:['rutas','peru','cartas_salida'],      pais:'PE',       sedes:['Peru'] },
 ];
 
 var PDC_DASHBOARDS = [
@@ -766,6 +767,22 @@ var PDC_DASHBOARDS = [
       { val:'$26,927',  lbl:'Valor USD' }
     ],
     actualizacion: '24 jun 2026',
+    activo: true
+  },
+  {
+    id: 'cartas_salida',
+    nombre: 'Cartas de Salida',
+    descripcion: 'Dashboard ejecutivo de cartas de salida por piloto. Vigencia calculada (Entrega +1 día), análisis por liquidador, transportista y motivo. Actualmente con datos de Guatemala; estructura lista para El Salvador y Perú.',
+    archivo: 'cartas_salida.html',
+    icono: '✉️',
+    categoria: 'Operativo · Liquidaciones',
+    paises: { GT:'🇬🇹 Guatemala', ESV:'🇸🇻 El Salvador', PE:'🇵🇪 Perú' },
+    kpis: [
+      { val:'13,150', lbl:'Cartas totales' },
+      { val:'1',   lbl:'Países (GT)' },
+      { val:'—',   lbl:'Caducadas' }
+    ],
+    actualizacion: '10 jul 2026',
     activo: true
   }
 ];
