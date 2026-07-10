@@ -1,3 +1,22 @@
+## [09/07/2026] — Limpieza final Honduras: 3 usuarios eliminados + hub.html (prototipo huerfano) eliminado
+
+### Mejora funcional / Limpieza - cierre del barrido de consistencia Honduras
+
+**Usuarios eliminados** (login.html y analytics.html, arreglo PDC_USERS):
+- Carlos Reyes (carlos.reyes@grupopdc.com) - pais HN
+- Maria Funez (maria.funez@grupopdc.com) - pais HN
+- TEAM Honduras (liquidaciones.hn@grupopdc.com) - pais HN
+
+Ninguno de los 3 tenia operacion real de rutas (Honduras ya fue removido de Regional en sesiones anteriores). Se conservan los mapeos de pais HN (`paises: {...HN:'Honduras'}`) en analytics.html sin uso activo - se dejaron intactos por no representar un bug funcional, solo para minimizar el alcance de cambio.
+
+**hub.html eliminado del repositorio.** RCA: prototipo de "Centro de Dashboards" anterior a analytics.html, con base de usuarios propia (`USERS`, no `PDC_USERS`) y credenciales desactualizadas, sin ningun enlace activo desde login.html ni ningun otro archivo del sistema actual. Ultimo commit sobre el archivo: 17/06/2026, antes de que existiera el Portal actual. Confirmado huerfano antes de eliminar.
+
+**Validado:** `node --check` en login.html y analytics.html tras la edicion. Deploy confirmado exitoso.
+
+**Alcance:** `login.html`, `analytics.html` (solo arreglo PDC_USERS), `hub.html` (eliminado). Ningun otro modulo tocado.
+
+---
+
 ## [09/07/2026] — login.html: landing con estadisticas fijas, ultimo rincon sin conectar
 
 ### Correccion de errores - ultimo modulo con numeros hardcodeados
