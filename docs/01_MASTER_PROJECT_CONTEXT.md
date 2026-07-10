@@ -29,6 +29,7 @@ PDC Analytics Center
 │
 ├── regional/index.html     ← Consolidado Regional · KPIs EN VIVO vía PDCBridge (GT·SV·PE)
 ├── peru/index.html         ← Dashboard Perú · KPIs EN VIVO vía PDCBridge
+├── elsalvador/index.html   ← Dashboard El Salvador · KPIs EN VIVO vía PDCBridge (NUEVO 10/07)
 ├── honduras/index.html     ← Existe en el repo pero SIN tarjeta en portal (sin datos reales)
 │
 ├── js/
@@ -71,23 +72,27 @@ login.html  →  sessionStorage[pdc_session] (TTL 8h)
 El workflow usa `concurrency: {group:"pages", cancel-in-progress:true}`. Publicaciones cercanas en el tiempo pueden cancelar un deploy a medias y dejar el siguiente en estado inconsistente (falla rápida en el paso "Deploy to GitHub Pages"). **Recuperación:** disparar `workflow_dispatch` (ejecución nueva, no "rerun") vía API. Puede requerir 2-3 intentos si el problema es de fondo (backend de GitHub), no solo de Actions.
 **Recomendación pendiente (no implementada):** cambiar `cancel-in-progress` a `false`.
 
-### SHAs de producción (09/07/2026) ← ACTUALES
+### SHAs de producción (10/07/2026) ← ACTUALES
 | Archivo | SHA |
 |---|---|
-| `index.html` | `2a6b15bdf358` |
-| `analytics.html` | `9e674d60ecc2` |
+| `index.html` | `2ff9029be8d9` |
+| `analytics.html` | `6162f13a9992` |
 | `login.html` | `0096f0b23f43` |
 | `admin.html` | `58dfe775739a` |
 | `regional/index.html` | `ec0156003e5a` |
 | `peru/index.html` | `70588d72c6ba` |
+| `elsalvador/index.html` | `b1a954c1a430` **← NUEVO** |
 | `honduras/index.html` | `c2014b3adf9a` |
-| `cash_today.html` | `aaa129e02a65` |
+| `cash_today.html` | `700951b6b79d` |
 | `js/pdc_data_bridge.js` | `174ac5c4cb3d` |
 | `js/auth.js` | `451f86c4c443` |
 | `js/users.js` | `2f35ca816e6b` |
 | `cash_summary.json` | `dbd36921d44a` |
 
-### Sesión 09/07/2026 — cierre de barrido de consistencia
+### Sesión 10/07/2026
+- **Restricción de acceso por país** implementada en `index.html` y `cash_today.html`: usuarios con `pais` asignado en `PDC_USERS` (GT/ESV/PE) ahora ven únicamente su país en los filtros de Rutas y Volumetría — antes veían todos los países pese a tener el campo `pais` en su perfil.
+- **Fix de sesión en caché:** el Auth Bridge de `index.html` no aplicaba la restricción si el usuario ya tenía una sesión abierta antes del fix (sessionStorage persistente). Corregido con auto-reparación: si `pdc_user` existe pero le falta `pais`, se completa desde `pdc_session` sin exigir reinicio de sesión.
+- **`elsalvador/index.html` (nuevo):** dashboard dedicado para El Salvador, replicando el patrón de `peru/index.html` (mismo esquema de tabs, KPIs, zonas). Antes, la tarjeta "El Salvador" del Hub apuntaba al mismo `index.html` genérico — ahora tiene su propio archivo, conectado a PDCBridge desde el inicio. `analytics.html` actualizado para apuntar ahí.
 - `login.html`: estadísticas de landing (rutas/países/usuarios) conectadas vía PDCBridge + `PDC_USERS.length`. Mención a Honduras eliminada de la descripción del módulo Rutas.
 - Eliminados 3 usuarios sin operación real: Carlos Reyes, Maria Funez, TEAM Honduras (`pais:'HN'`) de `PDC_USERS` en `login.html` y `analytics.html`.
 - **`hub.html` eliminado del repositorio** — prototipo de Hub anterior a `analytics.html`, huérfano (sin enlaces activos, base de usuarios propia desactualizada).
