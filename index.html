@@ -343,6 +343,24 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
       }
       if (!u) { window.location.replace('analytics.html'); return; }
     }
+  } else {
+    /* FIX 09/07/2026: si pdc_user ya existía en caché de una sesión anterior
+       a la restricción por país, le faltará el campo "pais". Se completa
+       aquí desde pdc_session (si sigue disponible) sin exigirle al usuario
+       que cierre sesión y vuelva a entrar. No reconstruye nada — solo
+       rellena un campo faltante en la sesión ya existente. */
+    try {
+      var parsedU = JSON.parse(u);
+      if (parsedU.pais === undefined) {
+        var unifiedExisting = sessionStorage.getItem('pdc_session');
+        if (unifiedExisting) {
+          var sExisting = JSON.parse(unifiedExisting);
+          parsedU.pais = sExisting.pais;
+          u = JSON.stringify(parsedU);
+          sessionStorage.setItem('pdc_user', u);
+        }
+      }
+    } catch(e) {}
   }
   var data = JSON.parse(u);
   /* Verificar tab solicitado via query param */
