@@ -1,5 +1,26 @@
 ## [10/07/2026] — Nueva funcionalidad: elsalvador/index.html - dashboard dedicado para El Salvador
 
+## [13/07/2026] — Fix crítico #2: parseo Total hoja Costo (símbolo $/Q) + dataset actualizado
+
+### RCA
+| Causa raíz | Síntoma |
+|---|---|
+| El campo `Total` de la hoja `Costo` del Excel viene formateado como texto moneda con símbolo (ej. `" $840.00 "`, `" $-577.14 "`), no como número plano. `parseFloat()` sobre una cadena que inicia con `$` devuelve `NaN` → `tot=0` → la fila se descarta (`if(!tot) continue`) | Las 40 filas de la hoja `Costo` se descartaban silenciosamente (try/catch sin alerta al usuario) — `window._COSTOS_LIVE` nunca se poblaba. El módulo Costo Servicio se quedaba mostrando el dataset embebido viejo (37 registros, hasta may-2026) sin reflejar ninguna factura nueva, ni de GT ni de ESV. |
+
+### Corrección aplicada
+- Nuevo parseo robusto del campo Total: limpia cualquier símbolo de moneda (`$`, `Q`, espacios) y separador de miles antes de convertir a número, agnóstico a si la fila es GT (Q) o ESV ($) — la moneda real ya se determina por `EMP_MAP` (CODISA→GTQ, PDC EL SALVADOR→USD), no por el símbolo del texto.
+- Dataset `_COSTOS` reconstruido desde el Excel fuente y desplegado: **40 registros** (antes 37) — GT: 12 registros (Q6,302.08 acumulado) · ESV: 28 registros ($21,197.60 acumulado). Incluye 4 facturas nuevas de GT (Alarmas de Guatemala, S.A. — jun/jul 2026).
+- Validado con `node --check` + simulación del parser real contra el Excel fuente antes de deploy.
+
+### Hallazgo documentado — pendiente de autorización (no corregido en esta sesión)
+El export de Costo de este Excel ya no trae la fila en blanco inicial que versiones previas sí traían — el encabezado real quedó en la fila 0 en vez de la fila 1. El código asume fila 1=encabezado / fila 2=primer dato, por lo que con este formato se pierde silenciosamente la primerísima factura histórica de la hoja (ago-2025, $840.00, ya reflejada en el dataset acumulado desde antes). No afectó el reporte de esta sesión (facturas GT jul-2026); queda como recomendación para robustecer el parser detectando la fila de encabezado dinámicamente en vez de por índice fijo.
+
+### SHA producción
+`cash_today.html` — commit `f824b3c19941`
+
+---
+
+
 ## [13/07/2026] — Fix crítico: persistencia de _COSTOS en publishToGitHub (Costo Servicio)
 
 ### RCA
