@@ -1,5 +1,23 @@
 ## [10/07/2026] — Nueva funcionalidad: elsalvador/index.html - dashboard dedicado para El Salvador
 
+## [13/07/2026] — Fix crítico: persistencia de _COSTOS en publishToGitHub (Costo Servicio)
+
+### RCA
+| Causa raíz | Síntoma |
+|---|---|
+| `publishToGitHub()` reconstruía y persistía `_R` y `_TC_MENSUAL` en el HTML publicado, pero nunca reconstruía el bloque `const _COSTOS` a partir de `window._COSTOS_LIVE` | Al cargar un Excel con hoja `Costo` actualizada y publicar, los nuevos costos de servicio solo vivían en la sesión del navegador — se perdían al recargar la página o al ingresar otro usuario. Mismo patrón de bug ya corregido para `_TC_MENSUAL` el 02/07/2026, pero nunca replicado para Costo. |
+
+### Corrección aplicada
+- Nuevo bloque en `publishToGitHub()` (cash_today.html): si `window._COSTOS_LIVE` tiene datos, reconstruye `const _COSTOS = [...]` con reemplazo completo (mismo criterio que `_R`: cada hoja `Costo` es un export histórico completo de facturas de proveedor).
+- Validado con `node --check` sobre los bloques `<script>` extraídos antes de deploy.
+- Alcance: único archivo (`cash_today.html`), única función (`publishToGitHub()`). Sin cambios de HTML/CSS ni otros módulos.
+
+### SHA producción
+`cash_today.html` — commit `18a2f737df79`
+
+---
+
+
 ### Nueva funcionalidad (no correccion) - autorizada explicitamente por el usuario
 
 **Contexto:** la tarjeta "El Salvador" en el Hub apuntaba al mismo `index.html` generico (ya filtrado por pais via la restriccion de sesion), por lo que ambas tarjetas llevaban al mismo dashboard. Perú, en cambio, ya tenia su propio archivo dedicado (`peru/index.html`) con diseno, zonas y tablas propias.
