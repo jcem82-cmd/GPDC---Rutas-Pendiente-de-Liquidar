@@ -31,7 +31,7 @@ Mismo principio que las contraseñas: client-side JavaScript no puede tener secr
 
 El token fine-grained expuesto (`Cashtoday`, creado 03/07/2026, sin expiración, Contents:RW) fue **eliminado por el usuario** desde GitHub → Developer settings, confirmando el cierre del segundo y último punto crítico de seguridad reportado al inicio de esta sesión (ver entrada anterior para el primero: contraseñas en texto plano → Supabase Auth).
 
-**Estado de la vulnerabilidad original reportada por Charly:** ambos puntos (contraseñas expuestas + token expuesto) — **resueltos**.
+**Estado de la vulnerabilidad original reportada por Charly:** contraseñas expuestas → resuelto. Token expuesto en `cash_today.html` → resuelto. **Hallazgo adicional durante el cierre de esta sesión: `index.html` tiene el mismo patrón de token fine-grained embebido (`_tR1`/`_t`) — NO resuelto, autorizado por Charly para una próxima sesión.** No dar por cerrada la remediación de tokens hasta corregir también `index.html`.
 
 
 
