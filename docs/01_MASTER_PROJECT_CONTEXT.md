@@ -104,6 +104,7 @@ El workflow usa `concurrency: {group:"pages", cancel-in-progress:true}`. Publica
 - `cartas_salida.html`: el widget tiene un gate adicional `paises.length>1` — hoy el dataset solo contiene GT, por lo que se activará automáticamente en cuanto se cargue el Excel multi-país (ESV/PE), sin requerir otro deploy.
 - Fuera de alcance (decisión documentada, no pendiente): `vol-chart-pais` en Cash Today (su opción "Ambos países" ya cubre GT+ESV) y los selectores de módulo `cst-pais`/`pres-pais` (Costos/Presupuesto) — son selectores de módulo, no el filtro principal.
 - Validado: `node --check` en los 11 bloques de script de los 3 archivos + prueba funcional en Node (12/12 aserciones, modo legacy y multi).
+- **Extensión misma sesión:** multi-select en filtros Canal, Responsable y Rango de `index.html` — a diferencia del anterior, SIN gate de rol/país (aplica a todos los usuarios). Función genérica reutilizable `pdcInitMultiFilter()` — única fuente de verdad para los 3 filtros, deduplica opciones repetidas del `<select>` origen solo en la vista.
 
 **Tokens:** ambos ecosistemas (Rutas `index.html` self-publish y Cash Today `cash_today.html` self-publish) usan tokens fine-grained fragmentados embebidos en cada archivo, con permiso `Contents: Read/Write` restringido a este repo. **Ambos han sido rotados al menos una vez en esta versión** por revocación de GitHub (Secret Scanning) o por incidentes de datos. No asumir que un token documentado en una sesión anterior sigue vigente — verificar contra la API (`GET /user` o `/repos/.../contents`) antes de usarlo; si devuelve `401 Bad credentials`, pedir uno nuevo a Charly (ver protocolo en §8).
 
@@ -239,7 +240,7 @@ Toda reconstrucción de `_R` vía Python (flujo alterno: usuario sube Excel a es
 
 | Versión | Fecha | Descripción |
 |---|---|---|
-| **v2.1** | **20/07/2026** | **Multi-select de país (index.html, cash_today.html, cartas_salida.html) para usuarios sin país asignado — gate por rol confirmado con Charly** |
+| **v2.1** | **20/07/2026** | **Multi-select de país (gate por rol) + multi-select en Canal/Responsable/Rango (todos los usuarios) — index.html, cash_today.html, cartas_salida.html** |
 | v2.0 | 07/07/2026 | PDCBridge (fuente única de verdad Rutas) · Honduras eliminado de Regional · Cash Today: publicación por reemplazo total (fin del ciclo de bugs de deduplicación) · rotación de tokens |
 | v1.8 | 03/07/2026 | Regla de validación `node --check` obligatoria tras incidente de SyntaxError |
 | v1.5 | 25/06/2026 | Auditoría completa · datasets 18/06 · tarjeta HN→ESV |
