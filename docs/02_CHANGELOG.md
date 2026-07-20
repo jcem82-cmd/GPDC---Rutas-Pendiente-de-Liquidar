@@ -1,5 +1,52 @@
 
-## [20/07/2026] — Mejora funcional: multi-select en filtros Canal, Responsable y Rango (todos los usuarios)
+## [20/07/2026] — Corrección de errores + Nueva funcionalidad: migración de autenticación a Supabase Auth (seguridad crítica)
+
+### Contexto — vulnerabilidad identificada por el usuario
+
+Charly reportó que cualquier persona con la URL podía ver el código fuente de `login.html` y `analytics.html` en texto plano, exponiendo las 12 contraseñas de `PDC_USERS`, además del token GitHub fine-grained embebido en `cash_today.html` (visible en el historial de commits). Causa raíz: GitHub Pages sirve archivos estáticos públicamente sin importar la privacidad del repo — client-side JavaScript no puede tener secretos.
+
+### Decisión y alcance
+
+Se evaluaron dos rutas (Supabase Auth vs. Cloudflare Access). Se eligió **Supabase Auth** por reutilizar la infraestructura ya operativa del chat de soporte, habilitar RLS a nivel de fila, y preparar el terreno para una futura Fase 2 (proteger datos de negocio también con RLS).
+
+**Migración de contraseñas:** zero-friction cutover — los 12 usuarios se crearon en Supabase Auth con su contraseña actual exacta + flag `force_password_change:true`. En su primer login exitoso ven una pantalla obligatoria para establecer una nueva contraseña antes de continuar al portal.
+
+### Archivos modificados
+
+**`login.html`:**
+- Eliminado `PDC_USERS` (12 contraseñas en texto plano).
+- `doLogin()` reescrito como async, valida contra `supabase.auth.signInWithPassword()`.
+- Nuevo panel "Establezca su nueva contraseña" — se activa automáticamente si `profiles.force_password_change = true`.
+- `finalizeLogin()` construye el mismo objeto `pdc_session` de siempre (`{email,nombre,rol,dashboards,pais,sedes,ts}`) — **compatibilidad total** con los guards existentes en el resto de dashboards, que no requirieron ningún cambio.
+- Contador de usuarios de la landing (`statUsuarios`) fijado en 12 (ya no hay `PDC_USERS.length` local que contar).
+
+**`analytics.html`:**
+- Eliminado `PDC_USERS` duplicado (Regla #6 de sincronización ya no aplica).
+- Panel de administración (`Gestión de Usuarios`) ahora lee/escribe la tabla `profiles` de Supabase vía `_pdcProfilesCache`.
+- `pdcToggleUser()` ahora persiste `activo` en Supabase (antes solo en `localStorage` del dispositivo del admin) — **corrige limitación conocida documentada previamente**: desactivar un usuario ahora bloquea su próximo login de inmediato, desde cualquier dispositivo.
+
+**Supabase (nuevo):**
+- Tabla `profiles` (id FK a auth.users, email, nombre, rol, pais, sedes, dashboards, force_password_change, activo, last_login) con RLS activo.
+- Función `public.is_admin()` (SECURITY DEFINER) para políticas de admin sin recursión.
+
+**`js/supabase.min.js`** (nuevo, vendorizado): librería `@supabase/supabase-js` v2.110.7 alojada localmente en el repo. Motivo: jsDelivr sufrió una caída externa confirmada (503 en `cdn.jsdelivr.net`, origen DC2-Falkenstein) durante las pruebas de esta migración, rompiendo el login en producción. Se elimina la dependencia de CDN externo para este componente crítico — `login.html` y `analytics.html` ahora cargan `js/supabase.min.js` local.
+
+### Bugs encontrados y corregidos durante la validación en vivo
+
+1. **Recursión infinita en política RLS** (`42P17: infinite recursion detected in policy for relation "profiles"`) — la política "admin lee todos los perfiles" consultaba `profiles` dentro de su propia política sobre `profiles`. Corregido con función `is_admin()` SECURITY DEFINER que evita la recursión.
+2. **Caída externa de jsDelivr** — mitigada vendorizando `supabase-js` localmente (ver arriba).
+
+### Validación
+
+- `node --check` en todos los bloques `<script>` de ambos archivos antes de cada deploy.
+- Prueba en vivo end-to-end con el navegador conectado del usuario: login → pantalla de cambio de contraseña → portal → panel de administración con 12 usuarios cargados desde Supabase. Confirmado funcionando.
+
+### Pendiente (no abordado en esta sesión)
+
+- **Token GitHub fine-grained expuesto en `cash_today.html`** (botón de auto-publicación) — sigue pendiente de rotación/remediación. Recomendación: mover el flujo de publicación a una Edge Function de Supabase que resguarde el token server-side.
+- Contraseñas temporales de los 12 usuarios (idénticas a las anteriores hasta su primer cambio obligatorio) deben considerarse en tránsito — se recomienda que cada usuario complete su cambio de contraseña a la brevedad.
+
+
 
 ### Mejora funcional (categoría 2) — autorizada explícitamente por el usuario
 
