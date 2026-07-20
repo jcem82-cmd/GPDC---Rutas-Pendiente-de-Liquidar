@@ -661,6 +661,7 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 </footer>
 
 <script src="js/pdc_data_bridge.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════════
    PDC Analytics Center — Portal Principal
@@ -672,21 +673,14 @@ var PDC_SESSION_KEY = 'pdc_session';
 var PDC_LOGIN_PAGE  = 'login.html';
 var PDC_SESSION_TTL = 8 * 60 * 60 * 1000;
 
-/* ── REGISTRO DE DASHBOARDS ── */
-var PDC_USERS = [
-  { email:'juancarlos.escobar@grupopdc.com', pass:'PDC.Admin@2026',     nombre:'Juan Carlos Escobar', rol:'admin',      dashboards:['rutas','cashtoday','regional','peru','elsalvador','cartas_salida'], pais:'regional', sedes:'todas' },
-  { email:'erwin.soto@grupopdc.com',         pass:'PDC.Sup.Reg@2026',   nombre:'Erwin Soto',          rol:'supervisor', dashboards:['rutas','cashtoday','regional','peru','elsalvador','cartas_salida'], pais:'regional', sedes:'todas' },
-  { email:'andre.reyes@grupopdc.com',        pass:'PDC.Sup.Reg2@2026',  nombre:'Andre Reyes',         rol:'supervisor', dashboards:['rutas','cashtoday','regional','peru','elsalvador','cartas_salida'], pais:'regional', sedes:'todas' },
-  { email:'francisco.aguilar@grupopdc.com',  pass:'PDC.Sup.GT@2026',    nombre:'Francisco Aguilar',   rol:'supervisor', dashboards:['rutas','cashtoday','cartas_salida'], pais:'GT',       sedes:['CDA'] },
-  { email:'liquidaciones.cda@grupopdc.com',  pass:'PDC.TeamGT@2026',    nombre:'TEAM GT',             rol:'consulta',   dashboards:['rutas','cashtoday','cartas_salida'], pais:'GT',       sedes:['CDA','XELA'] },
-  { email:'edy.lopez@grupopdc.com',          pass:'PDC.Con.GT@2026',    nombre:'Edy Lopez',           rol:'consulta',   dashboards:['rutas','cartas_salida'],             pais:'GT',       sedes:['CDA'] },
-  { email:'joaquin.palma@grupopdc.com',      pass:'PDC.Con.ESV@2026',   nombre:'Joaquin Palma',       rol:'consulta',   dashboards:['rutas','cashtoday','elsalvador','cartas_salida'], pais:'ESV', sedes:['Sta.Tecla','Sn.Miguel'] },
-  { email:'liquidaciones.esv@grupopdc.com',  pass:'PDC.TeamESV@2026',   nombre:'TEAM ESV',            rol:'consulta',   dashboards:['rutas','cashtoday','elsalvador','cartas_salida'], pais:'ESV', sedes:['Sta.Tecla','Sn.Miguel'] },
-  { email:'vinicio.sanabria@grupopdc.com',   pass:'PDC.Con.GT2@2026',   nombre:'Vinicio Sanabria',    rol:'consulta',   dashboards:['rutas','cartas_salida'],             pais:'GT',       sedes:['CDA'] },
-  { email:'claudio.rojas@grupopdc.com',      pass:'PDC.Con.PE@2026',    nombre:'Claudio Rojas',       rol:'consulta',   dashboards:['rutas','peru','cartas_salida'],      pais:'PE',       sedes:['Peru'] },
-  { email:'jose.mallqui@grupopdc.com',       pass:'PDC.Con.PE2@2026',   nombre:'Jose Mallqui',        rol:'consulta',   dashboards:['rutas','peru','cartas_salida'],      pais:'PE',       sedes:['Peru'] },
-  { email:'transportes.peru@grupopdc.com',   pass:'PDC.TeamPE@2026',    nombre:'TEAM Peru',           rol:'consulta',   dashboards:['rutas','peru','cartas_salida'],      pais:'PE',       sedes:['Peru'] },
-];
+/* ── SUPABASE AUTH (REGLA seguridad 20/07/2026) ──
+   PDC_USERS con contraseñas en texto plano fue retirado de este archivo.
+   El panel de administración ahora lee usuarios desde la tabla `profiles`
+   de Supabase — misma fuente única que valida login.html. */
+var PDC_SUPABASE_URL = 'https://pytsrgtcjytjztwdlvux.supabase.co';
+var PDC_SUPABASE_KEY = 'sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj';
+var supabaseClient = window.supabase.createClient(PDC_SUPABASE_URL, PDC_SUPABASE_KEY);
+var _pdcProfilesCache = []; /* caché en memoria de la tabla profiles, cargada al abrir el panel admin */
 
 var PDC_DASHBOARDS = [
   {
@@ -788,12 +782,27 @@ var PDC_DASHBOARDS = [
 ];
 
 /* ── FUNCIONES SESIÓN ── */
-/* ── U4: Toggle activo/inactivo de usuario ── */
-function pdcToggleUser(email, setActive, callback){
-  var states = {};
-  try{ states = JSON.parse(localStorage.getItem('pdc_user_states')||'{}'); }catch(e){}
-  states[email] = !!setActive;
-  localStorage.setItem('pdc_user_states', JSON.stringify(states));
+/* Toggle activo/inactivo de usuario — ahora persiste en Supabase (profiles.activo),
+   que es la fuente que login.html valida realmente. localStorage ya no es la
+   fuente de verdad (antes de esta migración, el bloqueo solo operaba en el
+   dispositivo del admin; ahora se aplica globalmente de inmediato). */
+async function pdcToggleUser(email, setActive, callback){
+  var result = await supabaseClient.from('profiles')
+    .update({ activo: !!setActive })
+    .eq('email', email);
+
+  if(result.error){
+    if(document.getElementById('pdcToast')){
+      pdcShowToast('⚠️','No se pudo actualizar', email, 2500);
+    } else {
+      alert('Error al actualizar: ' + email);
+    }
+    return;
+  }
+
+  /* Actualizar caché local para que la tabla se re-renderice sin recargar */
+  _pdcProfilesCache.forEach(function(u){ if(u.email === email) u.activo = !!setActive; });
+
   try{
     var session = pdcGetSession();
     if(session && session.email===email && !setActive){ setTimeout(pdcLogout,1500); return; }
@@ -1272,7 +1281,6 @@ function pdcRenewSession(){
       var tbEl = document.getElementById('userTableBody');
       if(umEl && tbEl){
         umEl.style.display = '';
-        if(ucEl) ucEl.textContent = PDC_USERS.length + ' usuarios registrados';
 
         var DASH_ICONS = {
           rutas:'🚚', cashtoday:'💰', regional:'🌎',
@@ -1286,24 +1294,18 @@ function pdcRenewSession(){
           ESV:'🇸🇻 El Salvador', PE:'🇵🇪 Perú', HN:'🇭🇳 Honduras'
         };
 
-        /* U4 — Leer estado activo/inactivo desde localStorage */
-        var userStates = {};
-        try{ userStates = JSON.parse(localStorage.getItem('pdc_user_states') || '{}'); }catch(e){}
-
-        /* U3 — Leer log de accesos */
+        /* U3 — Leer log de accesos (se mantiene local, solo referencia visual) */
         var accessLogT = {};
         try{ accessLogT = JSON.parse(localStorage.getItem('pdc_access_log') || '{}'); }catch(e){}
 
         var renderUserTable = function(){
-          /* I4: releer siempre desde localStorage */
-          try{ userStates = JSON.parse(localStorage.getItem('pdc_user_states') || '{}'); }catch(e){}
-          tbEl.innerHTML = PDC_USERS.map(function(u, i){
+          tbEl.innerHTML = _pdcProfilesCache.map(function(u, i){
             var rolCls  = 'role-' + u.rol;
-            var dashChips = u.dashboards.map(function(d){
+            var dashChips = (u.dashboards||[]).map(function(d){
               return '<span class="dash-chip">'+(DASH_ICONS[d]||'📊')+' '+d+'</span>';
             }).join('');
             var rowBg   = i % 2 === 0 ? '' : 'background:#f8faff';
-            var isActive = userStates[u.email] !== false; /* activo por defecto */
+            var isActive = u.activo !== false; /* activo por defecto */
             var toggleLbl = isActive ? '🟢 Activo ▾' : '🔴 Inactivo ▸';
             var toggleCls = isActive
               ? 'padding:3px 10px;border-radius:10px;font-size:.7rem;font-weight:700;background:var(--green);color:var(--green2);border:none;cursor:pointer;font-family:inherit'
@@ -1329,7 +1331,16 @@ function pdcRenewSession(){
           }).join('');
         };
         window.renderUserTable = renderUserTable; /* E3-FIX: exponer al scope global */
-        setTimeout(renderUserTable, 0);
+
+        /* Cargar usuarios desde Supabase (una sola vez al abrir el panel admin) */
+        (async function(){
+          var result = await supabaseClient.from('profiles').select('*').order('nombre');
+          if(!result.error && result.data){
+            _pdcProfilesCache = result.data;
+          }
+          if(ucEl) ucEl.textContent = _pdcProfilesCache.length + ' usuarios registrados';
+          renderUserTable();
+        })();
       }
     }
   }
