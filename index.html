@@ -1593,6 +1593,9 @@ let ef2Yrs = new Set();
 document.addEventListener('DOMContentLoaded',()=>{
   PF();
   initTC();
+  pdcInitMultiFilter('fC','_PDC_CANAL_MULTI','Todos los canales');
+  pdcInitMultiFilter('fR2','_PDC_RESP_MULTI','Todos los responsables');
+  pdcInitMultiFilter('fRg','_PDC_RANGO_MULTI','Todos los rangos');
   // Set report date from data
   var fd=document.getElementById('hdr-fecha');
   if(fd&&KPI_TOTALS&&KPI_TOTALS.report_date) fd.textContent=KPI_TOTALS.report_date;
@@ -1622,6 +1625,67 @@ function TM(){
   AF();
 }
 
+/* MULTI-SELECT GENÉRICO DE FILTROS (20/07/2026): convierte un <select> en un
+   dropdown con checkboxes. Aplica a TODOS los usuarios, sin gate de rol/país
+   (a diferencia del multi-select de país del 20/07 anterior). El <select>
+   original se oculta pero permanece en el DOM — AF()/RF() siguen funcionando
+   igual, solo cambia el origen del valor leído. Deduplica opciones repetidas
+   del <select> de origen (canal/responsable arrastran catálogos concatenados
+   por país) únicamente en la vista del checklist — el <select> no se toca. */
+function pdcInitMultiFilter(selId, globalVar, allLabel){
+  var sel=document.getElementById(selId);
+  if(!sel) return;
+  var seen={}, items=[];
+  Array.prototype.slice.call(sel.options).forEach(function(o){
+    if(o.value===''||seen[o.value])return;
+    seen[o.value]=true;
+    items.push({v:o.value,t:o.textContent});
+  });
+  window[globalVar]=[];
+  var wrap=document.createElement('div');
+  wrap.style.cssText='position:relative;display:inline-block;';
+  var btn=document.createElement('button');
+  btn.type='button';
+  btn.style.cssText='font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer;background:#fff;border:1px solid #d0d7e2;border-radius:8px;padding:6px 12px;color:#1a2b52;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;';
+  var panel=document.createElement('div');
+  panel.style.cssText='display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:999;background:#fff;border:1px solid #d0d7e2;border-radius:10px;box-shadow:0 8px 24px rgba(15,35,95,.14);padding:8px 12px;min-width:210px;max-height:260px;overflow-y:auto;';
+  function label(){
+    var s=window[globalVar];
+    if(!s.length||s.length===items.length) return allLabel;
+    if(s.length<=2) return items.filter(function(it){return s.indexOf(it.v)!==-1;}).map(function(it){return it.t;}).join(' + ');
+    return s.length+' seleccionados';
+  }
+  function sync(){ btn.textContent=label()+' \u25be'; if(typeof AF==='function')AF(); }
+  items.forEach(function(it){
+    var row=document.createElement('label');
+    row.style.cssText='display:flex;align-items:center;gap:8px;padding:5px 2px;cursor:pointer;font-size:.8rem;color:#1a2b52;font-weight:500;';
+    var cb=document.createElement('input');
+    cb.type='checkbox'; cb.value=it.v;
+    cb.addEventListener('change',function(){
+      var s=window[globalVar]; var i=s.indexOf(it.v);
+      if(cb.checked&&i===-1)s.push(it.v);
+      if(!cb.checked&&i!==-1)s.splice(i,1);
+      sync();
+    });
+    row.appendChild(cb);
+    row.appendChild(document.createTextNode(' '+it.t));
+    panel.appendChild(row);
+  });
+  btn.addEventListener('click',function(ev){ev.stopPropagation();panel.style.display=panel.style.display==='none'?'block':'none';});
+  document.addEventListener('click',function(){panel.style.display='none';});
+  panel.addEventListener('click',function(ev){ev.stopPropagation();});
+  window[globalVar+'_reset']=function(){
+    window[globalVar]=[];
+    Array.prototype.slice.call(panel.querySelectorAll('input')).forEach(function(c){c.checked=false;});
+    btn.textContent=label()+' \u25be';
+  };
+  sel.style.display='none';
+  sel.parentNode.insertBefore(wrap,sel);
+  wrap.appendChild(btn);
+  wrap.appendChild(panel);
+  btn.textContent=label()+' \u25be';
+}
+
 function AF(){
   const p=document.getElementById('fP').value;
   const e=document.getElementById('fE').value;
@@ -1632,9 +1696,12 @@ function AF(){
     if(window._PDC_PAIS_MULTI){ if(window._PDC_PAIS_MULTI.length&&window._PDC_PAIS_MULTI.indexOf(d.Pais)===-1)return false; }
     else if(p&&d.Pais!==p)return false;
     if(e&&d['Estado (Facturación)']!==e)return false;
-    if(c&&d.Canal!==c)return false;
-    if(resp&&d.Responsable!==resp)return false;
-    if(rg&&d.Rango!==rg)return false;
+    if(window._PDC_CANAL_MULTI){ if(window._PDC_CANAL_MULTI.length&&window._PDC_CANAL_MULTI.indexOf(d.Canal)===-1)return false; }
+    else if(c&&d.Canal!==c)return false;
+    if(window._PDC_RESP_MULTI){ if(window._PDC_RESP_MULTI.length&&window._PDC_RESP_MULTI.indexOf(d.Responsable)===-1)return false; }
+    else if(resp&&d.Responsable!==resp)return false;
+    if(window._PDC_RANGO_MULTI){ if(window._PDC_RANGO_MULTI.length&&window._PDC_RANGO_MULTI.indexOf(d.Rango)===-1)return false; }
+    else if(rg&&d.Rango!==rg)return false;
     return true;
   };
   const notLiq=d=>d['Estado (Facturación)']!=='Liquidada'&&d['Estado Real']!=='Liquidada';
@@ -1653,6 +1720,9 @@ function AF(){
 function RF(){
   ['fP','fE','fC','fR2','fRg'].forEach(id=>document.getElementById(id).value='');
   if(window._pdcPaisMultiReset)window._pdcPaisMultiReset();
+  if(window._PDC_CANAL_MULTI_reset)window._PDC_CANAL_MULTI_reset();
+  if(window._PDC_RESP_MULTI_reset)window._PDC_RESP_MULTI_reset();
+  if(window._PDC_RANGO_MULTI_reset)window._PDC_RANGO_MULTI_reset();
   if(excl){excl=false;document.getElementById('ftog').classList.remove('excl');document.getElementById('ftlbl').textContent='TODAS LAS RUTAS';}
   AF();
 }
