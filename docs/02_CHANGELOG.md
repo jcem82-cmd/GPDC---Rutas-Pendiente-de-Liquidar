@@ -1,5 +1,39 @@
 
-## [20/07/2026] — Corrección de errores + Nueva funcionalidad: migración de autenticación a Supabase Auth (seguridad crítica)
+## [20/07/2026] — Corrección de errores: eliminación del token GitHub expuesto en cash_today.html (segundo punto crítico de seguridad)
+
+### Contexto
+
+Continuación de la migración de seguridad de la misma fecha (ver entrada anterior, Supabase Auth). El segundo hallazgo crítico era un token GitHub fine-grained (Contents:RW, sin expiración) embebido en `cash_today.html` para el botón de auto-publicación — visible públicamente en el código fuente servido por GitHub Pages y en el historial de commits.
+
+### Arquitectura de la corrección
+
+Mismo principio que las contraseñas: client-side JavaScript no puede tener secretos. Se creó una **Supabase Edge Function** (`github-publish`) que hace el PUT final a GitHub con el token guardado como secret server-side (`GITHUB_TOKEN`). El navegador ya no necesita ningún token:
+- Las lecturas (GET de metadata/blob) se hacen sin autenticación — el repositorio es público, GitHub permite lectura anónima.
+- Solo el PUT final (la operación de escritura) pasa por la función, autenticada con el JWT de sesión del usuario.
+
+**Capas de seguridad en la función:**
+1. Verifica sesión Supabase válida.
+2. Verifica que el usuario sea `rol='admin'` y `activo=true` (consulta `profiles`).
+3. Allowlist de rutas: solo acepta escribir `cash_today.html` y `cash_summary.json` — cualquier otra ruta se rechaza, incluso con el token disponible server-side.
+
+### Archivos modificados
+
+- **`cash_today.html`**: eliminado `_GH_TOKEN` (el arreglo ofuscado con el token en texto plano). Agregado `js/supabase.min.js` (mismo vendor local ya usado en login.html/analytics.html) + cliente Supabase. `publishToGitHub()` ahora llama a `_pdcCallPublishFunction()` en vez de hacer `fetch(...,{method:'PUT'})` directo con el token. Cero cambios de flujo visible para el usuario: mismos pasos, mismos mensajes, mismo botón.
+- **Supabase (nuevo):** Edge Function `github-publish`, secret `GITHUB_TOKEN` (token fine-grained nuevo, generado el mismo día).
+
+### Validación en producción
+
+- `node --check` en ambos bloques `<script>` de `cash_today.html` (incluyendo el bloque de datos de ~10.8MB) antes del deploy.
+- Prueba en vivo con el navegador conectado del usuario: publicación real de `cash_summary.json` vía la función — éxito confirmado (nuevo SHA de GitHub retornado).
+- Prueba de restricción de rutas: intento de escribir `login.html` vía la función — bloqueado correctamente con `403`/error explícito.
+
+### Cierre de la vulnerabilidad original
+
+El token fine-grained expuesto (`Cashtoday`, creado 03/07/2026, sin expiración, Contents:RW) fue **eliminado por el usuario** desde GitHub → Developer settings, confirmando el cierre del segundo y último punto crítico de seguridad reportado al inicio de esta sesión (ver entrada anterior para el primero: contraseñas en texto plano → Supabase Auth).
+
+**Estado de la vulnerabilidad original reportada por Charly:** ambos puntos (contraseñas expuestas + token expuesto) — **resueltos**.
+
+
 
 ### Contexto — vulnerabilidad identificada por el usuario
 
