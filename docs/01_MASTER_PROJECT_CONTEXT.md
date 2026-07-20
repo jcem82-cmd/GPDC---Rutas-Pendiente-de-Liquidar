@@ -106,7 +106,7 @@ El workflow usa `concurrency: {group:"pages", cancel-in-progress:true}`. Publica
 - Validado: `node --check` en los 11 bloques de script de los 3 archivos + prueba funcional en Node (12/12 aserciones, modo legacy y multi).
 - **Extensión misma sesión:** multi-select en filtros Canal, Responsable y Rango de `index.html` — a diferencia del anterior, SIN gate de rol/país (aplica a todos los usuarios). Función genérica reutilizable `pdcInitMultiFilter()` — única fuente de verdad para los 3 filtros, deduplica opciones repetidas del `<select>` origen solo en la vista.
 
-**Tokens:** ambos ecosistemas (Rutas `index.html` self-publish y Cash Today `cash_today.html` self-publish) usan tokens fine-grained fragmentados embebidos en cada archivo, con permiso `Contents: Read/Write` restringido a este repo. **Ambos han sido rotados al menos una vez en esta versión** por revocación de GitHub (Secret Scanning) o por incidentes de datos. No asumir que un token documentado en una sesión anterior sigue vigente — verificar contra la API (`GET /user` o `/repos/.../contents`) antes de usarlo; si devuelve `401 Bad credentials`, pedir uno nuevo a Charly (ver protocolo en §8).
+**Tokens de publicación (actualizado 20/07/2026):** `cash_today.html` migrado a Supabase Edge Function `github-publish` — ya NO tiene token embebido. **`index.html` (Rutas) SIGUE teniendo el token fine-grained fragmentado embebido en texto plano** (`_tR1`/`_t`) — pendiente de la misma migración, autorizado para próxima sesión. No asumir que el token de `index.html` es seguro de dejar así por más tiempo del necesario.
 
 ---
 
@@ -134,7 +134,7 @@ El workflow usa `concurrency: {group:"pages", cancel-in-progress:true}`. Publica
 - Función `public.is_admin()` (SECURITY DEFINER en Supabase) evita recursión RLS en las políticas de admin.
 - `js/supabase.min.js`: librería `@supabase/supabase-js` v2.110.7 vendorizada localmente en el repo (no CDN externo) — decisión tomada tras una caída confirmada de jsDelivr que rompió el login en producción durante la validación de esta migración.
 
-**Pendiente:** rotar/asegurar el token GitHub fine-grained aún embebido en `cash_today.html`.
+**Pendiente — CRÍTICO:** `index.html` (dashboard Rutas) tiene el **mismo problema** que tenía `cash_today.html`: un token GitHub fine-grained embebido en texto plano (variables `_tR1` y `_t`, líneas ~3388/3416) para su propio botón de auto-publicación — mismo patrón, misma exposición pública vía GitHub Pages. Hallazgo del 20/07/2026, **NO resuelto** — autorizado por Charly para próxima sesión. Aplicar la misma corrección ya construida hoy: eliminar el token, agregar `index.html` a la allowlist de rutas de la Edge Function `github-publish` (ya existe y funciona), y actualizar el flujo de publicación de `index.html` para llamarla en vez de hacer PUT directo.
 
 ---
 
