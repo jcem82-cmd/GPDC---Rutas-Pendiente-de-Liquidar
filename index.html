@@ -410,6 +410,73 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
         applyRestriction();
       }
     }
+
+    /* MULTI-SELECT DE PAÍS (20/07/2026): habilitado SOLO para usuarios sin
+       país asignado en sesión (ven todos los países). Usuarios con país
+       asignado conservan el bloqueo del 09/07/2026 sin cambios. El <select>
+       #fP original se oculta pero permanece en el DOM. AF() no se altera
+       salvo la comparación de país en modo multi. */
+    if (!(data.pais && PAIS_MAP[data.pais])) {
+      (function(){
+        var sel = document.getElementById('fP');
+        if (!sel || sel.disabled) return;
+        var OPTS = [
+          {v:'Guatemala',   t:'\ud83c\uddec\ud83c\uddf9 Guatemala'},
+          {v:'El Salvador', t:'\ud83c\uddf8\ud83c\uddfb El Salvador'},
+          {v:'Per\u00fa',  t:'\ud83c\uddf5\ud83c\uddea Per\u00fa'}
+        ];
+        window._PDC_PAIS_MULTI = [];
+        var wrap = document.createElement('div');
+        wrap.style.cssText = 'position:relative;display:inline-block;';
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = 'fP-multi-btn';
+        btn.style.cssText = 'font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer;background:#fff;border:1px solid #d0d7e2;border-radius:8px;padding:6px 12px;color:#1a2b52;white-space:nowrap;';
+        var panel = document.createElement('div');
+        panel.style.cssText = 'display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:999;background:#fff;border:1px solid #d0d7e2;border-radius:10px;box-shadow:0 8px 24px rgba(15,35,95,.14);padding:8px 12px;min-width:190px;';
+        function label(){
+          var s = window._PDC_PAIS_MULTI;
+          if (!s.length || s.length === OPTS.length) return '\ud83c\udf0d Todos los pa\u00edses';
+          return OPTS.filter(function(o){return s.indexOf(o.v)!==-1;}).map(function(o){return o.t;}).join(' + ');
+        }
+        function sync(){
+          btn.textContent = label() + ' \u25be';
+          if (typeof AF === 'function') AF();
+        }
+        OPTS.forEach(function(o){
+          var row = document.createElement('label');
+          row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 2px;cursor:pointer;font-size:.82rem;color:#1a2b52;font-weight:500;';
+          var cb = document.createElement('input');
+          cb.type = 'checkbox'; cb.value = o.v;
+          cb.addEventListener('change', function(){
+            var s = window._PDC_PAIS_MULTI;
+            var i = s.indexOf(o.v);
+            if (cb.checked && i === -1) s.push(o.v);
+            if (!cb.checked && i !== -1) s.splice(i,1);
+            sync();
+          });
+          row.appendChild(cb);
+          row.appendChild(document.createTextNode(' ' + o.t));
+          panel.appendChild(row);
+        });
+        btn.addEventListener('click', function(ev){
+          ev.stopPropagation();
+          panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        });
+        document.addEventListener('click', function(){ panel.style.display = 'none'; });
+        panel.addEventListener('click', function(ev){ ev.stopPropagation(); });
+        window._pdcPaisMultiReset = function(){
+          window._PDC_PAIS_MULTI = [];
+          Array.prototype.slice.call(panel.querySelectorAll('input')).forEach(function(c){ c.checked = false; });
+          btn.textContent = label() + ' \u25be';
+        };
+        sel.style.display = 'none';
+        sel.parentNode.insertBefore(wrap, sel);
+        wrap.appendChild(btn);
+        wrap.appendChild(panel);
+        btn.textContent = label() + ' \u25be';
+      })();
+    }
   });
 })();
 </script>
@@ -1562,7 +1629,8 @@ function AF(){
   const resp=document.getElementById('fR2').value;
   const rg=document.getElementById('fRg').value;
   const filt = d => {
-    if(p&&d.Pais!==p)return false;
+    if(window._PDC_PAIS_MULTI){ if(window._PDC_PAIS_MULTI.length&&window._PDC_PAIS_MULTI.indexOf(d.Pais)===-1)return false; }
+    else if(p&&d.Pais!==p)return false;
     if(e&&d['Estado (Facturación)']!==e)return false;
     if(c&&d.Canal!==c)return false;
     if(resp&&d.Responsable!==resp)return false;
@@ -1584,6 +1652,7 @@ function AF(){
 
 function RF(){
   ['fP','fE','fC','fR2','fRg'].forEach(id=>document.getElementById(id).value='');
+  if(window._pdcPaisMultiReset)window._pdcPaisMultiReset();
   if(excl){excl=false;document.getElementById('ftog').classList.remove('excl');document.getElementById('ftlbl').textContent='TODAS LAS RUTAS';}
   AF();
 }
