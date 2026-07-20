@@ -1,3 +1,31 @@
+
+## [20/07/2026] — Mejora funcional: multi-select de país para usuarios sin país asignado
+
+### Mejora funcional (categoría 2) — autorizada explícitamente por el usuario
+
+**Requerimiento:** que el filtro de países permita seleccionar más de uno (ej. GT+ESV) en todos los dashboards. Regla confirmada por Charly: aplica SOLO a usuarios que pueden ver más de un país (sin campo `pais` en sesión — admin/regionales). Usuarios con país asignado conservan exactamente el bloqueo del 09/07/2026.
+
+**Implementación (patrón común en los 3 archivos con filtro de país):**
+- El `<select>` original se OCULTA pero permanece en el DOM — la restricción por país y todo camino legacy quedan intactos.
+- Se inyecta vía JS un dropdown con checkboxes (etiqueta dinámica "🇬🇹 Guatemala + 🇸🇻 El Salvador"; vacío o todo marcado = "Todos los países"). Sin cambios en CSS estático.
+- La lógica de filtrado cambia de igualdad estricta a inclusión SOLO en modo multi; el modo legacy conserva la comparación original.
+
+**Detalle por archivo:**
+- `index.html`: comparación de país en `AF()` soporta `window._PDC_PAIS_MULTI` (array); `RF()` invoca `_pdcPaisMultiReset()`; widget dentro del Auth Bridge, gate `!(data.pais && PAIS_MAP[data.pais])`. Opciones: GT/ESV/PE.
+- `cash_today.html`: nuevos helpers `pdcPaisOk(sel,p)` y `pdcGetPais()`; 5 puntos redirigidos (buildSiteOpts, buildCajeroOpts ×2, onPaisChange, getBaseFilter lectura + dimFn); widget en el IIFE de sesión, gate `!usr.pais`. Opciones: GT/ESV. Los selectores `vol-chart-pais` ("Ambos países" ya cubre GT+ESV), `cst-pais` y `pres-pais` quedaron deliberadamente fuera de alcance (selectores de módulo, no filtro principal).
+- `cartas_salida.html`: filtro `state.pais` acepta array; botón Reset invoca `_pdcCsPaisReset()`; widget con gate adicional `paises.length>1` — hoy el dataset solo contiene GT, por lo que el widget se activará automáticamente al cargar el Excel multi-país (ESV/PE), sin cambio visible hoy.
+
+**Validado antes de deploy:**
+- `node --check` en los 11 bloques de script de los 3 archivos (5 + 2 + 4).
+- Prueba funcional en Node: 12/12 aserciones — modo legacy (string) y modo multi (array vacío = todos, [GT], [GT,ESV], exclusión) en las tres réplicas de lógica.
+- Todas las modificaciones con `assert count==1` (REGLA #1) y SHA fresco por PUT (REGLA #2).
+
+**Deploy:** commits `100ac873` (index), `ae8fcecc` (cartas_salida), `567ffa12` (cash_today) — espaciados 35s para evitar cancelación por concurrencia. GitHub Actions run #412: completed/success.
+
+**Alcance:** solo los 3 archivos listados. `peru/`, `elsalvador/`, `regional/`, `analytics.html` no tienen selector de país — sin cambios.
+
+---
+
 ## [10/07/2026] — Nueva funcionalidad: elsalvador/index.html - dashboard dedicado para El Salvador
 
 ## [13/07/2026] — Fix crítico #2: parseo Total hoja Costo (símbolo $/Q) + dataset actualizado
