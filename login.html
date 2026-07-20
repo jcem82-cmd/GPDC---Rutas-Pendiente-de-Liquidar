@@ -389,6 +389,38 @@ body{
     </button>
   </div>
 
+  <!-- Panel de cambio de contraseña obligatorio (primer login post-migración) -->
+  <div id="forceChangePanel" style="display:none;background:var(--card);border-radius:20px;box-shadow:0 8px 40px rgba(0,32,96,.14);padding:40px 36px;width:100%;max-width:440px;margin:auto">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="width:64px;height:64px;background:#FFAB00;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.8rem">🔑</div>
+      <div style="font-size:1.2rem;font-weight:700;color:var(--navy);margin-bottom:6px">Establezca su nueva contraseña</div>
+      <div style="font-size:.85rem;color:var(--text2)" id="fcpGreeting">Por seguridad, debe crear una nueva contraseña antes de continuar.</div>
+    </div>
+    <div class="field" style="margin-bottom:16px">
+      <label class="field-label" for="fcpNew">Nueva contraseña</label>
+      <div class="field-wrap">
+        <input class="field-input" id="fcpNew" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password"/>
+        <span class="field-icon">🔒</span>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:8px">
+      <label class="field-label" for="fcpConfirm">Confirmar nueva contraseña</label>
+      <div class="field-wrap">
+        <input class="field-input" id="fcpConfirm" type="password" placeholder="Repita la contraseña" autocomplete="new-password"/>
+        <span class="field-icon">🔒</span>
+      </div>
+    </div>
+    <div class="error-msg" id="fcpErrMsg">
+      <span class="error-icon">⚠️</span>
+      <span id="fcpErrText">Las contraseñas no coinciden.</span>
+    </div>
+    <button class="btn-submit" id="btnForceChange" type="button" style="margin-top:8px">
+      <span class="spinner" id="fcpSpinner"></span>
+      <span id="fcpBtnLabel">Guardar y continuar</span>
+      <span id="fcpBtnArrow">→</span>
+    </button>
+  </div>
+
   <div class="login-box">
     <div class="login-header">
       <div class="login-eyebrow">Acceso seguro</div>
@@ -453,6 +485,7 @@ body{
 
 <script>var PDC_MASTER_PATH = 'index.html';</script>
 <script src="js/pdc_data_bridge.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ═══════════════════════════════════════════════════════
    PDC Analytics Center — Auth System
@@ -463,21 +496,14 @@ var PDC_SESSION_KEY = 'pdc_session';
 var PDC_SESSION_TTL = 8 * 60 * 60 * 1000;
 var PDC_PORTAL      = 'analytics.html';
 
-/* ── USUARIOS ── */
-var PDC_USERS = [
-  { email:'juancarlos.escobar@grupopdc.com', pass:'PDC.Admin@2026',     nombre:'Juan Carlos Escobar', rol:'admin',      dashboards:['rutas','cashtoday','regional','peru','elsalvador','cartas_salida'], pais:'regional', sedes:'todas' },
-  { email:'erwin.soto@grupopdc.com',         pass:'PDC.Sup.Reg@2026',   nombre:'Erwin Soto',          rol:'supervisor', dashboards:['rutas','cashtoday','regional','peru','elsalvador','cartas_salida'], pais:'regional', sedes:'todas' },
-  { email:'andre.reyes@grupopdc.com',        pass:'PDC.Sup.Reg2@2026',  nombre:'Andre Reyes',         rol:'supervisor', dashboards:['rutas','cashtoday','regional','peru','elsalvador','cartas_salida'], pais:'regional', sedes:'todas' },
-  { email:'francisco.aguilar@grupopdc.com',  pass:'PDC.Sup.GT@2026',    nombre:'Francisco Aguilar',   rol:'supervisor', dashboards:['rutas','cashtoday','cartas_salida'], pais:'GT',       sedes:['CDA'] },
-  { email:'liquidaciones.cda@grupopdc.com',  pass:'PDC.TeamGT@2026',    nombre:'TEAM GT',             rol:'consulta',   dashboards:['rutas','cashtoday','cartas_salida'], pais:'GT',       sedes:['CDA','XELA'] },
-  { email:'edy.lopez@grupopdc.com',          pass:'PDC.Con.GT@2026',    nombre:'Edy Lopez',           rol:'consulta',   dashboards:['rutas','cartas_salida'],             pais:'GT',       sedes:['CDA'] },
-  { email:'joaquin.palma@grupopdc.com',      pass:'PDC.Con.ESV@2026',   nombre:'Joaquin Palma',       rol:'consulta',   dashboards:['rutas','cashtoday','elsalvador','cartas_salida'], pais:'ESV', sedes:['Sta.Tecla','Sn.Miguel'] },
-  { email:'liquidaciones.esv@grupopdc.com',  pass:'PDC.TeamESV@2026',   nombre:'TEAM ESV',            rol:'consulta',   dashboards:['rutas','cashtoday','elsalvador','cartas_salida'], pais:'ESV', sedes:['Sta.Tecla','Sn.Miguel'] },
-  { email:'vinicio.sanabria@grupopdc.com',   pass:'PDC.Con.GT2@2026',   nombre:'Vinicio Sanabria',    rol:'consulta',   dashboards:['rutas','cartas_salida'],             pais:'GT',       sedes:['CDA'] },
-  { email:'claudio.rojas@grupopdc.com',      pass:'PDC.Con.PE@2026',    nombre:'Claudio Rojas',       rol:'consulta',   dashboards:['rutas','peru','cartas_salida'],      pais:'PE',       sedes:['Peru'] },
-  { email:'jose.mallqui@grupopdc.com',       pass:'PDC.Con.PE2@2026',   nombre:'Jose Mallqui',        rol:'consulta',   dashboards:['rutas','peru','cartas_salida'],      pais:'PE',       sedes:['Peru'] },
-  { email:'transportes.peru@grupopdc.com',   pass:'PDC.TeamPE@2026',    nombre:'TEAM Peru',           rol:'consulta',   dashboards:['rutas','peru','cartas_salida'],      pais:'PE',       sedes:['Peru'] },
-];
+/* ── SUPABASE AUTH (REGLA seguridad 20/07/2026) ──
+   PDC_USERS con contraseñas en texto plano fue retirado de este archivo.
+   La autenticación ahora ocurre server-side contra Supabase Auth. */
+var PDC_SUPABASE_URL = 'https://pytsrgtcjytjztwdlvux.supabase.co';
+var PDC_SUPABASE_KEY = 'sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj';
+var supabaseClient = window.supabase.createClient(PDC_SUPABASE_URL, PDC_SUPABASE_KEY);
+var _pdcPendingUser = null; /* usuario ya autenticado, pendiente de cambio de contraseña */
+var _pdcPendingEmail = null;
 
 /* Si ya hay sesión válida → mostrar panel de sesión activa */
 (function(){
@@ -571,7 +597,7 @@ document.getElementById('togglePass').addEventListener('click', function(){
 
 btnLogin.addEventListener('click', doLogin);
 
-function doLogin(){
+async function doLogin(){
   /* ── Verificar bloqueo ── */
   if(checkLockout()){ return; }
 
@@ -583,84 +609,164 @@ function doLogin(){
   if(!email){ showError('Ingrese su correo corporativo.'); fEmail.focus(); return; }
   if(!pass) { showError('Ingrese su contraseña.');         fPass.focus();  return; }
 
-  /* Simulate brief loading */
   setLoading(true);
 
-  setTimeout(function(){
-    var user = authenticate(email, pass);
-    if(user){
-      /* U4 — Verificar si el usuario está desactivado */
-      try{
-        var states = JSON.parse(localStorage.getItem('pdc_user_states') || '{}');
-        if(states[user.email] === false){
-          setLoading(false);
-          showError('Cuenta desactivada. Contacte al administrador del sistema.');
-          fPass.value = '';
-          var box = document.querySelector('.login-form');
-          box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
-          return;
-        }
-      }catch(e){}
+  var authResult;
+  try{
+    authResult = await supabaseClient.auth.signInWithPassword({ email: email, password: pass });
+  }catch(e){
+    setLoading(false);
+    showError('No se pudo conectar con el servicio de autenticación. Intente nuevamente.');
+    return;
+  }
+
+  if(authResult.error || !authResult.data || !authResult.data.user){
+    setLoading(false);
+    loginAttempts++;
+    var restantes = 3 - loginAttempts;
+    if(loginAttempts >= 3){
+      showError('Demasiados intentos fallidos. Espere 30 segundos.');
+      applyLockout();
+    } else {
+      showError('Credenciales incorrectas. ' + (restantes===1?'Último intento.':restantes+' intentos restantes.'));
     }
-    if(!user){
-      setLoading(false);
-      loginAttempts++;
-      var restantes = 3 - loginAttempts;
-      if(loginAttempts >= 3){
-        showError('Demasiados intentos fallidos. Espere 30 segundos.');
-        applyLockout();
-      } else {
-        showError('Credenciales incorrectas. ' + (restantes===1?'Último intento.':restantes+' intentos restantes.'));
-      }
-      fPass.value = '';
-      fPass.focus();
-      /* Shake effect */
-      var box = document.querySelector('.login-form');
-      box.classList.remove('shake');
-      void box.offsetWidth;
-      box.classList.add('shake');
+    fPass.value = '';
+    fPass.focus();
+    var box = document.querySelector('.login-form');
+    box.classList.remove('shake');
+    void box.offsetWidth;
+    box.classList.add('shake');
+    return;
+  }
+
+  /* Obtener perfil (rol, país, dashboards) desde Supabase */
+  var profileResult = await supabaseClient
+    .from('profiles').select('*').eq('id', authResult.data.user.id).single();
+
+  if(profileResult.error || !profileResult.data){
+    setLoading(false);
+    showError('No se pudo cargar su perfil. Contacte al administrador.');
+    await supabaseClient.auth.signOut();
+    return;
+  }
+
+  var profile = profileResult.data;
+
+  /* Verificar cuenta activa */
+  if(profile.activo === false){
+    setLoading(false);
+    showError('Cuenta desactivada. Contacte al administrador del sistema.');
+    fPass.value = '';
+    var box2 = document.querySelector('.login-form');
+    box2.classList.remove('shake'); void box2.offsetWidth; box2.classList.add('shake');
+    await supabaseClient.auth.signOut();
+    return;
+  }
+
+  var user = {
+    email: profile.email, nombre: profile.nombre, rol: profile.rol,
+    dashboards: profile.dashboards, pais: profile.pais, sedes: profile.sedes
+  };
+
+  /* ── Recordar email (se aplica ya, independiente del flujo siguiente) ── */
+  if(chkRem && chkRem.checked){ localStorage.setItem('pdc_remember_email', email); }
+  else { localStorage.removeItem('pdc_remember_email'); }
+  loginAttempts = 0;
+
+  /* Primer login post-migración: forzar cambio de contraseña */
+  if(profile.force_password_change){
+    setLoading(false);
+    _pdcPendingUser = user;
+    _pdcPendingEmail = email;
+    showForceChangePanel(user.nombre);
+    return;
+  }
+
+  finalizeLogin(user, email);
+}
+
+function finalizeLogin(user, email){
+  var session = {
+    email: user.email, nombre: user.nombre, rol: user.rol,
+    dashboards: user.dashboards, pais: user.pais, sedes: user.sedes,
+    ts: Date.now()
+  };
+  sessionStorage.setItem(PDC_SESSION_KEY, JSON.stringify(session));
+  /* U5 — pdc_user legacy con rol completo (admin/supervisor/consulta) */
+  sessionStorage.setItem('pdc_user', JSON.stringify({
+    nombre: user.nombre, email: user.email,
+    role: user.rol,   /* rol completo: admin | supervisor | consulta */
+    pais: user.pais, sedes: user.sedes
+  }));
+  /* U3 — Registrar último acceso en localStorage */
+  try{
+    var accessLog = JSON.parse(localStorage.getItem('pdc_access_log') || '{}');
+    accessLog[user.email] = new Date().toISOString();
+    localStorage.setItem('pdc_access_log', JSON.stringify(accessLog));
+  }catch(e){}
+  /* U1 — Breve pausa para mostrar nombre antes del redirect */
+  setLoading(false);
+  btnLabel.textContent = '✅ Bienvenido, ' + user.nombre.split(' ')[0] + '!';
+  btnArrow.style.display = 'none';
+  document.getElementById('btnLogin').style.background = 'linear-gradient(135deg,#2d9e2d,#1a7a1a)';
+  setTimeout(function(){ window.location.href = PDC_PORTAL; }, 900);
+}
+
+function showForceChangePanel(nombre){
+  var loginBox = document.querySelector('.login-box');
+  var panel = document.getElementById('forceChangePanel');
+  if(loginBox) loginBox.style.display = 'none';
+  if(panel){
+    panel.style.display = 'block';
+    document.getElementById('fcpGreeting').textContent =
+      'Hola ' + nombre.split(' ')[0] + ', por seguridad debe crear una nueva contraseña antes de continuar.';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  var btnFC = document.getElementById('btnForceChange');
+  if(!btnFC) return;
+  btnFC.addEventListener('click', async function(){
+    var newPass = document.getElementById('fcpNew').value;
+    var confirmPass = document.getElementById('fcpConfirm').value;
+    var fcpErr = document.getElementById('fcpErrMsg');
+    var fcpErrText = document.getElementById('fcpErrText');
+    fcpErr.classList.remove('visible');
+
+    if(!newPass || newPass.length < 8){
+      fcpErrText.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+      fcpErr.classList.add('visible');
       return;
     }
-    /* Create session */
-    var session = {
-      email: user.email, nombre: user.nombre, rol: user.rol,
-      dashboards: user.dashboards, pais: user.pais, sedes: user.sedes,
-      ts: Date.now()
-    };
-    /* ── Recordar email ── */
-    if(chkRem && chkRem.checked){ localStorage.setItem('pdc_remember_email', email); }
-    else { localStorage.removeItem('pdc_remember_email'); }
-    loginAttempts = 0;
+    if(newPass !== confirmPass){
+      fcpErrText.textContent = 'Las contraseñas no coinciden.';
+      fcpErr.classList.add('visible');
+      return;
+    }
 
-    sessionStorage.setItem(PDC_SESSION_KEY, JSON.stringify(session));
-    /* U5 — pdc_user legacy con rol completo (admin/supervisor/consulta) */
-    sessionStorage.setItem('pdc_user', JSON.stringify({
-      nombre: user.nombre, email: user.email,
-      role: user.rol,   /* rol completo: admin | supervisor | consulta */
-      pais: user.pais, sedes: user.sedes
-    }));
-    /* U3 — Registrar último acceso en localStorage */
-    try{
-      var accessLog = JSON.parse(localStorage.getItem('pdc_access_log') || '{}');
-      accessLog[user.email] = new Date().toISOString();
-      localStorage.setItem('pdc_access_log', JSON.stringify(accessLog));
-    }catch(e){}
-    /* U1 — Breve pausa para mostrar nombre antes del redirect */
-    setLoading(false);
-    btnLabel.textContent = '✅ Bienvenido, ' + user.nombre.split(' ')[0] + '!';
-    btnArrow.style.display = 'none';
-    document.getElementById('btnLogin').style.background = 'linear-gradient(135deg,#2d9e2d,#1a7a1a)';
-    setTimeout(function(){ window.location.href = PDC_PORTAL; }, 900);
-  }, 600);
-}
+    document.getElementById('fcpSpinner').classList.add('visible');
+    document.getElementById('fcpBtnLabel').textContent = 'Guardando...';
 
-function authenticate(email, pass){
-  for(var i=0; i<PDC_USERS.length; i++){
-    var u = PDC_USERS[i];
-    if(u.email.toLowerCase() === email.toLowerCase() && u.pass === pass) return u;
-  }
-  return null;
-}
+    var updateResult = await supabaseClient.auth.updateUser({ password: newPass });
+    if(updateResult.error){
+      document.getElementById('fcpSpinner').classList.remove('visible');
+      document.getElementById('fcpBtnLabel').textContent = 'Guardar y continuar';
+      fcpErrText.textContent = 'No se pudo actualizar la contraseña. Intente nuevamente.';
+      fcpErr.classList.add('visible');
+      return;
+    }
+
+    /* Apagar el flag force_password_change en su perfil */
+    await supabaseClient.from('profiles')
+      .update({ force_password_change: false })
+      .eq('email', _pdcPendingEmail);
+
+    document.getElementById('fcpBtnLabel').textContent = '✅ Contraseña actualizada';
+    setTimeout(function(){
+      finalizeLogin(_pdcPendingUser, _pdcPendingEmail);
+    }, 700);
+  });
+});
 
 function setLoading(on){
   btnLogin.disabled = on;
@@ -675,13 +781,14 @@ function showError(msg){
 }
 
 /* ── Sincronización de estadísticas de la landing (login) ──
-   Usuarios: cuenta real de PDC_USERS (ya está en memoria, sin fetch).
+   Usuarios: valor de referencia fijo (12, confirmado 20/07/2026 tras
+   migración a Supabase Auth) — ya no hay PDC_USERS local para contar.
    Rutas activas / Países: PDCBridge, misma fuente única que el resto
    de la plataforma. Fallback silencioso a los valores de referencia
    si el fetch falla — la página de login sigue funcionando igual. */
 (function(){
   var elUsuarios = document.getElementById('statUsuarios');
-  if(elUsuarios) elUsuarios.textContent = PDC_USERS.length;
+  if(elUsuarios) elUsuarios.textContent = 12;
 
   if(typeof PDCBridge !== 'undefined'){
     PDCBridge.load().then(function(data){
