@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.1 | **Última actualización:** 20/07/2026 | **Estado:** Producción ✅
+**Versión vigente:** v2.2 | **Última actualización:** 20/07/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -20,7 +20,7 @@
 ```
 PDC Analytics Center
 │
-├── login.html              ← Autenticación única · 14 usuarios · 3 roles
+├── login.html              ← Autenticación única (Supabase Auth) · 12 usuarios · 3 roles
 ├── analytics.html          ← Portal Hub · cards con KPIs EN VIVO vía PDCBridge
 │
 ├── index.html              ← Dashboard Liquidación de Rutas (fuente única de verdad)
@@ -125,7 +125,16 @@ El workflow usa `concurrency: {group:"pages", cancel-in-progress:true}`. Publica
 
 ## 5. Usuarios y Roles
 
-Sin cambios en esta versión respecto a la lista de 14 usuarios documentada previamente. `PDC_USERS` sigue definido en **dos archivos**: `login.html` (construye la sesión) y `analytics.html` (referencia) — **siempre actualizar ambos** al modificar usuarios o dashboards.
+**Arquitectura de autenticación (actualizada 20/07/2026):** migrada de `PDC_USERS` local (arreglo con contraseñas en texto plano, expuesto públicamente vía GitHub Pages) a **Supabase Auth + tabla `profiles`** con Row Level Security. 12 usuarios activos (3 removidos previamente por falta de operación real: Carlos Reyes, Maria Funez, TEAM Honduras).
+
+- `login.html` valida contra `supabase.auth.signInWithPassword()`; ya no contiene ningún arreglo de usuarios ni contraseñas.
+- `analytics.html` (panel de administración) lee/actualiza usuarios desde la tabla `profiles` vía cliente Supabase — ya no tiene copia local de usuarios. **La antigua Regla de sincronización dual `login.html`/`analytics.html` queda obsolecida**: ahora ambos archivos leen de la misma fuente (Supabase), no hay nada que sincronizar manualmente.
+- Primer login post-migración: pantalla obligatoria de cambio de contraseña (`profiles.force_password_change`).
+- `pdcToggleUser()` (activar/desactivar usuario) persiste en `profiles.activo` — efecto inmediato en cualquier dispositivo, ya no depende de `localStorage` del admin.
+- Función `public.is_admin()` (SECURITY DEFINER en Supabase) evita recursión RLS en las políticas de admin.
+- `js/supabase.min.js`: librería `@supabase/supabase-js` v2.110.7 vendorizada localmente en el repo (no CDN externo) — decisión tomada tras una caída confirmada de jsDelivr que rompió el login en producción durante la validación de esta migración.
+
+**Pendiente:** rotar/asegurar el token GitHub fine-grained aún embebido en `cash_today.html`.
 
 ---
 
@@ -219,7 +228,7 @@ Toda reconstrucción de `_R` vía Python (flujo alterno: usuario sube Excel a es
 | **notLiq** | Excluye Estado(Fac)=Liquidada OR Estado Real=Liquidada |
 | **Vencidas (oficial/hub/cards)** | `Estado (Facturación) === 'Vencidas'` |
 | **Vencidas Despacho** | `Estado Real === 'Vencidas'` — métrica independiente, NO intercambiable |
-| **PDC_USERS dual** | Siempre actualizar `login.html` Y `analytics.html` |
+| **Usuarios vía Supabase** | `login.html`/`analytics.html` leen `profiles` en Supabase — ya no hay arreglo dual que sincronizar (obsoleto desde 20/07/2026) |
 | **Honduras** | Sin datos reales — eliminado de Regional; `honduras/index.html` existe pero sin tarjeta |
 | **PDC_MASTER_PATH** | Obligatorio definir antes de incluir `js/pdc_data_bridge.js` en cualquier archivo fuera de la raíz |
 
@@ -271,8 +280,8 @@ Existían **dos sets paralelos de documentación** (`docs/00-07_*.md` numerado y
 3. **NUNCA reconstruir código** — solo modificaciones quirúrgicas. Documentación (este archivo, CHANGELOG) sí se reescribe completa cuando hay cambios de arquitectura.
 4. **Siempre leer el archivo de producción fresco** antes de editar (SHA + contenido)
 5. **`node --check` + `JSON.parse()` estricto** antes de cualquier deploy con datos
-6. **PDC_USERS en login.html Y analytics.html** — siempre ambos
+6. **Usuarios en Supabase (tabla `profiles`), no en código** — `login.html`/`analytics.html` ya no tienen arreglos de usuarios que sincronizar
 7. **Cash Today: publicación = reemplazo total.** No reintroducir lógica de merge/deduplicación.
 
 ---
-*PDC Analytics Center · Grupo PDC · Departamento Financiero · v2.0 · 07/07/2026*
+*PDC Analytics Center · Grupo PDC · Departamento Financiero · v2.2 · 20/07/2026*
