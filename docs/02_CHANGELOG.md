@@ -1,4 +1,27 @@
 
+## [20/07/2026] — Mejora funcional: multi-select en filtros Canal, Responsable y Rango (todos los usuarios)
+
+### Mejora funcional (categoría 2) — autorizada explícitamente por el usuario
+
+**Requerimiento:** en `index.html` (dashboard Rutas), permitir seleccionar más de un valor en los filtros Canal (`#fC`), Responsable (`#fR2`) y Rango (`#fRg`). A diferencia del multi-select de país (mismo día, entrada anterior), este cambio aplica a **todos los usuarios sin excepción** — no hay gate de rol ni de país.
+
+**Implementación:**
+- Función genérica `pdcInitMultiFilter(selId, globalVar, allLabel)` — única fuente de verdad para los 3 filtros (en vez de triplicar el widget de país). Deduplica las opciones del `<select>` de origen (Canal y Responsable arrastran catálogos concatenados por país con entradas repetidas) únicamente en la vista del checklist — el `<select>` original no se modifica.
+- El `<select>` original se oculta (`display:none`) pero permanece en el DOM — cero impacto en rutas legacy.
+- `AF()`: las 3 comparaciones (`Canal`, `Responsable`, `Rango`) ahora evalúan primero `window._PDC_CANAL_MULTI` / `_PDC_RESP_MULTI` / `_PDC_RANGO_MULTI` (arrays); si no existen, cae al comportamiento original de igualdad simple.
+- `RF()`: invoca los 3 resets (`_PDC_CANAL_MULTI_reset`, etc.) además del reset de país ya existente.
+- Los 3 widgets se inicializan en el `BOOT` (`DOMContentLoaded`), antes de la primera llamada a `AF()`.
+
+**Validado antes de deploy:**
+- `node --check` en los 5 bloques de script (sin cambios en el conteo — la función se insertó dentro del bloque existente).
+- Prueba funcional en Node: 6/6 aserciones — dedup de opciones repetidas, filtro multi por canal, por responsable, por rango, combinación simultánea país+canal, y modo legacy (sin selección = sin filtro).
+
+**Deploy:** commit `3cdf312774`. GitHub Actions run #417: completed/success.
+
+**Alcance:** `index.html` únicamente — 4 puntos de modificación (`AF()`, `RF()`, función nueva `pdcInitMultiFilter`, BOOT). No se tocó `cash_today.html`, `cartas_salida.html` ni el multi-select de país ya desplegado.
+
+---
+
 ## [20/07/2026] — Mejora funcional: multi-select de país para usuarios sin país asignado
 
 ### Mejora funcional (categoría 2) — autorizada explícitamente por el usuario
