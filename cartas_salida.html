@@ -468,6 +468,65 @@ const DATA = {"cols":["no","liqIdx","fechaEntrega","ruta","pilotoIdx","placas","
     selPais.disabled = true;
   }
 
+  /* MULTI-SELECT DE PAÍS (20/07/2026): habilitado SOLO para usuarios sin país
+     asignado en sesión Y cuando el dataset contiene más de un país. Hoy solo
+     hay datos GT — el widget se activará automáticamente al cargar el Excel
+     multi-país (ESV/PE). Usuarios con país asignado: sin cambios. */
+  if(!(sessionPais && sessionPais!=='regional' && PAIS_LABELS[sessionPais]) && paises.length>1){
+    (function(){
+      if(selPais.disabled) return;
+      var multiSel = [];
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'position:relative;display:inline-block;';
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.id = 'f-pais-multi-btn';
+      btn.style.cssText = 'font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;background:#fff;border:1px solid #d0d7e2;border-radius:8px;padding:6px 12px;color:#1a2b52;white-space:nowrap;';
+      var panel = document.createElement('div');
+      panel.style.cssText = 'display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:999;background:#fff;border:1px solid #d0d7e2;border-radius:10px;box-shadow:0 8px 24px rgba(15,35,95,.14);padding:8px 12px;min-width:180px;';
+      function lbl(){
+        if(!multiSel.length || multiSel.length===paises.length) return 'Todos';
+        return multiSel.map(function(p){return PAIS_LABELS[p]||p;}).join(' + ');
+      }
+      function sync(){
+        btn.textContent = lbl() + ' \u25be';
+        state.pais = multiSel.length ? multiSel.slice() : 'all';
+        refresh();
+      }
+      paises.forEach(function(p){
+        var row = document.createElement('label');
+        row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 2px;cursor:pointer;font-size:12px;color:#1a2b52;font-weight:500;';
+        var cb = document.createElement('input');
+        cb.type = 'checkbox'; cb.value = p;
+        cb.addEventListener('change', function(){
+          var i = multiSel.indexOf(p);
+          if(cb.checked && i===-1) multiSel.push(p);
+          if(!cb.checked && i!==-1) multiSel.splice(i,1);
+          sync();
+        });
+        row.appendChild(cb);
+        row.appendChild(document.createTextNode(' ' + (PAIS_LABELS[p]||p)));
+        panel.appendChild(row);
+      });
+      btn.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        panel.style.display = panel.style.display==='none' ? 'block' : 'none';
+      });
+      document.addEventListener('click', function(){ panel.style.display='none'; });
+      panel.addEventListener('click', function(ev){ ev.stopPropagation(); });
+      window._pdcCsPaisReset = function(){
+        multiSel = [];
+        Array.prototype.slice.call(panel.querySelectorAll('input')).forEach(function(c){ c.checked=false; });
+        btn.textContent = lbl() + ' \u25be';
+      };
+      selPais.style.display = 'none';
+      selPais.parentNode.insertBefore(wrap, selPais);
+      wrap.appendChild(btn);
+      wrap.appendChild(panel);
+      btn.textContent = lbl() + ' \u25be';
+    })();
+  }
+
   const anios = Array.from(new Set(rawRows.map(r=>rowGet(r,'anio')).filter(a=>a!=null))).sort();
   const selAnio = document.getElementById('f-anio');
   anios.forEach(a=>{ const o=document.createElement('option'); o.value=a; o.textContent=a; selAnio.appendChild(o); });
@@ -517,7 +576,7 @@ const DATA = {"cols":["no","liqIdx","fechaEntrega","ruta","pilotoIdx","placas","
     searchTimeout = setTimeout(()=>{ state.search = e.target.value.trim().toLowerCase(); refresh(); }, 200);
   });
   document.getElementById('btnReset').addEventListener('click', ()=>{
-    if(!selPais.disabled){ state.pais='all'; selPais.value='all'; }
+    if(!selPais.disabled){ state.pais='all'; selPais.value='all'; if(window._pdcCsPaisReset)window._pdcCsPaisReset(); }
     state.anio='all'; state.mes='all'; state.estatus='all'; state.liquidador='all'; state.transporte='all'; state.motivo='all'; state.search='';
     document.getElementById('f-anio').value='all';
     document.getElementById('f-mes').value='all';
@@ -532,7 +591,10 @@ const DATA = {"cols":["no","liqIdx","fechaEntrega","ruta","pilotoIdx","placas","
   });
 
   function matchesFilters(r){
-    if(state.pais!=='all' && rowGet(r,'pais')!==state.pais) return false;
+    if(state.pais!=='all'){
+      if(Array.isArray(state.pais)){ if(state.pais.length && state.pais.indexOf(rowGet(r,'pais'))===-1) return false; }
+      else if(rowGet(r,'pais')!==state.pais) return false;
+    }
     if(state.anio!=='all' && String(rowGet(r,'anio'))!==state.anio) return false;
     if(state.mes!=='all' && String(rowGet(r,'mes'))!==state.mes) return false;
     if(state.estatus!=='all' && rowGet(r,'estatus')!==state.estatus) return false;
