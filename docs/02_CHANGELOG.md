@@ -1,4 +1,34 @@
 
+## [21/07/2026] — Corrección de errores: falso positivo de discrepancia en validación de totales (cash_today.html)
+
+### Contexto
+
+Al subir el Excel del corte al día, el semáforo de "Validación de totales" mostró ❌ Discrepancia en las 4 sedes (CDA, Xela, Santa Tecla, San Miguel), con el importe "Excel" ~1000x menor al real (ej. CDA: Q941,176 vs. Q86,925,000 real). Δ Registros = 0 en las 4 sedes, indicando que el problema no era de conteo sino de magnitud del importe.
+
+### Causa raíz (RCA)
+
+La función `renderValidacion()` usaba una lógica de parseo de importe (`.replace(',','.')`, reemplaza solo la primera coma) que fue reemplazada en el parser principal el 08/07/2026 (bug de separador de miles: `"14,205.00"` → `"14.205.00"` → `parseFloat` trunca a 14.205), pero el fix **nunca se replicó en el módulo de validación**. El bug estaba latente desde el 08/07/2026 y solo se hizo visible porque el Excel de esta sesión trajo importes con separador de miles en el formato de celda.
+
+**Aclaración clave:** los datos del dashboard (parser principal, ya corregido) estaban y están correctamente parseados — únicamente el verificador visual reportaba mal. No hay pérdida ni corrupción de datos.
+
+### Corrección
+
+- **Archivo:** `cash_today.html`, función `renderValidacion()`.
+- **Cambio:** `.replace(',','.')` → `.replace(/,/g,'')` (idéntico al fix ya aplicado en el parser principal).
+- **Alcance:** 1 línea, reemplazo quirúrgico único (`count==1` verificado antes del deploy). Cero cambios en HTML/CSS/diseño ni en otros módulos.
+
+### Validación en producción
+
+- `node --check` en los 2 bloques `<script>` no vacíos → OK.
+- SHA fresco obtenido inmediatamente antes del PUT.
+- Deploy: commit `2df7759a42` · GitHub Actions run `29870177364` → `completed / success`.
+
+### Riesgo adicional identificado (no corregido, pendiente de autorización)
+
+La línea del parseo de `tcVal` en el bloque `_TC_MENSUAL` (~línea 2784) usa el mismo patrón antiguo `.replace(',','.')`. No falla actualmente porque los tipos de cambio no llevan separador de miles, pero quedaría expuesta al mismo bug si ese formato de celda cambia.
+
+---
+
 ## [20/07/2026] — Corrección de errores: eliminación del token GitHub expuesto en cash_today.html (segundo punto crítico de seguridad)
 
 ### Contexto
