@@ -70,6 +70,16 @@ a{color:var(--blue);}
 .hdr-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
 .hdr-badge{background:rgba(37,99,235,.35);border:1px solid rgba(37,99,235,.5);border-radius:20px;padding:4px 12px;font-size:.7rem;font-weight:600;color:rgba(230,240,255,.95)}
 .hdr-user{font-size:.78rem;font-weight:600;color:var(--white);opacity:.85}
+
+/* ── NAV TABS (homologado con peru/elsalvador) ── */
+.nav-wrap{background:#fff;border-bottom:1px solid var(--gray-100);position:sticky;top:60px;z-index:150;box-shadow:0 2px 8px rgba(15,35,64,.04)}
+.nav-inner{max-width:1440px;margin:0 auto;padding:0 24px;display:flex;overflow-x:auto;scrollbar-width:none;}
+.nav-inner::-webkit-scrollbar{display:none}
+.ntab{padding:14px 18px;font-size:.8rem;font-weight:600;color:var(--gray-600);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;user-select:none;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.ntab:hover{color:var(--blue)}
+.ntab.on{color:var(--blue);border-bottom-color:var(--blue)}
+.page{display:none}
+.page.on{display:block}
 .rule-banner{
   background:#fff;border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:var(--radius);
   padding:12px 16px;margin-bottom:20px;font-size:12.5px;color:var(--gray-600);box-shadow:var(--shadow);
@@ -79,7 +89,7 @@ a{color:var(--blue);}
 .filters{
   background:#fff;border:1px solid var(--border);border-radius:var(--radius);
   padding:14px 16px;margin-bottom:20px;box-shadow:var(--shadow);
-  display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;position:sticky;top:68px;z-index:50;
+  display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;position:sticky;top:108px;z-index:50;
 }
 .f-group{display:flex;flex-direction:column;gap:4px;min-width:130px;}
 .f-group label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--gray-600);}
@@ -209,6 +219,15 @@ table.data-table tbody td.motivo-cell{white-space:normal;max-width:260px;min-wid
   </div>
 </header>
 
+<nav class="nav-wrap">
+  <div class="nav-inner">
+    <button class="ntab on" onclick="goPage('resumen',this)">📊 Resumen</button>
+    <button class="ntab" onclick="goPage('analisis',this)">📈 Análisis</button>
+    <button class="ntab" onclick="goPage('detalle',this)">🔍 Detalle</button>
+    <button class="ntab" onclick="goPage('config',this)">⚙️ Config</button>
+  </div>
+</nav>
+
 <div class="wrap">
 
   <div class="rule-banner">
@@ -258,6 +277,7 @@ table.data-table tbody td.motivo-cell{white-space:normal;max-width:260px;min-wid
   </div>
 
   <!-- KPIs -->
+  <div class="page on" id="page-resumen">
   <div class="section-title"><span>Indicadores generales</span><span class="line"></span></div>
   <div class="kpi-grid">
     <div class="kpi-card">
@@ -317,6 +337,10 @@ table.data-table tbody td.motivo-cell{white-space:normal;max-width:260px;min-wid
     </div>
   </div>
 
+  </div>
+  <!-- /page-resumen -->
+
+  <div class="page" id="page-analisis">
   <!-- CHARTS ROW 2 -->
   <div class="section-title"><span>Rankings operativos</span><span class="line"></span></div>
   <div class="charts-grid-3">
@@ -368,6 +392,10 @@ table.data-table tbody td.motivo-cell{white-space:normal;max-width:260px;min-wid
     </div>
   </div>
 
+  </div>
+  <!-- /page-analisis -->
+
+  <div class="page" id="page-detalle">
   <!-- TABLE -->
   <div class="section-title"><span>Detalle de cartas</span><span class="line"></span></div>
   <div class="card">
@@ -404,6 +432,10 @@ table.data-table tbody td.motivo-cell{white-space:normal;max-width:260px;min-wid
     </div>
   </div>
 
+  </div>
+  <!-- /page-detalle -->
+
+  <div class="page" id="page-config">
   <!-- CONFIG / AUTO-PUBLICACIÓN -->
   <div class="section-title"><span>Configuración · Actualizar datos</span><span class="line"></span></div>
   <div class="rule-banner" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
@@ -416,6 +448,8 @@ table.data-table tbody td.motivo-cell{white-space:normal;max-width:260px;min-wid
     <button id="cs-publish-btn" onclick="publishCartasSalida()" style="display:none;background:linear-gradient(90deg,#0f2340,#2563eb);color:#fff;border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-weight:600;">🚀 Publicar en GitHub</button>
   </div>
   <div id="cs-status" style="display:none;margin-top:10px;padding:10px 14px;border-radius:8px;font-size:12.5px;"></div>
+  </div>
+  <!-- /page-config -->
 
   <div class="footer">
     <span>Dashboard generado a partir de REPORTE DE CARTAS DE SALIDA.xlsx · Hoja Detalle (columnas A–J)</span>
@@ -975,6 +1009,7 @@ const DATA = {"cols":["no","liqIdx","fechaEntrega","ruta","pilotoIdx","placas","
   }
 
   refresh();
+  window._csRefresh = refresh;
 })();
 </script>
 
@@ -993,6 +1028,18 @@ const DATA = {"cols":["no","liqIdx","fechaEntrega","ruta","pilotoIdx","placas","
      ══════════════════════════════════════════════════════════════ -->
 <script>
 var _CS_PENDING = null;
+
+/* ══ NAV TABS ══ */
+function goPage(id, btn){
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('on'); });
+  document.querySelectorAll('.ntab').forEach(function(t){ t.classList.remove('on'); });
+  var pg = document.getElementById('page-'+id);
+  if(pg) pg.classList.add('on');
+  if(btn) btn.classList.add('on');
+  /* Re-renderizar (incluye gráficas Chart.js) ahora que el contenedor es visible —
+     evita que un canvas oculto (display:none) reciba dimensiones 0x0 al crearse */
+  if(window._csRefresh) window._csRefresh();
+}
 
 function _csDetectPais(sheetName){
   var n = sheetName.toUpperCase();
