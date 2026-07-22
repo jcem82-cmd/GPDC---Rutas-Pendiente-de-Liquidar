@@ -1550,3 +1550,24 @@ El Excel de GT venía con 16,839 filas, pero 3,620 (21.5%) carecían de Fecha de
 - Archivos modificados: `cartas_salida.html` (bloque `DATA`), `analytics.html` (tarjeta `cartas_salida`).
 - Validación: `node --check` en los 4 bloques `<script>`, `json.loads()` estricto sobre el bloque `DATA` completo antes y después del reemplazo.
 
+
+## [22/07/2026] — Refactorización: navegación por pestañas en Cartas de Salida (Opción B)
+
+### Contexto
+
+Con el dataset ya consolidado (GT+ESV+PE, 19,118 registros), se ejecutó el refactor estructural que se había dejado pendiente desde la sesión del 10/07/2026 (Opción B), para evitar tocar la estructura del dashboard dos veces.
+
+### Cambio
+
+- Layout de scroll único → navegación por 4 pestañas: 📊 Resumen (KPIs + tendencia/estatus), 📈 Análisis (rankings operativos + riesgo/antigüedad), 🔍 Detalle (tabla de cartas), ⚙️ Config (auto-publicación de Excel).
+- Patrón homologado con `peru/index.html` / `elsalvador/index.html` (`.nav-wrap`, `.ntab`, `.page.on`).
+- Barra de filtros permanece **fuera** de las pestañas (siempre visible, aplica a las 4).
+- Mitigación del bug conocido de Chart.js con canvas ocultos (`display:none` produce canvas 0x0 al crear el chart): `refresh()` se expone globalmente (`window._csRefresh`) y se re-invoca en cada cambio de pestaña (`goPage()`), forzando destroy+recreate de cada gráfica ya con el contenedor visible.
+- **Cero cambios** en el bloque `DATA`, catálogos, lógica de filtrado o auto-publicación — cambio 100% de capa de presentación.
+
+### Validación
+
+- Balance de `<div>` verificado (99 apertura / 99 cierre) antes de publicar.
+- `node --check` en los 4 bloques `<script>`.
+- Integridad de `DATA` confirmada (19,118 filas) antes y después del cambio.
+
