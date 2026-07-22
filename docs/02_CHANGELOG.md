@@ -1518,3 +1518,35 @@ Título, subtítulo e ícono del panel se adaptan por rol en runtime:
 
 ---
 *PDC Analytics Center · Grupo PDC · Departamento Financiero*
+
+## [22/07/2026] — Consolidación multi-país Cartas de Salida (GT + ESV + PE)
+
+### Contexto
+
+Charly compartió 3 archivos Excel separados (uno por país: GT actualizado, ESV nuevo, PE nuevo) para consolidar el dashboard `cartas_salida.html`, que hasta ahora solo tenía datos de Guatemala (14,047 registros vía self-publish del 15/07/2026).
+
+### Hallazgo de calidad de datos (RCA antes de publicar)
+
+El Excel de GT venía con 16,839 filas, pero 3,620 (21.5%) carecían de Fecha de Entrega — campo base para calcular vigencia. Se verificó que 3,616 de esas filas tenían `NO.` > 61802 (0% con fecha válida en ese rango), y Charly confirmó que son correlativos asignados por el sistema pero nunca utilizados. Las 4 filas restantes sin fecha (NO. ≤ 61802) corresponden a cartas anuladas/incompletas (ej. "ANULADA CARTA DUPLICADA CON LA 8978"). Se excluyeron todas por no tener fecha base para la regla de vigencia — decisión confirmada con Charly antes de publicar.
+
+### Procesamiento
+
+- ETL en Python (fuera del navegador, por ser 3 archivos separados en vez de pestañas de un mismo Excel): lectura por nombre de columna (no por posición) — robusto ante el archivo de ESV, que trae una columna adicional `Código` (id de ruta, no incorporada al esquema actual) desplazando las columnas subsiguientes.
+- Detectado y corregido por Charly en la plantilla: celda de encabezado A1 de ESV traía `"2012350"` en vez de `"NO."` (dato residual).
+- Fecha de corte unificada: 22/07/2026 (misma fecha embebida en los 3 archivos).
+- Catálogos (liquidadores/pilotos/transportes/motivos) reconstruidos de forma consolidada y compartida entre los 3 países (antes: solo GT).
+
+### Resultado
+
+| País | Registros válidos |
+|---|---|
+| GT | 13,219 (de 16,839; 3,620 excluidos — correlativos no usados / anulados) |
+| ESV | 5,578 (de 5,583; 5 excluidos — mismo criterio) |
+| PE | 321 (de 324; 3 excluidos — mismo criterio) |
+| **Total** | **19,118** |
+
+- El filtro multi-país (agregado el 20/07/2026, gateado a `paises.length>1`) se activa automáticamente para usuarios sin país asignado (admin/regional) al ahora existir 3 países en el dataset — sin cambios de código necesarios, funcionó según diseño.
+- Tarjeta del Hub (`analytics.html`) actualizada: 19,118 cartas totales, 3 países, 19,102 caducadas.
+- Archivos modificados: `cartas_salida.html` (bloque `DATA`), `analytics.html` (tarjeta `cartas_salida`).
+- Validación: `node --check` en los 4 bloques `<script>`, `json.loads()` estricto sobre el bloque `DATA` completo antes y después del reemplazo.
+
