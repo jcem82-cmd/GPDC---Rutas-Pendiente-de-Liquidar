@@ -1,5 +1,26 @@
 
-## [23/07/2026] — Seguimiento: cobertura de etiquetas abreviadas, filtro "Vencida" en Detalle, y corrección de tendencia histórica regional con datos reales
+## [23/07/2026] — Ajuste: confirmación de criterio "Vencidas" en Regional y reactivación del auto-cálculo
+
+### Contexto
+
+Charly confirmó, con el desglose real por país (GT/ESV/PE) al cierre de cada mes, que la serie "Vencidas" del panel "Tendencia Rutas Vencidas" del dashboard Regional **sí está correcta** — validado contra `Estado (Facturación)==='Vencidas'` (GT 41, ESV 5, Perú 44 → total 90 en el corte vigente, vs. 42/5/41/88 de su captura; diferencia mínima explicable por desfase de horario entre la captura y el corte vigente). El problema señalado era exclusivamente la serie "Total Rutas" (ya corregida en la entrada anterior).
+
+### Corrección
+
+- Se **reactivó** el auto-cálculo en vivo de `D.rutasVencidas` (suma de los 3 países vía `Estado (Facturación)`), que había quedado apagado por error en la corrección anterior (esa corrección solo debía aplicar a `D.rutasTotal`).
+- `D.rutasMeses`/`D.rutasVencidas` agregan una posición nueva cuando cambia el mes vigente (mismo patrón ya usado en Perú/ESV) y actualizan in-place si es el mismo mes.
+- `D.rutasTotal` permanece manual: al abrir un mes nuevo se inserta `null` como marcador hasta que Charly provea el cierre real de esa cifra.
+
+### Archivos modificados
+
+- `regional/index.html` únicamente.
+
+### Validación
+
+- `node --check` → OK. Deploy: commit `5c7f780e23` (o el siguiente en el log) → Actions run `30027932314` → `success`.
+
+---
+
 
 ### Contexto
 
