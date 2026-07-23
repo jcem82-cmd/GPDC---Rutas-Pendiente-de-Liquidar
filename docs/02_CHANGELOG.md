@@ -1,4 +1,38 @@
 
+## [23/07/2026] — Corrección de errores: período/mes desincronizado en dashboards Perú, El Salvador y Regional
+
+### Contexto
+
+Charly reportó que los dashboards operativos de Perú y El Salvador mostraban KPIs con etiqueta "Junio 2026" pese a que el Excel maestro ya estaba con datos de fecha actual (`report_date:"23/07/2026"`, `report_month:"2026-07"`).
+
+### Causa raíz (RCA)
+
+**Hallazgo 1 (cosmético):** Los encabezados de sección, el bloque "Período" y la nota del historial en `peru/index.html`, `elsalvador/index.html` y `regional/index.html` eran texto HTML fijo ("Junio 2026"), nunca vinculado a `KPI_TOTALS.report_month`. Los valores numéricos de las tarjetas KPI sí se refrescaban en vivo vía PDCBridge; solo las etiquetas de texto quedaron desincronizadas.
+
+**Hallazgo 2 (integridad de datos — más grave):** En `peru/index.html`, `elsalvador/index.html` y también en `regional/index.html` (hallazgo adicional durante la implementación), la lógica de refresco de la serie histórica mensual (`MESES`/`D.rutasTotal`/`D.rutasVencidas`/`D.efectividad`/`D.montoPEN`; en regional: `D.rutasMeses`/`D.rutasTotal`/`D.rutasVencidas`) **siempre sobrescribía la última posición del arreglo** (etiquetada "Jun") con los datos del mes vigente, en vez de agregar una posición nueva. Esto causaba pérdida silenciosa del dato histórico real de junio cada vez que se publicaba un Excel de un mes distinto, y graficaba los datos de julio bajo la etiqueta "Jun" en los gráficos de tendencia.
+
+**Hallazgo 3 (documentado, no corregido — pendiente autorización):** Las tablas "Resumen Histórico" (Perú/ESV) y "Detalle Mensual" (Regional) son 100% datos de muestra/referencia, sin conexión a PDCBridge ni a ningún Excel subido, en ningún mes. Corregirlo de fondo requiere un mecanismo de persistencia histórica (equivalente a `_TC_MENSUAL` de Cash Today) — es Nueva Funcionalidad, no Corrección.
+
+### Corrección aplicada
+
+- **Archivos:** `peru/index.html`, `elsalvador/index.html`, `regional/index.html`.
+- **Cambio 1:** helpers `pdcMesInfo()` / `pdcReplaceTxt()` agregados a cada módulo (arquitectura independiente, sin tocar `js/pdc_data_bridge.js` compartido). Derivan mes/año en español desde `KPI_TOTALS.report_month` y reemplazan en runtime el texto fijo "Junio 2026" en `.sec-title`, `.panel-title`, `.info-box-title`, `.update-val`, `.sec-sub`, `.panel-sub` (incluye caso especial "enero–junio" → "enero–[mes actual]" en regional). Cero cambios de HTML/CSS/diseño — el texto estático permanece como fallback si PDCBridge falla.
+- **Cambio 2:** lógica de refresco cambiada de sobrescritura fija a: si el mes del reporte es nuevo respecto al último registrado → `push()` (conserva historial); si es el mismo mes (recarga de página) → actualiza in-place (sin duplicar).
+- **Alcance:** ningún cambio en `PDC_USERS`, login, u otros dashboards (GT, Cartas de Salida, Cash Today) — confirmado explícitamente sin tocar el resto de la plataforma.
+
+### Validación en producción
+
+- `node --check` en los bloques `<script>` no vacíos de los 3 archivos → OK.
+- Simulación aislada de `pdcMesInfo()` + lógica push/overwrite → confirma que agrega "Jul" una sola vez y no duplica en cargas repetidas del mismo mes.
+- SHA fresco obtenido inmediatamente antes de cada PUT.
+- Deploy: commits `c18cff2f9d` (Perú), `95e6f974d0` (ESV), `03c8ebffa2` (Regional) · GitHub Actions run `30024561497` → `completed / success` (construido desde el commit final, incluye los 3 cambios).
+
+### Pendiente de autorización
+
+Hallazgo 3 (tablas históricas 100% estáticas en Perú/ESV/Regional) documentado como recomendación — requiere decisión de arquitectura de persistencia antes de implementar.
+
+---
+
 ## [21/07/2026] — Corrección de errores: falso positivo de discrepancia en validación de totales (cash_today.html)
 
 ### Contexto
