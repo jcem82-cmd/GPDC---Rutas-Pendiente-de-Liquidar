@@ -876,10 +876,18 @@ function pdcApplyLiveData(data){
   var mesInfo = pdcMesInfo(data.KPI_TOTALS && data.KPI_TOTALS.report_month);
   if(mesInfo){
     var mesLargoAnio = mesInfo.largo+' '+mesInfo.anio;
+    var mesAbrAnio = mesInfo.abr+' '+mesInfo.anio;
     pdcReplaceTxt('.sec-title','Junio 2026',mesLargoAnio);
     pdcReplaceTxt('.panel-title','Junio 2026',mesLargoAnio);
     pdcReplaceTxt('.info-box-title','Junio 2026',mesLargoAnio);
     pdcReplaceTxt('.update-val','Enero – Junio 2026','Enero – '+mesLargoAnio);
+    /* HOTFIX 23/07/2026 (ampliación por reporte de Charly): formatos abreviados
+       "Jun 2026"/"Ene–Jun 2026"/"Ene–Jun" que la primera pasada no cubría */
+    ['.update-val','.panel-sub','.panel-title','.kc-sub','.sec-sub'].forEach(function(sel){
+      pdcReplaceTxt(sel,'Ene–Jun 2026','Ene–'+mesAbrAnio);
+      pdcReplaceTxt(sel,'Jun 2026',mesAbrAnio);
+      pdcReplaceTxt(sel,'Ene–Jun','Ene–'+mesInfo.abr);
+    });
   }
 
   var pend = rows.length;
@@ -914,10 +922,17 @@ function pdcApplyLiveData(data){
   var transpArr = Object.keys(transpMap).map(function(t){ return Object.assign({nombre:t}, transpMap[t]); })
     .sort(function(a,b){ return b.monto - a.monto; }).slice(0,5);
 
-  /* RUTAS_DETALLE completo (fuente real) */
-  var bucket = function(rr){
-    if(rr==='15 +' || rr==='11 a 15') return 'Vencida';
-    if(rr==='04 a 10') return 'En Proceso';
+  /* RUTAS_DETALLE completo (fuente real)
+     HOTFIX 23/07/2026 (RCA): bucket() clasificaba 'Vencida' según Rango Real
+     (>=11 días), un criterio DISTINTO al usado por el resto del dashboard
+     (Estado (Facturación)==='Vencidas', ver KPI kpiVenc arriba y notLiq() en
+     PDCBridge). Esto causaba que el filtro "Vencida" del módulo Detalle no
+     mostrara nada aun cuando el KPI y el dataset real sí tenían rutas vencidas
+     (ej. rutas con Rango Real bajo pero ya vencidas por Estado (Facturación)).
+     Ahora usa el mismo criterio oficial de "Vencida" en todo el dashboard. */
+  var bucket = function(r){
+    if(r['Estado (Facturación)']==='Vencidas' || r['Estado Real']==='Vencidas') return 'Vencida';
+    if(r['Rango Real']==='04 a 10') return 'En Proceso';
     return 'Al Día';
   };
   RUTAS_DETALLE = rows.map(function(r){
@@ -927,7 +942,7 @@ function pdcApplyLiveData(data){
       zona: (r['Ubicación Geografica']||'').replace(/^\d+\s*/,'').trim(),
       dias: r['Dias Real'],
       monto: r['Valor Asignado']||0,
-      estado: bucket(r['Rango Real'])
+      estado: bucket(r)
     };
   });
 
