@@ -946,22 +946,27 @@ function pdcApplyLiveData(data){
     };
   });
 
-  /* HOTFIX 23/07/2026 (RCA Hallazgo 2): antes esta lógica SIEMPRE sobrescribía la
-     última posición del arreglo (etiquetada "Jun"), perdiendo silenciosamente el
-     dato histórico real de ese mes cuando el Excel vigente ya era de un mes distinto.
-     Ahora: si el mes del reporte es nuevo respecto al último registrado en MESES,
-     se agrega una posición (se conserva el historial anterior); si es el mismo mes
-     ya registrado (ej. recarga de página dentro del mismo período), se actualiza in-place. */
+  /* HOTFIX 23/07/2026 (corrección de la corrección anterior — mismo bug que en
+     regional/index.html): "Total Rutas"/"Vencidas" NO deben venir del backlog
+     pendiente en vivo (pend/venc) — son métricas distintas. Ahora se toman de
+     KPI_TOTALS.mes_actual_pais (hoja "Total Rutas" del Excel, agregada al
+     pipeline en esta sesión — ver docs/02_CHANGELOG.md), que sí corresponde al
+     total real de rutas y vencidas del mes vigente por país. Si el campo no
+     está disponible (Excel/versión anterior sin la hoja), se conserva el
+     fallback anterior (pend/venc) para no romper el dashboard. Meses históricos
+     anteriores siguen siendo carga manual (no existen por país en el Excel). */
+  var mesActualPais = data.KPI_TOTALS && data.KPI_TOTALS.mes_actual_pais;
+  var trPais = mesActualPais && mesActualPais['Perú'];
   if(mesInfo && MESES[MESES.length-1] !== mesInfo.abr){
     MESES.push(mesInfo.abr);
-    D.rutasTotal.push(pend);
-    D.rutasVencidas.push(venc);
+    D.rutasTotal.push(trPais ? trPais.total : pend);
+    D.rutasVencidas.push(trPais ? trPais.vencidas : venc);
     D.efectividad.push(efect);
     D.montoPEN.push(montoPend);
   } else {
     var last = D.rutasTotal.length-1;
-    D.rutasTotal[last] = pend;
-    D.rutasVencidas[last] = venc;
+    D.rutasTotal[last] = trPais ? trPais.total : pend;
+    D.rutasVencidas[last] = trPais ? trPais.vencidas : venc;
     D.efectividad[last] = efect;
     D.montoPEN[last] = montoPend;
   }
