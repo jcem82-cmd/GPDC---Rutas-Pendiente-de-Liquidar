@@ -754,14 +754,26 @@ function pdcApplyLiveData(data){
   D.rutas.SV.pendientes = byPais['El Salvador'].pend; D.rutas.SV.vencidas = byPais['El Salvador'].venc;
   D.rutas.PE.pendientes = byPais['Perú'].pend; D.rutas.PE.vencidas = byPais['Perú'].venc;
 
-  /* HOTFIX 23/07/2026 (corrección de la corrección anterior): esta serie NO se
-     recalcula desde totalPend/totalVenc (backlog actual pendiente en vivo) — son
-     métricas distintas. "Total Rutas"/"Vencidas" de este panel son cierres
-     mensuales reales que Charly provee directamente (ver docs/02_CHANGELOG.md,
-     entrada 23/07/2026). Se mantiene como dato de referencia manual hasta definir
-     un pipeline de persistencia de cierre mensual (Hallazgo 3, pendiente de
-     autorización). El push automático por cambio de mes se retiró para evitar
-     ensuciar el historial real con la cifra equivocada. */
+  /* HOTFIX 23/07/2026 (ajuste tras confirmación de Charly): las dos series de este
+     panel tienen fuentes distintas:
+     - "Vencidas" (criterio Estado (Facturación)==='Vencidas', SUMA de los 3 países)
+       SÍ se recalcula en vivo — confirmado por Charly contra su tabla de cierres
+       reales (GT/ESV/PE por mes). Se agrega una posición nueva cuando cambia el
+       mes vigente (se conserva el historial); se actualiza in-place si es el
+       mismo mes (recarga / nueva carga de Excel dentro del mismo período).
+     - "Total Rutas" NO tiene fórmula en vivo equivalente (ver docs/02_CHANGELOG.md,
+       entrada 23/07/2026) — al abrir un mes nuevo se inserta `null` como marcador;
+       Charly debe proveer el cierre real de "Total Rutas" para ese mes cuando
+       corresponda (mismo mecanismo que esta sesión: captura + reemplazo puntual). */
+  var mesAbrAnio = mesInfo ? mesInfo.abr+'-'+String(mesInfo.anio).slice(-2) : null;
+  if(mesAbrAnio && D.rutasMeses[D.rutasMeses.length-1] !== mesAbrAnio){
+    D.rutasMeses.push(mesAbrAnio);
+    D.rutasVencidas.push(totalVenc);
+    D.rutasTotal.push(null); /* pendiente de cierre real — ver nota arriba */
+  } else {
+    var lastV = D.rutasVencidas.length-1;
+    D.rutasVencidas[lastV] = totalVenc;
+  }
 
   var setTxt = function(id, val){ var el=document.getElementById(id); if(el) el.textContent = val; };
   setTxt('kpiRegPend', totalPend);
