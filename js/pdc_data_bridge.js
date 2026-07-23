@@ -54,10 +54,15 @@ var PDCBridge = (function () {
       .then(function (html) {
         var rawBlock = parseBlock(html, 'RAW', '[', ']');
         var kpiBlock = parseBlock(html, 'KPI_TOTALS', '{', '}');
+        /* HOTFIX 23/07/2026: KPI_HIST (Total Rutas / Vencidas por cierre mensual,
+           publicado automáticamente desde la hoja Efectividad del Excel) — campo
+           aditivo, no afecta a los consumidores existentes de PDCBridge.load(). */
+        var histBlock = parseBlock(html, 'KPI_HIST', '[', ']');
         var RAW = rawBlock ? JSON.parse(rawBlock) : [];
         var KPI_TOTALS = kpiBlock ? JSON.parse(kpiBlock) : {};
+        var KPI_HIST = histBlock ? JSON.parse(histBlock) : [];
         var FX_DEF = parseFxDef(html);
-        cache = { RAW: RAW, KPI_TOTALS: KPI_TOTALS, FX_DEF: FX_DEF, loadedAt: Date.now() };
+        cache = { RAW: RAW, KPI_TOTALS: KPI_TOTALS, KPI_HIST: KPI_HIST, FX_DEF: FX_DEF, loadedAt: Date.now() };
         return cache;
       });
   }
