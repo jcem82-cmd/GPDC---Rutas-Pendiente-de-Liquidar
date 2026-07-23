@@ -848,10 +848,39 @@ function resetFiltros(){
    desde el dataset real. Si el fetch falla, se conservan los
    valores de referencia (fallback silencioso) y el dashboard
    sigue funcionando exactamente igual que antes. */
+
+/* HOTFIX 23/07/2026: helpers de período dinámico (RCA — encabezados fijos "Junio 2026"
+   desincronizados del Excel vigente). Deriva mes/año desde KPI_TOTALS.report_month
+   ("YYYY-MM"), fuente única ya existente en index.html. No requiere cambios de HTML/CSS. */
+function pdcMesInfo(reportMonth){
+  if(!reportMonth || reportMonth.indexOf('-')===-1) return null;
+  var p = reportMonth.split('-');
+  var mIdx = parseInt(p[1],10) - 1;
+  if(mIdx<0 || mIdx>11) return null;
+  var ABR = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  var LARGO = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  return { abr:ABR[mIdx], largo:LARGO[mIdx], anio:p[0] };
+}
+function pdcReplaceTxt(sel, oldFrag, newFrag){
+  document.querySelectorAll(sel).forEach(function(el){
+    if(el.textContent.indexOf(oldFrag) > -1){ el.textContent = el.textContent.replace(oldFrag, newFrag); }
+  });
+}
+
 function pdcApplyLiveData(data){
   var RAW = data.RAW || [];
   var rows = RAW.filter(function(r){ return r['Pais']==='Perú' && PDCBridge.notLiq(r); });
   if(!rows.length) return; /* sin datos reales -> se conservan los valores de referencia */
+
+  /* HOTFIX 23/07/2026: encabezados de período dinámicos (antes texto fijo "Junio 2026") */
+  var mesInfo = pdcMesInfo(data.KPI_TOTALS && data.KPI_TOTALS.report_month);
+  if(mesInfo){
+    var mesLargoAnio = mesInfo.largo+' '+mesInfo.anio;
+    pdcReplaceTxt('.sec-title','Junio 2026',mesLargoAnio);
+    pdcReplaceTxt('.panel-title','Junio 2026',mesLargoAnio);
+    pdcReplaceTxt('.info-box-title','Junio 2026',mesLargoAnio);
+    pdcReplaceTxt('.update-val','Enero – Junio 2026','Enero – '+mesLargoAnio);
+  }
 
   var pend = rows.length;
   var venc = rows.filter(function(r){ return r['Estado (Facturación)']==='Vencidas'; }).length;
@@ -902,12 +931,25 @@ function pdcApplyLiveData(data){
     };
   });
 
-  /* Refrescar SOLO el mes actual en las series historicas (se conserva historial previo) */
-  var last = D.rutasTotal.length-1;
-  D.rutasTotal[last] = pend;
-  D.rutasVencidas[last] = venc;
-  D.efectividad[last] = efect;
-  D.montoPEN[last] = montoPend;
+  /* HOTFIX 23/07/2026 (RCA Hallazgo 2): antes esta lógica SIEMPRE sobrescribía la
+     última posición del arreglo (etiquetada "Jun"), perdiendo silenciosamente el
+     dato histórico real de ese mes cuando el Excel vigente ya era de un mes distinto.
+     Ahora: si el mes del reporte es nuevo respecto al último registrado en MESES,
+     se agrega una posición (se conserva el historial anterior); si es el mismo mes
+     ya registrado (ej. recarga de página dentro del mismo período), se actualiza in-place. */
+  if(mesInfo && MESES[MESES.length-1] !== mesInfo.abr){
+    MESES.push(mesInfo.abr);
+    D.rutasTotal.push(pend);
+    D.rutasVencidas.push(venc);
+    D.efectividad.push(efect);
+    D.montoPEN.push(montoPend);
+  } else {
+    var last = D.rutasTotal.length-1;
+    D.rutasTotal[last] = pend;
+    D.rutasVencidas[last] = venc;
+    D.efectividad[last] = efect;
+    D.montoPEN[last] = montoPend;
+  }
   D.zonas = zonas;
 
   /* Inyectar en el DOM */
