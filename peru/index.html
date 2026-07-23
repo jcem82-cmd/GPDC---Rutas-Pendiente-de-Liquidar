@@ -493,7 +493,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
           <th class="r">% Vencidas</th><th class="r">Efectividad</th>
           <th class="r">Monto PEN</th><th>Tendencia</th>
         </tr></thead>
-        <tbody>
+        <tbody id="tblHistoricoBody">
           <tr><td>Enero 2026</td><td class="r">61</td><td class="r">7</td><td class="r">11.5%</td><td class="r">88.5%</td><td class="r">S/ 2,284,100</td><td><span class="badge bg">↗ OK</span></td></tr>
           <tr><td>Febrero 2026</td><td class="r">65</td><td class="r">9</td><td class="r">13.8%</td><td class="r">86.2%</td><td class="r">S/ 2,431,750</td><td><span class="badge by">↘ Alerta</span></td></tr>
           <tr><td>Marzo 2026</td><td class="r">58</td><td class="r">5</td><td class="r">8.6%</td><td class="r">91.4%</td><td class="r">S/ 2,168,400</td><td><span class="badge bg">↗ OK</span></td></tr>
@@ -1011,6 +1011,46 @@ function pdcApplyLiveData(data){
     rowsHtml += '<tr class="total"><td colspan="2">TOTAL</td><td class="r">'+pend+'</td>'+
                 '<td class="r">'+venc+'</td><td class="r">'+fmtPEN(montoPend)+'</td><td class="r">100%</td><td></td></tr>';
     tbody.innerHTML = rowsHtml;
+  }
+
+  /* HOTFIX 23/07/2026: "Resumen Histórico" y "Notas del análisis" eran texto 100%
+     estático (nunca conectado a datos reales, ni siquiera a los históricos ya
+     corregidos en D.rutasTotal/rutasVencidas). Se reconstruyen dinámicamente.
+     NOTA: Efectividad y Monto históricos (Ene-May) siguen siendo de referencia —
+     Charly solo proporcionó Total Rutas/Vencidas reales; si comparte esos dos
+     datos históricos también se pueden corregir. */
+  var MESES_LARGO_MAP = {Ene:'Enero',Feb:'Febrero',Mar:'Marzo',Abr:'Abril',May:'Mayo',Jun:'Junio',Jul:'Julio',Ago:'Agosto',Sep:'Septiembre',Oct:'Octubre',Nov:'Noviembre',Dic:'Diciembre'};
+  var tblHist = document.getElementById('tblHistoricoBody');
+  if(tblHist){
+    var histRows = MESES.map(function(m, i){
+      var p = m.split('-');
+      var mesLargo = (MESES_LARGO_MAP[p[0]]||p[0]) + (p[1] ? ' 20'+p[1] : '');
+      var tot = D.rutasTotal[i], vencM = D.rutasVencidas[i];
+      var ef = D.efectividad[i]!=null ? D.efectividad[i] : 0;
+      var monto = D.montoPEN[i]!=null ? D.montoPEN[i] : 0;
+      var pctV = tot ? Math.round(vencM/tot*1000)/10 : 0;
+      var badge = ef>=90 ? '<span class="badge bg">↗ OK</span>' : (ef>=80 ? '<span class="badge by">↘ Alerta</span>' : '<span class="badge br">↘ Crítico</span>');
+      return '<tr><td>'+mesLargo+'</td><td class="r">'+tot+'</td><td class="r">'+vencM+'</td>'+
+             '<td class="r">'+pctV+'%</td><td class="r">'+ef+'%</td><td class="r">'+fmtPEN(monto)+'</td><td>'+badge+'</td></tr>';
+    }).join('');
+    var promTot = Math.round(D.rutasTotal.reduce(function(a,b){return a+b;},0)/D.rutasTotal.length);
+    var promVenc = Math.round(D.rutasVencidas.reduce(function(a,b){return a+b;},0)/D.rutasVencidas.length*10)/10;
+    var promEf = Math.round(D.efectividad.reduce(function(a,b){return a+(b||0);},0)/D.efectividad.length*10)/10;
+    var promMonto = Math.round(D.montoPEN.reduce(function(a,b){return a+(b||0);},0)/D.montoPEN.length);
+    var promPct = promTot ? Math.round(promVenc/promTot*1000)/10 : 0;
+    histRows += '<tr class="total"><td>PROMEDIO</td><td class="r">'+promTot+'</td><td class="r">'+promVenc+'</td>'+
+                '<td class="r">'+promPct+'%</td><td class="r">'+promEf+'%</td><td class="r">'+fmtPEN(promMonto)+'</td><td></td></tr>';
+    tblHist.innerHTML = histRows;
+  }
+
+  var notaEl = document.querySelector('.info-box-body');
+  if(notaEl){
+    var pctVencNota = pend ? Math.round(venc/pend*1000)/10 : 0;
+    var metaTxt = efect>=90 ? ' — cumple la meta del 90%.' : ' — por debajo de la meta del 90%.';
+    notaEl.innerHTML = 'La operación Perú al corte '+(data.KPI_TOTALS.report_date||'—')+
+      ' registra <strong>'+pend+' '+(pend===1?'ruta pendiente':'rutas pendientes')+'</strong>'+
+      (pend ? (', '+pctVencNota+'% en estado vencido') : '')+
+      '. Monto pendiente: <strong>'+fmtPEN(montoPend)+'</strong>. Efectividad actual: <strong>'+efect.toFixed(1)+'%</strong>'+metaTxt;
   }
 }
 
