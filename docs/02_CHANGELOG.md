@@ -1,5 +1,36 @@
 
-## [23/07/2026] — Corrección de errores: período/mes desincronizado en dashboards Perú, El Salvador y Regional
+## [23/07/2026] — Seguimiento: cobertura de etiquetas abreviadas, filtro "Vencida" en Detalle, y corrección de tendencia histórica regional con datos reales
+
+### Contexto
+
+Charly revisó ESV/Perú tras el fix anterior y reportó 3 puntos adicionales; posteriormente compartió los cierres mensuales reales (jun-25 a jul-26) para validar la gráfica "Tendencia Rutas Vencidas" del dashboard Regional.
+
+### Hallazgos y correcciones
+
+**1) Etiquetas de período — cobertura incompleta.** El fix anterior solo cubría el literal completo "Junio 2026" (5-6 ubicaciones). Quedaron sin cubrir los formatos abreviados "Jun 2026" / "Ene–Jun 2026" / "Ene–Jun" presentes en los módulos Resumen, Análisis, Detalle y Tendencias de `peru/index.html` y `elsalvador/index.html`. Se amplió `pdcReplaceTxt` para cubrir ambos formatos en `.update-val`, `.panel-sub`, `.panel-title`, `.kc-sub`, `.sec-sub`.
+
+**2) Filtro "Vencida" sin resultados en módulo Detalle (RCA).** Causa raíz: la función `bucket()` en `peru/index.html` y `elsalvador/index.html` clasificaba "Vencida" según `Rango Real >= 11 días`, un criterio **distinto** al oficial de la plataforma (`Estado (Facturación)==='Vencidas'`, usado en KPIs y en `notLiq()` de PDCBridge). Con el corte vigente (5 rutas vencidas por Estado (Facturación) pero ninguna con Rango Real ≥11 días), el filtro mostraba 0. Corregido: `bucket()` ahora usa `Estado (Facturación)`/`Estado Real` como criterio primario, consistente con el resto del dashboard.
+
+**3) Tendencia "Total Rutas vs Vencidas" (Regional) no coincidía con la realidad.** Charly proporcionó los cierres mensuales reales (jun-25 a jul-26, imagen adjunta). Validación reveló que el arreglo `D.rutasTotal`/`D.rutasVencidas` de `regional/index.html` almacenaba una métrica **distinta**: el fix de la sesión anterior recalculaba esta serie desde el backlog actual pendiente en vivo (`totalPend`/`totalVenc`, ~146 rutas), mientras que "Total Rutas" del cierre mensual real son magnitudes de miles (4,598–8,463) — son conceptos distintos (backlog pendiente vs. total de rutas del cierre mensual). Corrección: se reemplazó el arreglo completo con los 14 meses reales provistos por Charly y **se retiró el auto-cálculo** que ensuciaba el historial con la métrica equivocada. Esta serie ahora es de carga manual hasta definir un pipeline real de cierre mensual (ver Hallazgo 3 pendiente).
+
+### Archivos modificados
+
+- `peru/index.html`, `elsalvador/index.html`: cobertura de etiquetas + fix `bucket()`.
+- `regional/index.html`: reemplazo de `D.rutasMeses`/`rutasVencidas`/`rutasTotal` con datos reales (14 meses) + eliminación del auto-cálculo incorrecto + actualización de título de panel ("Últimos 6 Meses" → "Histórico", ya no aplica un conteo fijo).
+
+### Validación
+
+- `node --check` en todos los bloques `<script>` modificados → OK.
+- Deploys: commits `f1f27af6e5` (Perú), `ab8d8cd907` (ESV) → Actions run `30026279879` success. Commit `65892bce01` (Regional) → Actions run `30026839622` success.
+
+### Pendiente
+
+- Valores reales de cierre de Perú/ESV (país-específico) para corregir sus propios arreglos `D.rutasTotal`/`D.rutasVencidas`/`D.efectividad`/`D.montoPEN` — actualmente aún con datos de referencia/placeholder, no cierres reales.
+- Confirmar si se replica la cobertura de etiquetas abreviadas en `regional/index.html` (parcialmente mezclado con módulo Cash Today, Hallazgo 3 diferido).
+- Hallazgo 3 (tablas históricas estáticas + pipeline de persistencia de cierre mensual real) sigue pendiente de autorización de diseño.
+
+---
+
 
 ### Contexto
 
