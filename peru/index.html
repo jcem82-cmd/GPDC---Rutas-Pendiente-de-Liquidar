@@ -521,12 +521,16 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
 <script src="../js/pdc_data_bridge.js"></script>
 <script>
 /* ══ DATOS ══ */
-var MESES = ['Ene','Feb','Mar','Abr','May','Jun'];
+/* HOTFIX 23/07/2026: MESES/rutasTotal/rutasVencidas reemplazados con datos reales
+   provistos por Charly (Total Rutas: tabla dinámica "Total Rutas" hoja KPI, columna
+   PEN = Perú · Vencidas: cierre real por Estado Real, columna Perú). Formato con año
+   (Ene-26) para evitar ambigüedad entre años (mismo ajuste hecho en regional/index.html).
+   Julio en adelante se agrega solo vía KPI_TOTALS.mes_actual_pais. */
+var MESES = ['Ene-26','Feb-26','Mar-26','Abr-26','May-26','Jun-26'];
 
 var D = {
-  /* Últimos 2 meses reales (RAW Rutas) · anteriores: referencial */
-  rutasTotal:    [61, 65, 58, 71, 21, 74],
-  rutasVencidas: [7,   9,  5, 10,  2, 12],
+  rutasTotal:    [801, 749, 742, 649, 718, 815],
+  rutasVencidas: [0,   0,   0,   0,   0,   7],
   efectividad:   [88.5, 86.2, 91.4, 85.9, 90.5, 83.8],
   montoPEN:      [2284100, 2431750, 2168400, 2657900, 778809, 1492234],
   zonas:         { 'LIMA':41, 'LA LIBERTAD':6, 'CAJAMARCA':4, 'LAMBAYEQUE':4, 'AREQUIPA':3, 'Otras':16 }
@@ -957,8 +961,9 @@ function pdcApplyLiveData(data){
      anteriores siguen siendo carga manual (no existen por país en el Excel). */
   var mesActualPais = data.KPI_TOTALS && data.KPI_TOTALS.mes_actual_pais;
   var trPais = mesActualPais && mesActualPais['Perú'];
-  if(mesInfo && MESES[MESES.length-1] !== mesInfo.abr){
-    MESES.push(mesInfo.abr);
+  var mesAbrAnioCorto = mesInfo ? mesInfo.abr+'-'+String(mesInfo.anio).slice(-2) : null;
+  if(mesAbrAnioCorto && MESES[MESES.length-1] !== mesAbrAnioCorto){
+    MESES.push(mesAbrAnioCorto);
     D.rutasTotal.push(trPais ? trPais.total : pend);
     D.rutasVencidas.push(trPais ? trPais.vencidas : venc);
     D.efectividad.push(efect);
