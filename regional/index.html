@@ -754,25 +754,20 @@ function pdcApplyLiveData(data){
   D.rutas.SV.pendientes = byPais['El Salvador'].pend; D.rutas.SV.vencidas = byPais['El Salvador'].venc;
   D.rutas.PE.pendientes = byPais['Perú'].pend; D.rutas.PE.vencidas = byPais['Perú'].venc;
 
-  /* HOTFIX 23/07/2026 (ajuste tras confirmación de Charly): las dos series de este
-     panel tienen fuentes distintas:
-     - "Vencidas" (criterio Estado (Facturación)==='Vencidas', SUMA de los 3 países)
-       SÍ se recalcula en vivo — confirmado por Charly contra su tabla de cierres
-       reales (GT/ESV/PE por mes). Se agrega una posición nueva cuando cambia el
-       mes vigente (se conserva el historial); se actualiza in-place si es el
-       mismo mes (recarga / nueva carga de Excel dentro del mismo período).
-     - "Total Rutas" NO tiene fórmula en vivo equivalente (ver docs/02_CHANGELOG.md,
-       entrada 23/07/2026) — al abrir un mes nuevo se inserta `null` como marcador;
-       Charly debe proveer el cierre real de "Total Rutas" para ese mes cuando
-       corresponda (mismo mecanismo que esta sesión: captura + reemplazo puntual). */
-  var mesAbrAnio = mesInfo ? mesInfo.abr+'-'+String(mesInfo.anio).slice(-2) : null;
-  if(mesAbrAnio && D.rutasMeses[D.rutasMeses.length-1] !== mesAbrAnio){
-    D.rutasMeses.push(mesAbrAnio);
-    D.rutasVencidas.push(totalVenc);
-    D.rutasTotal.push(null); /* pendiente de cierre real — ver nota arriba */
-  } else {
-    var lastV = D.rutasVencidas.length-1;
-    D.rutasVencidas[lastV] = totalVenc;
+  /* HOTFIX 23/07/2026 (fuente única): "Total Rutas" y "Vencidas" de este panel
+     ahora vienen de KPI_HIST — publicado automáticamente desde la hoja Efectividad
+     del Excel cada vez que Charly publica (ver PDCBridge, campo aditivo agregado
+     en esta misma sesión). Se eliminó el cálculo/carga manual: única fuente de
+     verdad, ya no requiere intervención mes a mes. Se muestran los últimos 14
+     meses para mantener el gráfico legible. */
+  if(data.KPI_HIST && data.KPI_HIST.length){
+    var hist = data.KPI_HIST.slice(-14);
+    D.rutasMeses = hist.map(function(h){
+      var mi = pdcMesInfo(h.mes);
+      return mi ? mi.abr+'-'+String(mi.anio).slice(-2) : h.mes;
+    });
+    D.rutasTotal = hist.map(function(h){ return h.total; });
+    D.rutasVencidas = hist.map(function(h){ return h.vencidas; });
   }
 
   var setTxt = function(id, val){ var el=document.getElementById(id); if(el) el.textContent = val; };
