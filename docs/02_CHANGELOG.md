@@ -1,5 +1,32 @@
 
-## [23/07/2026] — Ajuste: confirmación de criterio "Vencidas" en Regional y reactivación del auto-cálculo
+## [23/07/2026] — Mejora funcional: PDCBridge expone `KPI_HIST`; Regional consume "Total Rutas" en vivo (fuente única)
+
+### Contexto
+
+Charly confirmó que el dato de "Total Rutas" al cierre mensual **ya se publica automáticamente** en `index.html` — se llama `KPI_HIST`, se genera desde la hoja "Efectividad" del Excel (que Charly identifica como "hoja de KPI") en cada publish. Verificado contra su captura: `KPI_HIST['2026-07'].total = 4598` coincide exacto; la mayoría de meses también coinciden exacto (jun-25: 7,733; mar-26: 7,080; may-26: 6,665; jun-26: 6,998, etc.).
+
+### Causa raíz de por qué no llegaba a Regional
+
+`PDCBridge` (módulo compartido) solo extraía `RAW`, `KPI_TOTALS` y `FX_DEF` de `index.html` — nunca `KPI_HIST`, aunque ya existía publicado.
+
+### Cambio (archivo compartido — autorizado explícitamente por Charly)
+
+- **`js/pdc_data_bridge.js`:** se agregó extracción de `KPI_HIST` al objeto que retorna `PDCBridge.load()`. Campo 100% aditivo — no modifica ni elimina `RAW`/`KPI_TOTALS`/`FX_DEF`, cero impacto en `index.html`, `analytics.html`, `login.html`, `peru/index.html`, `elsalvador/index.html` (que no lo consumen aún).
+- **`regional/index.html`:** el panel "Tendencia Rutas Vencidas" (Total Rutas + Vencidas) ahora lee `data.KPI_HIST` directamente (últimos 14 meses) en vez del arreglo manual/marcador `null` de la entrada anterior. Se eliminó por completo la necesidad de carga manual — el dato se actualiza solo cada vez que Charly publica un Excel nuevo, exactamente como pidió ("lo notas al tener datos en un nuevo mes").
+- El bug de "Vencidas" (aging ≥15 días vs. Estado Facturación) queda resuelto de raíz: `KPI_HIST.vencidas` ya viene con una regla de negocio propia en el pipeline de Excel que corrige el último mes con el conteo real de `Estado Real==='Vencidas'`, coincidiendo con lo que Charly validó manualmente.
+
+### Validación
+
+- `node --check` en `pdc_data_bridge.js` y en los bloques `<script>` de `regional/index.html` → OK.
+- Confirmado en `raw.githubusercontent.com` tras deploy: `KPI_HIST` presente en PDCBridge, `data.KPI_HIST` consumido en regional.
+- Deploys: commit `4d3565357a` (PDCBridge) → Actions `30040139514` success. Commit `26e341d551` (regional) → Actions `30040188406` success.
+
+### Pendiente
+
+- Confirmar si Perú/El Salvador deben integrarse a este mismo patrón (`KPI_HIST` es consolidado regional; si se requiere desglose país-específico habría que evaluar si el Excel lo permite o si se mantiene el criterio manual para esos dos dashboards).
+
+---
+
 
 ### Contexto
 
