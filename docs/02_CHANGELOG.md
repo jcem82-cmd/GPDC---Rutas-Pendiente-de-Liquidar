@@ -1,5 +1,53 @@
 
-## [23/07/2026] — Mejora funcional: "Total Rutas" y "Vencidas" del mes vigente por país (Perú, El Salvador)
+## [23/07/2026] — Corrección de errores: fila perdida por Moneda vacía, hoja equivocada en mes_actual_pais, histórico real Perú/ESV
+
+### Contexto
+
+Charly publicó un Excel real y reportó discrepancias: dashboard mostraba 574 pendientes / 68 vencidas (facturación) / 64 vencidas (despacho), cuando el conteo real era 575 / 69 / 65. También reportó que la gráfica "Total Rutas vs Vencidas" de El Salvador seguía sin coincidir con los datos reales, y proporcionó la tabla dinámica "Total Rutas" (hoja KPI) que muestra el desglose real por moneda/país y por mes (jun-25 a jul-26).
+
+### RCA — Hallazgo A: fila perdida por Moneda vacía
+
+Causa raíz: `processWorkbook()` en `index.html` descartaba cualquier fila sin campo `Moneda`, aunque tuviera `Numero de Despacho` y estados válidos. Se identificó la fila exacta: **despacho 30302** — `Estado Real`='Vencidas', `Estado (Facturación)`='Vencidas', pendiente (no liquidada), pero con `Moneda` vacía. Esta única fila explicaba los 3 desfases simultáneamente (todos exactamente -1).
+
+**Corrección:** se relajó la condición de descarte — solo se excluyen filas sin `Numero de Despacho` (verdadero indicador de fila vacía/plantilla). Sin `Moneda`, la fila queda con `Pais:"Otro"` (no se puede asignar a GT/ESV/PE) pero SÍ se cuenta en los totales generales (Pendientes, Vencidas, `KPI_HIST`).
+
+**Nota importante para Charly:** este fix corrige el **parser** (aplica a la próxima publicación), no reescribe retroactivamente los datos ya publicados — para ver 575/69/65 en el sitio hace falta volver a publicar el mismo Excel con el fix ya desplegado.
+
+**Validación:** simulación end-to-end con la librería `xlsx` real (Node.js) contra el Excel de Charly → Vencidas por Facturación = 69 ✓, por Real/Despacho = 65 ✓ (coinciden exacto). Pendientes dio 582 en la simulación (vs. 575 esperado) — posible diferencia de snapshot entre el archivo de prueba y el publicado; pendiente de confirmar con Charly tras la próxima publicación real.
+
+### RCA — Hallazgo B: `mes_actual_pais.total` usaba la hoja equivocada
+
+La corrección de la sesión anterior parseaba la hoja `Total Rutas` (ventana móvil reciente, ~5 semanas) para el desglose por país, dando cifras (GTQ 2,692/USD 1,380/PEN 522) que NO coinciden con la tabla dinámica real que Charly usa. Charly confirmó que esa tabla ("Total Rutas", hoja "KPI") en realidad se alimenta de **`Total Rutas (Gral)`** — la misma hoja que ya alimentaba `total_by_moneda`.
+
+**Corrección:** se eliminó el parseo de la hoja `Total Rutas` para este propósito; `mes_actual_pais.total` ahora reutiliza `totalByMon` (ya calculado desde `Total Rutas (Gral)`) — única fuente de verdad, sin parseo adicional. Validado: coincide exacto con la tabla dinámica de Charly (GTQ 2,196 · USD 1,149 · PEN 438 para julio).
+
+### Histórico real Perú/ESV (Ene-26 a Jun-26)
+
+Con la tabla dinámica "Total Rutas" (por moneda/mes) y la tabla de Vencidas por país (Ene-Jul 2026) que Charly compartió, se reemplazaron los arreglos `MESES`/`D.rutasTotal`/`D.rutasVencidas` (antes con datos de referencia `[61,65,58,71,21,74]`, iguales y equivocados en ambos países) con datos reales:
+
+- **El Salvador (USD):** Total Rutas Ene-Jun 2026 = [2135, 1985, 2049, 1943, 1842, 2040]; Vencidas = [0, 0, 1, 0, 0, 2].
+- **Perú (PEN):** Total Rutas Ene-Jun 2026 = [801, 749, 742, 649, 718, 815]; Vencidas = [0, 0, 0, 0, 0, 7].
+- Julio en adelante se agrega automáticamente vía `KPI_TOTALS.mes_actual_pais` (ya implementado en la entrada anterior) — no requiere carga manual mes a mes.
+- Formato de etiquetas cambiado a `Mes-AA` (ej. "Jun-26") en vez de solo `Mes` — evita ambigüedad entre años (mismo ajuste ya aplicado en `regional/index.html`).
+
+### Archivos modificados
+
+- `index.html` (parser): fix de fila descartada + fix de fuente de `mes_actual_pais`.
+- `peru/index.html`, `elsalvador/index.html`: histórico real + formato de etiquetas mes-año.
+
+### Validación
+
+- Simulación Node.js con `xlsx` real contra el Excel de Charly (no publicado, solo referencia).
+- `node --check` en todos los bloques `<script>` modificados → OK.
+- Deploys: commit `40b8a36fb5` (index.html) → Actions `30044860477` success. Commits `ca6624922a` (ESV), `27073e7a76` (Perú) → Actions `30045009361` success.
+
+### Pendiente
+
+- Confirmar con Charly, tras volver a publicar el Excel con el fix ya desplegado, que Pendientes muestra 575 (no solo Vencidas, ya confirmadas en 69/65).
+- Evaluar si el despacho 30302 (Moneda vacía en el Excel fuente) debe corregirse en origen — es un dato faltante real, no un bug de código.
+
+---
+
 
 ### Contexto
 
