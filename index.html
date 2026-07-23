@@ -2766,8 +2766,15 @@ function processWorkbook(wb, filename) {
 
   const routes = [];
   for (const r of gRows) {
-    // Skip junk rows (no Numero de Despacho or Moneda)
-    if (!r['Numero de Despacho'] || !r['Moneda']) continue;
+    // HOTFIX 23/07/2026 (RCA): antes se descartaba la fila si faltaba Moneda,
+    // aunque tuviera Numero de Despacho y estado válidos — esto perdía rutas
+    // reales silenciosamente (ej. despacho 30302: Vencida por Facturación Y por
+    // Real, pendiente, pero sin Moneda registrada -> desaparecía de Pendientes
+    // y de ambos conteos de Vencidas). Ahora solo se descartan filas realmente
+    // vacías (sin Numero de Despacho). Sin Moneda, Pais queda como "Otro" (no
+    // se puede asignar a GT/ESV/PE), pero la ruta SÍ se cuenta en los totales
+    // generales (Pendientes, Vencidas) y en KPI_HIST.
+    if (!r['Numero de Despacho']) continue;
     const mon  = String(r['Moneda']||'').trim();
     const dias = Number(r['Días']||r['Dias']||0)||0;
     const diasR= Number(r['Dias Real']||0)||0;
@@ -2810,46 +2817,6 @@ function processWorkbook(wb, filename) {
     });
   }
 
-  // ── HOTFIX 23/07/2026: "Total Rutas" por país del mes vigente ──────────
-  // Hoja "Total Rutas" (DISTINTA de "Total Rutas (Gral)", que ya se usa abajo
-  // para otro propósito). Fuente confirmada por Charly para el panel de
-  // tendencia de Perú/El Salvador. Es una ventana móvil reciente (no tiene
-  // historial completo), por lo que solo se calcula el MES VIGENTE (el de
-  // mayor "Fecha Ruta"); los meses anteriores siguen siendo carga manual.
-  // Total Rutas: conteo de filas válidas (con Numero de Despacho) del mes
-  // vigente, por Moneda. Vencidas: de `routes` (General (seguimiento)) ya
-  // parseado arriba, por Pais, con Estado Real==='Vencidas' (mismo criterio
-  // oficial de la plataforma). Campo aditivo en KPI_TOTALS — no afecta RAW,
-  // canal_totals, ni total_by_moneda.
-  let mesActualPais = null;
-  const wsTotalRutas = wb.Sheets['Total Rutas'];
-  if (wsTotalRutas) {
-    const trRows = XLSX.utils.sheet_to_json(wsTotalRutas, {defval:null});
-    const validTr = trRows.filter(r => r['Numero de Despacho']);
-    let maxFechaTr = null;
-    validTr.forEach(r => {
-      const f = r['Fecha Ruta'];
-      const d = f instanceof Date ? f : (f ? new Date(f) : null);
-      if (d && !isNaN(d) && (!maxFechaTr || d > maxFechaTr)) maxFechaTr = d;
-    });
-    if (maxFechaTr) {
-      const yTr = maxFechaTr.getFullYear(), mTr = maxFechaTr.getMonth();
-      const curTr = validTr.filter(r => {
-        const f = r['Fecha Ruta'];
-        const d = f instanceof Date ? f : (f ? new Date(f) : null);
-        return d && !isNaN(d) && d.getFullYear()===yTr && d.getMonth()===mTr;
-      });
-      mesActualPais = { mes: yTr+'-'+String(mTr+1).padStart(2,'0') };
-      Object.keys(country_map).forEach(mon => {
-        const pais = country_map[mon];
-        mesActualPais[pais] = {
-          total:    curTr.filter(r => r['Moneda']===mon).length,
-          vencidas: routes.filter(r => r['Pais']===pais && r['Estado Real']==='Vencidas').length
-        };
-      });
-    }
-  }
-
   // ── Total Rutas (Gral) ────────────────────────────────
   const wsGral = wb.Sheets['Total Rutas (Gral)'];
   const gralRows = XLSX.utils.sheet_to_json(wsGral, {defval:null});
@@ -2879,6 +2846,26 @@ function processWorkbook(wb, filename) {
       canalTotals[mon][canal] = {all:cr.length, pend:cp.length};
     });
   });
+
+  // ── HOTFIX 23/07/2026 (corrección: hoja equivocada): "Total Rutas" por país
+  // del mes vigente NO viene de la hoja "Total Rutas" (ventana móvil reciente,
+  // no coincide con la tabla dinámica real) — Charly confirmó que la tabla
+  // "Total Rutas" de la hoja "KPI" se alimenta de "Total Rutas (Gral)", que
+  // es exactamente `totalByMon` ya calculado arriba. Se reutiliza esa misma
+  // fuente (única fuente de verdad, sin parseo adicional). Vencidas: de
+  // `routes` (General (seguimiento)) por Pais, Estado Real==='Vencidas'
+  // (mismo criterio oficial). Campo aditivo en KPI_TOTALS.
+  const mesActualPais = maxMes ? (function(){
+    var out = { mes: currY+'-'+String(currM+1).padStart(2,'0') };
+    Object.keys(country_map).forEach(function(mon){
+      var pais = country_map[mon];
+      out[pais] = {
+        total:    totalByMon[mon] || 0,
+        vencidas: routes.filter(function(r){ return r['Pais']===pais && r['Estado Real']==='Vencidas'; }).length
+      };
+    });
+    return out;
+  })() : null;
   const reportMonth = maxMes ? (currY+'-'+String(currM+1).padStart(2,'0')) : '—';
 
   // ── Helper: serial Excel → Date (evita bug 1969/1970) ──────────
