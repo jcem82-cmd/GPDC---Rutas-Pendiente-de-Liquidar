@@ -1,5 +1,34 @@
 
-## [23/07/2026] — Corrección de errores: fila perdida por Moneda vacía, hoja equivocada en mes_actual_pais, histórico real Perú/ESV
+## [23/07/2026] — Corrección de errores: "Resumen Histórico" y "Notas del análisis" 100% estáticos (Perú, El Salvador)
+
+### Contexto
+
+Charly reportó que las "Notas del análisis" no coincidían con los datos actuales (mostraba "4 rutas pendientes" cuando ahora son 2) y que la tabla "Resumen Histórico" del módulo Tendencias mostraba datos incorrectos, en ambos dashboards (Perú y El Salvador).
+
+### RCA
+
+Ambos elementos eran texto/tabla 100% estático desde la creación del dashboard — nunca conectados a PDCBridge ni a ningún dato real, ni siquiera a los históricos ya corregidos en `D.rutasTotal`/`D.rutasVencidas` en la entrada anterior de esta sesión.
+
+### Corrección
+
+- **"Notas del análisis":** se reconstruye dinámicamente en cada carga usando datos en vivo (`pend`, `venc`, `montoPend`, `efect`, `report_date`) — ya no es texto fijo.
+- **"Resumen Histórico":** la tabla (`<tbody id="tblHistoricoBody">`, id agregado para poder inyectar) se reconstruye desde `D.rutasMeses`/`D.rutasTotal`/`D.rutasVencidas` (datos reales, corregidos en la entrada anterior) — Total Rutas, Vencidas y %Vencidas ahora son reales y consistentes con el resto del dashboard. Fila PROMEDIO recalculada dinámicamente.
+
+### Limitación pendiente (transparencia con Charly)
+
+Las columnas **Efectividad** y **Monto USD/PEN** de la tabla histórica siguen usando los valores de referencia originales (no reales) — Charly solo compartió Total Rutas y Vencidas históricos reales (Ene-Jun 2026). Si comparte también el histórico real de Efectividad y Monto, se pueden corregir esas dos columnas.
+
+### Archivos modificados
+
+- `peru/index.html`, `elsalvador/index.html` únicamente.
+
+### Validación
+
+- `node --check` en los bloques `<script>` modificados → OK.
+- Deploys: commit `3770b1defb` (ESV), `d6938e5d57` (Perú) → Actions `30047809890` success.
+
+---
+
 
 ### Contexto
 
