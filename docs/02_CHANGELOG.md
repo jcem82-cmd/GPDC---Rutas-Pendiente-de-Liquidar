@@ -1,5 +1,32 @@
 
-## [23/07/2026] — Mejora funcional: PDCBridge expone `KPI_HIST`; Regional consume "Total Rutas" en vivo (fuente única)
+## [23/07/2026] — Mejora funcional: "Total Rutas" y "Vencidas" del mes vigente por país (Perú, El Salvador)
+
+### Contexto
+
+Charly confirmó que "Total Rutas" viene de una hoja del Excel llamada literalmente **"Total Rutas"** (distinta de "Total Rutas (Gral)", que el pipeline ya usaba para otro propósito) y que "Vencidas" se toma de `Estado Real` (columna E) de "General (Seguimiento)", agrupado por `Moneda` (columna O) como proxy de país. Se validó revisando el Excel real (`Rutas_no_Liquidadas_23_07_2026.xlsm`, no publicado — solo usado como referencia de estructura): hoja "Total Rutas" → GTQ 2,692 · USD 1,380 · PEN 522 (4,594 total, coincide con `KPI_HIST` de julio); "General (Seguimiento)" → Vencidas por Estado Real: GT 34 · ESV 2 · Perú 28 (65 total, coincide con el ajuste que Charly reportó).
+
+**Limitación confirmada por Charly:** ambas hojas son ventanas móviles recientes (no historial completo), por lo que el desglose por país solo es posible para el **mes vigente**. Meses históricos anteriores por país siguen siendo carga manual (mismo criterio que Regional/`KPI_HIST`).
+
+### Cambio (archivo maestro — autorizado explícitamente por Charly)
+
+- **`index.html`** (publicador/self-publish): se agregó parseo de la hoja `Total Rutas` (conteo de filas válidas del mes vigente por `Moneda`) y cálculo de Vencidas por país desde `routes` (`Estado Real==='Vencidas'`, mismo criterio oficial de la plataforma). Se expone como campo nuevo y aditivo `KPI_TOTALS.mes_actual_pais` — `{mes, Guatemala:{total,vencidas}, "El Salvador":{...}, "Perú":{...}}`. No modifica `RAW`, `total_by_moneda`, `canal_totals` ni ningún otro dato existente.
+- **`peru/index.html`, `elsalvador/index.html`:** el push/actualización del mes vigente en `D.rutasTotal`/`D.rutasVencidas` ahora lee `KPI_TOTALS.mes_actual_pais[país]` en vez del backlog pendiente en vivo (`pend`/`venc`) — mismo bug que se había corregido en Regional (backlog pendiente ≠ Total Rutas real). Si el campo no está disponible (Excel/versión anterior sin la hoja), se conserva el fallback anterior para no romper el dashboard. `D.efectividad`/`D.montoPEN` no se tocaron (no presentaban el mismo problema).
+
+### Alcance confirmado con Charly
+
+- Solo afecta el mes vigente hacia adelante (agosto, septiembre, etc. se calcularán solos); meses históricos ya cargados no se tocan.
+- No afecta visualización ni datos existentes de ningún otro módulo — solo Perú y El Salvador (dashboards operativos por país). Regional, `index.html` principal, Cash Today y Cartas de Salida quedan intactos.
+
+### Validación
+
+- Simulación en Node.js con la librería `xlsx` real contra el Excel proporcionado por Charly → resultados idénticos a la validación manual (GTQ 2,692 / USD 1,380 / PEN 522 · Vencidas GT 34 / ESV 2 / PE 28).
+- `node --check` en todos los bloques `<script>` modificados (`index.html`, `peru/index.html`, `elsalvador/index.html`) → OK.
+- Confirmado en `raw.githubusercontent.com` tras deploy: `mes_actual_pais` presente en los 3 archivos.
+- Deploys: commit `ace714c2cd` (index.html) → Actions `30042873020` success. Commits `ac3b9870f6` (Perú), `ac6083dcdc` (ESV) → Actions `30042949813` success.
+- El Excel de prueba de Charly (`Rutas_no_Liquidadas_23_07_2026.xlsm`) **no se publicó** — solo se usó para revisar la estructura de las hojas.
+
+---
+
 
 ### Contexto
 
