@@ -368,7 +368,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
   <!-- Tendencia Rutas Vencidas -->
   <div class="panel anim" style="animation-delay:.28s">
     <div class="panel-hdr">
-      <div><div class="panel-title">Tendencia Rutas Vencidas (≥15 días) · Últimos 6 Meses</div><div class="panel-sub">Histórico regional consolidado</div></div>
+      <div><div class="panel-title">Tendencia Rutas Vencidas (≥15 días) · Histórico</div><div class="panel-sub">Histórico regional consolidado · cierres mensuales reales</div></div>
     </div>
     <div class="panel-body">
       <div class="chart-wrap" style="height:200px"><canvas id="chartVencidas"></canvas></div>
@@ -541,10 +541,12 @@ var D = {
   cashMonths: ['Ene','Feb','Mar','Abr','May','Jun*'],
   cashGT: [802611, 1947303, 2300898, 2105217, 2373953, 949926],
   cashSV: [2515432, 2205289, 1845166, 1833244, 1978090, 821012],
-  /* Rutas tendencia vencidas últimos 6 meses (regional) */
-  rutasMeses: ['Ene','Feb','Mar','Abr','May','Jun'],
-  rutasVencidas: [0, 1, 1, 0, 1, 87],
-  rutasTotal:    [4155, 6672, 7080, 6543, 6665, 3352]
+  /* Rutas tendencia vencidas — HOTFIX 23/07/2026: reemplazado con cierres mensuales
+     reales proporcionados por Charly (jun-25 a jul-26). Los valores anteriores
+     [4155,6672,7080,6543,6665,3352] eran de referencia/placeholder, no cierres reales. */
+  rutasMeses:    ['Jun-25','Jul-25','Ago-25','Sep-25','Oct-25','Nov-25','Dic-25','Ene-26','Feb-26','Mar-26','Abr-26','May-26','Jun-26','Jul-26'],
+  rutasVencidas: [13, 8, 2, 8, 0, 3, 5, 0, 5, 6, 1, 1, 12, 88],
+  rutasTotal:    [7733, 8322, 8234, 7674, 8463, 7915, 7927, 7172, 6772, 7080, 6543, 6665, 6998, 4598]
 };
 
 /* ══ NAVEGACIÓN ══ */
@@ -752,20 +754,14 @@ function pdcApplyLiveData(data){
   D.rutas.SV.pendientes = byPais['El Salvador'].pend; D.rutas.SV.vencidas = byPais['El Salvador'].venc;
   D.rutas.PE.pendientes = byPais['Perú'].pend; D.rutas.PE.vencidas = byPais['Perú'].venc;
 
-  /* HOTFIX 23/07/2026 (RCA Hallazgo 2 — también presente en regional): antes esta
-     lógica SIEMPRE sobrescribía la última posición de rutasMeses/rutasTotal/rutasVencidas
-     (etiquetada "Jun"), perdiendo el dato histórico real de ese mes. Ahora: si el mes del
-     reporte es nuevo respecto al último registrado, se agrega una posición nueva
-     (se conserva el historial); si es el mismo mes ya registrado, se actualiza in-place. */
-  if(mesInfo && D.rutasMeses[D.rutasMeses.length-1] !== mesInfo.abr){
-    D.rutasMeses.push(mesInfo.abr);
-    D.rutasTotal.push(totalPend);
-    D.rutasVencidas.push(totalVenc);
-  } else {
-    var last = D.rutasTotal.length-1;
-    D.rutasTotal[last] = totalPend;
-    D.rutasVencidas[last] = totalVenc;
-  }
+  /* HOTFIX 23/07/2026 (corrección de la corrección anterior): esta serie NO se
+     recalcula desde totalPend/totalVenc (backlog actual pendiente en vivo) — son
+     métricas distintas. "Total Rutas"/"Vencidas" de este panel son cierres
+     mensuales reales que Charly provee directamente (ver docs/02_CHANGELOG.md,
+     entrada 23/07/2026). Se mantiene como dato de referencia manual hasta definir
+     un pipeline de persistencia de cierre mensual (Hallazgo 3, pendiente de
+     autorización). El push automático por cambio de mes se retiró para evitar
+     ensuciar el historial real con la cifra equivocada. */
 
   var setTxt = function(id, val){ var el=document.getElementById(id); if(el) el.textContent = val; };
   setTxt('kpiRegPend', totalPend);
