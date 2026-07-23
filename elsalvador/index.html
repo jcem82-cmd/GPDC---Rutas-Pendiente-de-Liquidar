@@ -531,8 +531,11 @@ var MESES = ['Ene-26','Feb-26','Mar-26','Abr-26','May-26','Jun-26'];
 var D = {
   rutasTotal:    [2135, 1985, 2049, 1943, 1842, 2040],
   rutasVencidas: [0,    0,    1,    0,    0,    2],
-  efectividad:   [88.5, 86.2, 91.4, 85.9, 90.5, 83.8],
-  montoPEN:      [2284100, 2431750, 2168400, 2657900, 778809, 1492234],
+  /* HOTFIX 23/07/2026 (regla de Charly): 0 vencidas -> Efectividad 100% y Monto $0.
+     Meses CON vencidas quedan en `null` ("Pendiente") hasta que Charly comparta el
+     monto real vencido de esos meses (Marzo, Junio) — no se debe inventar el dato. */
+  efectividad:   [100, 100, null, 100, 100, null],
+  montoPEN:      [0,   0,   null, 0,   0,   null],
   zonas:         { 'LIMA':41, 'LA LIBERTAD':6, 'CAJAMARCA':4, 'LAMBAYEQUE':4, 'AREQUIPA':3, 'Otras':16 }
 };
 
@@ -1023,20 +1026,28 @@ function pdcApplyLiveData(data){
       var p = m.split('-');
       var mesLargo = (MESES_LARGO_MAP[p[0]]||p[0]) + (p[1] ? ' 20'+p[1] : '');
       var tot = D.rutasTotal[i], vencM = D.rutasVencidas[i];
-      var ef = D.efectividad[i]!=null ? D.efectividad[i] : 0;
-      var monto = D.montoPEN[i]!=null ? D.montoPEN[i] : 0;
+      var efRaw = D.efectividad[i], montoRaw = D.montoPEN[i];
       var pctV = tot ? Math.round(vencM/tot*1000)/10 : 0;
-      var badge = ef>=90 ? '<span class="badge bg">↗ OK</span>' : (ef>=80 ? '<span class="badge by">↘ Alerta</span>' : '<span class="badge br">↘ Crítico</span>');
+      var efTxt, montoTxt, badge;
+      if(efRaw==null){
+        efTxt = 'Pendiente'; montoTxt = 'Pendiente';
+        badge = '<span class="badge by">⏳ Dato pendiente</span>';
+      } else {
+        efTxt = efRaw+'%'; montoTxt = fmtUSD(montoRaw||0);
+        badge = efRaw>=90 ? '<span class="badge bg">↗ OK</span>' : (efRaw>=80 ? '<span class="badge by">↘ Alerta</span>' : '<span class="badge br">↘ Crítico</span>');
+      }
       return '<tr><td>'+mesLargo+'</td><td class="r">'+tot+'</td><td class="r">'+vencM+'</td>'+
-             '<td class="r">'+pctV+'%</td><td class="r">'+ef+'%</td><td class="r">'+fmtUSD(monto)+'</td><td>'+badge+'</td></tr>';
+             '<td class="r">'+pctV+'%</td><td class="r">'+efTxt+'</td><td class="r">'+montoTxt+'</td><td>'+badge+'</td></tr>';
     }).join('');
     var promTot = Math.round(D.rutasTotal.reduce(function(a,b){return a+b;},0)/D.rutasTotal.length);
     var promVenc = Math.round(D.rutasVencidas.reduce(function(a,b){return a+b;},0)/D.rutasVencidas.length*10)/10;
-    var promEf = Math.round(D.efectividad.reduce(function(a,b){return a+(b||0);},0)/D.efectividad.length*10)/10;
-    var promMonto = Math.round(D.montoPEN.reduce(function(a,b){return a+(b||0);},0)/D.montoPEN.length);
+    var efKnown = D.efectividad.filter(function(v){return v!=null;});
+    var montoKnown = D.montoPEN.filter(function(v){return v!=null;});
+    var promEfTxt = efKnown.length ? (Math.round(efKnown.reduce(function(a,b){return a+b;},0)/efKnown.length*10)/10)+'%' : 'Pendiente';
+    var promMontoTxt = montoKnown.length ? fmtUSD(Math.round(montoKnown.reduce(function(a,b){return a+b;},0)/montoKnown.length)) : 'Pendiente';
     var promPct = promTot ? Math.round(promVenc/promTot*1000)/10 : 0;
     histRows += '<tr class="total"><td>PROMEDIO</td><td class="r">'+promTot+'</td><td class="r">'+promVenc+'</td>'+
-                '<td class="r">'+promPct+'%</td><td class="r">'+promEf+'%</td><td class="r">'+fmtUSD(promMonto)+'</td><td></td></tr>';
+                '<td class="r">'+promPct+'%</td><td class="r">'+promEfTxt+'</td><td class="r">'+promMontoTxt+'</td><td></td></tr>';
     tblHist.innerHTML = histRows;
   }
 
