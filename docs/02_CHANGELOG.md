@@ -1,5 +1,31 @@
 
-## [23/07/2026] — Corrección de errores: "Resumen Histórico" y "Notas del análisis" 100% estáticos (Perú, El Salvador)
+## [23/07/2026] — Regla de negocio: 0 Vencidas ⇒ Efectividad 100% y Monto $0/S0 (Perú, El Salvador)
+
+### Contexto
+
+Charly propuso la regla lógica: si un mes no tiene rutas vencidas, la Efectividad debe ser 100% y el Monto (vencido) debe ser $0 — y confirmó que reunirá y compartirá el dato real de monto para los meses que sí tuvieron vencidas.
+
+### Aplicado
+
+- **El Salvador:** Ene, Feb, Abr, May (0 vencidas) → Efectividad 100%, Monto $0. Marzo (1 vencida) y Junio (2 vencidas) → marcados `null`/"Pendiente" hasta recibir el dato real.
+- **Perú:** Ene-May (0 vencidas) → Efectividad 100%, Monto S/ 0. Junio (7 vencidas) → marcado `null`/"Pendiente".
+- Tabla "Resumen Histórico": las celdas `null` se muestran como "Pendiente" con badge "⏳ Dato pendiente" (no se inventa un valor). Fila PROMEDIO recalculada excluyendo los meses pendientes del promedio de Efectividad/Monto (no se tratan como 0).
+
+### Archivos modificados
+
+- `peru/index.html`, `elsalvador/index.html` únicamente.
+
+### Validación
+
+- `node --check` en los bloques `<script>` modificados → OK.
+- Deploys: commit `ea60b3a232`/`5eaa69660e` → Actions `30048259277` success.
+
+### Pendiente
+
+- Charly proveerá el monto real vencido de: El Salvador (Marzo, Junio 2026) y Perú (Junio 2026).
+
+---
+
 
 ### Contexto
 
