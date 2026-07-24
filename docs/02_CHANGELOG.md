@@ -1,5 +1,32 @@
 
-## [23/07/2026] — Regla de negocio: 0 Vencidas ⇒ Efectividad 100% y Monto $0/S0 (Perú, El Salvador)
+## [23/07/2026] — Datos reales: Monto Vencido Marzo/Junio (ESV) y Junio (Perú)
+
+### Contexto
+
+Charly compartió el monto vencido real por país/mes (GT, ESV, Perú) en su moneda local, pidiendo conversión a dólares. Se confirmó con Charly usar la configuración de moneda ya existente en cada dashboard (no cambiar los encabezados de columna).
+
+### Aplicado
+
+- **El Salvador** (columna nativa USD, sin conversión): Marzo = $68.00, Junio = $27,127.78.
+- **Perú** (columna nativa PEN, sin conversión — Charly confirmó mantener la configuración existente): Junio = S/ 55,497.05.
+- Se separó el manejo de "Efectividad" y "Monto" en la tabla — antes una sola bandera `null` marcaba ambas celdas como "Pendiente" juntas; ahora cada una se evalúa independientemente, ya que se tiene el monto real pero la Efectividad histórica de esos meses (Marzo/Junio ESV, Junio Perú) **sigue sin dato real** — se muestra "Pendiente" solo en esa columna.
+- Conversión de referencia (no escrita en el dashboard, solo informativa): GT usa `FX_DEF` oficial del maestro (GTQ 1/7.63627, PEN 1/3.529) — feb Q234,931.85→$30,765.26, mar Q1,505,462.53→$197,146.32, abr Q2,464.56→$322.74, may Q27,395.24→$3,587.52, jun Q20,355.56→$2,665.64. Perú jun S/55,497.05→$15,726.00. No hay dashboard específico de GT donde insertar estos valores históricos por mes.
+
+### Archivos modificados
+
+- `peru/index.html`, `elsalvador/index.html` únicamente.
+
+### Validación
+
+- `node --check` en los bloques `<script>` modificados → OK.
+- Deploys: commits `d0efa6bc93` (ESV), `4ac5ba4682` (Perú) → Actions `30107349737` success.
+
+### Pendiente
+
+- Efectividad real de: El Salvador (Marzo, Junio 2026) y Perú (Junio 2026) — sigue mostrando "Pendiente" en la tabla.
+
+---
+
 
 ### Contexto
 
