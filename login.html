@@ -698,11 +698,20 @@ function finalizeLogin(user, email){
     role: user.rol,   /* rol completo: admin | supervisor | consulta */
     pais: user.pais, sedes: user.sedes
   }));
-  /* U3 — Registrar último acceso en localStorage */
+  /* U3 — Registrar último acceso en localStorage (referencia visual local) */
   try{
     var accessLog = JSON.parse(localStorage.getItem('pdc_access_log') || '{}');
     accessLog[user.email] = new Date().toISOString();
     localStorage.setItem('pdc_access_log', JSON.stringify(accessLog));
+  }catch(e){}
+  /* HOTFIX 23/07/2026: registrar último acceso REAL en Supabase (profiles.ultimo_acceso)
+     — localStorage es local al navegador de cada usuario y nunca refleja el acceso
+     de otros usuarios en el panel de administración. No bloqueante (sin await): si
+     falla (ej. columna aún no creada, red lenta), el login ya ocurrió y continúa sin
+     afectarse — el .catch() evita que quede como "Unhandled Promise Rejection". */
+  try{
+    supabaseClient.from('profiles').update({ ultimo_acceso: new Date().toISOString() }).eq('email', user.email)
+      .then(function(){}, function(){});
   }catch(e){}
   /* U1 — Breve pausa para mostrar nombre antes del redirect */
   setLoading(false);
