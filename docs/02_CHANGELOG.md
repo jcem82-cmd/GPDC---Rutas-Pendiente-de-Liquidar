@@ -1,5 +1,31 @@
 
-## [23/07/2026] — Datos reales: Monto Vencido Marzo/Junio (ESV) y Junio (Perú)
+## [23/07/2026] — Efectividad histórica calculada (ya no requiere dato externo)
+
+### Contexto
+
+Charly indicó que Efectividad se puede calcular directamente de Total Rutas y Vencidas (ambos ya reales), sin necesitar un dato externo adicional.
+
+### Aplicado
+
+Fórmula: `Efectividad = (Total - Vencidas) / Total × 100`.
+
+- **El Salvador:** Marzo = 99.95%, Junio = 99.9% (antes "Pendiente").
+- **Perú:** Junio = 99.14% (antes "Pendiente").
+
+Con esto, el histórico Ene-Jun 2026 de ambos dashboards queda **100% con datos reales** (Total Rutas, Vencidas, %Vencidas, Efectividad, Monto) — ya no quedan celdas "Pendiente" en la tabla "Resumen Histórico".
+
+### Archivos modificados
+
+- `peru/index.html`, `elsalvador/index.html` únicamente.
+
+### Validación
+
+- `node --check` en los bloques `<script>` modificados → OK.
+- Deploys: commits `8a09a8ec3b` (ESV), `91d8610ae8` (Perú) — incluidos como ancestros en el run exitoso `30109044387` (build posterior de Charly sobre el mismo branch).
+- Confirmado en `raw.githubusercontent.com`: valores publicados correctamente en ambos archivos.
+
+---
+
 
 ### Contexto
 
