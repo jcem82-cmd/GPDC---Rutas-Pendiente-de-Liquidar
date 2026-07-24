@@ -1294,9 +1294,12 @@ function pdcRenewSession(){
           ESV:'🇸🇻 El Salvador', PE:'🇵🇪 Perú', HN:'🇭🇳 Honduras'
         };
 
-        /* U3 — Leer log de accesos (se mantiene local, solo referencia visual) */
-        var accessLogT = {};
-        try{ accessLogT = JSON.parse(localStorage.getItem('pdc_access_log') || '{}'); }catch(e){}
+        /* HOTFIX 23/07/2026 (RCA): "Último acceso" antes leía localStorage
+           ('pdc_access_log'), que es local al navegador de quien ve el panel —
+           nunca reflejaba el acceso real de OTROS usuarios (cada quien inicia
+           sesión en su propio dispositivo). Ahora se lee de profiles.ultimo_acceso
+           (Supabase, columna nueva), que login.html actualiza en cada login
+           exitoso — dato compartido y real para todos los usuarios. */
 
         var renderUserTable = function(){
           tbEl.innerHTML = _pdcProfilesCache.map(function(u, i){
@@ -1311,7 +1314,7 @@ function pdcRenewSession(){
               ? 'padding:3px 10px;border-radius:10px;font-size:.7rem;font-weight:700;background:var(--green);color:var(--green2);border:none;cursor:pointer;font-family:inherit'
               : 'padding:3px 10px;border-radius:10px;font-size:.7rem;font-weight:700;background:var(--red);color:var(--red2);border:none;cursor:pointer;font-family:inherit';
             /* Último acceso */
-            var lastAcc = accessLogT[u.email];
+            var lastAcc = u.ultimo_acceso;
             var lastAccStr = lastAcc
               ? (function(d){ return d.toLocaleDateString('es-GT',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('es-GT',{hour:'2-digit',minute:'2-digit'}); })(new Date(lastAcc))
               : '<span style="color:var(--text2);font-size:.7rem">Sin registro</span>';
