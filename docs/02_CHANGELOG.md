@@ -1,5 +1,32 @@
 
-## [23/07/2026] — Efectividad histórica calculada (ya no requiere dato externo)
+## [23/07/2026] — Corrección de errores: panel "≥15 días" (Regional) mostraba Estado Real, no antigüedad real
+
+### Contexto
+
+Charly preguntó por qué el panel "Tendencia Rutas Vencidas (≥15 días)" del dashboard Regional mostraba 50 rutas vencidas en julio cuando, filtrando por antigüedad real, no había ninguna con más de 15 días.
+
+### RCA
+
+El publicador (`index.html`) tenía una sobreescritura preexistente (no introducida en esta sesión) que reemplazaba el valor real de antigüedad (`EFECT.mas15`, columna de la hoja "Efectividad" del Excel — para julio = **0**) con el conteo de `Estado Real==='Vencidas'` (**50**) cuando este último era mayor. El título del panel ("≥15 días") nunca coincidió con el dato mostrado — medía un estatus de negocio, no antigüedad. Validado contra `Rango Real`: 0 rutas en el bucket "15 +" actualmente (7 en "11 a 15", un rango distinto y menor).
+
+Charly confirmó explícitamente: el dato debe reflejar antigüedad real, coincidiendo con el título ya existente del panel.
+
+### Corrección
+
+- **`index.html`:** se eliminó la sobreescritura (`vencidasRealCount`) — `KPI_HIST` ahora refleja fielmente `EFECT.mas15` para todos los meses, incluido el vigente, sin excepción. Se corrigió también el dato ya publicado (`KPI_HIST` julio: 50 → 0) para que el efecto sea inmediato sin esperar una nueva publicación de Excel.
+- No afecta `KPI_TOTALS.mes_actual_pais` (que sigue usando `Estado Real`, correcto para ese uso — KPIs y Detalle de Rutas por país) ni ningún otro dato.
+
+### Archivos modificados
+
+- `index.html` únicamente.
+
+### Validación
+
+- `node --check` → OK. Confirmado `KPI_HIST` último elemento: `{"mes":"2026-07","vencidas":0,"total":4598,"pct":0}`.
+- Deploy: commit `fd383afa05` (o equivalente) → Actions `30113080568` success.
+
+---
+
 
 ### Contexto
 
