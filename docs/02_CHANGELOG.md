@@ -1,5 +1,44 @@
 
-## [23/07/2026] — Corrección: la fix anterior rompió otra gráfica que comparte KPI_HIST
+## [23/07/2026] — Corrección de errores: "Último Acceso" en Gestión de Usuarios no reflejaba accesos reales
+
+### Contexto
+
+Charly reportó que la columna "Último Acceso" del panel "Gestión de Usuarios" (`analytics.html`) no cambiaba cuando otros usuarios iniciaban sesión.
+
+### RCA
+
+`login.html` registraba el último acceso en `localStorage.setItem('pdc_access_log', ...)` — almacenamiento **local al navegador/dispositivo de cada usuario**, nunca sincronizado a ningún servidor. El panel admin, al leer `localStorage` de quien lo está viendo, solo podía mostrar el último acceso de esa misma persona en ese mismo navegador — nunca el de otros usuarios que inician sesión desde sus propios dispositivos.
+
+### Corrección
+
+- **`login.html`:** además del registro existente en `localStorage` (se mantiene, sin efecto negativo), se agrega una escritura a Supabase (`profiles.ultimo_acceso`, columna nueva) tras un login exitoso. **No bloqueante**: se ejecuta sin `await`, con `.then(null, fn)` para absorber cualquier error sin afectar el login — si falla, el usuario entra igual.
+- **`analytics.html`:** la tabla "Gestión de Usuarios" ahora lee `u.ultimo_acceso` directamente del registro de `profiles` (ya cargado vía `supabaseClient.from('profiles').select('*')`) en vez de `localStorage`. Dato compartido y real para todos los usuarios.
+
+### Confirmado con Charly (alcance)
+
+- No afecta el flujo de login (validación de credenciales, construcción de sesión, redirección) — la escritura ocurre después de que el login ya fue exitoso.
+- No afecta visualización, análisis, KPIs, `RAW`, `KPI_TOTALS`, `KPI_HIST`, PDCBridge, ni ningún otro dashboard.
+- Solo agrega una columna nueva a `profiles` — no modifica ni elimina `rol`, `pais`, `dashboards`, `activo` ni ninguna otra existente.
+
+### Archivos modificados
+
+- `login.html`, `analytics.html` únicamente.
+
+### Validación
+
+- `node --check` en los bloques `<script>` modificados → OK.
+- Deploys: commits `738f4ae4ce` (login), `3523708b02` (analytics) → Actions `30114796249` success.
+
+### Pendiente (acción de Charly, fuera del alcance de Claude)
+
+- **Ejecutar en Supabase (SQL Editor) antes de que el cambio surta efecto:**
+  ```sql
+  ALTER TABLE profiles ADD COLUMN IF NOT EXISTS ultimo_acceso timestamptz;
+  ```
+  Claude no tiene acceso de red a `supabase.co` ni credenciales con permiso de DDL (solo la clave pública `sb_publishable_...`) — esta migración de esquema requiere ejecutarse manualmente en el panel de Supabase.
+
+---
+
 
 ### Contexto
 
