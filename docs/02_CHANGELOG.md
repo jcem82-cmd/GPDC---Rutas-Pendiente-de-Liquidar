@@ -1,5 +1,32 @@
 
-## [23/07/2026] — Corrección de errores: panel "≥15 días" (Regional) mostraba Estado Real, no antigüedad real
+## [23/07/2026] — Corrección: la fix anterior rompió otra gráfica que comparte KPI_HIST
+
+### Contexto
+
+Charly reportó que la gráfica "Tendencia de Cierre Mensual — Total Rutas vs Vencidas al Cierre" **dentro de `index.html`** (dashboard principal, con filtros Todos/2022-2026) quedó en 0 para julio tras el fix anterior — esa gráfica sí necesita mostrar el conteo real de vencidas (Estado Real), a diferencia del panel "≥15 días" de Regional que necesita antigüedad real.
+
+### RCA
+
+Ambas gráficas consumían el mismo array (`KPI_HIST`/`kpiData`) y el mismo campo (`vencidas`), pero con necesidades opuestas — la corrección anterior resolvió una y rompió la otra porque no existía separación entre ambas definiciones.
+
+### Corrección
+
+- `KPI_HIST` ahora expone **dos campos**: `vencidas` (antigüedad real, `EFECT.mas15` — consumido por el panel "≥15 días" de Regional, sin cambios) y **`vencidas_real`** (Estado Real='Vencidas', mes vigente; meses históricos usan el mismo valor de `mas15` como mejor aproximación disponible, ya que no hay RAW histórico para recalcularlo).
+- La gráfica `cTend` en `index.html` (dataset "Rutas Vencidas") ahora usa `k.vencidas_real` en vez de `k.vencidas`.
+- Se corrigió también el dato ya publicado (efecto inmediato): `KPI_HIST` julio → `{"vencidas":0,"vencidas_real":50,...}`.
+- La gráfica `cEf` (dataset "Rutas ≥15 días", explícitamente etiquetada) no se tocó — ya usaba `EFECT.mas15` directamente y siempre estuvo correcta.
+
+### Archivos modificados
+
+- `index.html` únicamente.
+
+### Validación
+
+- `node --check` → OK. Confirmado en `raw.githubusercontent.com`: `vencidas_real":50` y `k.vencidas_real` presentes.
+- Deploy: commit `1dd43fd773` (o equivalente) → Actions `30114005277` success.
+
+---
+
 
 ### Contexto
 
