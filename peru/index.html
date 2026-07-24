@@ -531,10 +531,10 @@ var MESES = ['Ene-26','Feb-26','Mar-26','Abr-26','May-26','Jun-26'];
 var D = {
   rutasTotal:    [801, 749, 742, 649, 718, 815],
   rutasVencidas: [0,   0,   0,   0,   0,   7],
-  /* HOTFIX 23/07/2026 (regla de Charly): 0 vencidas -> Efectividad 100% y Monto S/ 0.
-     Junio (con 7 vencidas) queda en `null` ("Pendiente") hasta que Charly comparta
-     el monto real vencido de ese mes — no se debe inventar el dato. */
-  efectividad:   [100, 100, 100, 100, 100, null],
+  /* HOTFIX 23/07/2026 (regla de Charly): Efectividad = (Total-Vencidas)/Total*100 —
+     se deriva completa de Total Rutas/Vencidas reales, sin necesidad de dato externo.
+     Monto: 0 vencidas -> S/ 0; Junio con monto real provisto por Charly. */
+  efectividad:   [100, 100, 100, 100, 100, 99.14],
   montoPEN:      [0,   0,   0,   0,   0,   55497.05],
   zonas:         { 'LIMA':41, 'LA LIBERTAD':6, 'CAJAMARCA':4, 'LAMBAYEQUE':4, 'AREQUIPA':3, 'Otras':16 }
 };
