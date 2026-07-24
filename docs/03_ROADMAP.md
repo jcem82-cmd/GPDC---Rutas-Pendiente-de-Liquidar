@@ -2,7 +2,7 @@
 ## PDC Analytics Center · Plan de Evolución
 
 **Estado actual: v2.13 ESTABLE** · Próxima versión objetivo: v2.14
-**Última actualización:** 22/06/2026
+**Última actualización:** 23/07/2026 (agregados pendientes de sesión — ver sección correspondiente)
 
 ---
 
@@ -47,6 +47,15 @@
 - [x] **Alertas semáforo en Resumen** — `renderAlertasPresupuesto()` 85%/70% ya funcional dentro de `renderResumen`
 - [x] **Export PDF Cash Today** — `exportarPDF_CT()` implementado · botón en header · visible solo en Resumen (admin)
 - [x] **TC histórico 2024** — `_TC_MENSUAL` 25 meses Ene 2024 → Jun 2026 · aplicado por transacción vía `usd(r)`
+
+---
+
+## 🟡 PENDIENTES — Sesión 23/07/2026 (ver docs/01_MASTER_PROJECT_CONTEXT.md §12 y docs/02_CHANGELOG.md para detalle completo)
+
+- [ ] **Histórico real de Efectividad/Monto para Guatemala** — no existe dashboard país dedicado (`peru/index.html`/`elsalvador/index.html` sí ya tienen su histórico real Ene-Jun 2026; GT queda pendiente de definir dónde correspondería)
+- [ ] **Tablas "Resumen Histórico"/"Detalle Mensual" de Cash Today en `regional/index.html`** — siguen siendo 100% estáticas/de referencia, sin conexión a ningún dato real publicado (Hallazgo 3, identificado pero deliberadamente diferido — requiere diseño de pipeline de persistencia mensual)
+- [ ] **Cobertura de etiquetas de período abreviadas en `regional/index.html`** — extendida parcialmente; quedan pendientes las fechas con día específico ("24 Jun 2026") ligadas al módulo Cash Today, mezcladas con el punto anterior
+- [ ] **Migración de seguridad Supabase Auth** (mencionada en sesiones previas) — confirmada como YA IMPLEMENTADA (`login.html`/`analytics.html` leen `profiles` en Supabase desde el 20/07/2026); pendiente verificar si el token de GitHub embebido en `cash_today.html` (self-publish) ya fue rotado como parte de ese esfuerzo
 
 ---
 
