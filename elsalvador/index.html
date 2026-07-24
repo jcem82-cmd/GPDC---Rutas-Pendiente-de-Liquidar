@@ -535,7 +535,7 @@ var D = {
      Meses CON vencidas quedan en `null` ("Pendiente") hasta que Charly comparta el
      monto real vencido de esos meses (Marzo, Junio) — no se debe inventar el dato. */
   efectividad:   [100, 100, null, 100, 100, null],
-  montoPEN:      [0,   0,   null, 0,   0,   null],
+  montoPEN:      [0,   0,   68.00, 0,   0,   27127.78],
   zonas:         { 'LIMA':41, 'LA LIBERTAD':6, 'CAJAMARCA':4, 'LAMBAYEQUE':4, 'AREQUIPA':3, 'Otras':16 }
 };
 
@@ -1028,12 +1028,12 @@ function pdcApplyLiveData(data){
       var tot = D.rutasTotal[i], vencM = D.rutasVencidas[i];
       var efRaw = D.efectividad[i], montoRaw = D.montoPEN[i];
       var pctV = tot ? Math.round(vencM/tot*1000)/10 : 0;
-      var efTxt, montoTxt, badge;
+      var efTxt = efRaw==null ? 'Pendiente' : efRaw+'%';
+      var montoTxt = montoRaw==null ? 'Pendiente' : fmtUSD(montoRaw);
+      var badge;
       if(efRaw==null){
-        efTxt = 'Pendiente'; montoTxt = 'Pendiente';
-        badge = '<span class="badge by">⏳ Dato pendiente</span>';
+        badge = '<span class="badge by">⏳ Efectividad pendiente</span>';
       } else {
-        efTxt = efRaw+'%'; montoTxt = fmtUSD(montoRaw||0);
         badge = efRaw>=90 ? '<span class="badge bg">↗ OK</span>' : (efRaw>=80 ? '<span class="badge by">↘ Alerta</span>' : '<span class="badge br">↘ Crítico</span>');
       }
       return '<tr><td>'+mesLargo+'</td><td class="r">'+tot+'</td><td class="r">'+vencM+'</td>'+
