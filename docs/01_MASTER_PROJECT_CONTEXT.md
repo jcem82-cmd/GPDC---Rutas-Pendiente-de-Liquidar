@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.2 | **Última actualización:** 20/07/2026 | **Estado:** Producción ✅
+**Versión vigente:** v2.3 | **Última actualización:** 23/07/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -226,9 +226,12 @@ Toda reconstrucción de `_R` vía Python (flujo alterno: usuario sube Excel a es
 | Regla | Detalle |
 |---|---|
 | **notLiq** | Excluye Estado(Fac)=Liquidada OR Estado Real=Liquidada |
-| **Vencidas (oficial/hub/cards)** | `Estado (Facturación) === 'Vencidas'` |
+| **Vencidas (oficial/hub/cards/Detalle)** | `Estado (Facturación) === 'Vencidas'` (o `Estado Real`, según módulo — ver fila siguiente) |
 | **Vencidas Despacho** | `Estado Real === 'Vencidas'` — métrica independiente, NO intercambiable |
-| **Usuarios vía Supabase** | `login.html`/`analytics.html` leen `profiles` en Supabase — ya no hay arreglo dual que sincronizar (obsoleto desde 20/07/2026) |
+| **Vencidas ≥15 días (antigüedad real)** | `Rango Real` ∈ {'15 +'} → `EFECT.mas15` (hoja "Efectividad" del Excel) — **NO es lo mismo que "Vencidas" de negocio**. Ver incidente 23/07/2026 (§12): un panel titulado "≥15 días" mostró por error el conteo de negocio (Estado Real) durante varias sesiones — confundir estos dos criterios fue la causa raíz de múltiples reportes de Charly. `KPI_HIST.vencidas` = antigüedad (mas15); `KPI_HIST.vencidas_real` = negocio (Estado Real, solo mes vigente; histórico usa mas15 como mejor aproximación) |
+| **KPI_TOTALS.mes_actual_pais** | `{mes, Guatemala:{total,vencidas}, "El Salvador":{...}, "Perú":{...}}` — Total Rutas = `Total Rutas (Gral)` sheet (= `totalByMon`, NO la hoja "Total Rutas" a secas, que es una ventana móvil distinta); Vencidas = `Estado Real` por país. Solo mes vigente — histórico por país no existe en el Excel, requiere carga manual (ver §12) |
+| **Parseo de filas sin Moneda** | Antes se descartaban silenciosamente (perdían Pendientes/Vencidas reales) — corregido 23/07/2026: solo se descarta si falta `Numero de Despacho`. Sin Moneda → `Pais:'Otro'`, pero cuenta en totales generales |
+| **Usuarios vía Supabase** | `login.html`/`analytics.html` leen `profiles` en Supabase — ya no hay arreglo dual que sincronizar (obsoleto desde 20/07/2026). **`profiles.ultimo_acceso`** (columna agregada 23/07/2026): login exitoso la actualiza (no bloqueante); Gestión de Usuarios la lee — antes leía `localStorage`, que solo reflejaba el navegador de quien viera el panel |
 | **Honduras** | Sin datos reales — eliminado de Regional; `honduras/index.html` existe pero sin tarjeta |
 | **PDC_MASTER_PATH** | Obligatorio definir antes de incluir `js/pdc_data_bridge.js` en cualquier archivo fuera de la raíz |
 
@@ -249,11 +252,50 @@ Toda reconstrucción de `_R` vía Python (flujo alterno: usuario sube Excel a es
 
 | Versión | Fecha | Descripción |
 |---|---|---|
-| **v2.1** | **20/07/2026** | **Multi-select de país (gate por rol) + multi-select en Canal/Responsable/Rango (todos los usuarios) — index.html, cash_today.html, cartas_salida.html** |
+| **v2.3** | **23/07/2026** | **Perú/ESV/Regional: histórico real, KPI_HIST expuesto en PDCBridge (vencidas vs vencidas_real), mes_actual_pais por país, fix fila sin Moneda, fix filtro Vencida, Último Acceso vía Supabase — ver §12** |
+| v2.1 | 20/07/2026 | Multi-select de país (gate por rol) + multi-select en Canal/Responsable/Rango (todos los usuarios) — index.html, cash_today.html, cartas_salida.html |
 | v2.0 | 07/07/2026 | PDCBridge (fuente única de verdad Rutas) · Honduras eliminado de Regional · Cash Today: publicación por reemplazo total (fin del ciclo de bugs de deduplicación) · rotación de tokens |
 | v1.8 | 03/07/2026 | Regla de validación `node --check` obligatoria tras incidente de SyntaxError |
 | v1.5 | 25/06/2026 | Auditoría completa · datasets 18/06 · tarjeta HN→ESV |
 | v1.0 | 20/06/2026 | Lanzamiento inicial |
+
+---
+
+## 12. Sesión 23/07/2026 — Corrección integral Perú/ESV/Regional + Usuarios (v2.3)
+
+### 12.1 Resumen ejecutivo
+Sesión larga de corrección iterativa disparada por reportes reales de Charly tras publicar Excel. Los hallazgos se fueron descubriendo en cascada — cada fix reveló el siguiente problema. Detalle completo en `docs/02_CHANGELOG.md` (14 entradas del 23/07/2026); aquí solo el resumen arquitectónico permanente.
+
+### 12.2 Etiquetas de período dinámicas (Perú, El Salvador, Regional)
+Encabezados/período/tabla "Resumen Histórico" eran texto **100% estático** ("Junio 2026" fijo, nunca vinculado a datos). Se agregaron helpers `pdcMesInfo()`/`pdcReplaceTxt()` (duplicados en cada archivo, no en PDCBridge — arquitectura de módulos independientes) que recalculan el mes/año en runtime desde `KPI_TOTALS.report_month`, sin tocar HTML/CSS.
+
+### 12.3 Historial mensual — de sobrescritura a acumulación real
+Antes: el último mes se sobrescribía cada publish, perdiendo el mes anterior. Ahora: si `MESES[último] !== mesVigente` → `push()` (nueva posición); si es el mismo mes → update in-place. Aplicado en `peru/index.html`, `elsalvador/index.html`, `regional/index.html`.
+
+### 12.4 KPI_HIST expuesto en PDCBridge (campo aditivo)
+`js/pdc_data_bridge.js` ahora extrae también `KPI_HIST` de `index.html` (antes solo `RAW`/`KPI_TOTALS`/`FX_DEF`). Fuente: hoja "Efectividad" del Excel → array histórico desde 2022 con `{mes, vencidas, vencidas_real, total, pct}`.
+- `vencidas` = antigüedad real (`EFECT.mas15`, columna "Rutas ≥15 días")
+- `vencidas_real` = Estado Real='Vencidas' (regla de negocio), solo mes vigente; histórico usa `mas15` como aproximación
+- **Regional/index.html** consume `KPI_HIST.vencidas` (antigüedad) para el panel "Tendencia Rutas Vencidas (≥15 días)"
+- **index.html** (gráfica interna `cTend`, "Total Rutas vs Vencidas al Cierre") consume `KPI_HIST.vencidas_real` (negocio)
+- **Nunca usar el mismo campo para ambos propósitos** — fue la causa de dos incidentes seguidos en esta sesión (ver CHANGELOG).
+
+### 12.5 `KPI_TOTALS.mes_actual_pais` — Total Rutas/Vencidas por país (solo mes vigente)
+Agregado a `index.html`. Fuente correcta (confirmada por Charly tras un primer intento fallido): `Total Rutas (Gral)` sheet (= `totalByMon`, la misma que ya alimentaba `total_by_moneda`) — **NO** la hoja "Total Rutas" a secas (ventana móvil de ~5 semanas, sin relación con la tabla dinámica real del Excel). Vencidas por país: `routes.filter(Pais=X && Estado Real==='Vencidas')`.
+Consumido por `peru/index.html`/`elsalvador/index.html` para refrescar el mes vigente de sus históricos (con fallback al backlog pendiente en vivo si el campo no existe — Excel/versión anterior).
+
+### 12.6 Parseo de Excel — fila con Moneda vacía ya no se pierde
+`processWorkbook()` descartaba filas sin `Moneda` aunque tuvieran `Numero de Despacho` válido — causaba desfases de -1 en Pendientes/Vencidas (caso real: despacho 30302). Corregido: solo se descarta si falta `Numero de Despacho`. Sin Moneda → `Pais:'Otro'`, cuenta en agregados generales pero no en desgloses por país.
+
+### 12.7 Histórico real Perú/ESV (Ene-Jun 2026)
+`D.rutasTotal`/`D.rutasVencidas`/`D.efectividad`/`D.montoPEN` de ambos dashboards reemplazados con datos reales provistos por Charly (antes: placeholders idénticos y ficticios en ambos países). Efectividad histórica se **calcula**, no se carga: `(Total-Vencidas)/Total*100` — Charly confirmó que no requiere dato externo. Julio en adelante se autoactualiza vía `mes_actual_pais`.
+**Pendiente:** histórico de Efectividad/Monto para Guatemala — no existe dashboard país dedicado para GT donde insertarlo.
+
+### 12.8 Detalle de Rutas — filtro "Vencida" corregido
+`bucket()` (en `peru/index.html`/`elsalvador/index.html`) clasificaba "Vencida" por `Rango Real` (antigüedad) en vez de `Estado (Facturación)`/`Estado Real` (criterio oficial) — el filtro podía mostrar 0 resultados aun con vencidas reales. Corregido para usar el mismo criterio que el resto de la plataforma.
+
+### 12.9 Usuarios — Último Acceso real (Supabase)
+`profiles.ultimo_acceso` (columna nueva, migración ejecutada por Charly vía SQL Editor). `login.html` la actualiza tras login exitoso (no bloqueante, sin `await`, con `.then(null,fn)`). `analytics.html` la lee en vez de `localStorage['pdc_access_log']` (que solo reflejaba el navegador de quien viera el panel — nunca el de otros usuarios).
 
 ---
 
@@ -284,4 +326,4 @@ Existían **dos sets paralelos de documentación** (`docs/00-07_*.md` numerado y
 7. **Cash Today: publicación = reemplazo total.** No reintroducir lógica de merge/deduplicación.
 
 ---
-*PDC Analytics Center · Grupo PDC · Departamento Financiero · v2.2 · 20/07/2026*
+*PDC Analytics Center · Grupo PDC · Departamento Financiero · v2.3 · 23/07/2026*
