@@ -6,6 +6,7 @@
 <title>Dashboard Ejecutivo — Cartas de Salida</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<script src="js/supabase.min.js"></script>
 <style>
 :root{
   --navy:#0f2340;
@@ -1169,9 +1170,36 @@ function handleCSFile(event){
   reader.readAsArrayBuffer(file);
 }
 
-var _CS_GH_TOKEN = ['github_pat_11CF','IFQ7A0KDP5Zm8IV','SI0_QFWWlW4TROC','qLENhr29FRlr1tz','RzK4cgqNMd2PhYj','BsEXKGDT7Zf03DqvKc'].join('');
+/* PUBLICACIÓN SELF-SERVICE — vía Supabase Edge Function (migrado 29/07/2026, REGLA seguridad 20/07/2026).
+   El token de GitHub ya NO vive en este archivo. La función "github-publish"
+   hace el PUT final con el token guardado como secret server-side. Este
+   archivo solo hace lecturas públicas (no requieren token) y le pide a la
+   función que escriba. Mismo patrón que cash_today.html. */
 var _CS_GH_REPO  = 'jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar';
 var _CS_GH_FILE  = 'cartas_salida.html';
+var _CS_SUPABASE_URL = 'https://pytsrgtcjytjztwdlvux.supabase.co';
+var _CS_SUPABASE_KEY = 'sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj';
+var _csPublishClient = window.supabase.createClient(_CS_SUPABASE_URL, _CS_SUPABASE_KEY);
+
+async function _csCallPublishFunction(path, contentB64, sha, message){
+  var sessionRes = await _csPublishClient.auth.getSession();
+  var token = sessionRes.data && sessionRes.data.session && sessionRes.data.session.access_token;
+  if(!token) throw new Error('Sesión no válida — vuelva a iniciar sesión e intente de nuevo.');
+
+  var res = await fetch(_CS_SUPABASE_URL + '/functions/v1/github-publish', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ path: path, content_base64: contentB64, sha: sha, message: message })
+  });
+  var result = await res.json();
+  if(!res.ok || !result.success){
+    throw new Error((result && result.error) ? result.error : ('HTTP '+res.status));
+  }
+  return result;
+}
 
 function _csUtf8ToBase64(str){
   var bytes = new TextEncoder().encode(str);
@@ -1193,16 +1221,16 @@ async function publishCartasSalida(){
 
   try{
     var API = 'https://api.github.com/repos/'+_CS_GH_REPO+'/contents/'+_CS_GH_FILE;
-    var HDRS = {'Authorization':'token '+_CS_GH_TOKEN,'Accept':'application/vnd.github.v3+json'};
+    var HDRS = {'Accept':'application/vnd.github.v3+json'}; /* repo publico: lectura sin token */
 
     var metaRes = await fetch(API, {headers:HDRS});
     if(!metaRes.ok) throw new Error('No se pudo leer el archivo actual (HTTP '+metaRes.status+')');
     var metaJson = await metaRes.json();
     var sha = metaJson.sha;
 
-    statusEl.textContent = 'Paso 2/3: Descargando versión actual (~2MB)…';
+    statusEl.textContent = 'Paso 2/3: Descargando versión actual (~3MB)…';
     var blobRes = await fetch('https://api.github.com/repos/'+_CS_GH_REPO+'/git/blobs/'+sha,
-      {headers:{'Authorization':'token '+_CS_GH_TOKEN,'Accept':'application/vnd.github.raw'}});
+      {headers:{'Accept':'application/vnd.github.raw'}});
     if(!blobRes.ok) throw new Error('No se pudo descargar el archivo (HTTP '+blobRes.status+')');
     var currentHtml = await blobRes.text();
 
@@ -1227,19 +1255,8 @@ async function publishCartasSalida(){
     var newFullHtml = currentHtml.substring(0,idxStart) + newBlock + currentHtml.substring(idxEnd);
     var contentB64 = _csUtf8ToBase64(newFullHtml);
 
-    var putRes = await fetch(API, {
-      method:'PUT', headers:Object.assign({},HDRS,{'Content-Type':'application/json'}),
-      body: JSON.stringify({
-        message: 'data(cartas_salida): self-publish - reemplazo completo ('+_CS_PENDING.rows.length+' registros) vía Config',
-        content: contentB64,
-        sha: sha,
-        branch: 'main'
-      })
-    });
-    if(!putRes.ok){
-      var errBody = await putRes.text();
-      throw new Error('GitHub API rechazó la publicación (HTTP '+putRes.status+'): '+errBody.substring(0,200));
-    }
+    await _csCallPublishFunction(_CS_GH_FILE, contentB64, sha,
+      'data(cartas_salida): self-publish - reemplazo completo ('+_CS_PENDING.rows.length+' registros) vía Config');
 
     statusEl.style.background='#dcfce7'; statusEl.style.color='#166534';
     statusEl.textContent = '✅ Publicado con éxito ('+_CS_PENDING.rows.length.toLocaleString()+' registros). Recargando…';
