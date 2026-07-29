@@ -1134,7 +1134,14 @@ function handleCSFile(event){
           var diasTranscurridos = Math.round((new Date(hoy)-new Date(fe))/86400000);
           var diasVencido = Math.round((new Date(hoy)-new Date(fc))/86400000);
           var estatus = diasVencido>0 ? 'C' : 'V';
-          var d0 = new Date(fe);
+          /* FIX RCA 29/07/2026: new Date(fe).getFullYear()/getMonth() interpretaba
+             el ISO string como medianoche UTC; los getters locales (huso GT/SV
+             UTC-6) retrocedian 6h, reclasificando toda carta del dia 1 de
+             cualquier mes al mes anterior. Se deriva anio/mes directo del
+             string ISO 'YYYY-MM-DD', sin pasar por objeto Date. */
+          var feYMD = fe.split('-');
+          var feAnio = parseInt(feYMD[0],10);
+          var feMes = parseInt(feYMD[1],10);
           var liqIdx = idxOf(liquidadores, liqMap, cLiq>-1?row[cLiq]:null);
           var pilotoIdx = idxOf(pilotos, pilMap, cPiloto>-1?row[cPiloto]:null);
           var transporteIdx = idxOf(transportes, trMap, cTr>-1?row[cTr]:null);
@@ -1144,7 +1151,7 @@ function handleCSFile(event){
             row[cNo], liqIdx, fe, cRuta>-1?row[cRuta]:null, pilotoIdx,
             cPlacas>-1?row[cPlacas]:null, transporteIdx, motivoIdx,
             cMotTxt>-1?row[cMotTxt]:null, fc, estatus,
-            d0.getFullYear(), d0.getMonth()+1, diasTranscurridos, diasVencido, pais
+            feAnio, feMes, diasTranscurridos, diasVencido, pais
           ]);
         }
         sheetsProcessed.push(sn+' → '+pais);
