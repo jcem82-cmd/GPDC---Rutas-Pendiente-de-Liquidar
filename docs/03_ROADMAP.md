@@ -1,8 +1,8 @@
 # 03 — ROADMAP
 ## PDC Analytics Center · Plan de Evolución
 
-**Estado actual: v2.13 ESTABLE** · Próxima versión objetivo: v2.14
-**Última actualización:** 23/07/2026 (agregados pendientes de sesión — ver sección correspondiente)
+**Estado actual: v2.14 ESTABLE** · Próxima versión objetivo: v2.15
+**Última actualización:** 29/07/2026 (sesión Cartas de Salida — ver sección correspondiente)
 
 ---
 
@@ -47,6 +47,16 @@
 - [x] **Alertas semáforo en Resumen** — `renderAlertasPresupuesto()` 85%/70% ya funcional dentro de `renderResumen`
 - [x] **Export PDF Cash Today** — `exportarPDF_CT()` implementado · botón en header · visible solo en Resumen (admin)
 - [x] **TC histórico 2024** — `_TC_MENSUAL` 25 meses Ene 2024 → Jun 2026 · aplicado por transacción vía `usd(r)`
+
+---
+
+## ✅ Sesión 29/07/2026 — Cartas de Salida: seguridad + correcciones + nueva funcionalidad
+
+- [x] Migración de self-publish de `cartas_salida.html` a Edge Function `github-publish` (token embebido eliminado — confirma y cierra el pendiente de la sesión 23/07 sobre este mismo archivo)
+- [x] Fix bug de zona horaria en derivación `anio`/`mes` (cartas del día 1 de cualquier mes)
+- [x] Fix mislabeling de país — detección ahora por nombre de archivo, no por nombre de hoja
+- [x] Soporte multi-archivo (1 a 3, no limitante) en carga de Excel
+- [x] Sección dedicada "Motivo: Cliente No Pagó" (KPI + tendencia mensual + tabla de detalle)
 
 ---
 
@@ -109,4 +119,4 @@ repo/
 
 ---
 
-*PDC Analytics Center · v2.13 · 22 Jun 2026*
+*PDC Analytics Center · v2.14 · 29 Jul 2026*
