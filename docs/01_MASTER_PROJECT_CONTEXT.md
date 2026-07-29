@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.3 | **Última actualización:** 23/07/2026 | **Estado:** Producción ✅
+**Versión vigente:** v2.4 | **Última actualización:** 29/07/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -315,7 +315,30 @@ Existían **dos sets paralelos de documentación** (`docs/00-07_*.md` numerado y
 
 ---
 
-## 14. Instrucciones para nuevo chat
+## 14. Sesión 29/07/2026 — Cartas de Salida: seguridad + correcciones + nueva funcionalidad
+
+**Contexto:** `cartas_salida.html` presentaba el mismo patrón de riesgo de token embebido ya resuelto en `index.html` (06/07) y pendiente de confirmación desde la sesión del 23/07 — se resolvió en esta sesión junto con 2 bugs de datos encontrados durante la validación de una publicación de prueba, y 1 nueva funcionalidad solicitada.
+
+### 14.1 Self-publish migrado a Edge Function (mismo patrón que `cash_today.html`)
+`_CS_GH_TOKEN` (fine-grained PAT embebido, revocado por Secret Scanning — `401 Bad credentials`) eliminado por completo. Lecturas de GitHub sin token (repo público); PUT final delegado a `github-publish` (Supabase Edge Function, token custodiado server-side) vía JWT de sesión. Requirió que Charly agregara `'cartas_salida.html'` al `ALLOWED_PATHS` del Edge Function desde el Dashboard de Supabase (fuera del alcance de acceso de Claude, que solo cuenta con la publishable key).
+
+### 14.2 Bug de zona horaria en `anio`/`mes` (mismo patrón ya corregido en `cash_today.html` v2.1-CT)
+`new Date(fe).getFullYear()/.getMonth()` sobre un string ISO se interpreta como medianoche UTC; los getters locales (GT/SV = UTC-6) retroceden la fecha, reclasificando toda carta del día 1 de cualquier mes al mes anterior. Corregido derivando `anio`/`mes` directo del string (`fe.split('-')`), sin pasar por `Date`.
+
+### 14.3 Detección de país por nombre de archivo (no por nombre de hoja)
+`_csDetectPais()` solo miraba el nombre de la hoja interna del Excel; la convención real de Charly usa el nombre del archivo (`...ESV.xlsx`, `...Perú.xlsx`, sin sufijo = GT). Corregido: detección primero por `file.name`, con fallback a la lógica histórica por hoja para compatibilidad.
+
+### 14.4 Multi-archivo (1 a 3, no limitante)
+Input con `multiple`; `handleCSFile()` procesa cada archivo (país por nombre de archivo) y consolida en un único dataset antes de publicar. Prueba real: 3 archivos → 20,032 registros (GT 14,118 · ESV 5,584 · PE 330).
+
+### 14.5 Sección "Motivo: Cliente No Pagó"
+KPI + tendencia mensual + tabla de detalle en tab Análisis, con filtro que ignora el dropdown de Motivo (siempre visible). Validado contra datos reales: exclusivo de Perú, 106/330 cartas (32.1%).
+
+**Archivos modificados en toda la sesión:** únicamente `cartas_salida.html` (4 deploys independientes, cada uno validado con `node --check` y verificado post-deploy vía Git Blob API).
+
+---
+
+## 15. Instrucciones para nuevo chat
 
 1. **Pegar este documento** al inicio del chat
 2. **Tokens:** NO asumir que un token de una sesión anterior sigue vigente — han rotado varias veces por revocación de GitHub. Verificar contra la API antes de usar; si da 401, pedir uno nuevo.
@@ -326,4 +349,4 @@ Existían **dos sets paralelos de documentación** (`docs/00-07_*.md` numerado y
 7. **Cash Today: publicación = reemplazo total.** No reintroducir lógica de merge/deduplicación.
 
 ---
-*PDC Analytics Center · Grupo PDC · Departamento Financiero · v2.3 · 23/07/2026*
+*PDC Analytics Center · Grupo PDC · Departamento Financiero · v2.4 · 29/07/2026*
