@@ -1,5 +1,95 @@
 
-## [23/07/2026] — Corrección de errores: "Último Acceso" en Gestión de Usuarios no reflejaba accesos reales
+## [29/07/2026] — Cartas de Salida: migración de seguridad + 2 correcciones + nueva funcionalidad
+
+
+### 1. Corrección de errores — Token GitHub self-publish revocado (401 Bad credentials)
+
+**Síntoma reportado:** Botón "🚀 Publicar en GitHub" de `cartas_salida.html` fallaba con `Error: No se pudo leer el archivo actual (HTTP 401)`.
+
+**RCA:** Verificación directa contra la API de GitHub confirmó `401 Bad credentials` en el token fine-grained embebido en texto plano fragmentado (`_CS_GH_TOKEN`, ~línea 1172) — mismo patrón de riesgo ya documentado dos veces antes (`index.html` 06/07, `cash_today.html` histórico): GitHub Secret Scanning revoca tokens embebidos en archivos públicos servidos por GitHub Pages.
+
+**Corrección aplicada (Opción B — migración estructural, no solo rotación de token):**
+- Eliminado `_CS_GH_TOKEN` por completo.
+- Agregado cliente `supabase-js` (`js/supabase.min.js`, mismo patrón que `cash_today.html`) + función `_csCallPublishFunction()`.
+- Lecturas de GitHub (meta + blob) ahora sin token (repo público, no lo requieren).
+- El PUT final se delega al Edge Function `github-publish` (Supabase) usando el JWT de la sesión activa del usuario — el token de GitHub nunca vuelve a vivir en el navegador.
+- **Acción de Charly (fuera del alcance de Claude — sin acceso a Functions vía API):** agregó `'cartas_salida.html'` al arreglo `ALLOWED_PATHS` del Edge Function y ejecutó *Deploy updates* desde el Dashboard de Supabase.
+
+**Archivo modificado:** únicamente `cartas_salida.html`.
+
+---
+
+### 2. Corrección de errores — Bug de zona horaria en derivación `anio`/`mes` (cartas del día 1 de cualquier mes contadas en el mes anterior)
+
+**Síntoma reportado:** Julio mostraba 41-43 cartas emitidas en vez de 49 (confirmado por Charly contra su fuente).
+
+**RCA:** `new Date(fe).getFullYear()`/`.getMonth()` interpretaba el string ISO `fe` (`'2026-07-01'`) como medianoche UTC; los getters **locales** (huso GT/SV = UTC-6) retrocedían la fecha 6 horas, empujando toda carta emitida el **día 1** de cualquier mes al mes anterior. Confirmado con datos reales: exactamente 8 cartas con `fechaEntrega='2026-07-01'` estaban siendo contadas como junio — la diferencia exacta entre 49 (conteo por string) y 41 (conteo por campos derivados).
+
+**Corrección aplicada:** `anio`/`mes` se derivan directo del string ISO (`fe.split('-')`), sin pasar por objeto `Date`. Se eliminó `var d0 = new Date(fe)`.
+
+**Alcance:** único bloque en `handleCSFile()`. El dataset de prueba ya publicado (ESV, mal etiquetado por el Hallazgo 3) mantuvo sus valores viejos — se corrigió automáticamente en la publicación siguiente (los 3 archivos GT+ESV+PE).
+
+**Nota:** misma familia de bug ya corregida en `cash_today.html` (v2.1-CT, 02/07/2026) — nunca se había replicado el fix a `cartas_salida.html`.
+
+---
+
+### 3. Corrección de errores — Mislabeling de país: todo el dataset caía en "GT" por defecto
+
+**Síntoma reportado:** Charly subió un Excel de El Salvador (`Reporte de Cartas de Salida ESV.xlsx`); las 5,584 filas resultantes aparecieron etiquetadas `pais:'GT'` en el dataset publicado (confirmado por nombres de piloto/transporte claramente salvadoreños).
+
+**RCA:** `_csDetectPais(sheetName)` solo reconocía el país si el **nombre de la hoja interna** del Excel contenía "ESV"/"SALVADOR"/"SV". Charly confirmó que el país va en el **nombre del archivo**, no en el nombre de la hoja — al no matchear ninguna hoja, el fallback histórico (`pais='GT'`, heredado de cuando la plataforma era solo-GT) etiquetaba todo el archivo como Guatemala.
+
+**Corrección aplicada:** resuelta como parte del punto 4 (multi-archivo) — la detección de país ahora usa primero el **nombre del archivo** (`_csDetectPais(file.name)`), con fallback a la detección histórica por nombre de hoja solo si el archivo no matchea ningún patrón.
+
+---
+
+### 4. Nueva funcionalidad — Soporte multi-archivo (1 a 3, no limitante) + detección de país por nombre de archivo
+
+**Confirmado con Charly:** convención real de nombres de archivo — `Reporte de Cartas de Salida ESV.xlsx` (ESV), `Reporte de cartas de salida Perú.xlsx` (PE), `REPORTE DE CARTAS DE SALIDA.xlsx` sin sufijo (GT, caso base histórico).
+
+**Implementado:**
+- `<input id="cs-file">` acepta `multiple` — 1, 2 o 3 archivos en una sola selección, sin mínimo ni máximo.
+- `handleCSFile()` reescrito: procesa cada archivo con `FileReader`/`XLSX.read()` en paralelo (`Promise` por archivo, `await` secuencial), país determinado por nombre de archivo por defecto.
+- Resultados de todos los archivos se consolidan en un único `_CS_PENDING` (mismos mapas deduplicados de liquidadores/pilotos/transportes/motivos) antes de publicar.
+- Mensaje de estado final resume registros y país detectado por cada archivo procesado.
+
+**Prueba real:** 3 archivos (GT+ESV+PE) → 20,032 registros consolidados, distribución GT: 14,118 · ESV: 5,584 · PE: 330 — publicado exitosamente vía Edge Function.
+
+**Archivo modificado:** únicamente `cartas_salida.html` (input + `handleCSFile()`).
+
+---
+
+### 5. Nueva funcionalidad — Sección dedicada "Motivo: Cliente No Pagó" (KPI + tendencia + detalle)
+
+**Solicitado por Charly:** visibilidad específica sobre el motivo abreviado "Cliente No Pagó", detectado en el archivo de Perú.
+
+**Hallazgo de datos (validado contra el dataset real de 20,032 registros):** el motivo "Cliente No Pagó" aparece **exclusivamente en Perú** — 106 de 330 cartas de PE (32.1%). No aparece en GT ni ESV en el dataset actual.
+
+**Implementado (tab Análisis, cartas_salida.html):**
+- KPI: total de cartas + % sobre el total filtrado.
+- Gráfica Chart.js de tendencia mensual (barras, una por mes calendario con datos).
+- Tabla de detalle: No., País, Liquidador, Fecha de Entrega, Fecha de Caducidad, Ruta, Piloto, Placas, Transporte, Estatus.
+- Filtro independiente (`matchesFiltersCNP()`): respeta país/año/mes/estatus/liquidador/transporte/búsqueda del estado global, pero **ignora el filtro de "Motivo abreviado"** — siempre visible sin importar la selección de ese dropdown.
+- Alcance construido genéricamente por texto de motivo (no por país) — si el motivo aparece en GT/ESV en el futuro, se incluye automáticamente sin cambio de código.
+
+**Archivo modificado:** únicamente `cartas_salida.html` (HTML tab Análisis + funciones `renderClienteNoPago()`/`matchesFiltersCNP()`, integradas en `refresh()`).
+
+---
+
+### Validación de la sesión
+
+- `node --check` en todos los bloques `<script>` inline antes de cada uno de los 4 deploys → OK.
+- `assert count==1` en cada `str.replace()` quirúrgico → confirmado.
+- SHA fresco inmediato antes de cada PUT (4 deploys independientes, espaciados).
+- Verificación post-deploy vía Git Blob API (bypass de caché CDN de `raw.githubusercontent.com`, que mostró falso negativo transitorio en una verificación).
+
+### Commits
+
+`3d5b4a97903d` (migración Edge Function) · `4129358233f9` (fix zona horaria) · `45c54a7bf4b5` (multi-archivo + país por nombre) · `f61cee00b3e1` (dato: publicación real 3 países, 20,032 registros) · `a9c296cab58f` (sección Cliente No Pagó)
+
+---
+
+
 
 ### Contexto
 
