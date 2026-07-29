@@ -442,9 +442,9 @@ table.data-table tbody td.motivo-cell{white-space:normal;max-width:260px;min-wid
   <div class="rule-banner" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
     <div style="flex:1;min-width:260px;">
       <b>Actualizar Excel (Cartas de Salida)</b><br>
-      Sube el Excel completo (una hoja por país: GT / ESV / PE). Cada publicación <b>reemplaza el dataset completo</b> — no es incremental.
+      Sube 1, 2 o 3 archivos Excel (uno por país: GT / ESV / PE) — el país se detecta por el <b>nombre del archivo</b> (ej. "...ESV", "...Perú"; sin sufijo = GT). Cada publicación <b>reemplaza el dataset completo</b> — no es incremental.
     </div>
-    <input type="file" id="cs-file" accept=".xlsx,.xls" style="display:none" onchange="handleCSFile(event)">
+    <input type="file" id="cs-file" accept=".xlsx,.xls" multiple style="display:none" onchange="handleCSFile(event)">
     <button class="btn btn-ghost" onclick="document.getElementById('cs-file').click()">📂 Seleccionar Excel</button>
     <button id="cs-publish-btn" onclick="publishCartasSalida()" style="display:none;background:linear-gradient(90deg,#0f2340,#2563eb);color:#fff;border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-weight:600;">🚀 Publicar en GitHub</button>
   </div>
@@ -1076,88 +1076,114 @@ function _csFindCol(headers, candidates){
 }
 
 function handleCSFile(event){
-  var file = event.target.files[0];
-  if(!file) return;
+  var files = Array.prototype.slice.call(event.target.files || []);
+  if(!files.length) return;
   var statusEl = document.getElementById('cs-status');
   statusEl.style.display='block'; statusEl.style.background='#eff6ff'; statusEl.style.color='#1d4ed8';
-  statusEl.textContent = 'Leyendo archivo…';
+  statusEl.textContent = 'Leyendo '+files.length+' archivo(s)…';
 
-  var reader = new FileReader();
-  reader.onload = function(e){
-    try{
-      var wb = XLSX.read(new Uint8Array(e.target.result), {type:'array', cellDates:true});
-      var hoy = new Date().toISOString().slice(0,10);
+  /* FEAT 29/07/2026: soporte multi-archivo (1 a 3, no limitante). Cada
+     archivo puede representar un país (GT/ESV/PE) detectado por su NOMBRE
+     DE ARCHIVO (ej. "Reporte de Cartas de Salida ESV.xlsx"), no por el
+     nombre de la hoja interna — corrige mislabeling previo donde todo caía
+     en GT por defecto. Si el nombre del archivo no matchea ningún país
+     (ej. "REPORTE DE CARTAS DE SALIDA" = GT, convención confirmada), se
+     conserva la detección histórica por hoja como respaldo. */
+  var hoy = new Date().toISOString().slice(0,10);
+  var liquidadores=[], pilotos=[], transportes=[], motivos=[];
+  var liqMap={}, pilMap={}, trMap={}, motMap={};
+  function idxOf(arr, map, name){
+    if(name==null || name==='') return -1;
+    name = String(name).trim();
+    if(map[name]==null){ map[name]=arr.length; arr.push(name); }
+    return map[name];
+  }
 
-      var liquidadores=[], pilotos=[], transportes=[], motivos=[];
-      var liqMap={}, pilMap={}, trMap={}, motMap={};
-      function idxOf(arr, map, name){
-        if(name==null || name==='') return -1;
-        name = String(name).trim();
-        if(map[name]==null){ map[name]=arr.length; arr.push(name); }
-        return map[name];
-      }
+  var allRows=[];
+  var resumenPorArchivo=[];
 
-      var allRows=[];
-      var sheetsProcessed=[];
-      var anyMatched = wb.SheetNames.some(sn=>_csDetectPais(sn));
+  function leerArchivo(file){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onerror = function(){ reject(new Error('No se pudo leer '+file.name)); };
+      reader.onload = function(e){
+        try{
+          var wb = XLSX.read(new Uint8Array(e.target.result), {type:'array', cellDates:true});
+          var paisArchivo = _csDetectPais(file.name);
+          var filasArchivo = 0;
+          var sheetsProcessed = [];
+          var anyMatched = wb.SheetNames.some(sn=>_csDetectPais(sn));
 
-      wb.SheetNames.forEach(function(sn){
-        var pais = _csDetectPais(sn) || (anyMatched ? null : 'GT');
-        if(!pais) return; // hoja no reconocida (ej. Resumen, KPI) y ya hay hojas de país válidas
-        var ws = wb.Sheets[sn];
-        var json = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
-        if(!json.length) return;
-        var headers = json[0];
-        var cNo = _csFindCol(headers,['NO.','NO']);
-        var cLiq = _csFindCol(headers,['NOMBRE DEL LIQUIDADOR','LIQUIDADOR']);
-        var cFE = _csFindCol(headers,['FECHA DE ENTREGA']);
-        var cRuta = _csFindCol(headers,['RUTA']);
-        var cPiloto = _csFindCol(headers,['NOMBRE DE PILOTO','PILOTO']);
-        var cPlacas = _csFindCol(headers,['PLACAS DEL VEHÍCULO','PLACAS']);
-        var cTr = _csFindCol(headers,['TRANSPORTE']);
-        var cMotAbr = _csFindCol(headers,['MOTIVO ABREVIDADO','MOTIVO ABREVIADO']);
-        var cMotTxt = _csFindCol(headers,['MOTIVO']);
-        var cFC = _csFindCol(headers,['FECHA DE CADUCIDAD']);
+          wb.SheetNames.forEach(function(sn){
+            var pais = paisArchivo || _csDetectPais(sn) || (anyMatched ? null : 'GT');
+            if(!pais) return; // hoja no reconocida y ya hay hojas de país válidas en este archivo
+            var ws = wb.Sheets[sn];
+            var json = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+            if(!json.length) return;
+            var headers = json[0];
+            var cNo = _csFindCol(headers,['NO.','NO']);
+            var cLiq = _csFindCol(headers,['NOMBRE DEL LIQUIDADOR','LIQUIDADOR']);
+            var cFE = _csFindCol(headers,['FECHA DE ENTREGA']);
+            var cRuta = _csFindCol(headers,['RUTA']);
+            var cPiloto = _csFindCol(headers,['NOMBRE DE PILOTO','PILOTO']);
+            var cPlacas = _csFindCol(headers,['PLACAS DEL VEHÍCULO','PLACAS']);
+            var cTr = _csFindCol(headers,['TRANSPORTE']);
+            var cMotAbr = _csFindCol(headers,['MOTIVO ABREVIDADO','MOTIVO ABREVIADO']);
+            var cMotTxt = _csFindCol(headers,['MOTIVO']);
+            var cFC = _csFindCol(headers,['FECHA DE CADUCIDAD']);
 
-        if(cNo===-1 || cFE===-1){ return; } // hoja sin estructura reconocible, se omite
+            if(cNo===-1 || cFE===-1){ return; } // hoja sin estructura reconocible, se omite
 
-        for(var r=1;r<json.length;r++){
-          var row = json[r];
-          if(!row || row[cNo]==null) continue;
-          var fe = _csExcelDateToISO(row[cFE]);
-          if(!fe) continue;
-          var fc = cFC>-1 ? _csExcelDateToISO(row[cFC]) : null;
-          if(!fc){
-            var d = new Date(fe); d.setDate(d.getDate()+1);
-            fc = d.toISOString().slice(0,10);
-          }
-          var diasTranscurridos = Math.round((new Date(hoy)-new Date(fe))/86400000);
-          var diasVencido = Math.round((new Date(hoy)-new Date(fc))/86400000);
-          var estatus = diasVencido>0 ? 'C' : 'V';
-          /* FIX RCA 29/07/2026: new Date(fe).getFullYear()/getMonth() interpretaba
-             el ISO string como medianoche UTC; los getters locales (huso GT/SV
-             UTC-6) retrocedian 6h, reclasificando toda carta del dia 1 de
-             cualquier mes al mes anterior. Se deriva anio/mes directo del
-             string ISO 'YYYY-MM-DD', sin pasar por objeto Date. */
-          var feYMD = fe.split('-');
-          var feAnio = parseInt(feYMD[0],10);
-          var feMes = parseInt(feYMD[1],10);
-          var liqIdx = idxOf(liquidadores, liqMap, cLiq>-1?row[cLiq]:null);
-          var pilotoIdx = idxOf(pilotos, pilMap, cPiloto>-1?row[cPiloto]:null);
-          var transporteIdx = idxOf(transportes, trMap, cTr>-1?row[cTr]:null);
-          var motAbr = cMotAbr>-1 ? row[cMotAbr] : null;
-          var motivoIdx = (motAbr==null || motAbr==='') ? -1 : idxOf(motivos, motMap, motAbr);
-          allRows.push([
-            row[cNo], liqIdx, fe, cRuta>-1?row[cRuta]:null, pilotoIdx,
-            cPlacas>-1?row[cPlacas]:null, transporteIdx, motivoIdx,
-            cMotTxt>-1?row[cMotTxt]:null, fc, estatus,
-            feAnio, feMes, diasTranscurridos, diasVencido, pais
-          ]);
+            for(var r=1;r<json.length;r++){
+              var row = json[r];
+              if(!row || row[cNo]==null) continue;
+              var fe = _csExcelDateToISO(row[cFE]);
+              if(!fe) continue;
+              var fc = cFC>-1 ? _csExcelDateToISO(row[cFC]) : null;
+              if(!fc){
+                var d = new Date(fe); d.setDate(d.getDate()+1);
+                fc = d.toISOString().slice(0,10);
+              }
+              var diasTranscurridos = Math.round((new Date(hoy)-new Date(fe))/86400000);
+              var diasVencido = Math.round((new Date(hoy)-new Date(fc))/86400000);
+              var estatus = diasVencido>0 ? 'C' : 'V';
+              /* FIX RCA 29/07/2026: anio/mes derivado directo del string ISO
+                 'YYYY-MM-DD' (evita bug de zona horaria de new Date().getMonth()). */
+              var feYMD = fe.split('-');
+              var feAnio = parseInt(feYMD[0],10);
+              var feMes = parseInt(feYMD[1],10);
+              var liqIdx = idxOf(liquidadores, liqMap, cLiq>-1?row[cLiq]:null);
+              var pilotoIdx = idxOf(pilotos, pilMap, cPiloto>-1?row[cPiloto]:null);
+              var transporteIdx = idxOf(transportes, trMap, cTr>-1?row[cTr]:null);
+              var motAbr = cMotAbr>-1 ? row[cMotAbr] : null;
+              var motivoIdx = (motAbr==null || motAbr==='') ? -1 : idxOf(motivos, motMap, motAbr);
+              allRows.push([
+                row[cNo], liqIdx, fe, cRuta>-1?row[cRuta]:null, pilotoIdx,
+                cPlacas>-1?row[cPlacas]:null, transporteIdx, motivoIdx,
+                cMotTxt>-1?row[cMotTxt]:null, fc, estatus,
+                feAnio, feMes, diasTranscurridos, diasVencido, pais
+              ]);
+              filasArchivo++;
+            }
+            sheetsProcessed.push(sn+' → '+pais);
+          });
+
+          resumenPorArchivo.push(file.name+' ('+(paisArchivo||sheetsProcessed.join('/')||'sin país detectado')+'): '+filasArchivo.toLocaleString()+' filas');
+          resolve();
+        }catch(err){
+          reject(new Error('Error al leer '+file.name+': '+err.message));
         }
-        sheetsProcessed.push(sn+' → '+pais);
-      });
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }
 
-      if(!allRows.length){ throw new Error('No se reconocieron filas válidas en ninguna hoja. Verifique encabezados.'); }
+  (async function(){
+    try{
+      for(var i=0;i<files.length;i++){
+        await leerArchivo(files[i]);
+      }
+      if(!allRows.length){ throw new Error('No se reconocieron filas válidas en ningún archivo. Verifique encabezados.'); }
 
       var newData = {
         cols: ['no','liqIdx','fechaEntrega','ruta','pilotoIdx','placas','transporteIdx','motivoIdx','motivoTxt','fechaCaducidad','estatus','anio','mes','diasTranscurridos','diasVencido','pais'],
@@ -1167,14 +1193,13 @@ function handleCSFile(event){
 
       _CS_PENDING = newData;
       statusEl.style.background='#dcfce7'; statusEl.style.color='#166534';
-      statusEl.textContent = '✅ Archivo leído: '+allRows.length.toLocaleString()+' registros ('+sheetsProcessed.join(', ')+'). Revise y presione "Publicar en GitHub".';
+      statusEl.textContent = '✅ '+allRows.length.toLocaleString()+' registros totales — '+resumenPorArchivo.join(' · ')+'. Revise y presione "Publicar en GitHub".';
       document.getElementById('cs-publish-btn').style.display='inline-block';
     }catch(err){
       statusEl.style.background='#fdecec'; statusEl.style.color='#dc2626';
       statusEl.textContent = 'Error al leer el archivo: '+err.message;
     }
-  };
-  reader.readAsArrayBuffer(file);
+  })();
 }
 
 /* PUBLICACIÓN SELF-SERVICE — vía Supabase Edge Function (migrado 29/07/2026, REGLA seguridad 20/07/2026).
