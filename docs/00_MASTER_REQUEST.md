@@ -46,6 +46,7 @@ SIEMPRE actualizar los docs en /docs al cerrar la sesión con cambios.
 | `regional/index.html` | v1.1 | `75b224bf87` | 36,605 b |
 | `peru/index.html` | v1.1 | `129c684510` | 47,814 b |
 | `honduras/index.html` | v1.0 | `c2014b3adf` | 41,524 b |
+| `cartas_salida.html` | — | `59a8cd0625e3` | 2,283,464 b |
 | `admin.html` | — | `2488055636` | 41,525 b |
 
 > ⚠️ Siempre obtener SHA fresco antes de un PUT:
