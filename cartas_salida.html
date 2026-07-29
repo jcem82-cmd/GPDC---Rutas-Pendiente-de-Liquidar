@@ -342,6 +342,35 @@ table.data-table tbody td.motivo-cell{white-space:normal;max-width:260px;min-wid
   <!-- /page-resumen -->
 
   <div class="page" id="page-analisis">
+  <!-- MOTIVO ESPECIFICO: CLIENTE NO PAGO (solicitado 29/07/2026) -->
+  <div class="section-title"><span>Motivo: Cliente No Pagó</span><span class="line"></span></div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+    <div class="kpi-card risk">
+      <div class="kpi-label">Cartas "Cliente No Pagó"</div>
+      <div class="kpi-value risk" id="cnp-kpi-total">0</div>
+      <div class="kpi-sub" id="cnp-kpi-sub">&nbsp;</div>
+    </div>
+  </div>
+  <div class="charts-grid">
+    <div class="card">
+      <h3>Tendencia mensual — Cliente No Pagó</h3>
+      <div class="card-sub">Cartas con este motivo por mes, sobre el filtro actual (país/año/estatus/liquidador/transporte/búsqueda — no aplica el filtro de Motivo)</div>
+      <div class="chart-box tall"><canvas id="chartCNP"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="table-toolbar" style="justify-content:space-between;">
+        <h3 style="margin:0;">Detalle de cartas "Cliente No Pagó"</h3>
+        <span id="cnp-count-label" style="font-size:12px;color:#5b6472;">0 cartas encontradas</span>
+      </div>
+      <div class="table-scroll" style="max-height:380px;overflow-y:auto;">
+        <table class="mini-table" id="tblCNP">
+          <thead><tr><th>No.</th><th>País</th><th>Liquidador</th><th>Fecha Entrega</th><th>Fecha Caducidad</th><th>Ruta</th><th>Piloto</th><th>Placas</th><th>Transporte</th><th>Estatus</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- CHARTS ROW 2 -->
   <div class="section-title"><span>Rankings operativos</span><span class="line"></span></div>
   <div class="charts-grid-3">
@@ -666,6 +695,7 @@ const DATA = {"cols":["no","liqIdx","fechaEntrega","ruta","pilotoIdx","placas","
     renderAging(filtered);
     renderRutasRepetidas(filtered);
     renderLiquidadores(filtered);
+    renderClienteNoPago();
     setTableData(filtered);
   }
 
@@ -864,6 +894,93 @@ const DATA = {"cols":["no","liqIdx","fechaEntrega","ruta","pilotoIdx","placas","
     const chev = toggle.querySelector('.chev');
     if(chev) chev.textContent = isHidden ? '▾' : '▸';
   });
+
+  /* ── Motivo específico: Cliente No Pagó (solicitado 29/07/2026) ──
+     Filtro independiente: respeta país/año/mes/estatus/liquidador/
+     transporte/búsqueda del estado global, pero IGNORA el filtro de
+     Motivo — siempre muestra este motivo específico sin importar qué
+     esté seleccionado en el dropdown "Motivo abreviado". */
+  var _CNP_TXT = 'Cliente No Pagó';
+  var chartCNP;
+  function matchesFiltersCNP(r){
+    if(state.pais!=='all'){
+      if(Array.isArray(state.pais)){ if(state.pais.length && state.pais.indexOf(rowGet(r,'pais'))===-1) return false; }
+      else if(rowGet(r,'pais')!==state.pais) return false;
+    }
+    if(state.anio!=='all' && String(rowGet(r,'anio'))!==state.anio) return false;
+    if(state.mes!=='all' && String(rowGet(r,'mes'))!==state.mes) return false;
+    if(state.estatus!=='all' && rowGet(r,'estatus')!==state.estatus) return false;
+    if(state.liquidador!=='all' && String(rowGet(r,'liqIdx'))!==state.liquidador) return false;
+    if(state.transporte!=='all' && String(rowGet(r,'transporteIdx'))!==state.transporte) return false;
+    if(state.search){
+      const s = state.search;
+      const piloto = (meta.pilotos[rowGet(r,'pilotoIdx')]||'').toLowerCase();
+      const ruta = String(rowGet(r,'ruta')||'').toLowerCase();
+      const placas = (rowGet(r,'placas')||'').toLowerCase();
+      const transporte = (meta.transportes[rowGet(r,'transporteIdx')]||'').toLowerCase();
+      const liq = (meta.liquidadores[rowGet(r,'liqIdx')]||'').toLowerCase();
+      if(!(piloto.includes(s)||ruta.includes(s)||placas.includes(s)||transporte.includes(s)||liq.includes(s))) return false;
+    }
+    return true;
+  }
+
+  function renderClienteNoPago(){
+    const cnpIdx = meta.motivos.indexOf(_CNP_TXT);
+    const baseFiltered = rawRows.filter(matchesFiltersCNP);
+    const cnpRows = cnpIdx===-1 ? [] : baseFiltered.filter(r=>rowGet(r,'motivoIdx')===cnpIdx);
+    const total = cnpRows.length;
+    const totalBase = baseFiltered.length;
+
+    document.getElementById('cnp-kpi-total').textContent = fmtInt(total);
+    document.getElementById('cnp-kpi-sub').textContent = totalBase? fmtPct(total/totalBase)+' del total filtrado (país/año/etc.)':'—';
+
+    const map = {};
+    for(const r of cnpRows){
+      const a = rowGet(r,'anio'), m = rowGet(r,'mes');
+      if(a==null||m==null) continue;
+      const key = a+'-'+String(m).padStart(2,'0');
+      map[key] = (map[key]||0)+1;
+    }
+    const keys = Object.keys(map).sort();
+    const labels = keys.map(k=>{ const parts=k.split('-'); return MESES[parseInt(parts[1],10)]+' '+parts[0]; });
+    const values = keys.map(k=>map[k]);
+
+    if(chartCNP) chartCNP.destroy();
+    chartCNP = new Chart(document.getElementById('chartCNP'), {
+      type:'bar',
+      data:{ labels, datasets:[{label:'Cliente No Pagó', data:values, backgroundColor:COLORS.red, borderRadius:6, maxBarThickness:28}] },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{ x:{grid:{display:false}, ticks:{font:{size:9}, maxRotation:70, minRotation:50}}, y:{beginAtZero:true, ticks:{precision:0}, grid:{color:'#f0f2f5'}} }
+      }
+    });
+
+    const sorted = cnpRows.slice().sort((a,b)=> String(rowGet(b,'fechaEntrega')||'').localeCompare(String(rowGet(a,'fechaEntrega')||'')));
+    const tbody = document.querySelector('#tblCNP tbody');
+    tbody.innerHTML = sorted.map(r=>{
+      const liq = meta.liquidadores[rowGet(r,'liqIdx')] || '—';
+      const piloto = meta.pilotos[rowGet(r,'pilotoIdx')] || '—';
+      const transporte = meta.transportes[rowGet(r,'transporteIdx')] || '—';
+      const estatus = rowGet(r,'estatus');
+      const statusClass = estatus==='C'? 'status-mora':'status-solvente';
+      const statusText = estatus==='C'? 'CADUCADA':'VIGENTE';
+      return `<tr>
+        <td>${rowGet(r,'no')}</td>
+        <td>${escapeHtml(rowGet(r,'pais')||'—')}</td>
+        <td>${escapeHtml(liq)}</td>
+        <td>${fmtDateEs(rowGet(r,'fechaEntrega'))}</td>
+        <td>${fmtDateEs(rowGet(r,'fechaCaducidad'))}</td>
+        <td>${escapeHtml(String(rowGet(r,'ruta')||'—'))}</td>
+        <td>${escapeHtml(piloto)}</td>
+        <td>${escapeHtml(String(rowGet(r,'placas')||'—'))}</td>
+        <td>${escapeHtml(transporte)}</td>
+        <td><span class="status-chip ${statusClass}">${statusText}</span></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="10" style="color:#9aa3b2;text-align:center;padding:16px;">Sin cartas "Cliente No Pagó" en el filtro actual</td></tr>';
+
+    document.getElementById('cnp-count-label').textContent = fmtInt(total) + ' cartas encontradas';
+  }
 
   function renderLiquidadores(rows){
     const map = {};
