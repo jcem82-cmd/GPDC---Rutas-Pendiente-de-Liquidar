@@ -772,11 +772,11 @@ var PDC_DASHBOARDS = [
     categoria: 'Operativo · Liquidaciones',
     paises: { GT:'🇬🇹 Guatemala', ESV:'🇸🇻 El Salvador', PE:'🇵🇪 Perú' },
     kpis: [
-      { val:'19,118', lbl:'Cartas totales' },
+      { val:'20,046', lbl:'Cartas totales' },
       { val:'3',   lbl:'Países' },
-      { val:'19,102',   lbl:'Caducadas' }
+      { val:'20,035',   lbl:'Caducadas' }
     ],
-    actualizacion: '22 jul 2026',
+    actualizacion: '31 jul 2026',
     activo: true
   }
 ];
@@ -1210,6 +1210,37 @@ function pdcRenewSession(){
     })
     .catch(function (err) {
       console.warn('cash_summary.json: no se pudo sincronizar, se muestra valor de referencia.', err);
+    });
+
+  /* ── Cartas de Salida — sincronización vía cartas_summary.json ──
+     Mismo patrón que Cash Today: archivo liviano (~200 bytes) generado por
+     cartas_salida.html en cada publicación. Evita descargar los ~2.4MB del
+     dashboard completo en cada visita al Portal. Si falla, se conservan los
+     valores de referencia del array DASHBOARDS (fallback silencioso). */
+  fetch('cartas_summary.json?_=' + Date.now())
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (cts) {
+      var cardEl = grid.querySelector('.dash-card[data-dash-id="cartas_salida"]');
+      if (!cardEl) return;
+      var valEls = cardEl.querySelectorAll('.ckpi-val');
+      if (valEls[0] && cts.total != null) valEls[0].textContent = cts.total.toLocaleString('es-GT');
+      if (valEls[1] && cts.paises != null) valEls[1].textContent = cts.paises;
+      if (valEls[2] && cts.caducadas != null) valEls[2].textContent = cts.caducadas.toLocaleString('es-GT');
+      if (cts.report_date) {
+        var updEl = cardEl.querySelector('.card-update');
+        if (updEl) {
+          var _p = String(cts.report_date).split('-');
+          var _lbl = cts.report_date;
+          if (_p.length === 3) {
+            var _MES = ['','ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+            _lbl = parseInt(_p[2],10) + ' ' + (_MES[parseInt(_p[1],10)] || '') + ' ' + _p[0];
+          }
+          updEl.innerHTML = '🕐 Actualizado ' + _lbl;
+        }
+      }
+    })
+    .catch(function (err) {
+      console.warn('cartas_summary.json: no se pudo sincronizar, se muestra valor de referencia.', err);
     });
 
   /* Panel por rol: admin ve todo · supervisor solo chat · consulta solo chat */
