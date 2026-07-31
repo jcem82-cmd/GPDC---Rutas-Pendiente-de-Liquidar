@@ -924,10 +924,23 @@ const DATA = {"cols":["no","liqIdx","fechaEntrega","ruta","pilotoIdx","placas","
     return true;
   }
 
+  /* FIX RCA 31/07/2026: comparacion exacta de texto excluia variantes de
+     capitalizacion distintas entre paises (PE: 'Cliente No Pagó' vs
+     GT: 'Cliente no Pagó' - diferian solo en la 'n' de "no"). Se normaliza
+     el matching (minusculas + sin acentos) para capturar cualquier
+     variante de escritura del mismo motivo, presente o futura. */
+  function _csNormalize(s){
+    return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  }
+  const _CNP_TARGET_NORM = _csNormalize(_CNP_TXT);
+
   function renderClienteNoPago(){
-    const cnpIdx = meta.motivos.indexOf(_CNP_TXT);
+    const cnpIndices = meta.motivos
+      .map((m,i)=>({m,i}))
+      .filter(o=>_csNormalize(o.m)===_CNP_TARGET_NORM)
+      .map(o=>o.i);
     const baseFiltered = rawRows.filter(matchesFiltersCNP);
-    const cnpRows = cnpIdx===-1 ? [] : baseFiltered.filter(r=>rowGet(r,'motivoIdx')===cnpIdx);
+    const cnpRows = cnpIndices.length ? baseFiltered.filter(r=>cnpIndices.indexOf(rowGet(r,'motivoIdx'))>-1) : [];
     const total = cnpRows.length;
     const totalBase = baseFiltered.length;
 
