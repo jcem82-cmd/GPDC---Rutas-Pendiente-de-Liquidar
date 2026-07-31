@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.4 | **Última actualización:** 29/07/2026 | **Estado:** Producción ✅
+**Versión vigente:** v2.5 | **Última actualización:** 31/07/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -338,7 +338,30 @@ KPI + tendencia mensual + tabla de detalle en tab Análisis, con filtro que igno
 
 ---
 
-## 15. Instrucciones para nuevo chat
+## 15. Sesión 31/07/2026 — Cartas de Salida: parseo, trazabilidad y sincronización del Hub
+
+### 15.1 Matching de motivo normalizado (no depender de capitalización)
+Los países escriben el mismo motivo con capitalización distinta (`'Cliente No Pagó'` en PE vs `'Cliente no Pagó'` en GT). El match por texto exacto excluía 60 registros de GT en silencio. Se agregó `_csNormalize()` (minúsculas + `NFD` sin diacríticos) y el módulo agrupa **todos** los índices de `meta.motivos` que normalicen igual. **Regla general:** nunca comparar categorías capturadas manualmente por igualdad exacta de texto entre países.
+
+### 15.2 `_csFindCol()` — coincidencia exacta debe ganar sobre parcial (bug estructural de parseo)
+La función mezclaba en una sola pasada la comparación exacta y la parcial (`indexOf`). Con la columna `MOTIVO ABREVIADO` situada antes de `MOTIVO` en el Excel, buscar `MOTIVO` matcheaba la primera por substring y **nunca alcanzaba la columna real**. Consecuencia: `motivoTxt` duplicó el motivo abreviado en todas las publicaciones históricas — el texto narrativo del capturista jamás se cargó al dataset.
+Corregido con dos pasadas: exacta primero sobre todos los encabezados, parcial solo como respaldo. **Aplica a cualquier par candidato-corto / columna-más-específica**, no solo a MOTIVO — revisar este patrón antes de agregar nuevos candidatos de columna.
+
+### 15.3 Columna "Detalle" — decisión deliberada de no extraer campos por regex
+El requerimiento original pedía Cliente / Factura / Responsable / Autorizó en columnas separadas. El análisis de casos reales mostró narrativa libre sin formato consistente entre GT y PE (nombres en roles variables, facturas presentes solo en parte de los casos). Se descartó la extracción forzada: habría producido celdas incompletas o mal atribuidas con apariencia de certeza. Se optó por una columna única con el texto íntegro (`----` cuando no hay detalle). **Principio aplicable a futuro:** ante texto sin estructura garantizada, preferir mostrar el dato crudo completo sobre inferir campos.
+
+### 15.4 `cartas_summary.json` — tercera tarjeta del Hub sincronizada en vivo
+Los KPIs de la tarjeta "Cartas de Salida" estaban escritos a mano en el array `DASHBOARDS` de `analytics.html` y quedaban congelados tras cada publicación. Se replicó el patrón `cash_summary.json`: `cartas_salida.html` genera un JSON liviano (~200 bytes) tras cada publish (aislado en `try/catch`, no bloqueante) y `analytics.html` lo consume con fallback silencioso.
+**Estado resultante:** las 3 tarjetas principales del Portal (Rutas vía PDCBridge, Cash Today y Cartas de Salida vía sus respectivos JSON) están sincronizadas en vivo. Ninguna depende ya de valores manuales.
+
+### 15.5 Edge Function `github-publish` — allowlist actual
+`['cash_today.html', 'cash_summary.json', 'cartas_salida.html', 'cartas_summary.json']`. Cualquier archivo nuevo que deba escribirse desde el navegador requiere agregarse aquí (acción manual de Charly en el Dashboard de Supabase — Claude no tiene acceso a Edge Functions vía API).
+
+**Archivos modificados:** `cartas_salida.html`, `analytics.html`. Nuevo artefacto generado por la aplicación: `cartas_summary.json`.
+
+---
+
+## 16. Instrucciones para nuevo chat
 
 1. **Pegar este documento** al inicio del chat
 2. **Tokens:** NO asumir que un token de una sesión anterior sigue vigente — han rotado varias veces por revocación de GitHub. Verificar contra la API antes de usar; si da 401, pedir uno nuevo.
@@ -349,4 +372,4 @@ KPI + tendencia mensual + tabla de detalle en tab Análisis, con filtro que igno
 7. **Cash Today: publicación = reemplazo total.** No reintroducir lógica de merge/deduplicación.
 
 ---
-*PDC Analytics Center · Grupo PDC · Departamento Financiero · v2.4 · 29/07/2026*
+*PDC Analytics Center · Grupo PDC · Departamento Financiero · v2.5 · 31/07/2026*
