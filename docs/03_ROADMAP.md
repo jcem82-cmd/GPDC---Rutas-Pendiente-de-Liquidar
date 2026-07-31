@@ -1,8 +1,8 @@
 # 03 — ROADMAP
 ## PDC Analytics Center · Plan de Evolución
 
-**Estado actual: v2.14 ESTABLE** · Próxima versión objetivo: v2.15
-**Última actualización:** 29/07/2026 (sesión Cartas de Salida — ver sección correspondiente)
+**Estado actual: v2.15 ESTABLE** · Próxima versión objetivo: v2.16
+**Última actualización:** 31/07/2026 (sesión Cartas de Salida — ver sección correspondiente)
 
 ---
 
@@ -47,6 +47,17 @@
 - [x] **Alertas semáforo en Resumen** — `renderAlertasPresupuesto()` 85%/70% ya funcional dentro de `renderResumen`
 - [x] **Export PDF Cash Today** — `exportarPDF_CT()` implementado · botón en header · visible solo en Resumen (admin)
 - [x] **TC histórico 2024** — `_TC_MENSUAL` 25 meses Ene 2024 → Jun 2026 · aplicado por transacción vía `usd(r)`
+
+---
+
+## ✅ Sesión 31/07/2026 — Cartas de Salida: parseo, trazabilidad y sincronización del Hub
+
+- [x] Fix matching de motivo insensible a mayúsculas/acentos (60 registros GT que se excluían silenciosamente)
+- [x] **Fix crítico de parseo:** `_csFindCol()` leía la columna equivocada por colisión de substring (`MOTIVO` capturaba `MOTIVO ABREVIADO`) — el detalle narrativo del capturista nunca se había cargado al dataset
+- [x] Columna "Detalle" en tabla Cliente No Pagó (texto completo de MOTIVO; `----` si no hay detalle)
+- [x] `cartas_summary.json` + sincronización en vivo de la tarjeta del Hub — elimina el desfase permanente de KPIs/fecha en `analytics.html`
+
+**Nota de deuda técnica resuelta:** las 3 tarjetas principales del Portal (Rutas, Cash Today, Cartas de Salida) quedan ahora sincronizadas en vivo. Ninguna depende ya de valores escritos a mano.
 
 ---
 
@@ -119,4 +130,4 @@ repo/
 
 ---
 
-*PDC Analytics Center · v2.14 · 29 Jul 2026*
+*PDC Analytics Center · v2.15 · 31 Jul 2026*
