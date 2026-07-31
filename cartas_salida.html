@@ -162,6 +162,7 @@ table.data-table thead th .arrow{opacity:.6;margin-left:3px;}
 table.data-table tbody td{padding:8px 10px;border-bottom:1px solid var(--gray-100);white-space:nowrap;}
 table.data-table tbody tr:hover td{background:var(--blue-light);}
 table.data-table tbody td.motivo-cell{white-space:normal;max-width:260px;min-width:180px;}
+.cnp-detalle-cell{white-space:normal;max-width:340px;min-width:220px;color:var(--gray-600);font-size:12px;}
 .status-chip{padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;}
 .status-mora{background:var(--red-light);color:var(--red);}
 .status-solvente{background:var(--green-light);color:var(--green);}
@@ -364,7 +365,7 @@ table.data-table tbody td.motivo-cell{white-space:normal;max-width:260px;min-wid
       </div>
       <div class="table-scroll" style="max-height:380px;overflow-y:auto;">
         <table class="mini-table" id="tblCNP">
-          <thead><tr><th>No.</th><th>País</th><th>Liquidador</th><th>Fecha Entrega</th><th>Fecha Caducidad</th><th>Ruta</th><th>Piloto</th><th>Placas</th><th>Transporte</th><th>Estatus</th></tr></thead>
+          <thead><tr><th>No.</th><th>País</th><th>Liquidador</th><th>Fecha Entrega</th><th>Fecha Caducidad</th><th>Ruta</th><th>Piloto</th><th>Placas</th><th>Transporte</th><th>Estatus</th><th>Detalle</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -978,6 +979,14 @@ const DATA = {"cols":["no","liqIdx","fechaEntrega","ruta","pilotoIdx","placas","
       const estatus = rowGet(r,'estatus');
       const statusClass = estatus==='C'? 'status-mora':'status-solvente';
       const statusText = estatus==='C'? 'CADUCADA':'VIGENTE';
+      /* Detalle: el texto libre de MOTIVO solo aporta informacion cuando
+         difiere del motivo abreviado (categoria). Si el capturista no
+         escribio nada adicional, MOTIVO repite la categoria -- en ese
+         caso se muestra '----' en vez de duplicar el dato. */
+      const motivoAbrLabel = meta.motivos[rowGet(r,'motivoIdx')] || '';
+      const motivoLibre = rowGet(r,'motivoTxt') || '';
+      const detalle = (motivoLibre && _csNormalize(motivoLibre)!==_csNormalize(motivoAbrLabel))
+        ? motivoLibre : '----';
       return `<tr>
         <td>${rowGet(r,'no')}</td>
         <td>${escapeHtml(rowGet(r,'pais')||'—')}</td>
@@ -989,11 +998,13 @@ const DATA = {"cols":["no","liqIdx","fechaEntrega","ruta","pilotoIdx","placas","
         <td>${escapeHtml(String(rowGet(r,'placas')||'—'))}</td>
         <td>${escapeHtml(transporte)}</td>
         <td><span class="status-chip ${statusClass}">${statusText}</span></td>
+        <td class="cnp-detalle-cell">${escapeHtml(detalle)}</td>
       </tr>`;
-    }).join('') || '<tr><td colspan="10" style="color:#9aa3b2;text-align:center;padding:16px;">Sin cartas "Cliente No Pagó" en el filtro actual</td></tr>';
+    }).join('') || '<tr><td colspan="11" style="color:#9aa3b2;text-align:center;padding:16px;">Sin cartas "Cliente No Pagó" en el filtro actual</td></tr>';
 
     document.getElementById('cnp-count-label').textContent = fmtInt(total) + ' cartas encontradas';
   }
+
 
   function renderLiquidadores(rows){
     const map = {};
