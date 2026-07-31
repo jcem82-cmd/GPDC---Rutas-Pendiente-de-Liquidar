@@ -1,4 +1,84 @@
 
+## [31/07/2026] — Cartas de Salida: 2 correcciones de parseo + trazabilidad de motivo + sincronización del Hub
+
+
+### 1. Corrección de errores — 60 registros de GT excluidos silenciosamente del módulo "Cliente No Pagó"
+
+**Síntoma reportado:** Charly observó que el módulo mostraba solo casos de Perú, pese a que Guatemala también tiene cartas con ese motivo.
+
+**RCA:** el matching usaba comparación exacta de texto contra la constante `'Cliente No Pagó'`. Los países escriben el motivo con capitalización distinta:
+- PE → `'Cliente No Pagó'` (107 registros) — único capturado
+- GT → `'Cliente no Pagó'` (60 registros, "no" en minúscula) — **excluido silenciosamente**
+
+**Corrección:** helper `_csNormalize()` (minúsculas + `NFD` sin diacríticos) y matching contra **todos** los índices de `meta.motivos` que normalicen igual. Captura automáticamente cualquier variante de escritura presente o futura, sin requerir mantenimiento de una lista de variantes.
+
+**Resultado:** 167 registros (PE 107 + GT 60) en KPI, tendencia y tabla.
+
+---
+
+### 2. Corrección de errores (CRÍTICA) — `_csFindCol()` leía la columna equivocada por colisión de substring
+
+**Síntoma reportado:** tras agregar la columna "Detalle", esta mostraba `----` en el 100% de las filas, aunque el Excel sí tenía texto descriptivo en la columna MOTIVO.
+
+**RCA:** `_csFindCol(headers, candidates)` recorría los encabezados en orden y aceptaba coincidencia parcial (`h.indexOf(candidato)>-1`) en la misma pasada que la exacta. Como en el Excel la columna **"MOTIVO ABREVIADO"** (col. H) aparece **antes** que **"MOTIVO"** (col. I), y `"MOTIVO ABREVIADO".indexOf("MOTIVO") === 0`, la búsqueda de `MOTIVO` se detenía en la columna equivocada y **nunca alcanzaba la columna real de texto libre**.
+
+**Impacto real (más amplio que el síntoma):** `motivoTxt` venía duplicando el motivo abreviado desde el origen — el detalle narrativo del capturista (compromisos de pago, nombres, facturas, quién autorizó) **nunca se estuvo cargando** al dataset, en ninguna publicación previa. No era un problema de visualización sino de parseo.
+
+**Corrección:** `_csFindCol()` dividido en dos pasadas — **coincidencia exacta siempre gana sobre coincidencia parcial**, sin importar el orden de las columnas en el Excel. Elimina la clase completa de bug (aplicaba a cualquier par candidato-corto / columna-más-específica, no solo a MOTIVO).
+
+**Nota operativa:** el fix corrige el parseo, no los datos ya publicados — requirió que Charly republicara los 3 Excel. Validado post-republicación: los 167 registros tienen ahora su detalle real (ej. *"ENTREGA AUTORIZADA POR COMERCIAL, CLIENTE NO EFECTUO EL PAGO"*).
+
+---
+
+### 3. Nueva funcionalidad — Columna "Detalle" en la tabla "Cliente No Pagó"
+
+**Solicitado:** visibilidad de cliente, factura, responsable de seguimiento y quien autorizó.
+
+**Hallazgo tras analizar ejemplos reales de ambos países:** esos datos **no están en columnas separadas** ni siguen un formato estructurado — son narrativa libre dentro de la columna MOTIVO, con patrones muy distintos entre GT y PE:
+- GT: nombres en roles variables sin etiqueta (*"EMILIO GUILLEN SE COMPROMETE A ENVIAR..."*, *"VENDEDOR WILMAR IXCAQUIC..."*, *"PETUEL GUZMAN COBRARA..."*) — a veces cobrador, a veces vendedor, a veces responsable de seguimiento
+- PE: patrón más consistente al cierre (*"...APROBADO POR JOSE QUILO"*)
+- Facturas: número explícito solo en una fracción de los casos
+
+**Decisión confirmada con Charly:** se **descartó** la extracción vía regex a 4 columnas separadas. Forzar la separación sobre texto sin formato consistente habría producido celdas incompletas o con el dato mal ubicado, con apariencia de certeza — contrario al principio de trazabilidad del proyecto.
+
+**Implementado:** una única columna **Detalle** con el texto completo de MOTIVO, mostrado solo cuando difiere del motivo abreviado (detalle real escrito); `----` cuando el capturista no agregó nada. Estilo `.cnp-detalle-cell` (wrap controlado, `max-width:340px`) para preservar el layout ejecutivo de la tabla.
+
+---
+
+### 4. Nueva funcionalidad — Sincronización en vivo de la tarjeta del Hub (`cartas_summary.json`)
+
+**Síntoma reportado:** la tarjeta "Cartas de Salida" en `analytics.html` seguía mostrando *"Actualizado 22 jul 2026"* y 19,118 cartas, sin importar cuántas veces se republicara el dashboard.
+
+**RCA:** a diferencia de las tarjetas de Rutas (PDCBridge) y Cash Today (`cash_summary.json`), los KPIs y la fecha de esta tarjeta estaban **escritos a mano** en el array `DASHBOARDS` — congelados desde su última edición manual.
+
+**Corrección estructural (Opción B, elegida por Charly sobre la actualización manual puntual):**
+- `cartas_salida.html`: tras cada publicación exitosa genera y publica `cartas_summary.json` (~200 bytes: `report_date`, `total`, `paises`, `caducadas`) vía el mismo Edge Function. Aislado en `try/catch` propio — **no bloqueante**: si falla, el dataset principal ya quedó publicado.
+- `analytics.html`: `fetch('cartas_summary.json')` al cargar el Portal actualiza los 3 KPIs y la fecha. Fallback silencioso a los valores del array si el JSON no existe.
+- Se evita descargar los ~2.4MB del dashboard en cada visita al Portal — mismo criterio de rendimiento que motivó `cash_summary.json`.
+
+**Acción de Charly:** agregó `'cartas_summary.json'` al `ALLOWED_PATHS` del Edge Function `github-publish` (allowlist ahora con 4 rutas).
+
+**Validado:** archivo creado correctamente en la publicación de prueba — `{"report_date":"2026-07-31","total":20046,"paises":3,"caducadas":20035}`, JSON válido.
+
+---
+
+### Validación de la sesión
+
+- `node --check` en todos los bloques `<script>` inline antes de cada deploy → OK.
+- `assert count==1` en cada `str.replace()` quirúrgico.
+- SHA fresco inmediato antes de cada PUT; deploys de `cartas_salida.html`/`analytics.html` espaciados 38s (concurrencia de Actions).
+- Verificación post-deploy vía Git Blob API; validación de `cartas_summary.json` con `json.loads()` estricto.
+
+### Archivos modificados
+
+`cartas_salida.html` · `analytics.html` · nuevo: `cartas_summary.json` (generado por la aplicación)
+
+### Commits
+
+`0eba17368520` (normalización de motivo) · `14dc93013abe` (columna Detalle) · `f212010b7d9d` (fix `_csFindCol`) · `5c1a6daf7bb1` (generación de summary) · `d04e430baea4` (sincronización en `analytics.html`)
+
+---
+
 ## [29/07/2026] — Cartas de Salida: migración de seguridad + 2 correcciones + nueva funcionalidad
 
 
