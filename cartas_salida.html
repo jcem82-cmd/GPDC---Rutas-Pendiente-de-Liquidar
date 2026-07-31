@@ -1207,10 +1207,21 @@ function _csExcelDateToISO(v){
 }
 
 function _csFindCol(headers, candidates){
+  /* FIX RCA 31/07/2026: coincidencia exacta debe ganar siempre sobre
+     coincidencia parcial, sin importar el orden de las columnas. Antes,
+     buscar 'MOTIVO' encontraba 'MOTIVO ABREVIADO' por substring si esa
+     columna aparecia primero en el Excel -- nunca llegaba a la columna
+     real 'MOTIVO' (texto libre), que quedaba huerfana. Mismo riesgo
+     aplica a cualquier par candidato-corto/columna-mas-especifica. */
+  var up = candidates.map(function(c){ return c.toUpperCase(); });
   for(var i=0;i<headers.length;i++){
     var h = (headers[i]||'').toString().trim().toUpperCase();
-    for(var j=0;j<candidates.length;j++){
-      if(h===candidates[j].toUpperCase() || h.indexOf(candidates[j].toUpperCase())>-1) return i;
+    if(up.indexOf(h)>-1) return i;
+  }
+  for(var i=0;i<headers.length;i++){
+    var h = (headers[i]||'').toString().trim().toUpperCase();
+    for(var j=0;j<up.length;j++){
+      if(h.indexOf(up[j])>-1) return i;
     }
   }
   return -1;
