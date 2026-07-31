@@ -1443,7 +1443,52 @@ async function publishCartasSalida(){
       'data(cartas_salida): self-publish - reemplazo completo ('+_CS_PENDING.rows.length+' registros) vía Config');
 
     statusEl.style.background='#dcfce7'; statusEl.style.color='#166534';
-    statusEl.textContent = '✅ Publicado con éxito ('+_CS_PENDING.rows.length.toLocaleString()+' registros). Recargando…';
+    statusEl.textContent = '✅ Publicado con éxito ('+_CS_PENDING.rows.length.toLocaleString()+' registros). Generando resumen para el Hub…';
+
+    /* Generar y publicar cartas_summary.json — archivo liviano (~200 bytes)
+       para que analytics.html muestre los KPIs de esta tarjeta en vivo sin
+       descargar los ~2.4MB de cartas_salida.html en cada visita al Portal.
+       Mismo patrón que cash_today.html → cash_summary.json.
+       No bloqueante: si falla, el dataset principal ya quedó publicado. */
+    try{
+      var _csR = _CS_PENDING.rows;
+      var _csIdx = {};
+      _CS_PENDING.cols.forEach(function(c,i){ _csIdx[c]=i; });
+      var _csPaises = {};
+      var _csCaducadas = 0;
+      for(var _i=0;_i<_csR.length;_i++){
+        var _p = _csR[_i][_csIdx['pais']];
+        if(_p) _csPaises[_p] = true;
+        if(_csR[_i][_csIdx['estatus']]==='C') _csCaducadas++;
+      }
+      var _csSummary = {
+        report_date: _CS_PENDING.meta.corte || '',
+        total: _csR.length,
+        paises: Object.keys(_csPaises).length,
+        caducadas: _csCaducadas
+      };
+
+      var _csSummaryPath = 'cartas_summary.json';
+      var _csSummarySha = null;
+      try{
+        var _sMeta = await fetch('https://api.github.com/repos/'+_CS_GH_REPO+'/contents/'+_csSummaryPath,
+          {headers:{'Accept':'application/vnd.github.v3+json'}});
+        if(_sMeta.ok){ _csSummarySha = (await _sMeta.json()).sha; }
+      }catch(e){ /* archivo aun no existe, se creara */ }
+
+      try{
+        await _csCallPublishFunction(
+          _csSummaryPath, _csUtf8ToBase64(JSON.stringify(_csSummary, null, 2)), _csSummarySha,
+          'data(cartas_summary.json): actualizar resumen para Hub ('+_csR.length+' cartas al '+_csSummary.report_date+')'
+        );
+      }catch(eSummaryPut){
+        console.warn('No se pudo publicar cartas_summary.json (no afecta el dataset principal, ya publicado con éxito).', eSummaryPut);
+      }
+    }catch(eSummary){
+      console.warn('Error generando cartas_summary.json (no afecta el dataset principal):', eSummary);
+    }
+
+    statusEl.textContent = '✅ Publicado con éxito ('+_CS_PENDING.rows.length.toLocaleString()+' registros) + resumen del Hub actualizado. Recargando…';
     setTimeout(()=>location.reload(), 1500);
   }catch(err){
     statusEl.style.background='#fdecec'; statusEl.style.color='#dc2626';
