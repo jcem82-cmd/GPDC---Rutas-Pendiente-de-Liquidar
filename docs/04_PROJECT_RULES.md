@@ -1,6 +1,6 @@
 # 04 — PROJECT RULES
 ## PDC Analytics Center · Reglas Permanentes (NO NEGOCIABLES)
-**PDC Analytics Center · Grupo PDC · v1.4 · 21/06/2026**
+**PDC Analytics Center · Grupo PDC · v1.5 · 05/08/2026**
 
 ---
 
@@ -216,3 +216,39 @@ El balance de llaves `{`/`}` NO detecta: comas mal ubicadas, tokens huérfanos, 
 3. Solo desplegar si no hay errores
 4. Espaciar deploys consecutivos (evitar condición de carrera en workflow de GitHub Pages)
 
+---
+
+## REGLA 14 — `node --check` OBLIGATORIO ANTES DE CADA DEPLOY
+
+El conteo de llaves (REGLA 2.1) **no es suficiente**: no detecta errores de sintaxis reales.
+
+Patrón obligatorio: extraer todos los bloques `<script>` no vacíos y sin `src=` con regex Python → escribir cada uno a `.js` → `node --check` sobre **todos**, no solo los modificados.
+
+Aplica igualmente a bloques JSON embebidos: validar con `json.loads()` estricto tras cada modificación.
+
+---
+
+## REGLA 15 — TODO `const` EMBEBIDO QUE ALIMENTE LÓGICA DE NEGOCIO DEBE PERSISTIRSE
+
+**Origen (05/08/2026):** `dlHTML()` regrababa `_M` (metas), pero el flujo de publicación self-service vía Edge Function solo persistía `_R`, `_TC_MENSUAL` y `_COSTOS`. Las metas embebidas quedaron congeladas y divergieron silenciosamente del Excel durante meses (`excv` 1.0 vs 0.35; cupo AMATITLÁN 9MM vs 8MM).
+
+Mientras `metas` solo alimentaba semáforos el impacto era cosmético. Al construirse encima un **motor de facturación**, la misma divergencia producía cobros errados (×2.86 en el excedente de PDC Comercial).
+
+### Reglas derivadas
+
+1. **Persistir siempre.** Bloques persistidos hoy: `_R`, `_M`, `_IMP`, `_TC_MENSUAL`, `_COSTOS`. Todo bloque nuevo que alimente cálculo se suma a la lista.
+2. **No persistir lo que se puede calcular.** `_FACTURACION_MENSUAL` **no** se persiste: se computa en runtime desde `RECS` + `METAS`. Una sola fuente de verdad, cero riesgo de divergencia.
+3. **Un fix de persistencia NO repara los datos ya embebidos.** Solo evita divergencias futuras. Al corregir la persistencia de un bloque, hay que **regrabar el bloque en el mismo despliegue**, o el síntoma sobrevive y el usuario reporta el bug como no resuelto.
+4. **Paridad `dlHTML()` ↔ publicación.** Ambos flujos deben persistir exactamente el mismo conjunto de bloques. Cualquier asimetría es un bug latente.
+
+---
+
+## REGLA 16 — SUBTOTALES LIGADOS, NUNCA RECALCULADOS EN LA VISTA
+
+Si un subtotal ya existe en la estructura de datos, la vista **lo consume**; no lo recalcula iterando un subconjunto.
+
+**Origen (05/08/2026):** el desglose de Tesorería iteraba solo `esv.piezas` y mostraba $162.8910, mientras el resumen mostraba $170.1927. El cálculo era correcto; la vista construía su propio subtotal a partir de un subconjunto incompleto.
+
+Regla: `Subtotal tesorería` → `esv.resumen.tesoreria.valor`. Un descuadre entre desglose y resumen es estructuralmente imposible cuando ambos leen el mismo campo.
+
+---
