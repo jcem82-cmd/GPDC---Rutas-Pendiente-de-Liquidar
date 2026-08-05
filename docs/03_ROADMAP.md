@@ -1,8 +1,38 @@
 # 03 — ROADMAP
 ## PDC Analytics Center · Plan de Evolución
 
-**Estado actual: v2.15 ESTABLE** · Próxima versión objetivo: v2.16
-**Última actualización:** 31/07/2026 (sesión Cartas de Salida — ver sección correspondiente)
+**Estado actual: v2.16 ESTABLE** · Próxima versión objetivo: v2.17
+**Última actualización:** 05/08/2026 (sesión Facturación Mensual — motor de cálculo propio)
+
+---
+
+---
+
+## ✅ FASE 8 — Facturación Mensual (COMPLETADA · v2.16 · 05/08/2026)
+
+- [x] Módulo **Facturación Mensual** en `cash_today.html`, ubicado después de Presupuesto
+- [x] Motor `buildFacturacionFromRecs()` — calcula desde `RECS` + `METAS`, **sin depender de la pestaña `Facturación`** del Excel
+- [x] Modelo 100% parametrizado desde la hoja `metas` (cupos, excedente variable, costo de visita, cupo mensual de piezas, millar por moneda, impuestos)
+- [x] ESV factura sobre **recogidas**; GT sobre **depósitos**; AMATITLÁN I + II consolidados
+- [x] IVA GT 12% con neto visible · IVA e IVA retenido ESV
+- [x] Interruptor de visitas adicionales de Monederas ESV
+- [x] Mes en curso incluido y marcado `PARCIAL` (costo proyectado al cierre)
+- [x] Histórico automático desde julio 2026 · gráfica de tendencia (≥2 meses)
+- [x] **FIX RCA:** persistencia de `_M` e `_IMP` en la publicación self-service
+
+---
+
+## 🔜 PENDIENTES DERIVADOS DE LA SESIÓN 05/08/2026
+
+### Prioridad media
+
+- [ ] **`Monedera - XELA` se activará sola.** El grupo ya está declarado en `_FAC_GT_GRUPOS` con su meta (`PDC XELA (Monedera)`, cupo Q35,000), pero no tiene transacciones. Aparecerá automáticamente en el módulo cuando el cajero empiece a operar — **no requiere cambio de código**.
+- [ ] **Visitas adicionales de Guatemala no se facturan.** La hoja `metas` sí tiene el costo (Q290 normal / Q440 día festivo) para los cajeros GT, pero el modelo del proveedor no las cobra hoy. Si eso cambia, el parámetro ya está disponible (`cvn` / `cvf`) y el módulo `Festivos` podría alimentar la distinción normal vs. festivo.
+
+### Prioridad baja — deuda técnica documentada
+
+- [ ] **Criterio de conteo de visitas.** Hoy se cuenta el **número de transacciones de recogida**. En julio 2026 coincide exactamente con los días únicos con recogida (27 y 9), por lo que ambos criterios son indistinguibles con los datos actuales. Si algún mes registra dos recogidas el mismo día, los criterios divergirán — confirmar con el proveedor cuál aplica.
+- [ ] **`tcVal` en el bloque `_TC_MENSUAL`** (~línea 2784) sigue usando el patrón antiguo `.replace(',','.')`. Riesgo vigente si cambia el formato de la celda de tipo de cambio. `_facNum()` ya resuelve este patrón y podría reutilizarse.
 
 ---
 
