@@ -466,6 +466,7 @@ tbody tr:last-child td{border-bottom:none}
   <div class="ntab" onclick="goPage('volumetria',this)"><span>📦 Volumetría</span></div>
   <div class="ntab" onclick="goPage('costo',this)"><span>💰 Costo Servicio</span></div>
   <div class="ntab" onclick="goPage('presupuesto',this)"><span>🎯 Presupuesto</span></div>
+  <div class="ntab" onclick="goPage('facturacion-mensual',this)"><span>🧾 Facturación Mensual</span></div>
   <div class="ntab" onclick="goPage('festivos',this)"><span>🗓 Festivos</span></div>
   <div class="ntab" onclick="goPage('config',this)"><span>⚙️ Config</span></div>
 </div>
@@ -865,6 +866,55 @@ tbody tr:last-child td{border-bottom:none}
 </div>
 <!-- /PRESUPUESTO VS REAL -->
 
+<!-- FACTURACION MENSUAL -->
+<div class="page" id="page-facturacion-mensual">
+
+  <!-- Toolbar -->
+  <div class="card" style="padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+    <span style="font-size:13px;font-weight:700;color:var(--navy);">🧾 Facturación Mensual — Cobro del Proveedor</span>
+    <div style="display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap;">
+      <label style="font-size:11px;font-weight:600;color:var(--text2);">MES</label>
+      <select id="fac-ym" onchange="renderFacturacionMensual()"
+        style="font-size:12px;font-weight:700;color:var(--navy);border:1.5px solid var(--navy);border-radius:8px;padding:5px 12px;background:#fff;cursor:pointer;"></select>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid" id="fac-kpis" style="margin-bottom:16px;"></div>
+
+  <!-- Gráfica tendencia histórica -->
+  <div class="card" id="fac-chart-card" style="margin-bottom:16px;display:none;">
+    <div class="card-title"><span>📊 Tendencia Total a Pagar/Facturar por Mes</span></div>
+    <div style="height:260px;position:relative"><canvas id="ch-fac-mes"></canvas></div>
+  </div>
+
+  <!-- El Salvador — desglose -->
+  <div class="card" style="padding:0;overflow-x:auto;margin-bottom:16px;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);">
+      <span style="font-size:13px;font-weight:700;color:var(--navy);">🇸🇻 El Salvador — Desglose por Concepto</span>
+    </div>
+    <div class="tbl-wrap" id="fac-tbl-esv"></div>
+  </div>
+
+  <!-- Guatemala — desglose -->
+  <div class="card" style="padding:0;overflow-x:auto;margin-bottom:16px;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);">
+      <span style="font-size:13px;font-weight:700;color:var(--navy);">🇬🇹 Guatemala — Desglose por Cajero</span>
+    </div>
+    <div class="tbl-wrap" id="fac-tbl-gt"></div>
+  </div>
+
+  <p style="font-size:11px;color:var(--text2);margin-top:12px;padding:0 2px;">
+    ℹ️ Datos tomados directamente de la pestaña <code>Facturación</code> del Excel de Cash Today (bases de cobro del proveedor).
+    El Salvador: excedente por monto transportado (0.035%), visitas adicionales ($20/visita) y tesorería/piezas procesadas (0.1%),
+    con IVA 13% e IVA retenido 1%. Guatemala: excedente sobre cupo (0.04%), sin IVA. Ambos conceptos de El Salvador (recolección y
+    tesorería) son cobros independientes por servicios distintos — transporte vs. conteo — confirmado con Charly 05/08/2026.
+    Histórico a partir de julio 2026. El mes se determina automáticamente por la fecha de publicación.
+  </p>
+
+</div>
+<!-- /FACTURACION MENSUAL -->
+
 <div class="page" id="page-config">
   <!-- TC Mensual card -->
   <div class="cfg-card" style="margin-bottom:16px;">
@@ -925,6 +975,13 @@ const _R = [{"f":"2026-01-20 09:47:27","c":"PDC AMATITLÁN I","u":"WALTER CERME�
 const _M = [{"c":"PDC Comercial San Miguel","p":"El Salvador","s":"San Miguel","tc":"Billetes","ind":"Capacidad","cupo":10000.0,"uni":"Piezas","excv":0,"cvn":0,"cvf":0},{"c":"PDC Comercial San Miguel","p":"El Salvador","s":"San Miguel","tc":"Billetes","ind":"Visitas Contratadas","cupo":9.0,"uni":"Visitas","excv":0,"cvn":0,"cvf":0},{"c":"PDC Comercial San Miguel","p":"El Salvador","s":"San Miguel","tc":"Billetes","ind":"Valor Contratado","cupo":400000.0,"uni":"USD","excv":1.0,"cvn":0,"cvf":0},{"c":"PDC Comercial San Miguel (Monedera)","p":"El Salvador","s":"San Miguel","tc":"Monedera","ind":"Capacidad","cupo":20000.0,"uni":"Piezas","excv":0,"cvn":0,"cvf":0},{"c":"PDC Comercial San Miguel (Monedera)","p":"El Salvador","s":"San Miguel","tc":"Monedera","ind":"Visitas Contratadas","cupo":5.0,"uni":"Visitas","excv":0,"cvn":0,"cvf":0},{"c":"PDC Comercial San Miguel (Monedera)","p":"El Salvador","s":"San Miguel","tc":"Monedera","ind":"Valor Contratado","cupo":8000.0,"uni":"USD","excv":0.35,"cvn":0,"cvf":0},{"c":"PDC Comercial","p":"El Salvador","s":"Santa Tecla","tc":"Billetes","ind":"Capacidad","cupo":10000.0,"uni":"Piezas","excv":0,"cvn":0,"cvf":0},{"c":"PDC Comercial","p":"El Salvador","s":"Santa Tecla","tc":"Billetes","ind":"Visitas Contratadas","cupo":21.0,"uni":"Visitas","excv":0,"cvn":0,"cvf":0},{"c":"PDC Comercial","p":"El Salvador","s":"Santa Tecla","tc":"Billetes","ind":"Valor Contratado","cupo":1400000.0,"uni":"USD","excv":1.0,"cvn":0,"cvf":0},{"c":"PDC Comercial (Monedera)","p":"El Salvador","s":"Santa Tecla","tc":"Monedera","ind":"Capacidad","cupo":20000.0,"uni":"Piezas","excv":0,"cvn":0,"cvf":0},{"c":"PDC Comercial (Monedera)","p":"El Salvador","s":"Santa Tecla","tc":"Monedera","ind":"Visitas Contratadas","cupo":13.0,"uni":"Visitas","excv":0,"cvn":0,"cvf":0},{"c":"PDC Comercial (Monedera)","p":"El Salvador","s":"Santa Tecla","tc":"Monedera","ind":"Valor Contratado","cupo":28000.0,"uni":"USD","excv":0.35,"cvn":0,"cvf":0},{"c":"PDC AMATITLÁN I","p":"Guatemala","s":"CDA","tc":"Billetes","ind":"Capacidad","cupo":10000.0,"uni":"Piezas","excv":0,"cvn":0,"cvf":0},{"c":"PDC AMATITLÁN I","p":"Guatemala","s":"CDA","tc":"Billetes","ind":"Visitas Contratadas","cupo":12.0,"uni":"Visitas","excv":0,"cvn":290.0,"cvf":440.0},{"c":"PDC AMATITLÁN I","p":"Guatemala","s":"CDA","tc":"Billetes","ind":"Valor Contratado","cupo":9000000.0,"uni":"GTQ","excv":0.4,"cvn":0,"cvf":0},{"c":"PDC AMATITLÁN II SDM500","p":"Guatemala","s":"CDA","tc":"Billetes","ind":"Capacidad","cupo":10000.0,"uni":"Piezas","excv":0,"cvn":0,"cvf":0},{"c":"PDC AMATITLÁN II SDM500","p":"Guatemala","s":"CDA","tc":"Billetes","ind":"Visitas Contratadas","cupo":12.0,"uni":"Visitas","excv":0,"cvn":290.0,"cvf":440.0},{"c":"PDC AMATITLÁN II SDM500","p":"Guatemala","s":"CDA","tc":"Billetes","ind":"Valor Contratado","cupo":9000000.0,"uni":"GTQ","excv":0.4,"cvn":0,"cvf":0},{"c":"PDC AMATITLÁN MONEDERA","p":"Guatemala","s":"CDA","tc":"Billetes","ind":"Capacidad","cupo":15000.0,"uni":"Piezas","excv":0,"cvn":0,"cvf":0},{"c":"PDC AMATITLÁN MONEDERA","p":"Guatemala","s":"CDA","tc":"Billetes","ind":"Visitas Contratadas","cupo":8.0,"uni":"Visitas","excv":0,"cvn":290.0,"cvf":440.0},{"c":"PDC AMATITLÁN MONEDERA","p":"Guatemala","s":"CDA","tc":"Billetes","ind":"Valor Contratado","cupo":75000.0,"uni":"GTQ","excv":0.4,"cvn":0,"cvf":0},{"c":"PDC XELA (SDM500)","p":"Guatemala","s":"Xela","tc":"Billetes","ind":"Capacidad","cupo":10000.0,"uni":"Piezas","excv":0,"cvn":0,"cvf":0},{"c":"PDC XELA (SDM500)","p":"Guatemala","s":"Xela","tc":"Billetes","ind":"Visitas Contratadas","cupo":8.0,"uni":"Visitas","excv":0,"cvn":290.0,"cvf":440.0},{"c":"PDC XELA (SDM500)","p":"Guatemala","s":"Xela","tc":"Billetes","ind":"Valor Contratado","cupo":3000000.0,"uni":"GTQ","excv":0.4,"cvn":0,"cvf":0},{"c":"PDC XELA (Monedera)","p":"Guatemala","s":"Xela","tc":"Billetes","ind":"Capacidad","cupo":14000.0,"uni":"Piezas","excv":0,"cvn":0,"cvf":0},{"c":"PDC XELA (Monedera)","p":"Guatemala","s":"Xela","tc":"Billetes","ind":"Visitas Contratadas","cupo":4.0,"uni":"Visitas","excv":0,"cvn":290.0,"cvf":440.0},{"c":"PDC XELA (Monedera)","p":"Guatemala","s":"Xela","tc":"Billetes","ind":"Valor Contratado","cupo":35000.0,"uni":"GTQ","excv":0.4,"cvn":0,"cvf":0}];
 const _COSTOS = [{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2025-09-04","op":"26393","nf":"5557","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":840,"yr":2025,"mo":9,"dias":1,"tk":"Ticket#2025090971001608"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2025-09-04","op":"26754","nf":"5553","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":342.12,"yr":2025,"mo":9,"dias":0,"tk":"Ticket#2025092471001375"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2025-09-04","op":"26755","nf":"5555","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":343.84,"yr":2025,"mo":9,"dias":0,"tk":"Ticket#2025092471001428"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2025-09-04","op":"26756","nf":"5556","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":116.27,"yr":2025,"mo":9,"dias":0,"tk":"Ticket#2025092471001446"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2025-09-04","op":"26757","nf":"5558","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":388.33,"yr":2025,"mo":9,"dias":0,"tk":"Ticket#2025092471001491"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2025-10-06","op":"27328","nf":"6263","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":840,"yr":2025,"mo":10,"dias":1,"tk":"Ticket#2025101471003693"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2025-10-08","op":"27329","nf":"6339","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":784.67,"yr":2025,"mo":10,"dias":1,"tk":"Ticket#2025101471003586"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2025-10-08","op":"27330","nf":"6340","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":453.63,"yr":2025,"mo":10,"dias":1,"tk":"Ticket#2025101471003621"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2025-10-08","op":"27331","nf":"6341","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":573.99,"yr":2025,"mo":10,"dias":1,"tk":"[Ticket#2025101471003666"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2025-11-05","op":"27927","nf":"6958","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":840,"yr":2025,"mo":11,"dias":0,"tk":"Ticket#2025111071002431"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2025-11-05","op":"27928","nf":"6959","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":932.47,"yr":2025,"mo":11,"dias":0,"tk":"Ticket#2025111071002467"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2025-12-01","op":"28808","nf":"7429","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":840,"yr":2025,"mo":12,"dias":1,"tk":"Ticket#2025120871001471"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2025-12-05","op":"28809","nf":"7687","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":604.79,"yr":2025,"mo":12,"dias":1,"tk":"Ticket#2025120871001498"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-01-05","op":"29653","nf":"70","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":882,"yr":2026,"mo":1,"dias":0,"tk":"Ticket#2026010871003237"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-01-07","op":"29654","nf":"351","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":958.56,"yr":2026,"mo":1,"dias":0,"tk":"[Ticket#2026010871003264"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-01-13","op":"29653","nf":"407","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":882,"yr":2026,"mo":1,"dias":0,"tk":"Ticket#2026010871003237"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-01-13","op":"29654","nf":"408","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":958.56,"yr":2026,"mo":1,"dias":0,"tk":"[Ticket#2026010871003264"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-02-02","op":"30359","nf":"778","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":882,"yr":2026,"mo":2,"dias":0,"tk":"Ticket#2026020671001062"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-02-04","op":"30363","nf":"1022","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":1249.95,"yr":2026,"mo":2,"dias":0,"tk":"Ticket#2026020671001081"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-02-04","op":"30363","nf":"1022","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":1261.11,"yr":2026,"mo":2,"dias":0,"tk":"Ticket#2026020671001081"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-03-03","op":"31176","nf":"1486","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":889.88,"yr":2026,"mo":3,"dias":0,"tk":"Ticket#2026030571002231"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-03-04","op":"31229","nf":"1716","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":873.74,"yr":2026,"mo":3,"dias":0,"tk":"Ticket#2026030571002231"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-04-02","op":"32084","nf":"2134","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":889.88,"yr":2026,"mo":4,"dias":0,"tk":"Ticket#2026041071001854"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-04-03","op":"32131","nf":"2304","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":651.7,"yr":2026,"mo":4,"dias":0,"tk":"Ticket#2026041071001836"},{"p":"Guatemala","div":"GTQ","emp":"CODISA","fac":"2026-04-10","op":"170965","nf":"601704140","prv":"Alarmas de Guatemala, S.A.","tot":79.63,"yr":2026,"mo":4,"dias":0,"tk":"Ticket#2026041371002231"},{"p":"Guatemala","div":"GTQ","emp":"CODISA","fac":"2026-04-10","op":"170927","nf":"2849459834","prv":"Alarmas de Guatemala, S.A.","tot":3.76,"yr":2026,"mo":4,"dias":0,"tk":"Ticket#2026041371002259"},{"p":"Guatemala","div":"GTQ","emp":"CODISA","fac":"2026-04-10","op":"171076","nf":"3539026086","prv":"Alarmas de Guatemala, S.A.","tot":34.61,"yr":2026,"mo":4,"dias":0,"tk":"Ticket#2026041371002268"},{"p":"Guatemala","div":"GTQ","emp":"CODISA","fac":"2026-04-10","op":"170923","nf":"2453292171","prv":"Alarmas de Guatemala, S.A.","tot":1149,"yr":2026,"mo":4,"dias":0,"tk":"Ticket#2026041371002286"},{"p":"Guatemala","div":"GTQ","emp":"CODISA","fac":"2026-04-10","op":"170915","nf":"3757130148","prv":"Alarmas de Guatemala, S.A.","tot":1147.5,"yr":2026,"mo":4,"dias":0,"tk":"Ticket#2026041371002295"},{"p":"Guatemala","div":"GTQ","emp":"CODISA","fac":"2026-04-10","op":"170966","nf":"853363311","prv":"Alarmas de Guatemala, S.A.","tot":1147.5,"yr":2026,"mo":4,"dias":0,"tk":"Ticket#2026041371002339"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-05-04","op":"32788","nf":"2843","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":889.88,"yr":2026,"mo":5,"dias":0,"tk":"Ticket#2026050871003266"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-05-07","op":"32789","nf":"3082","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":467.07,"yr":2026,"mo":5,"dias":0,"tk":"Ticket#2026050871003275"},{"p":"Guatemala","div":"GTQ","emp":"CODISA","fac":"2026-05-07","op":"172543","nf":"2527743488","prv":"Alarmas de Guatemala, S.A.","tot":2.34,"yr":2026,"mo":5,"dias":0,"tk":"[Ticket#2026050771002232"},{"p":"Guatemala","div":"GTQ","emp":"CODISA","fac":"2026-05-11","op":"173243","nf":"2325957838","prv":"Alarmas de Guatemala, S.A.","tot":1642.79,"yr":2026,"mo":5,"dias":0,"tk":"Ticket#2026051971001452"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-06-02","op":"33692","nf":"3491","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":889.88,"yr":2026,"mo":6,"dias":0,"tk":"Ticket#2026060871005021"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-06-05","op":"33690","nf":"3776","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":671.28,"yr":2026,"mo":6,"dias":0,"tk":"Ticket#2026060871005066"},{"p":"Guatemala","div":"GTQ","emp":"CODISA","fac":"2026-06-01","op":"175523","nf":"1756383928","prv":"Alarmas de Guatemala, S.A.","tot":629.26,"yr":2026,"mo":6,"dias":0,"tk":"Ticket#2026070671001081"},{"p":"Guatemala","div":"GTQ","emp":"CODISA","fac":"2026-06-25","op":"175523","nf":"3310240124","prv":"Alarmas de Guatemala, S.A.","tot":-577.14,"yr":2026,"mo":6,"dias":0,"tk":"Ticket#2026070671001081"},{"p":"Guatemala","div":"GTQ","emp":"CODISA","fac":"2026-07-01","op":"175564","nf":"1195263657","prv":"Alarmas de Guatemala, S.A.","tot":880,"yr":2026,"mo":7,"dias":0,"tk":"Ticket#2026070671001375"},{"p":"Guatemala","div":"GTQ","emp":"CODISA","fac":"2026-07-01","op":"175523","nf":"3760997839","prv":"Alarmas de Guatemala, S.A.","tot":162.83,"yr":2026,"mo":7,"dias":0,"tk":"Ticket#2026070671001401"},{"p":"El Salvador","div":"USD","emp":"PDC EL SALVADOR","fac":"2026-07-21","op":"34886","nf":"4778","prv":"PROTECCION DE VALORES, S.A. DE C.V.","tot":343.12,"yr":2026,"mo":7,"dias":5,"tk":"Ticket#2026072271001041"}];
 const _TC_MENSUAL = {"2024-01": 7.797, "2024-02": 7.793, "2024-03": 7.788, "2024-04": 7.782, "2024-05": 7.776, "2024-06": 7.771, "2024-07": 7.764, "2024-08": 7.757, "2024-09": 7.751, "2024-10": 7.744, "2024-11": 7.736, "2024-12": 7.728, "2025-06": 7.698, "2025-07": 7.702, "2025-08": 7.705, "2025-09": 7.699, "2025-10": 7.692, "2025-11": 7.684, "2025-12": 7.675, "2026-01": 7.66614, "2026-02": 7.66476, "2026-03": 7.64677, "2026-04": 7.63627, "2026-05": 7.6224, "2026-06": 7.61812, "2026-07": 7.62342};
+
+/* FACTURACION MENSUAL — nuevo modulo (05/08/2026). Acumula mes -> {esv,gt}
+   siguiendo el mismo patron mes->valor de _TC_MENSUAL. ym determinado
+   automaticamente por fecha de sistema al momento de publicar (confirmado
+   con Charly 05/08/2026). Semilla: julio 2026, extraida y validada desde
+   la pestana 'Facturacion' del Excel. */
+const _FACTURACION_MENSUAL = {"2026-07": {"esv": {"monto": [{"site": "PDC Comercial", "recogidas": 1420862, "cupo": 1400000, "excedente": 20862, "cobro": 7.3017}, {"site": "PDC Comercial (Monedera)", "recogidas": 60346.890000000014, "cupo": 28000, "excedente": 32346.890000000014, "cobro": 11.3214}, {"site": "PDC Comercial San Miguel", "recogidas": 340320, "cupo": 400000, "excedente": 0, "cobro": 0}, {"site": "PDC Comercial San Miguel (Monedera)", "recogidas": 12643.340000000002, "cupo": 8000, "excedente": 4643.340000000002, "cobro": 1.6252}], "montoTotal": 20.2483, "visitas": [{"site": "PDC Comercial", "visitas": 27, "cupo": 21, "excedente": 6, "valorVisita": 20, "cobro": 120}, {"site": "PDC Comercial (Monedera)", "visitas": 0, "cupo": 13, "excedente": 0, "valorVisita": 20, "cobro": 0}, {"site": "PDC Comercial San Miguel", "visitas": 9, "cupo": 9, "excedente": 0, "valorVisita": 20, "cobro": 0}, {"site": "PDC Comercial San Miguel (Monedera)", "visitas": 0, "cupo": 5, "excedente": 0, "valorVisita": 20, "cobro": 0}], "visitasTotal": 120, "piezas": [{"site": "PDC Comercial (Monedera)", "piezas": 221978, "cupo": 80000, "excedente": 141978, "millarProcesado": 141.978}, {"site": "PDC Comercial San Miguel (Monedera)", "piezas": 43770, "cupo": 22857, "excedente": 20913, "millarProcesado": 20.913}], "piezasTotal": 170.1927, "resumen": {"recoleccion": {"valor": 140.2483, "iva": 18.2323, "ivaRet": 1.4025, "montoTotal": 158.4806, "totalPagar": 157.0781}, "tesoreria": {"valor": 170.1927, "iva": 22.1251, "ivaRet": 1.7019, "montoTotal": 192.3178, "totalPagar": 190.6158}, "total": {"valor": 310.441, "montoTotal": 350.7983, "totalPagar": 347.6939}}}, "gt": {"sitios": [{"site": "Monedera -CDA", "cupo": 75000, "depositado": 97793.30000000005, "excedente": 22793.300000000047, "valorFacturar": 9.1173}, {"site": "Billetera - CDA", "cupo": 16000000, "depositado": 15918973, "excedente": 0, "valorFacturar": 0}, {"site": "Billetera - XELA", "cupo": 3000000, "depositado": 3304386, "excedente": 304386, "valorFacturar": 121.7544}], "total": 130.8717}, "publishedAt": "2026-08-05T00:00:00.000Z"}};
 
 // ══════════════════════════════════════════════════════════════
 // STATE
@@ -1060,7 +1117,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       var params=new URLSearchParams(window.location.search);
       var tab=params.get('tab');
       var validTabs=['resumen','guatemala','elsalvador','metas','trafico',
-                     'comparador','detalle','volumetria','costo','presupuesto','festivos','config'];
+                     'comparador','detalle','volumetria','costo','presupuesto','facturacion-mensual','festivos','config'];
       if(tab && validTabs.indexOf(tab)>-1){
         var el=document.querySelector('.ntab[onclick*="goPage(\''+tab+'\',"]');
         goPage(tab, el);
@@ -1559,6 +1616,7 @@ function renderPage(p){
   else if(p==='volumetria') renderVolumentria();
   else if(p==='costo') renderCosto();
   else if(p==='presupuesto') renderPresupuesto();
+  else if(p==='facturacion-mensual') renderFacturacionMensual();
   else if(p==='festivos') renderFestivos();
   else if(p==='config') updateConfigInfo();
 }
@@ -2828,6 +2886,86 @@ function loadFile(file){
           if(newCostos.length){ window._COSTOS_LIVE=newCostos; }
         }catch(ce){console.warn('Costo parse error:',ce);}
       }
+      // Reload Facturación sheet if present — acumula mes -> {esv,gt} en _FACTURACION_MENSUAL
+      // (ver docs 05/08/2026: hoja no trae celda de fecha explícita, el ym se toma
+      // automáticamente de la fecha de sistema al momento de publicar — confirmado con Charly)
+      if(wb.SheetNames.includes('Facturación')){
+        try{
+          const facRows=XLSX.utils.sheet_to_json(wb.Sheets['Facturación'],{header:1,raw:true,defval:''});
+          function facIdxOf(label){
+            for(let i=0;i<facRows.length;i++){
+              if((facRows[i][0]||'').toString().trim()===label) return i;
+            }
+            return -1;
+          }
+          function facFindIn(slc,label){
+            return slc.find(r=>(r[0]||'').toString().trim()===label);
+          }
+          const iMonto=facIdxOf('Excedente por monto transportado');
+          const iVisitas=facIdxOf('Visitas adicionales');
+          const iTes=facIdxOf('Tesorerira Cash Today');
+          const iResumen=facIdxOf('Resumen total de Cobro');
+          const iGTsec=facIdxOf('Guatemala');
+          if(iMonto>-1 && iVisitas>-1 && iTes>-1 && iResumen>-1 && iGTsec>-1){
+            const montoRows=facRows.slice(iMonto,iVisitas);
+            const visitasRows=facRows.slice(iVisitas,iTes);
+            const tesRows=facRows.slice(iTes,iResumen);
+            const resumenRows=facRows.slice(iResumen,iGTsec);
+            const gtRows=facRows.slice(iGTsec);
+
+            const sitesESV=['PDC Comercial','PDC Comercial (Monedera)','PDC Comercial San Miguel','PDC Comercial San Miguel (Monedera)'];
+            const monto=sitesESV.map(name=>{
+              const r=facFindIn(montoRows,name);
+              return r?{site:name,recogidas:+r[1]||0,cupo:+r[2]||0,excedente:+r[3]||0,cobro:+r[4]||0}:null;
+            }).filter(Boolean);
+            const montoTotRow=facFindIn(montoRows,'Total');
+            const montoTotal=montoTotRow?(+montoTotRow[4]||0):monto.reduce((s,m)=>s+m.cobro,0);
+
+            const visitas=sitesESV.map(name=>{
+              const r=facFindIn(visitasRows,name);
+              return r?{site:name,visitas:+r[1]||0,cupo:+r[2]||0,excedente:+r[3]||0,valorVisita:+r[4]||0,cobro:+r[5]||0}:null;
+            }).filter(Boolean);
+            const visitasTotRow=facFindIn(visitasRows,'Total');
+            const visitasTotal=visitasTotRow?(+visitasTotRow[5]||0):visitas.reduce((s,v)=>s+v.cobro,0);
+
+            const sitesPiezas=['PDC Comercial (Monedera)','PDC Comercial San Miguel (Monedera)'];
+            const piezas=sitesPiezas.map(name=>{
+              const r=facFindIn(tesRows,name);
+              return r?{site:name,piezas:+r[5]||0,cupo:+r[6]||0,excedente:+r[7]||0,millarProcesado:+r[8]||0}:null;
+            }).filter(Boolean);
+            const piezasTotRow=facFindIn(tesRows,'Total');
+            const piezasTotal=piezasTotRow?(+piezasTotRow[9]||0):piezas.reduce((s,p)=>s+p.millarProcesado,0);
+
+            const recRow=facFindIn(resumenRows,'Recoleccion Cash Today');
+            const tesRow=facFindIn(resumenRows,'Tesorerira Cash Today');
+            const totRow=facFindIn(resumenRows,'Total');
+            const resumen={
+              recoleccion:recRow?{valor:+recRow[1]||0,iva:+recRow[2]||0,ivaRet:+recRow[3]||0,montoTotal:+recRow[4]||0,totalPagar:+recRow[5]||0}:null,
+              tesoreria:tesRow?{valor:+tesRow[1]||0,iva:+tesRow[2]||0,ivaRet:+tesRow[3]||0,montoTotal:+tesRow[4]||0,totalPagar:+tesRow[5]||0}:null,
+              total:totRow?{valor:+totRow[1]||0,montoTotal:+totRow[4]||0,totalPagar:+totRow[5]||0}:null
+            };
+
+            const sitesGT=['Monedera -CDA','Billetera - CDA','Billetera - XELA'];
+            const gt=sitesGT.map(name=>{
+              const r=facFindIn(gtRows,name);
+              return r?{site:name,cupo:+r[1]||0,depositado:+r[2]||0,excedente:+r[3]||0,valorFacturar:+r[4]||0}:null;
+            }).filter(Boolean);
+            const gtTotRow=facFindIn(gtRows,'Total');
+            const gtTotal=gtTotRow?(+gtTotRow[4]||0):gt.reduce((s,g)=>s+g.valorFacturar,0);
+
+            if(resumen.recoleccion && resumen.tesoreria && resumen.total && gt.length){
+              const now=new Date();
+              const ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+              _FACTURACION_MENSUAL[ym]={
+                esv:{monto,montoTotal,visitas,visitasTotal,piezas,piezasTotal,resumen},
+                gt:{sitios:gt,total:gtTotal},
+                publishedAt:now.toISOString()
+              };
+              window._facturacionYmCargado=ym;
+            }
+          }
+        }catch(fe){console.warn('Facturación parse error:',fe);}
+      }
       autoFilter();
       st.className='cfg-status cfg-ok';
       st.textContent=`✅ Cargado: ${newRecs.length.toLocaleString()} registros · ${getRango(newRecs)}`;
@@ -3001,6 +3139,21 @@ async function publishToGitHub(){
         newFullHtml = newFullHtml.split(cstOldBlock).join(cstNewBlock);
       }
     }
+
+    /* Persistir _FACTURACION_MENSUAL actualizado — mismo patrón que _TC_MENSUAL/_COSTOS.
+       Nuevo módulo (05/08/2026): acumula mes -> {esv,gt} sin sobrescribir meses previos. */
+    (function(){
+      var facStart = newFullHtml.indexOf('const _FACTURACION_MENSUAL');
+      if(facStart > -1){
+        var facBraceStart = newFullHtml.indexOf('{', facStart);
+        var facIdxEnd = newFullHtml.indexOf('};', facBraceStart) + 1;
+        var facOldBlock = newFullHtml.substring(facStart, facIdxEnd+1);
+        var sortedFac = {};
+        Object.keys(_FACTURACION_MENSUAL).sort().forEach(function(k){ sortedFac[k] = _FACTURACION_MENSUAL[k]; });
+        var facNewBlock = 'const _FACTURACION_MENSUAL = ' + JSON.stringify(sortedFac) + ';';
+        newFullHtml = newFullHtml.split(facOldBlock).join(facNewBlock);
+      }
+    })();
 
     var contentB64 = _utf8ToBase64(newFullHtml);
 
@@ -3958,6 +4111,131 @@ function renderPresupuesto(){
         }
       }
     });
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// PAGE: FACTURACION MENSUAL
+// ══════════════════════════════════════════════════════════════
+function renderFacturacionMensual(){
+  const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const ymEl = document.getElementById('fac-ym');
+  const meses = Object.keys(_FACTURACION_MENSUAL).sort();
+
+  const prevYm = ymEl.value;
+  ymEl.innerHTML = '';
+  meses.forEach(ym=>{
+    const o=document.createElement('option'); o.value=ym;
+    o.textContent = MESES[parseInt(ym.slice(5,7))-1]+' '+ym.slice(0,4);
+    ymEl.appendChild(o);
+  });
+  if(!meses.length){
+    document.getElementById('fac-kpis').innerHTML='<div style="padding:16px;color:var(--text2);font-size:12px">Sin datos de facturación disponibles. Carga un Excel con la pestaña "Facturación".</div>';
+    document.getElementById('fac-tbl-esv').innerHTML='';
+    document.getElementById('fac-tbl-gt').innerHTML='';
+    document.getElementById('fac-chart-card').style.display='none';
+    return;
+  }
+  ymEl.value = meses.includes(prevYm) ? prevYm : meses[meses.length-1];
+  const selYm = ymEl.value;
+  const d = _FACTURACION_MENSUAL[selYm];
+  const esv = d.esv, gt = d.gt;
+
+  // ── KPIs
+  document.getElementById('fac-kpis').innerHTML = `
+    <div class="kpi">
+      <div class="kpi-lbl">🇸🇻 Total a Pagar — El Salvador</div>
+      <div class="kpi-val">$${fmt(esv.resumen.total.totalPagar,2)}</div>
+      <div class="kpi-sub">${MESES[parseInt(selYm.slice(5,7))-1]} ${selYm.slice(0,4)} · Recolección + Tesorería, con IVA</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">🇬🇹 Total a Facturar — Guatemala</div>
+      <div class="kpi-val">Q${fmt(gt.total,2)}</div>
+      <div class="kpi-sub">${MESES[parseInt(selYm.slice(5,7))-1]} ${selYm.slice(0,4)} · Sin IVA</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">💧 Recolección Cash Today (ESV)</div>
+      <div class="kpi-val">$${fmt(esv.resumen.recoleccion.totalPagar,2)}</div>
+      <div class="kpi-sub">Monto transportado + visitas adicionales</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">🏦 Tesorería Cash Today (ESV)</div>
+      <div class="kpi-val">$${fmt(esv.resumen.tesoreria.totalPagar,2)}</div>
+      <div class="kpi-sub">Piezas / millar procesado</div>
+    </div>`;
+
+  // ── Tabla El Salvador
+  let esvHtml = '<table class="tbl"><thead><tr><th>Concepto</th><th>Sede</th><th class="r">Base</th><th class="r">Cupo</th><th class="r">Excedente</th><th class="r">Tarifa</th><th class="r">Cobro</th></tr></thead><tbody>';
+  esv.monto.forEach(m=>{
+    esvHtml += `<tr><td>Monto transportado</td><td>${m.site}</td><td class="r">$${fmt(m.recogidas,2)}</td><td class="r">$${fmt(m.cupo,2)}</td><td class="r">$${fmt(m.excedente,2)}</td><td class="r">0.035%</td><td class="r"><strong>$${fmt(m.cobro,4)}</strong></td></tr>`;
+  });
+  esvHtml += `<tr class="pres-total"><td colspan="6"><strong>Subtotal monto transportado</strong></td><td class="r"><strong>$${fmt(esv.montoTotal,4)}</strong></td></tr>`;
+  esv.visitas.forEach(v=>{
+    esvHtml += `<tr><td>Visitas adicionales</td><td>${v.site}</td><td class="r">${fmt(v.visitas)}</td><td class="r">${fmt(v.cupo)}</td><td class="r">${fmt(v.excedente)}</td><td class="r">$${fmt(v.valorVisita,2)}/visita</td><td class="r"><strong>$${fmt(v.cobro,2)}</strong></td></tr>`;
+  });
+  esvHtml += `<tr class="pres-total"><td colspan="6"><strong>Subtotal visitas adicionales</strong></td><td class="r"><strong>$${fmt(esv.visitasTotal,2)}</strong></td></tr>`;
+  esv.piezas.forEach(p=>{
+    esvHtml += `<tr><td>Tesorería (piezas/millar)</td><td>${p.site}</td><td class="r">${fmt(p.piezas)}</td><td class="r">${fmt(p.cupo)}</td><td class="r">${fmt(p.excedente)}</td><td class="r">0.1%</td><td class="r"><strong>$${fmt(p.millarProcesado,4)}</strong></td></tr>`;
+  });
+  esvHtml += `<tr class="pres-total"><td colspan="6"><strong>Subtotal tesorería</strong></td><td class="r"><strong>$${fmt(esv.piezasTotal,4)}</strong></td></tr>`;
+  esvHtml += '</tbody></table>';
+  esvHtml += `<table class="tbl" style="margin-top:2px;"><thead><tr><th>Resumen de Cobro</th><th class="r">Valor</th><th class="r">IVA 13%</th><th class="r">IVA Ret. 1%</th><th class="r">Monto Total</th><th class="r">Total a Pagar</th></tr></thead><tbody>
+    <tr><td>Recolección Cash Today</td><td class="r">$${fmt(esv.resumen.recoleccion.valor,2)}</td><td class="r">$${fmt(esv.resumen.recoleccion.iva,2)}</td><td class="r">$${fmt(esv.resumen.recoleccion.ivaRet,2)}</td><td class="r">$${fmt(esv.resumen.recoleccion.montoTotal,2)}</td><td class="r"><strong>$${fmt(esv.resumen.recoleccion.totalPagar,2)}</strong></td></tr>
+    <tr><td>Tesorería Cash Today</td><td class="r">$${fmt(esv.resumen.tesoreria.valor,2)}</td><td class="r">$${fmt(esv.resumen.tesoreria.iva,2)}</td><td class="r">$${fmt(esv.resumen.tesoreria.ivaRet,2)}</td><td class="r">$${fmt(esv.resumen.tesoreria.montoTotal,2)}</td><td class="r"><strong>$${fmt(esv.resumen.tesoreria.totalPagar,2)}</strong></td></tr>
+    <tr class="pres-total"><td><strong>TOTAL</strong></td><td class="r"><strong>$${fmt(esv.resumen.total.valor,2)}</strong></td><td class="r">—</td><td class="r">—</td><td class="r"><strong>$${fmt(esv.resumen.total.montoTotal,2)}</strong></td><td class="r"><strong>$${fmt(esv.resumen.total.totalPagar,2)}</strong></td></tr>
+  </tbody></table>`;
+  document.getElementById('fac-tbl-esv').innerHTML = esvHtml;
+
+  // ── Tabla Guatemala
+  let gtHtml = '<table class="tbl"><thead><tr><th>Cajero</th><th class="r">Cupo</th><th class="r">Depositado</th><th class="r">Excedente</th><th class="r">Tarifa</th><th class="r">Valor a Facturar</th></tr></thead><tbody>';
+  gt.sitios.forEach(s=>{
+    gtHtml += `<tr><td>${s.site}</td><td class="r">Q${fmt(s.cupo,2)}</td><td class="r">Q${fmt(s.depositado,2)}</td><td class="r">Q${fmt(s.excedente,2)}</td><td class="r">0.04%</td><td class="r"><strong>Q${fmt(s.valorFacturar,4)}</strong></td></tr>`;
+  });
+  gtHtml += `<tr class="pres-total"><td colspan="5"><strong>TOTAL</strong></td><td class="r"><strong>Q${fmt(gt.total,4)}</strong></td></tr>`;
+  gtHtml += '</tbody></table>';
+  document.getElementById('fac-tbl-gt').innerHTML = gtHtml;
+
+  // ── Gráfica de tendencia — solo si hay ≥2 meses
+  const chartCard = document.getElementById('fac-chart-card');
+  if(meses.length >= 2){
+    chartCard.style.display = '';
+    const labels = meses.map(ym=>MESES[parseInt(ym.slice(5,7))-1]+' '+ym.slice(2,4));
+    const dataEsv = meses.map(ym=> _FACTURACION_MENSUAL[ym].esv.resumen.total.totalPagar);
+    const dataGt  = meses.map(ym=> _FACTURACION_MENSUAL[ym].gt.total);
+    if(window._chartFac){ window._chartFac.destroy(); }
+    const ctx = document.getElementById('ch-fac-mes');
+    if(ctx){
+      window._chartFac = new Chart(ctx,{
+        type:'line',
+        data:{ labels, datasets:[
+          { label:'Total a Pagar ESV ($)', data:dataEsv, borderColor:'#002060', backgroundColor:'rgba(0,32,96,.08)',
+            borderWidth:2, tension:.3, pointRadius:4, pointBackgroundColor:'#002060', yAxisID:'y' },
+          { label:'Total a Facturar GT (Q)', data:dataGt, borderColor:'#5B2D8E', backgroundColor:'transparent',
+            borderWidth:2, tension:.3, pointRadius:4, pointBackgroundColor:'#5B2D8E', yAxisID:'y1' }
+        ]},
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{
+            legend:{ labels:{ font:{family:"'Inter',sans-serif",size:11}, color:'#5a6480', padding:16 } },
+            tooltip:{ backgroundColor:'#fff', titleColor:'#0f1729', bodyColor:'#5a6480',
+              borderColor:'#e2e8f0', borderWidth:1, padding:10,
+              callbacks:{ label:ctx=>{ const l=ctx.dataset.label;
+                return l.indexOf('ESV')>-1 ? l+': $'+fmt(ctx.raw,2) : l+': Q'+fmt(ctx.raw,2); } } }
+          },
+          scales:{
+            x:{ grid:{display:false}, ticks:{font:{family:"'Inter',sans-serif",size:10},color:'#5a6480'} },
+            y:{ position:'left', grid:{color:'#e2e8f0'},
+              ticks:{font:{family:"'Inter',sans-serif",size:10},color:'#002060', callback:v=>'$'+fmt(v,0)},
+              title:{display:true,text:'USD (ESV)',font:{size:10},color:'#002060'} },
+            y1:{ position:'right', grid:{drawOnChartArea:false},
+              ticks:{font:{family:"'Inter',sans-serif",size:10},color:'#5B2D8E', callback:v=>'Q'+fmt(v,0)},
+              title:{display:true,text:'GTQ (GT)',font:{size:10},color:'#5B2D8E'} }
+          }
+        }
+      });
+    }
+  } else {
+    chartCard.style.display = 'none';
   }
 }
 
