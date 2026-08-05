@@ -2,7 +2,7 @@
 ## PDC Analytics Center · Plan de Evolución
 
 **Estado actual: v2.16 ESTABLE** · Próxima versión objetivo: v2.17
-**Última actualización:** 05/08/2026 (sesión Facturación Mensual — motor de cálculo propio)
+**Última actualización:** 05/08/2026 (sesión Facturación Mensual — motor de cálculo propio + 6 correcciones de cierre)
 
 ---
 
@@ -19,6 +19,10 @@
 - [x] Mes en curso incluido y marcado `PARCIAL` (costo proyectado al cierre)
 - [x] Histórico automático desde julio 2026 · gráfica de tendencia (≥2 meses)
 - [x] **FIX RCA:** persistencia de `_M` e `_IMP` en la publicación self-service
+- [x] Regrabado de `_M` e `_IMP` desde el Excel vigente (el fix de persistencia no repara datos ya embebidos)
+- [x] Desglose de Tesorería con las 4 filas del modelo del proveedor · subtotal ligado a `resumen.tesoreria.valor`
+- [x] Gráfica de tendencia en valores netos sin IVA · totales explícitos por país · nota al pie eliminada
+- [x] Reglas permanentes 14, 15 y 16 incorporadas a `04_PROJECT_RULES.md`
 
 ---
 
