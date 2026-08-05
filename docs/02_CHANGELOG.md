@@ -1,4 +1,81 @@
 
+## [05/08/2026] — Facturación Mensual: de lectura de pestaña a motor de cálculo propio
+
+**Clasificación:** Mejora funcional (sustitución del motor de datos del módulo) + 1 corrección crítica de causa raíz.
+**Archivo afectado:** `cash_today.html` únicamente.
+
+### Contexto
+
+El módulo Facturación Mensual se había liberado leyendo la pestaña `Facturación` del Excel. Charly precisó que esa pestaña era **solo el modelo de referencia** para explicar la fórmula del proveedor y **ya no se actualizará**: la plataforma debe calcular la facturación por sí misma cada vez que se publiquen las hojas operativas.
+
+### 1. Motor de cálculo `buildFacturacionFromRecs()`
+
+Calcula desde `RECS` + `METAS`, generando **todos los meses desde `2026-07`** en una sola pasada indexada (`cajero|ym|tipo`). Se invoca en `autoFilter()`, junto a `buildPresupuestoFromM()`.
+
+Reglas de negocio validadas contra el modelo del proveedor:
+
+| Concepto | País | Tipo transacción | Base | Cupo | Tarifa |
+|---|---|---|---|---|---|
+| Monto transportado | ESV | **Recogida** | Σ Importe | `Valor Contratado` | `Excedente variable`/1000 |
+| Visitas adicionales | ESV | **Recogida** | conteo | `Visitas Contratadas` | `Visita adicional (Costo)` |
+| Tesorería / millar | ESV | **Recogida** | Σ Piezas | `Cupo Mensual` | `Millar por moneda procesada` |
+| Excedente sobre cupo | GT | **Depósito** | Σ Importe | `Valor Contratado` | `Excedente variable`/1000 |
+
+**Hallazgo clave:** los dos países facturan sobre **tipos de transacción distintos** — ESV sobre recogidas, GT sobre depósitos. Verificado empíricamente: las cifras solo cuadran con esa asimetría.
+
+**Composición del bloque Tesorería (descifrada):** cargo de transporte de los 2 cajeros de *billetes* + millar de moneda de las 2 *monederas*. El cargo de transporte aparece también en Recolección; **no es duplicidad** — son servicios distintos (transporte vs. conteo), confirmado por Charly.
+
+**Guatemala:** AMATITLÁN I + II se consolidan en un solo cupo (8MM + 8MM = Q16MM). Visitas contratadas 6 + 6 = 12 unificadas.
+
+### 2. `parseMetas()` — parámetros nuevos e impuestos
+
+Charly parametrizó en la hoja `metas` lo que antes estaba quemado en la pestaña Facturación: `Visita adicional (Costo)` para ESV, `Cupo Mensual` de piezas, `Millar por moneda procesada` y el bloque de impuestos (A30–A36 → `_IMP` / `IMPUESTOS`). El modelo quedó **100% parametrizado desde Excel**.
+
+Nuevo helper `_facNum()` — parser numérico robusto. **RCA:** con `raw:false` SheetJS devuelve el *texto formateado* de la celda; los impuestos tienen formato `0%` y llegaban como `"13%"` (`parseFloat` → 13, no 0.13), el millar tiene formato moneda (`"$1.00"`) y los cupos pueden traer separador de miles (`"1,400,000"` → `parseFloat` daba **1**). Este último era un **bug latente** en `parseMetas()` que nunca se activó porque los Excel previos no traían separador visible.
+
+### 3. Corrección CRÍTICA — la publicación self-service nunca persistía `_M`
+
+**Síntoma:** el `const _M` embebido en producción divergía de la hoja `metas`.
+
+| Cajero · Indicador | `_M` en producción | Excel |
+|---|---|---|
+| PDC Comercial · Excedente variable | 1.0 (→0.1%) | **0.35** (→0.035%) |
+| PDC Comercial San Miguel · Excedente variable | 1.0 | **0.35** |
+| AMATITLÁN I / II · Valor Contratado | 9,000,000 c/u | **8,000,000** c/u |
+| AMATITLÁN I / II · Visitas Contratadas | 12 c/u | **6** c/u (=12 unificadas) |
+
+**RCA:** `dlHTML()` (descarga local) sí regrababa `_M`, pero el flujo de publicación vía Edge Function solo persistía `_R`, `_TC_MENSUAL` y `_COSTOS`. Las metas embebidas quedaron congeladas desde su incrustación inicial.
+
+**Impacto:** inocuo mientras las metas solo alimentaban semáforos, pero **letal** para un motor de facturación: el excedente de PDC Comercial de julio habría facturado **$20.86 en vez de $7.30** (×2.86).
+
+**Corrección:** se persisten `_M` e `_IMP` en la publicación, mismo patrón que `_TC_MENSUAL`. Se eliminó la persistencia de `_FACTURACION_MENSUAL` (ahora es 100% calculado — única fuente de verdad).
+
+### 4. Decisiones de negocio
+
+- **IVA Guatemala 12%** aplicado, mostrando también el neto sin IVA (la pestaña Facturación lo omitía).
+- **Visitas de Monederas ESV:** anuladas por defecto (el proveedor no las cobra hoy), con **interruptor** `facToggleVisitasMonedera()` en la barra del módulo.
+- **Mes en curso incluido** y marcado con badge `PARCIAL`, para visibilidad del costo proyectado al cierre.
+
+### 5. Validación
+
+Motor extraído y ejecutado en Node contra el Excel real (44,584 registros). **10/10 cifras exactas** vs. modelo del proveedor para julio 2026:
+
+| Concepto | Calculado | Modelo |
+|---|---|---|
+| Monto transportado | 20.2483 | 20.2483 |
+| Visitas adicionales | 120.0000 | 120.0000 |
+| Piezas (millar) | 162.8910 | 162.8910 |
+| Recolección — a pagar | 157.0781 | 157.0781 |
+| Tesorería — a pagar | 190.6158 | 190.6158 |
+| **TOTAL ESV a pagar** | **347.6939** | **347.6939** |
+| **GT neto** | **130.8717** | **130.8717** |
+
+`node --check` sobre los 6 bloques `<script>`: 0 errores. Verificado en vivo vía `raw.githubusercontent.com`.
+
+**Commit:** `e262f2a67823`
+
+---
+
 ## [31/07/2026] — Cartas de Salida: 2 correcciones de parseo + trazabilidad de motivo + sincronización del Hub
 
 
