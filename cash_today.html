@@ -4297,7 +4297,7 @@ function renderFacturacionMensual(){
     <div class="kpi">
       <div class="kpi-lbl">🏦 Tesorería Cash Today (ESV)</div>
       <div class="kpi-val">$${fmt(esv.resumen.tesoreria.totalPagar,2)}</div>
-      <div class="kpi-sub">Piezas / millar procesado</div>
+      <div class="kpi-sub">Millar procesado + millar moneda procesada</div>
     </div>`;
 
   // ── Tabla El Salvador
@@ -4311,10 +4311,18 @@ function renderFacturacionMensual(){
     esvHtml += `<tr><td>Visitas adicionales</td><td>${v.site}${anTag}</td><td class="r">${fmt(v.visitas)}</td><td class="r">${fmt(v.cupo)}</td><td class="r">${fmt(v.excedente)}</td><td class="r">$${fmt(v.valorVisita,2)}/visita</td><td class="r"><strong>$${fmt(v.cobro,2)}</strong></td></tr>`;
   });
   esvHtml += `<tr class="pres-total"><td colspan="6"><strong>Subtotal visitas adicionales</strong></td><td class="r"><strong>$${fmt(esv.visitasTotal,2)}</strong></td></tr>`;
-  esv.piezas.forEach(p=>{
-    esvHtml += `<tr><td>Tesorería (piezas/millar)</td><td>${p.site}</td><td class="r">${fmt(p.piezas)}</td><td class="r">${fmt(p.cupo)}</td><td class="r">${fmt(p.excedente)}</td><td class="r">0.1%</td><td class="r"><strong>$${fmt(p.millarProcesado,4)}</strong></td></tr>`;
+  /* Tesorería = millar procesado de los cajeros de BILLETES (conteo sobre el
+     monto transportado) + millar de moneda procesada de las MONEDERAS.
+     El cargo de los billetes coincide con el de "monto transportado" porque
+     el proveedor cobra dos servicios distintos sobre la misma base:
+     transporte (Recolección) y conteo (Tesorería). No es duplicidad. */
+  esv.monto.filter(m=>_FAC_ESV_MONEDERA.indexOf(m.site)===-1).forEach(m=>{
+    esvHtml += `<tr><td>Tesorería · millar procesado</td><td>${m.site}</td><td class="r">$${fmt(m.recogidas,2)}</td><td class="r">$${fmt(m.cupo,2)}</td><td class="r">$${fmt(m.excedente,2)}</td><td class="r">0.035%</td><td class="r"><strong>$${fmt(m.cobro,4)}</strong></td></tr>`;
   });
-  esvHtml += `<tr class="pres-total"><td colspan="6"><strong>Subtotal tesorería</strong></td><td class="r"><strong>$${fmt(esv.piezasTotal,4)}</strong></td></tr>`;
+  esv.piezas.forEach(p=>{
+    esvHtml += `<tr><td>Tesorería · millar moneda procesada</td><td>${p.site}</td><td class="r">${fmt(p.piezas)} pz</td><td class="r">${fmt(p.cupo)} pz</td><td class="r">${fmt(p.excedente)} pz</td><td class="r">$${fmt(p.millar,2)}/millar</td><td class="r"><strong>$${fmt(p.millarProcesado,4)}</strong></td></tr>`;
+  });
+  esvHtml += `<tr class="pres-total"><td colspan="6"><strong>Subtotal tesorería</strong></td><td class="r"><strong>$${fmt(esv.resumen.tesoreria.valor,4)}</strong></td></tr>`;
   esvHtml += '</tbody></table>';
   esvHtml += `<table class="tbl" style="margin-top:2px;"><thead><tr><th>Resumen de Cobro</th><th class="r">Valor</th><th class="r">IVA 13%</th><th class="r">IVA Ret. 1%</th><th class="r">Monto Total</th><th class="r">Total a Pagar</th></tr></thead><tbody>
     <tr><td>Recolección Cash Today</td><td class="r">$${fmt(esv.resumen.recoleccion.valor,2)}</td><td class="r">$${fmt(esv.resumen.recoleccion.iva,2)}</td><td class="r">$${fmt(esv.resumen.recoleccion.ivaRet,2)}</td><td class="r">$${fmt(esv.resumen.recoleccion.montoTotal,2)}</td><td class="r"><strong>$${fmt(esv.resumen.recoleccion.totalPagar,2)}</strong></td></tr>
