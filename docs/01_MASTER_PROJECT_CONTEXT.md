@@ -436,3 +436,38 @@ Fórmula general: `excedente = MAX(base - cupo, 0)` → `cobro = excedente × ta
 Motor ejecutado en Node contra el Excel real (44,584 registros): **10/10 cifras exactas** vs. modelo del proveedor para julio 2026 — TOTAL ESV a pagar **$347.6939**, GT neto **Q130.8717**. `node --check` sobre los 6 bloques `<script>`: 0 errores.
 
 **Protocolo de regresión:** ante cualquier cambio futuro en el módulo, reejecutar la comparación contra julio 2026 antes de desplegar.
+
+
+## 16.6 Presentación del módulo (definida 05/08/2026)
+
+- **Tesorería ESV se muestra en 4 filas**, no 2. El desglose incluye el *millar procesado* de los cajeros de billetes (conteo sobre monto transportado) además del *millar de moneda procesada* de las Monederas. Etiquetas diferenciadas para que la distinción transporte-vs-conteo sea visible en pantalla.
+- **Subtotales ligados a la estructura de datos**, nunca recalculados en la vista (ver REGLA 16). `Subtotal tesorería` → `esv.resumen.tesoreria.valor`.
+- **Gráfica de tendencia en valores NETOS sin IVA.** ESV y GT tienen tasas distintas (13% + 1% retenido vs. 12%); graficar montos con impuestos distorsiona la comparación entre países. Etiquetas explícitas: *"Total ESV neto ($, sin IVA)"* / *"Total GT neto (Q, sin IVA)"*.
+- **Totales explícitos por país** en ambas tablas (`🇸🇻 TOTAL EL SALVADOR`, `🇬🇹 TOTAL GUATEMALA`). El total ESV expone valor, IVA, IVA retenido, monto total y total a pagar.
+- **Sin nota al pie.** El módulo no lleva texto explicativo (decisión de Charly, 05/08/2026).
+
+## 16.7 Estado de los datos embebidos
+
+`_M` e `_IMP` fueron regrabados el 05/08/2026 desde el Excel vigente. Valores de referencia para detectar regresiones:
+
+| Parámetro | Valor vigente |
+|---|---|
+| `excv` PDC Comercial / San Miguel | **0.35** (→ 0.035%) |
+| `excv` cajeros GT | **0.40** (→ 0.04%) |
+| `cvn` visitas ESV | **$20.00** |
+| `cupoMes` Monedera STA Tecla / San Miguel | **80,000 / 22,857** |
+| `millar` ambas Monederas | **1.00** |
+| Cupo AMATITLÁN I / II | **Q8,000,000** c/u (Q16MM consolidado) |
+| Impuestos | ESV 13% + 1% ret. · GT 12% |
+
+**Cifras de control — julio 2026** (reejecutar ante cualquier cambio en el módulo):
+
+| Concepto | Valor |
+|---|---|
+| Excedente por monto transportado | $20.2483 |
+| Visitas adicionales | $120.00 |
+| Tesorería (millar procesado + moneda) | $170.1927 |
+| Recolección — a pagar | $157.0781 |
+| Tesorería — a pagar | $190.6158 |
+| **TOTAL EL SALVADOR a pagar** | **$347.6939** |
+| GT neto / IVA / total | Q130.8717 / Q15.7046 / **Q146.5763** |
