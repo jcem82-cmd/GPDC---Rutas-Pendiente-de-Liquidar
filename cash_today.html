@@ -873,7 +873,11 @@ tbody tr:last-child td{border-bottom:none}
   <div class="card" style="padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
     <span style="font-size:13px;font-weight:700;color:var(--navy);">🧾 Facturación Mensual — Cobro del Proveedor</span>
     <div style="display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap;">
-      <label style="font-size:11px;font-weight:600;color:var(--text2);">MES</label>
+      <label style="font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;" title="El proveedor no cobra hoy las visitas adicionales de las Monederas. Actívalo si esa condición cambia.">
+        <input type="checkbox" id="fac-vis-mon" onchange="facToggleVisitasMonedera(this.checked)" style="vertical-align:-1px;margin-right:5px;cursor:pointer;">
+        Cobrar visitas de Monederas
+      </label>
+      <label style="font-size:11px;font-weight:600;color:var(--text2);margin-left:6px;">MES</label>
       <select id="fac-ym" onchange="renderFacturacionMensual()"
         style="font-size:12px;font-weight:700;color:var(--navy);border:1.5px solid var(--navy);border-radius:8px;padding:5px 12px;background:#fff;cursor:pointer;"></select>
     </div>
@@ -905,11 +909,15 @@ tbody tr:last-child td{border-bottom:none}
   </div>
 
   <p style="font-size:11px;color:var(--text2);margin-top:12px;padding:0 2px;">
-    ℹ️ Datos tomados directamente de la pestaña <code>Facturación</code> del Excel de Cash Today (bases de cobro del proveedor).
-    El Salvador: excedente por monto transportado (0.035%), visitas adicionales ($20/visita) y tesorería/piezas procesadas (0.1%),
-    con IVA 13% e IVA retenido 1%. Guatemala: excedente sobre cupo (0.04%), sin IVA. Ambos conceptos de El Salvador (recolección y
-    tesorería) son cobros independientes por servicios distintos — transporte vs. conteo — confirmado con Charly 05/08/2026.
-    Histórico a partir de julio 2026. El mes se determina automáticamente por la fecha de publicación.
+    ℹ️ <strong>Cálculo automático</strong> a partir de las hojas operativas (<code>CDA</code>, <code>XELA</code>,
+    <code>ESV - STA TECLA</code>, <code>ESV - SN MIGUEL</code>) y los parámetros de <code>metas</code>
+    (cupos, excedente variable, costo de visita, cupo mensual de piezas, millar por moneda e impuestos).
+    Se recalcula solo en cada publicación de Excel, incluido el mes en curso.<br>
+    <strong>El Salvador</strong> (base: recogidas) — excedente sobre monto transportado, visitas adicionales y
+    tesorería por millar de moneda procesada, con IVA e IVA retenido. Recolección y tesorería son cobros
+    independientes: transporte vs. conteo.
+    <strong>Guatemala</strong> (base: depósitos) — excedente sobre cupo, con IVA; AMATITLÁN I + II se consolidan
+    en un solo cupo. Histórico desde julio 2026.
   </p>
 
 </div>
@@ -981,13 +989,20 @@ const _TC_MENSUAL = {"2024-01": 7.797, "2024-02": 7.793, "2024-03": 7.788, "2024
    automaticamente por fecha de sistema al momento de publicar (confirmado
    con Charly 05/08/2026). Semilla: julio 2026, extraida y validada desde
    la pestana 'Facturacion' del Excel. */
-const _FACTURACION_MENSUAL = {"2026-07": {"esv": {"monto": [{"site": "PDC Comercial", "recogidas": 1420862, "cupo": 1400000, "excedente": 20862, "cobro": 7.3017}, {"site": "PDC Comercial (Monedera)", "recogidas": 60346.890000000014, "cupo": 28000, "excedente": 32346.890000000014, "cobro": 11.3214}, {"site": "PDC Comercial San Miguel", "recogidas": 340320, "cupo": 400000, "excedente": 0, "cobro": 0}, {"site": "PDC Comercial San Miguel (Monedera)", "recogidas": 12643.340000000002, "cupo": 8000, "excedente": 4643.340000000002, "cobro": 1.6252}], "montoTotal": 20.2483, "visitas": [{"site": "PDC Comercial", "visitas": 27, "cupo": 21, "excedente": 6, "valorVisita": 20, "cobro": 120}, {"site": "PDC Comercial (Monedera)", "visitas": 0, "cupo": 13, "excedente": 0, "valorVisita": 20, "cobro": 0}, {"site": "PDC Comercial San Miguel", "visitas": 9, "cupo": 9, "excedente": 0, "valorVisita": 20, "cobro": 0}, {"site": "PDC Comercial San Miguel (Monedera)", "visitas": 0, "cupo": 5, "excedente": 0, "valorVisita": 20, "cobro": 0}], "visitasTotal": 120, "piezas": [{"site": "PDC Comercial (Monedera)", "piezas": 221978, "cupo": 80000, "excedente": 141978, "millarProcesado": 141.978}, {"site": "PDC Comercial San Miguel (Monedera)", "piezas": 43770, "cupo": 22857, "excedente": 20913, "millarProcesado": 20.913}], "piezasTotal": 170.1927, "resumen": {"recoleccion": {"valor": 140.2483, "iva": 18.2323, "ivaRet": 1.4025, "montoTotal": 158.4806, "totalPagar": 157.0781}, "tesoreria": {"valor": 170.1927, "iva": 22.1251, "ivaRet": 1.7019, "montoTotal": 192.3178, "totalPagar": 190.6158}, "total": {"valor": 310.441, "montoTotal": 350.7983, "totalPagar": 347.6939}}}, "gt": {"sitios": [{"site": "Monedera -CDA", "cupo": 75000, "depositado": 97793.30000000005, "excedente": 22793.300000000047, "valorFacturar": 9.1173}, {"site": "Billetera - CDA", "cupo": 16000000, "depositado": 15918973, "excedente": 0, "valorFacturar": 0}, {"site": "Billetera - XELA", "cupo": 3000000, "depositado": 3304386, "excedente": 304386, "valorFacturar": 121.7544}], "total": 130.8717}, "publishedAt": "2026-08-05T00:00:00.000Z"}};
+var _FACTURACION_MENSUAL = {};   /* poblado por buildFacturacionFromRecs() */
+var _FAC_YM_MIN = '2026-07';     /* el modulo arranca en julio 2026 */
+var _FAC_VISITAS_MONEDERA = false; /* interruptor: visitas adicionales de Monederas ESV
+                                      (hoy no proceden segun el proveedor) */
 
 // ══════════════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════════════
 let RECS = _R.slice();
 let METAS = _M.slice();
+/* Impuestos por pais — parametrizados desde la hoja 'metas' (bloque inferior).
+   Se regraban en cada publicacion, igual que _M. */
+const _IMP = {"El Salvador":{"iva":0.13,"ret":0.01},"Guatemala":{"iva":0.12,"ret":0}};
+let IMPUESTOS = JSON.parse(JSON.stringify(_IMP));
 let fData = [];
 let excluir = false;
 let tcGTQ = 7.61815; // GTQ por 1 USD (tipo de cambio directo BANGUAT)
@@ -1582,6 +1597,7 @@ function autoFilter(){
   document.getElementById('hdr-rango').textContent=getRango(fData);
   document.getElementById('hdr-total').textContent=fmt(fData.length)+' depósitos';
   buildPresupuestoFromM();
+  buildFacturacionFromRecs();
   renderPage(activePage);
 }
 
@@ -2832,6 +2848,7 @@ function loadFile(file){
       RECS=newRecs;
       const newMetas=parseMetas(wb);
       if(newMetas.length) METAS=newMetas;
+      if(window._IMPUESTOS_LIVE) IMPUESTOS=window._IMPUESTOS_LIVE;
       // Reload TC sheet if present — extends _TC_MENSUAL at runtime
       if(wb.SheetNames.includes('TC')){
         try{
@@ -2886,86 +2903,10 @@ function loadFile(file){
           if(newCostos.length){ window._COSTOS_LIVE=newCostos; }
         }catch(ce){console.warn('Costo parse error:',ce);}
       }
-      // Reload Facturación sheet if present — acumula mes -> {esv,gt} en _FACTURACION_MENSUAL
-      // (ver docs 05/08/2026: hoja no trae celda de fecha explícita, el ym se toma
-      // automáticamente de la fecha de sistema al momento de publicar — confirmado con Charly)
-      if(wb.SheetNames.includes('Facturación')){
-        try{
-          const facRows=XLSX.utils.sheet_to_json(wb.Sheets['Facturación'],{header:1,raw:true,defval:''});
-          function facIdxOf(label){
-            for(let i=0;i<facRows.length;i++){
-              if((facRows[i][0]||'').toString().trim()===label) return i;
-            }
-            return -1;
-          }
-          function facFindIn(slc,label){
-            return slc.find(r=>(r[0]||'').toString().trim()===label);
-          }
-          const iMonto=facIdxOf('Excedente por monto transportado');
-          const iVisitas=facIdxOf('Visitas adicionales');
-          const iTes=facIdxOf('Tesorerira Cash Today');
-          const iResumen=facIdxOf('Resumen total de Cobro');
-          const iGTsec=facIdxOf('Guatemala');
-          if(iMonto>-1 && iVisitas>-1 && iTes>-1 && iResumen>-1 && iGTsec>-1){
-            const montoRows=facRows.slice(iMonto,iVisitas);
-            const visitasRows=facRows.slice(iVisitas,iTes);
-            const tesRows=facRows.slice(iTes,iResumen);
-            const resumenRows=facRows.slice(iResumen,iGTsec);
-            const gtRows=facRows.slice(iGTsec);
-
-            const sitesESV=['PDC Comercial','PDC Comercial (Monedera)','PDC Comercial San Miguel','PDC Comercial San Miguel (Monedera)'];
-            const monto=sitesESV.map(name=>{
-              const r=facFindIn(montoRows,name);
-              return r?{site:name,recogidas:+r[1]||0,cupo:+r[2]||0,excedente:+r[3]||0,cobro:+r[4]||0}:null;
-            }).filter(Boolean);
-            const montoTotRow=facFindIn(montoRows,'Total');
-            const montoTotal=montoTotRow?(+montoTotRow[4]||0):monto.reduce((s,m)=>s+m.cobro,0);
-
-            const visitas=sitesESV.map(name=>{
-              const r=facFindIn(visitasRows,name);
-              return r?{site:name,visitas:+r[1]||0,cupo:+r[2]||0,excedente:+r[3]||0,valorVisita:+r[4]||0,cobro:+r[5]||0}:null;
-            }).filter(Boolean);
-            const visitasTotRow=facFindIn(visitasRows,'Total');
-            const visitasTotal=visitasTotRow?(+visitasTotRow[5]||0):visitas.reduce((s,v)=>s+v.cobro,0);
-
-            const sitesPiezas=['PDC Comercial (Monedera)','PDC Comercial San Miguel (Monedera)'];
-            const piezas=sitesPiezas.map(name=>{
-              const r=facFindIn(tesRows,name);
-              return r?{site:name,piezas:+r[5]||0,cupo:+r[6]||0,excedente:+r[7]||0,millarProcesado:+r[8]||0}:null;
-            }).filter(Boolean);
-            const piezasTotRow=facFindIn(tesRows,'Total');
-            const piezasTotal=piezasTotRow?(+piezasTotRow[9]||0):piezas.reduce((s,p)=>s+p.millarProcesado,0);
-
-            const recRow=facFindIn(resumenRows,'Recoleccion Cash Today');
-            const tesRow=facFindIn(resumenRows,'Tesorerira Cash Today');
-            const totRow=facFindIn(resumenRows,'Total');
-            const resumen={
-              recoleccion:recRow?{valor:+recRow[1]||0,iva:+recRow[2]||0,ivaRet:+recRow[3]||0,montoTotal:+recRow[4]||0,totalPagar:+recRow[5]||0}:null,
-              tesoreria:tesRow?{valor:+tesRow[1]||0,iva:+tesRow[2]||0,ivaRet:+tesRow[3]||0,montoTotal:+tesRow[4]||0,totalPagar:+tesRow[5]||0}:null,
-              total:totRow?{valor:+totRow[1]||0,montoTotal:+totRow[4]||0,totalPagar:+totRow[5]||0}:null
-            };
-
-            const sitesGT=['Monedera -CDA','Billetera - CDA','Billetera - XELA'];
-            const gt=sitesGT.map(name=>{
-              const r=facFindIn(gtRows,name);
-              return r?{site:name,cupo:+r[1]||0,depositado:+r[2]||0,excedente:+r[3]||0,valorFacturar:+r[4]||0}:null;
-            }).filter(Boolean);
-            const gtTotRow=facFindIn(gtRows,'Total');
-            const gtTotal=gtTotRow?(+gtTotRow[4]||0):gt.reduce((s,g)=>s+g.valorFacturar,0);
-
-            if(resumen.recoleccion && resumen.tesoreria && resumen.total && gt.length){
-              const now=new Date();
-              const ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-              _FACTURACION_MENSUAL[ym]={
-                esv:{monto,montoTotal,visitas,visitasTotal,piezas,piezasTotal,resumen},
-                gt:{sitios:gt,total:gtTotal},
-                publishedAt:now.toISOString()
-              };
-              window._facturacionYmCargado=ym;
-            }
-          }
-        }catch(fe){console.warn('Facturación parse error:',fe);}
-      }
+      /* La pestana 'Facturación' del Excel YA NO SE LEE (05/08/2026).
+         Era solo el modelo de referencia del proveedor. La facturacion se
+         calcula ahora en buildFacturacionFromRecs() desde las hojas
+         operativas + metas, y se recalcula sola en autoFilter(). */
       autoFilter();
       st.className='cfg-status cfg-ok';
       st.textContent=`✅ Cargado: ${newRecs.length.toLocaleString()} registros · ${getRango(newRecs)}`;
@@ -3140,20 +3081,32 @@ async function publishToGitHub(){
       }
     }
 
-    /* Persistir _FACTURACION_MENSUAL actualizado — mismo patrón que _TC_MENSUAL/_COSTOS.
-       Nuevo módulo (05/08/2026): acumula mes -> {esv,gt} sin sobrescribir meses previos. */
-    (function(){
-      var facStart = newFullHtml.indexOf('const _FACTURACION_MENSUAL');
-      if(facStart > -1){
-        var facBraceStart = newFullHtml.indexOf('{', facStart);
-        var facIdxEnd = newFullHtml.indexOf('};', facBraceStart) + 1;
-        var facOldBlock = newFullHtml.substring(facStart, facIdxEnd+1);
-        var sortedFac = {};
-        Object.keys(_FACTURACION_MENSUAL).sort().forEach(function(k){ sortedFac[k] = _FACTURACION_MENSUAL[k]; });
-        var facNewBlock = 'const _FACTURACION_MENSUAL = ' + JSON.stringify(sortedFac) + ';';
-        newFullHtml = newFullHtml.split(facOldBlock).join(facNewBlock);
+    /* Persistir _M (metas) e _IMP (impuestos) — FIX RCA 05/08/2026.
+       Causa raiz: dlHTML() si regrababa _M, pero el flujo de publicacion
+       self-service nunca lo hizo (solo _R, _TC_MENSUAL y _COSTOS). Por eso
+       las metas embebidas quedaron congeladas y divergieron del Excel
+       (excedente variable 1.0 vs 0.35, cupo AMAT 9MM vs 8MM). Con el modulo
+       de Facturacion calculando desde METAS, esa divergencia produciria
+       cobros errados, asi que la persistencia es obligatoria.
+       _FACTURACION_MENSUAL ya NO se persiste: es 100% calculado. */
+    if(METAS && METAS.length){
+      var mStart = newFullHtml.indexOf('const _M = [');
+      if(mStart > -1){
+        var mEnd = newFullHtml.indexOf('];', mStart) + 2;
+        var mOldBlock = newFullHtml.substring(mStart, mEnd);
+        var mNewBlock = 'const _M = ' + JSON.stringify(METAS) + ';';
+        newFullHtml = newFullHtml.split(mOldBlock).join(mNewBlock);
       }
-    })();
+    }
+    if(IMPUESTOS && Object.keys(IMPUESTOS).length){
+      var iStart = newFullHtml.indexOf('const _IMP = {');
+      if(iStart > -1){
+        var iEnd = newFullHtml.indexOf('};', iStart) + 2;
+        var iOldBlock = newFullHtml.substring(iStart, iEnd);
+        var iNewBlock = 'const _IMP = ' + JSON.stringify(IMPUESTOS) + ';';
+        newFullHtml = newFullHtml.split(iOldBlock).join(iNewBlock);
+      }
+    }
 
     var contentB64 = _utf8ToBase64(newFullHtml);
 
@@ -3318,17 +3271,52 @@ function parseWB(wb){
   });
   return out;
 }
+/* Parser numerico robusto para la hoja 'metas' (05/08/2026).
+   RCA: con raw:false SheetJS devuelve el TEXTO FORMATEADO de la celda.
+   Los impuestos tienen formato 0% -> llegan como "13%" (parseFloat daria 13,
+   no 0.13) y el millar tiene formato moneda -> llega como "$1.00". Ademas los
+   cupos pueden traer separador de miles ("1,400,000" -> parseFloat daria 1).
+   Se normaliza todo aqui, en un solo lugar. */
+function _facNum(v){
+  if(v===null||v===undefined) return 0;
+  var s=v.toString().trim(); if(!s) return 0;
+  var pct=/%\s*$/.test(s);
+  s=s.replace(/[^0-9.,\-]/g,'');
+  if(s.indexOf(',')>-1 && s.indexOf('.')>-1) s=s.replace(/,/g,'');
+  else if(s.indexOf(',')>-1) s=s.replace(/,/g,'');
+  var n=parseFloat(s);
+  if(isNaN(n)) return 0;
+  return pct ? n/100 : n;
+}
 function parseMetas(wb){
   const rows=XLSX.utils.sheet_to_json(wb.Sheets['metas'],{header:1,raw:false,defval:''});
   const out=[];
+  /* Bloque de impuestos al pie de la hoja: filas SIN Indicador, encabezadas
+     por el nombre del pais (El Salvador / Guatemala). */
+  const imp={}; let impPais='';
   for(let i=1;i<rows.length;i++){
     const r=rows[i]; if(!r[0]) continue;
+    const a=(r[0]||'').toString().trim();
+    const ind=(r[4]||'').toString().trim();
+    if(!ind){
+      const au=a.toUpperCase();
+      if(au==='EL SALVADOR'||au==='GUATEMALA'){
+        impPais=a; if(!imp[impPais]) imp[impPais]={iva:0,ret:0};
+      } else if(impPais && au==='IVA'){
+        imp[impPais].iva=_facNum(r[1]);
+      } else if(impPais && (au==='IVA RETENIDO'||au==='IVA RET.'||au==='IVA RET')){
+        imp[impPais].ret=_facNum(r[1]);
+      }
+      continue;
+    }
     out.push({
-      c:(r[0]||'').toString().trim(),p:r[1],s:r[2],tc:r[3],ind:r[4],
-      cupo:parseFloat(r[5])||0,uni:r[6],excv:parseFloat(r[7])||0,
-      cvn:parseFloat(r[8])||0, cvf:parseFloat(r[9])||0
+      c:a,p:r[1],s:r[2],tc:r[3],ind:ind,
+      cupo:_facNum(r[5]),uni:r[6],excv:_facNum(r[7]),
+      cvn:_facNum(r[8]), cvf:_facNum(r[9]),
+      cupoMes:_facNum(r[10]), millar:_facNum(r[11])
     });
   }
+  if(Object.keys(imp).length) window._IMPUESTOS_LIVE=imp;
   return out;
 }
 function applyTC(){
@@ -4115,6 +4103,161 @@ function renderPresupuesto(){
 }
 
 // ══════════════════════════════════════════════════════════════
+// FACTURACION MENSUAL — MOTOR DE CALCULO
+// ══════════════════════════════════════════════════════════════
+/* Sustituye (05/08/2026) al parser de la pestana 'Facturacion' del Excel.
+   Esa pestana era solo el MODELO de referencia: ya no se actualiza.
+   La facturacion se calcula aqui desde RECS + METAS, de modo que cada vez
+   que se publiquen CDA / XELA / ESV-STA TECLA / ESV-SN MIGUEL el modulo
+   se recalcula solo, incluido el mes en curso (parcial).
+
+   REGLAS VALIDADAS CONTRA EL MODELO DEL PROVEEDOR (julio 2026, exacto):
+   · El Salvador factura sobre transacciones tipo RECOGIDA.
+   · Guatemala factura sobre transacciones tipo DEPOSITO.
+   · Tarifa excedente = metas['Excedente variable'] / 1000  (0.35 -> 0.035%).
+   · Tesoreria ESV = cargo de transporte de los 2 cajeros de BILLETES
+     + millar de moneda procesada de las 2 MONEDERAS. El cargo de transporte
+     aparece tambien en Recoleccion: NO es duplicidad, son servicios
+     distintos (transporte vs conteo) — confirmado por Charly 05/08/2026.
+   · Guatemala consolida AMATITLAN I + II en un solo cupo. */
+
+var _FAC_ESV_SITES    = ['PDC Comercial','PDC Comercial (Monedera)',
+                         'PDC Comercial San Miguel','PDC Comercial San Miguel (Monedera)'];
+var _FAC_ESV_MONEDERA = ['PDC Comercial (Monedera)','PDC Comercial San Miguel (Monedera)'];
+var _FAC_GT_GRUPOS = [
+  {lbl:'Monedera -CDA',   cajeros:['PDC AMATITLÁN MONEDERA']},
+  {lbl:'Billetera - CDA', cajeros:['PDC AMATITLÁN I','PDC AMATITLÁN II SDM500']},
+  {lbl:'Billetera - XELA',cajeros:['PDC XELA (SDM500)']},
+  {lbl:'Monedera - XELA', cajeros:['PDC XELA (Monedera)']}
+];
+
+function _facMeta(caj,ind){
+  for(var i=0;i<METAS.length;i++){
+    if(METAS[i].c===caj && METAS[i].ind===ind) return METAS[i];
+  }
+  return null;
+}
+function _facR4(n){ return Math.round((n||0)*10000)/10000; }
+
+function facToggleVisitasMonedera(on){
+  _FAC_VISITAS_MONEDERA = !!on;
+  buildFacturacionFromRecs();
+  renderFacturacionMensual();
+}
+
+function buildFacturacionFromRecs(){
+  var out={};
+  if(!RECS || !RECS.length){ _FACTURACION_MENSUAL={}; return; }
+
+  /* Indice cajero|ym|tipo -> {imp, pz, cnt} — una sola pasada sobre RECS */
+  var idx={}, mesesSet={}, cajerosConDatos={};
+  for(var i=0;i<RECS.length;i++){
+    var r=RECS[i];
+    if(!r.ym || r.ym < _FAC_YM_MIN) continue;
+    cajerosConDatos[r.c]=1;
+    mesesSet[r.ym]=1;
+    var k=r.c+'|'+r.ym+'|'+r.t;
+    var o=idx[k]||(idx[k]={imp:0,pz:0,cnt:0});
+    o.imp+=(r.imp||0); o.pz+=(r.pz||0); o.cnt++;
+  }
+  function G(caj,ym,t){ return idx[caj+'|'+ym+'|'+t] || {imp:0,pz:0,cnt:0}; }
+
+  var meses=Object.keys(mesesSet).sort();
+  var hoy=new Date();
+  var ymActual=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0');
+
+  var impES=(IMPUESTOS['El Salvador']||{iva:0,ret:0});
+  var impGT=(IMPUESTOS['Guatemala']||{iva:0,ret:0});
+
+  meses.forEach(function(ym){
+    /* ── EL SALVADOR ─────────────────────────────────────────── */
+    var monto=[], montoTotal=0, transporteBilletes=0;
+    _FAC_ESV_SITES.forEach(function(site){
+      var vc=_facMeta(site,'Valor Contratado'); if(!vc) return;
+      var base=G(site,ym,'Recogida').imp;
+      var cupo=vc.cupo, tar=(vc.excv||0)/1000;
+      var exc=Math.max(base-cupo,0), cobro=exc*tar;
+      monto.push({site:site,recogidas:_facR4(base),cupo:cupo,
+                  excedente:_facR4(exc),tarifa:tar,cobro:_facR4(cobro)});
+      montoTotal+=cobro;
+      if(_FAC_ESV_MONEDERA.indexOf(site)===-1) transporteBilletes+=cobro;
+    });
+
+    var visitas=[], visitasTotal=0;
+    _FAC_ESV_SITES.forEach(function(site){
+      var vv=_facMeta(site,'Visitas Contratadas'); if(!vv) return;
+      var n=G(site,ym,'Recogida').cnt;
+      var esMon=_FAC_ESV_MONEDERA.indexOf(site)>-1;
+      var anulada=esMon && !_FAC_VISITAS_MONEDERA;
+      var exc=anulada?0:Math.max(n-vv.cupo,0);
+      var cobro=exc*(vv.cvn||0);
+      visitas.push({site:site,visitas:n,cupo:vv.cupo,excedente:exc,
+                    valorVisita:vv.cvn||0,cobro:_facR4(cobro),anulada:anulada});
+      visitasTotal+=cobro;
+    });
+
+    var piezas=[], piezasTotal=0;
+    _FAC_ESV_MONEDERA.forEach(function(site){
+      var cap=_facMeta(site,'Capacidad'); if(!cap||!cap.cupoMes) return;
+      var pz=G(site,ym,'Recogida').pz;
+      var exc=Math.max(pz-cap.cupoMes,0);
+      var cobro=exc/1000*(cap.millar||0);
+      piezas.push({site:site,piezas:pz,cupo:cap.cupoMes,excedente:exc,
+                   millar:cap.millar||0,millarProcesado:_facR4(cobro)});
+      piezasTotal+=cobro;
+    });
+
+    function bloqueESV(v){
+      var iva=v*impES.iva, ret=v*impES.ret;
+      return {valor:_facR4(v),iva:_facR4(iva),ivaRet:_facR4(ret),
+              montoTotal:_facR4(v+iva),totalPagar:_facR4(v+iva-ret)};
+    }
+    var recVal=montoTotal+visitasTotal;
+    var tesVal=transporteBilletes+piezasTotal;
+    var totVal=recVal+tesVal;
+    var resumen={
+      recoleccion:bloqueESV(recVal),
+      tesoreria:bloqueESV(tesVal),
+      total:bloqueESV(totVal)
+    };
+
+    /* ── GUATEMALA ───────────────────────────────────────────── */
+    var sitiosGT=[], gtNeto=0;
+    _FAC_GT_GRUPOS.forEach(function(g){
+      var activos=g.cajeros.filter(function(c){ return cajerosConDatos[c]; });
+      if(!activos.length) return;              /* grupo sin operacion aun */
+      var base=0, cupo=0, tar=0;
+      g.cajeros.forEach(function(c){
+        var vc=_facMeta(c,'Valor Contratado'); if(!vc) return;
+        base+=G(c,ym,'Depósito').imp;
+        cupo+=vc.cupo;
+        if(!tar) tar=(vc.excv||0)/1000;
+      });
+      if(!cupo) return;
+      var exc=Math.max(base-cupo,0), val=exc*tar;
+      sitiosGT.push({site:g.lbl,cupo:cupo,depositado:_facR4(base),
+                     excedente:_facR4(exc),tarifa:tar,valorFacturar:_facR4(val)});
+      gtNeto+=val;
+    });
+    var gtIva=gtNeto*impGT.iva, gtRet=gtNeto*impGT.ret;
+
+    out[ym]={
+      esv:{monto:monto,montoTotal:_facR4(montoTotal),
+           visitas:visitas,visitasTotal:_facR4(visitasTotal),
+           piezas:piezas,piezasTotal:_facR4(piezasTotal),
+           transporteBilletes:_facR4(transporteBilletes),
+           resumen:resumen},
+      gt:{sitios:sitiosGT,neto:_facR4(gtNeto),iva:_facR4(gtIva),
+          ivaRet:_facR4(gtRet),total:_facR4(gtNeto+gtIva-gtRet)},
+      parcial:(ym===ymActual),
+      calculadoAt:new Date().toISOString()
+    };
+  });
+
+  _FACTURACION_MENSUAL=out;
+}
+
+// ══════════════════════════════════════════════════════════════
 // PAGE: FACTURACION MENSUAL
 // ══════════════════════════════════════════════════════════════
 function renderFacturacionMensual(){
@@ -4129,8 +4272,10 @@ function renderFacturacionMensual(){
     o.textContent = MESES[parseInt(ym.slice(5,7))-1]+' '+ym.slice(0,4);
     ymEl.appendChild(o);
   });
+  var chkVM=document.getElementById('fac-vis-mon');
+  if(chkVM) chkVM.checked=_FAC_VISITAS_MONEDERA;
   if(!meses.length){
-    document.getElementById('fac-kpis').innerHTML='<div style="padding:16px;color:var(--text2);font-size:12px">Sin datos de facturación disponibles. Carga un Excel con la pestaña "Facturación".</div>';
+    document.getElementById('fac-kpis').innerHTML='<div style="padding:16px;color:var(--text2);font-size:12px">Sin datos de facturación disponibles a partir de '+_FAC_YM_MIN+'. Publique un Excel con las hojas operativas y la hoja <code>metas</code>.</div>';
     document.getElementById('fac-tbl-esv').innerHTML='';
     document.getElementById('fac-tbl-gt').innerHTML='';
     document.getElementById('fac-chart-card').style.display='none';
@@ -4142,16 +4287,20 @@ function renderFacturacionMensual(){
   const esv = d.esv, gt = d.gt;
 
   // ── KPIs
+  const perLbl = MESES[parseInt(selYm.slice(5,7))-1]+' '+selYm.slice(0,4);
+  const parcialTag = d.parcial
+    ? '<span style="display:inline-block;margin-left:6px;background:var(--yellow);color:var(--yellow2);font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;">PARCIAL</span>'
+    : '';
   document.getElementById('fac-kpis').innerHTML = `
     <div class="kpi">
       <div class="kpi-lbl">🇸🇻 Total a Pagar — El Salvador</div>
       <div class="kpi-val">$${fmt(esv.resumen.total.totalPagar,2)}</div>
-      <div class="kpi-sub">${MESES[parseInt(selYm.slice(5,7))-1]} ${selYm.slice(0,4)} · Recolección + Tesorería, con IVA</div>
+      <div class="kpi-sub">${perLbl} · Recolección + Tesorería, con IVA${parcialTag}</div>
     </div>
     <div class="kpi">
       <div class="kpi-lbl">🇬🇹 Total a Facturar — Guatemala</div>
       <div class="kpi-val">Q${fmt(gt.total,2)}</div>
-      <div class="kpi-sub">${MESES[parseInt(selYm.slice(5,7))-1]} ${selYm.slice(0,4)} · Sin IVA</div>
+      <div class="kpi-sub">${perLbl} · Neto Q${fmt(gt.neto,2)} + IVA Q${fmt(gt.iva,2)}${parcialTag}</div>
     </div>
     <div class="kpi">
       <div class="kpi-lbl">💧 Recolección Cash Today (ESV)</div>
@@ -4171,7 +4320,8 @@ function renderFacturacionMensual(){
   });
   esvHtml += `<tr class="pres-total"><td colspan="6"><strong>Subtotal monto transportado</strong></td><td class="r"><strong>$${fmt(esv.montoTotal,4)}</strong></td></tr>`;
   esv.visitas.forEach(v=>{
-    esvHtml += `<tr><td>Visitas adicionales</td><td>${v.site}</td><td class="r">${fmt(v.visitas)}</td><td class="r">${fmt(v.cupo)}</td><td class="r">${fmt(v.excedente)}</td><td class="r">$${fmt(v.valorVisita,2)}/visita</td><td class="r"><strong>$${fmt(v.cobro,2)}</strong></td></tr>`;
+    const anTag = v.anulada ? ' <span style="font-size:10px;color:var(--text2);font-weight:600;">(no procede)</span>' : '';
+    esvHtml += `<tr><td>Visitas adicionales</td><td>${v.site}${anTag}</td><td class="r">${fmt(v.visitas)}</td><td class="r">${fmt(v.cupo)}</td><td class="r">${fmt(v.excedente)}</td><td class="r">$${fmt(v.valorVisita,2)}/visita</td><td class="r"><strong>$${fmt(v.cobro,2)}</strong></td></tr>`;
   });
   esvHtml += `<tr class="pres-total"><td colspan="6"><strong>Subtotal visitas adicionales</strong></td><td class="r"><strong>$${fmt(esv.visitasTotal,2)}</strong></td></tr>`;
   esv.piezas.forEach(p=>{
@@ -4191,7 +4341,10 @@ function renderFacturacionMensual(){
   gt.sitios.forEach(s=>{
     gtHtml += `<tr><td>${s.site}</td><td class="r">Q${fmt(s.cupo,2)}</td><td class="r">Q${fmt(s.depositado,2)}</td><td class="r">Q${fmt(s.excedente,2)}</td><td class="r">0.04%</td><td class="r"><strong>Q${fmt(s.valorFacturar,4)}</strong></td></tr>`;
   });
-  gtHtml += `<tr class="pres-total"><td colspan="5"><strong>TOTAL</strong></td><td class="r"><strong>Q${fmt(gt.total,4)}</strong></td></tr>`;
+  gtHtml += `<tr class="pres-total"><td colspan="5"><strong>Subtotal neto (sin IVA)</strong></td><td class="r"><strong>Q${fmt(gt.neto,4)}</strong></td></tr>`;
+  gtHtml += `<tr><td colspan="5">IVA</td><td class="r">Q${fmt(gt.iva,4)}</td></tr>`;
+  if(gt.ivaRet) gtHtml += `<tr><td colspan="5">IVA Retenido</td><td class="r">-Q${fmt(gt.ivaRet,4)}</td></tr>`;
+  gtHtml += `<tr class="pres-total"><td colspan="5"><strong>TOTAL A FACTURAR</strong></td><td class="r"><strong>Q${fmt(gt.total,4)}</strong></td></tr>`;
   gtHtml += '</tbody></table>';
   document.getElementById('fac-tbl-gt').innerHTML = gtHtml;
 
@@ -4210,7 +4363,7 @@ function renderFacturacionMensual(){
         data:{ labels, datasets:[
           { label:'Total a Pagar ESV ($)', data:dataEsv, borderColor:'#002060', backgroundColor:'rgba(0,32,96,.08)',
             borderWidth:2, tension:.3, pointRadius:4, pointBackgroundColor:'#002060', yAxisID:'y' },
-          { label:'Total a Facturar GT (Q)', data:dataGt, borderColor:'#5B2D8E', backgroundColor:'transparent',
+          { label:'Total a Facturar GT (Q, c/IVA)', data:dataGt, borderColor:'#5B2D8E', backgroundColor:'transparent',
             borderWidth:2, tension:.3, pointRadius:4, pointBackgroundColor:'#5B2D8E', yAxisID:'y1' }
         ]},
         options:{
