@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.5 | **Última actualización:** 31/07/2026 | **Estado:** Producción ✅
+**Versión vigente:** v2.6 | **Última actualización:** 31/07/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -373,3 +373,66 @@ Los KPIs de la tarjeta "Cartas de Salida" estaban escritos a mano en el array `D
 
 ---
 *PDC Analytics Center · Grupo PDC · Departamento Financiero · v2.5 · 31/07/2026*
+
+---
+
+# §16 — MÓDULO FACTURACIÓN MENSUAL (sesión 05/08/2026 · v2.6)
+
+## 16.1 Naturaleza del módulo
+
+Módulo de `cash_today.html`, ubicado después de Presupuesto. Calcula el **cobro mensual del proveedor de transporte de valores** para El Salvador y Guatemala.
+
+**Decisión arquitectónica central:** el módulo **NO lee ninguna pestaña de facturación del Excel**. La pestaña `Facturación` existió únicamente como *modelo de referencia* para documentar la fórmula del proveedor y está congelada. La plataforma calcula la facturación por sí misma desde las hojas operativas, de modo que el módulo se actualiza solo con cada publicación de datos.
+
+Fuente única de verdad: **hojas operativas** (`CDA`, `XELA`, `ESV - STA TECLA`, `ESV - SN MIGUEL`) + **hoja `metas`** (todos los parámetros).
+
+## 16.2 Reglas de negocio
+
+**Asimetría fundamental entre países** — verificada empíricamente, las cifras solo cuadran así:
+
+- **El Salvador factura sobre transacciones tipo `Recogida`.**
+- **Guatemala factura sobre transacciones tipo `Depósito`.**
+
+| Concepto | País | Base | Cupo (metas) | Tarifa (metas) |
+|---|---|---|---|---|
+| Monto transportado | ESV | Σ Importe recogidas | `Valor Contratado` | `Excedente variable` / 1000 |
+| Visitas adicionales | ESV | conteo de recogidas | `Visitas Contratadas` | `Visita adicional (Costo)` |
+| Tesorería / millar | ESV | Σ Piezas recogidas | `Cupo Mensual` | `Millar por moneda procesada` |
+| Excedente sobre cupo | GT | Σ Importe depósitos | `Valor Contratado` | `Excedente variable` / 1000 |
+
+Fórmula general: `excedente = MAX(base - cupo, 0)` → `cobro = excedente × tarifa`.
+
+**Composición del bloque Tesorería ESV:** cargo de transporte de los 2 cajeros de *billetes* + millar de moneda de las 2 *monederas*. El cargo de transporte aparece **también** en Recolección. Esto **no es duplicidad** — son servicios distintos (transporte vs. conteo), confirmado por Charly el 05/08/2026. No "corregir" en el futuro.
+
+**Impuestos:** ESV IVA 13% + IVA retenido 1%. GT IVA 12% (se muestra también el neto). Parametrizados en el bloque inferior de `metas` (A30–A36) → `_IMP` / `IMPUESTOS`.
+
+**Consolidaciones GT:** AMATITLÁN I + II = un solo cupo (Q8MM + Q8MM = **Q16MM**) y visitas 6 + 6 = **12 unificadas**. La división en dos filas de `metas` es contable, no operativa.
+
+**Visitas de Monederas ESV:** anuladas por defecto — el proveedor no las cobra hoy. Interruptor `facToggleVisitasMonedera()` en la barra del módulo para cuando la condición cambie.
+
+**Mes en curso:** se incluye y se marca con badge `PARCIAL`, dando visibilidad del costo proyectado al cierre.
+
+## 16.3 Componentes
+
+| Componente | Rol |
+|---|---|
+| `buildFacturacionFromRecs()` | Motor. Índice `cajero\|ym\|tipo` en una pasada; genera todos los meses ≥ `_FAC_YM_MIN`. Llamado en `autoFilter()` |
+| `_facNum()` | Parser numérico robusto para `metas` (formato %, moneda, separador de miles) |
+| `_facMeta(caj, ind)` | Lookup en `METAS` por cajero + indicador |
+| `_FAC_GT_GRUPOS` | Mapa de agrupación GT (consolidaciones). Un grupo sin transacciones se omite automáticamente |
+| `_FACTURACION_MENSUAL` | Resultado **calculado en runtime** — NO se persiste |
+| `renderFacturacionMensual()` | Vista: KPIs, tablas ESV/GT, gráfica de tendencia (≥2 meses) |
+
+## 16.4 REGLA PERMANENTE — persistir `_M` e `_IMP` en toda publicación
+
+**REGLA #15 (05/08/2026).** El flujo de publicación self-service debe persistir `_M` (metas) e `_IMP` (impuestos) junto a `_R`, `_TC_MENSUAL` y `_COSTOS`.
+
+**Origen:** `dlHTML()` sí regrababa `_M`, pero la publicación vía Edge Function nunca lo hizo. Las metas embebidas quedaron congeladas y divergieron del Excel (excedente variable 1.0 vs. 0.35; cupo AMAT 9MM vs. 8MM). Mientras `metas` solo alimentaba semáforos el impacto era cosmético; con un motor de facturación dependiente de esos parámetros habría producido **cobros errados** (×2.86 en el excedente de PDC Comercial).
+
+**Principio general:** todo bloque `const` embebido que alimente lógica de negocio debe persistirse en la publicación. De lo contrario diverge silenciosamente de su fuente.
+
+## 16.5 Validación
+
+Motor ejecutado en Node contra el Excel real (44,584 registros): **10/10 cifras exactas** vs. modelo del proveedor para julio 2026 — TOTAL ESV a pagar **$347.6939**, GT neto **Q130.8717**. `node --check` sobre los 6 bloques `<script>`: 0 errores.
+
+**Protocolo de regresión:** ante cualquier cambio futuro en el módulo, reejecutar la comparación contra julio 2026 antes de desplegar.
