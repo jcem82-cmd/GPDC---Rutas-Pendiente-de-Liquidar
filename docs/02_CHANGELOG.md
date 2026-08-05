@@ -1,4 +1,57 @@
 
+## [05/08/2026 · cierre] — Facturación Mensual: 6 correcciones post-revisión
+
+Correcciones reportadas por Charly tras revisar el módulo en producción.
+
+### Causa raíz común de 3 de los 6 síntomas
+
+Charly reportó: (a) excedente de PDC Comercial en $20.8620 en vez de $7.30, (b) visitas adicionales sin calcular, (c) tesorería sin cifras. **Los tres eran el mismo problema:** el bloque `const _M` embebido seguía con los parámetros obsoletos, porque el fix de persistencia se había desplegado pero aún no se había publicado un Excel con el código nuevo.
+
+| Síntoma | Parámetro obsoleto | Valor correcto |
+|---|---|---|
+| $20.8620 en PDC Comercial | `excv` = 1.0 → 0.1% | `excv` = 0.35 → **0.035%** = $7.3017 |
+| Visitas en $0.00 | `cvn` = 0 (sin costo ESV) | **$20.00**/visita = $120.00 |
+| Tesorería vacía | sin `Cupo Mensual` | **80,000 / 22,857** = $162.8910 |
+
+**Corrección:** se regrabaron `_M` e `_IMP` directamente desde el Excel vigente, sin requerir que Charly publicara. Verificación aritmética del diagnóstico: `20,862 × 0.001 = 20.862` — coincide exactamente con la tarifa vieja, confirmando la causa raíz.
+
+### Desglose de Tesorería no mostraba el millar procesado
+
+**Síntoma:** el subtotal de Tesorería en el desglose mostraba $162.8910 (solo las 2 Monederas), mientras el Resumen de Cobro mostraba $170.1927. Descuadre visual de $7.3017.
+
+**RCA:** problema de **presentación, no de cálculo**. El motor siempre computó `tesoreria.valor = transporteBilletes + piezas` correctamente, pero el render solo iteraba `esv.piezas`, omitiendo el millar procesado de los cajeros de billetes.
+
+**Corrección:** el bloque muestra las 4 filas del modelo del proveedor, con etiquetas que hacen visible la distinción transporte-vs-conteo:
+
+| Concepto | Sede | Cobro |
+|---|---|---|
+| Tesorería · millar procesado | PDC Comercial | $7.30 |
+| Tesorería · millar procesado | PDC Comercial San Miguel | $0.00 |
+| Tesorería · millar moneda procesada | PDC Comercial (Monedera) | $141.98 |
+| Tesorería · millar moneda procesada | San Miguel (Monedera) | $20.91 |
+| **Subtotal tesorería** | | **$170.19** |
+
+El subtotal quedó **ligado a `esv.resumen.tesoreria.valor`** en lugar de recalcularse, eliminando la posibilidad estructural de que desglose y resumen vuelvan a divergir.
+
+### Gráfica de tendencia en valores netos
+
+La tendencia mezclaba montos con IVA de países con tasas distintas (ESV 13% + 1% retenido / GT 12%), distorsionando la comparación. Ahora grafica `esv.resumen.total.valor` y `gt.neto`, con etiquetas explícitas.
+
+### Totales por país y limpieza
+
+- Totales explícitos `🇸🇻 TOTAL EL SALVADOR` y `🇬🇹 TOTAL GUATEMALA`; el total ESV ahora expone también IVA e IVA retenido.
+- Nota al pie del módulo eliminada por completo.
+
+### Commits
+
+`684dcdce6593` (5 correcciones) · `e95a3c0d1a5c` (desglose de tesorería)
+
+### Lección registrada
+
+Un fix de persistencia **no repara los datos ya embebidos** — solo evita futuras divergencias. Al corregir persistencia de un bloque `const`, hay que regrabar el bloque en el mismo despliegue o el síntoma sobrevive. Incorporado a `04_PROJECT_RULES.md` como parte de la REGLA 15.
+
+---
+
 ## [05/08/2026] — Facturación Mensual: de lectura de pestaña a motor de cálculo propio
 
 **Clasificación:** Mejora funcional (sustitución del motor de datos del módulo) + 1 corrección crítica de causa raíz.
