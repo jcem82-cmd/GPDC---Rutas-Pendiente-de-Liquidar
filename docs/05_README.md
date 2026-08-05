@@ -32,22 +32,23 @@ GET /repos/{owner}/{repo}/git/blobs/{sha}  (Accept: application/vnd.github.raw) 
 |---|---|
 | Live Portal | https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/analytics.html |
 | Repo | `jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar` (branch `main`) |
-| Token (fragmentado) | `['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'].join('')` |
+| Token (fragmentado) | ver `01_MASTER_PROJECT_CONTEXT.md` §Tokens — el listado aquí quedó obsoleto |
 | Supabase | `https://pytsrgtcjytjztwdlvux.supabase.co` |
 
 ---
 
-## 🗂 Archivos en producción (21/06/2026)
+## 🗂 Archivos en producción (05/08/2026)
 
 | Archivo | Descripción | Versión |
 |---|---|---|
 | `login.html` | Auth · 14 usuarios · bloqueo 3 intentos | v1.1 |
 | `analytics.html` | Portal Hub · 5 dashboards · panel admin | v1.3 |
 | `index.html` | Liquidación de Rutas · Export PDF | v12 |
-| `cash_today.html` | Cash Today · 11 módulos · Presupuesto | v2.8 |
+| `cash_today.html` | Cash Today · 12 módulos · Presupuesto + **Facturación Mensual** | v2.9 |
 | `regional/index.html` | Consolidado Regional · 4 países | v1.0 |
 | `peru/index.html` | Dashboard Perú · PEN | v1.0 |
-| `honduras/index.html` | Dashboard Honduras · HNL | v1.0 |
+| `elsalvador/index.html` | Dashboard El Salvador · USD | v1.0 |
+| `cartas_salida.html` | Cartas de Salida · GT+ESV+PE | v1.2 |
 | `admin.html` | Panel admin · chat Supabase | — |
 
 ---
@@ -59,7 +60,24 @@ GET /repos/{owner}/{repo}/git/blobs/{sha}  (Accept: application/vnd.github.raw) 
 3. Si trae un Excel nuevo → procesar según flujo en `MASTER_PROJECT_CONTEXT.md §7`
 4. Si no especifica → proponer el siguiente ítem del Roadmap
 
-**Siguiente ítem disponible (Fase 3):** Análisis de festivos (campo `hol` ya en `_R`)
+**Siguiente ítem disponible:** ver `03_ROADMAP.md` → pendientes derivados de la sesión 05/08/2026
+
+---
+
+---
+
+## ⚠️ Al tocar `cash_today.html` — Facturación Mensual
+
+El módulo **calcula** la facturación del proveedor; no lee ninguna pestaña de facturación del Excel. Antes de modificarlo:
+
+1. Leer `01_MASTER_PROJECT_CONTEXT.md §16` completo — reglas de negocio, asimetría ESV/GT y composición de Tesorería.
+2. Leer `04_PROJECT_RULES.md` REGLAS 14, 15 y 16.
+3. Tras cualquier cambio, **reejecutar las cifras de control de julio 2026** (`§16.7`) antes de desplegar. TOTAL ESV a pagar debe dar exactamente **$347.6939** y GT neto **Q130.8717**.
+
+Dos cosas que parecen bugs y **no lo son**:
+
+- El cargo de transporte de PDC Comercial aparece en Recolección **y** en Tesorería. Son servicios distintos (transporte vs. conteo), confirmado por Charly. No "corregir".
+- Las visitas adicionales de las Monederas ESV están anuladas. Es la condición comercial vigente, con interruptor en la barra del módulo.
 
 ---
 
