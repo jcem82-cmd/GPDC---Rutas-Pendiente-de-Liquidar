@@ -3407,8 +3407,45 @@ async function downloadDashboard() {
   }
 }
 
+let _pdcPublishing = false; // REGLA #14/#16: bloqueo real contra doble clic (evita commits duplicados en <35s)
+
+async function _pdcCheckDeployStatus(commitSha, tokenActions, btn, origTxt) {
+  // Verifica el estado real del workflow "Deploy Dashboard" para el commit publicado,
+  // en vez de asumir que el deploy terminó tras el PUT exitoso. Poll cada 8s, máx ~3 min.
+  const RUNS_URL = 'https://api.github.com/repos/jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar/actions/runs?event=push&per_page=5';
+  const HDRS = {'Authorization':'token '+tokenActions,'Accept':'application/vnd.github.v3+json'};
+  const maxTries = 22; // ~176s
+  for (let i=0; i<maxTries; i++) {
+    await new Promise(r=>setTimeout(r, 8000));
+    try {
+      const rr = await fetch(RUNS_URL, {headers:HDRS});
+      if (!rr.ok) continue;
+      const rd = await rr.json();
+      const run = (rd.workflow_runs||[]).find(w=>w.head_sha===commitSha);
+      if (!run) continue; // aún no aparece el run para este commit
+      if (run.status==='completed') {
+        if (run.conclusion==='success') {
+          btn.innerHTML='✅ Desplegado en GitHub Pages'; btn.style.background='#10b981';
+        } else {
+          btn.innerHTML='⚠️ Deploy '+run.conclusion+' — revisar Actions'; btn.style.background='#f59e0b';
+        }
+        setTimeout(()=>{btn.innerHTML=origTxt; btn.style.background='#4f46e5'; btn.disabled=false; _pdcPublishing=false;}, 8000);
+        return;
+      }
+      // en cola o en progreso: reflejar en el boton
+      btn.innerHTML = run.status==='queued' ? '⏳ En cola de despliegue…' : '⏳ Desplegando…';
+    } catch(e) { /* fallo de red puntual en el polling: reintentar en el siguiente ciclo */ }
+  }
+  // Timeout de verificacion: no se bloquea al usuario indefinidamente, pero se le avisa
+  btn.innerHTML = '⏳ Publicado — verificación tardó más de lo normal, revisa Actions';
+  btn.style.background='#f59e0b';
+  setTimeout(()=>{btn.innerHTML=origTxt; btn.style.background='#4f46e5'; btn.disabled=false; _pdcPublishing=false;}, 8000);
+}
+
 async function publishToGitHub() {
   if (!parsedFileData) { alert('Primero procesa un archivo Excel'); return; }
+  if (_pdcPublishing) { return; } // bloqueo real: ignora clics repetidos mientras hay una publicacion en curso
+  _pdcPublishing = true;
   const btn = document.getElementById('btnPublishGH');
   const origTxt = btn.innerHTML;
   btn.innerHTML = '⏳ Publicando...'; btn.disabled = true;
@@ -3457,9 +3494,17 @@ async function publishToGitHub() {
       })
     });
     if(pushR.ok) {
-      btn.innerHTML='✅ Publicado (~2 min para ver cambios)';
+      const pushD = await pushR.json();
+      const newSha = pushD && pushD.commit && pushD.commit.sha;
+      btn.innerHTML='✅ Publicado. Verificando despliegue…';
       btn.style.background='#10b981';
-      setTimeout(()=>{btn.innerHTML=origTxt;btn.style.background='#4f46e5';btn.disabled=false;},6000);
+      // El boton permanece bloqueado hasta que se confirme el estado real del deploy
+      // (o hasta el timeout de seguridad de _pdcCheckDeployStatus), no por un temporizador fijo.
+      if (newSha) {
+        _pdcCheckDeployStatus(newSha, _t, btn, origTxt);
+      } else {
+        setTimeout(()=>{btn.innerHTML=origTxt;btn.style.background='#4f46e5';btn.disabled=false;_pdcPublishing=false;},6000);
+      }
     } else {
       const e = await pushR.json();
       throw new Error(e.message||'HTTP '+pushR.status);
@@ -3468,6 +3513,7 @@ async function publishToGitHub() {
     console.error('publishToGitHub:',e);
     btn.innerHTML = origTxt;
     btn.style.background = '#ef4444'; btn.disabled = false;
+    _pdcPublishing = false;
     alert('Error al publicar en GitHub:\n' + (e.message||String(e)));
     setTimeout(()=>{btn.style.background='#4f46e5';},4000);
   }
