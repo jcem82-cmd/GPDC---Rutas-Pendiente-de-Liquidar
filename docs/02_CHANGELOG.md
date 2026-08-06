@@ -1,4 +1,38 @@
 
+## [06/08/2026] — Cash Today · Volumetría: desglose por cajero individual (solo CDA)
+
+**Clasificación:** Mejora funcional. **Archivo:** únicamente `cash_today.html`, función `renderVolumentria()`.
+
+**Solicitud:** en el drill-down de sede (módulo Volumetría), la fila "Billetes" mostraba el consolidado de todos los cajeros no-Monedera de la sede. Charly solicitó ver el desglose por cajero individual dentro de CDA.
+
+### Cambio aplicado
+
+| Elemento | Antes | Ahora |
+|---|---|---|
+| Drill-down CDA | 💵 Billetes (I+II consolidado) · 🪙 Monedas | 💵 Billetes (subtotal) → ↳ PDC AMATITLÁN I → ↳ PDC AMATITLÁN II SDM500 · 🪙 Monedas |
+| Otras sedes (Xela, Sta. Tecla, San Miguel) | Sin cambio | Sin cambio (un solo cajero de Billetes cada una) |
+
+### Alcance confirmado con Charly antes de codificar
+1. Desglose activo **solo para CDA** (única sede con 2 cajeros de Billetes hoy).
+2. La fila "Billetes" se **mantiene como subtotal**, con los cajeros indentados debajo.
+3. Métrica Visitas: cada cajero muestra **sus propios días únicos**; el total de sede sigue siendo la unión de días (sin duplicar visitas coincidentes).
+
+### Implementación
+- Nueva propiedad `detalle[sede][mes].porCaj` poblada solo cuando `r.s==='CDA'`, para las 4 métricas (`monto`, `txn`, `piezas`, `visitas`).
+- Nombres de cajero descubiertos dinámicamente desde los datos (`r.c`) — no hardcodeados; un cajero nuevo en CDA se desglosaría automáticamente.
+- `volToggleDrill()` extendido con clase `${drillId}-child` para expandir/colapsar las filas de cajero junto con Billetes/Monedas.
+- `volExportExcel()` no fue tocado — fuera del alcance solicitado.
+
+### Validación
+- `node --check` en los 2 bloques `<script>` — sin errores.
+- Prueba funcional simulada (Node) sobre `aggBySM()` con dataset sintético: CDA desglosa correctamente (AMAT I + AMAT II = subtotal Billetes); Xela no genera `porCaj` — alcance respetado.
+- Verificado en `raw.githubusercontent.com` post-deploy.
+- Confirmado por Charly en producción: "ya revise, y todo esta bien".
+
+**SHA post-deploy:** `cash_today.html` → `57dc3e70f29c`
+
+---
+
 ## [05/08/2026 · cierre] — Facturación Mensual: 6 correcciones post-revisión
 
 Correcciones reportadas por Charly tras revisar el módulo en producción.
