@@ -3378,31 +3378,38 @@ function renderVolumentria(){
       result[s]  = {}; detalle[s] = {};
       for(let m=1;m<=12;m++){
         result[s][m]  = null;
-        detalle[s][m] = {bill:null, mon:null};
+        detalle[s][m] = {bill:null, mon:null, porCaj:{}};
       }
     });
     rows.filter(r=>r.p===pais).forEach(r=>{
       if(!result[r.s]) return;
       const m = r.mo;
+      // Desglose por cajero individual dentro de Billetes — alcance: solo CDA
+      const addCaj = (val)=>{
+        if(r.s==='CDA'){
+          const pc = detalle[r.s][m].porCaj;
+          pc[r.c] = (pc[r.c]||0) + val;
+        }
+      };
       if(metric==='monto'){
         result[r.s][m] = (result[r.s][m]||0) + r.imp;
         if(isMonedera(r.c)) detalle[r.s][m].mon = (detalle[r.s][m].mon||0) + r.imp;
-        else                detalle[r.s][m].bill = (detalle[r.s][m].bill||0) + r.imp;
+        else { detalle[r.s][m].bill = (detalle[r.s][m].bill||0) + r.imp; addCaj(r.imp); }
       } else if(metric==='txn'){
         result[r.s][m] = (result[r.s][m]||0) + 1;
         if(isMonedera(r.c)) detalle[r.s][m].mon = (detalle[r.s][m].mon||0) + 1;
-        else                detalle[r.s][m].bill = (detalle[r.s][m].bill||0) + 1;
+        else { detalle[r.s][m].bill = (detalle[r.s][m].bill||0) + 1; addCaj(1); }
       } else if(metric==='piezas'){
         result[r.s][m] = (result[r.s][m]||0) + (r.pz||0);
         if(isMonedera(r.c)) detalle[r.s][m].mon = (detalle[r.s][m].mon||0) + (r.pz||0);
-        else                detalle[r.s][m].bill = (detalle[r.s][m].bill||0) + (r.pz||0);
+        else { detalle[r.s][m].bill = (detalle[r.s][m].bill||0) + (r.pz||0); addCaj(r.pz||0); }
       }
     });
     if(metric==='visitas'){
-      const visits={}, vBill={}, vMon={};
+      const visits={}, vBill={}, vMon={}, vCaj={};
       sedes.forEach(s=>{
-        visits[s]={}; vBill[s]={}; vMon[s]={};
-        for(let m=1;m<=12;m++){ visits[s][m]=new Set(); vBill[s][m]=new Set(); vMon[s][m]=new Set(); }
+        visits[s]={}; vBill[s]={}; vMon[s]={}; vCaj[s]={};
+        for(let m=1;m<=12;m++){ visits[s][m]=new Set(); vBill[s][m]=new Set(); vMon[s][m]=new Set(); vCaj[s][m]={}; }
       });
       // Visitas desde RECOGIDAS:
       // - Billetes: días únicos (unión entre cajeros de la sede = 1 visita aunque recojan 2 cajeros)
@@ -3423,6 +3430,11 @@ function renderVolumentria(){
           // Billetes: días únicos (consolidado entre cajeros)
           visits[r.s][r.mo].add(r.dy);
           vBill[r.s][r.mo].add(r.dy);
+          // Por cajero individual (alcance: solo CDA) — días únicos propios
+          if(r.s==='CDA'){
+            if(!vCaj[r.s][r.mo][r.c]) vCaj[r.s][r.mo][r.c] = new Set();
+            vCaj[r.s][r.mo][r.c].add(r.dy);
+          }
         }
       });
       sedes.forEach(s=>{
@@ -3431,6 +3443,12 @@ function renderVolumentria(){
           const mon  = cntMon[s][m];
           detalle[s][m].bill = bill || null;
           detalle[s][m].mon  = mon  || null;
+          if(s==='CDA'){
+            Object.keys(vCaj[s][m]).forEach(cj=>{
+              const sz = vCaj[s][m][cj].size;
+              if(sz) detalle[s][m].porCaj[cj] = sz;
+            });
+          }
           // Total = billetes días únicos + monedera recogidas
           const tot = bill + mon;
           result[s][m] = tot || null;
@@ -3503,6 +3521,26 @@ function renderVolumentria(){
       }
       const bTot=bHas?(metric==='monto'?(isGT?fmt(bSum,0):'$'+fmt(bSum,2)):fmt(bSum,0)):'—';
       h+=`<td class="num" style="padding:4px 6px;font-weight:700;color:#0052CC;background:#e0ecff;font-size:11px;">${bTot}</td></tr>`;
+      // Fila(s) detalle por cajero individual dentro de Billetes — alcance: solo CDA
+      if(s==='CDA'){
+        const cajeroSet = new Set();
+        for(let mm=1;mm<=12;mm++){
+          const pc = detalle[s][mm].porCaj;
+          if(pc) Object.keys(pc).forEach(n=>cajeroSet.add(n));
+        }
+        [...cajeroSet].sort().forEach(cj=>{
+          h += `<tr class="${drillId}-child" style="display:none;background:#f5faff;">`;
+          h += `<td style="padding:3px 8px 3px 42px;font-size:9.5px;color:#3d7ad1;font-weight:600;min-width:110px;">↳ ${cj}</td>`;
+          let cSum=0, cHas=false;
+          for(let mm=1;mm<=12;mm++){
+            const v=(detalle[s][mm].porCaj && detalle[s][mm].porCaj[cj]!==undefined) ? detalle[s][mm].porCaj[cj] : null;
+            if(v!==null){cSum+=v;cHas=true;}
+            h+=`<td class="num" style="padding:3px 6px;font-size:10.5px;">${fmtCell(v,isGT)}</td>`;
+          }
+          const cTot=cHas?(metric==='monto'?(isGT?fmt(cSum,0):'$'+fmt(cSum,2)):fmt(cSum,0)):'—';
+          h+=`<td class="num" style="padding:3px 6px;font-weight:600;color:#3d7ad1;background:#eaf3ff;font-size:10.5px;">${cTot}</td></tr>`;
+        });
+      }
       // Fila detalle Monedas
       h += `<tr id="${drillId}-mon" style="display:none;background:#fffbf0;">`;
       h += `<td style="padding:4px 8px 4px 26px;font-size:10px;color:#b36a00;font-weight:700;min-width:110px;">🪙 Monedas</td>`;
@@ -3607,6 +3645,7 @@ function volToggleDrill(id, sede, isGT){
   const open = !billRow || billRow.style.display==='none';
   if(billRow) billRow.style.display = open ? 'table-row' : 'none';
   if(monRow)  monRow.style.display  = open ? 'table-row' : 'none';
+  document.querySelectorAll('.'+id+'-child').forEach(el=>{ el.style.display = open ? 'table-row' : 'none'; });
   if(ico) ico.textContent = open ? '▼' : '▶';
   // Mostrar/ocultar panel de descarga
   const ctx = window._volCtx;
