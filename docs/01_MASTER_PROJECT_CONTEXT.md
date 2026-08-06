@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.6 | **Última actualización:** 31/07/2026 | **Estado:** Producción ✅
+**Versión vigente:** v2.7 | **Última actualización:** 06/08/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -252,6 +252,8 @@ Toda reconstrucción de `_R` vía Python (flujo alterno: usuario sube Excel a es
 
 | Versión | Fecha | Descripción |
 |---|---|---|
+| **v2.7** | **06/08/2026** | **Cash Today · Volumetría: desglose por cajero individual (AMAT I / AMAT II) dentro de Billetes, alcance CDA — ver §17** |
+| v2.6 | 05/08/2026 | Facturación Mensual: correcciones post-revisión (tesorería 4 filas, gráfica en neto) — ver §16 |
 | **v2.3** | **23/07/2026** | **Perú/ESV/Regional: histórico real, KPI_HIST expuesto en PDCBridge (vencidas vs vencidas_real), mes_actual_pais por país, fix fila sin Moneda, fix filtro Vencida, Último Acceso vía Supabase — ver §12** |
 | v2.1 | 20/07/2026 | Multi-select de país (gate por rol) + multi-select en Canal/Responsable/Rango (todos los usuarios) — index.html, cash_today.html, cartas_salida.html |
 | v2.0 | 07/07/2026 | PDCBridge (fuente única de verdad Rutas) · Honduras eliminado de Regional · Cash Today: publicación por reemplazo total (fin del ciclo de bugs de deduplicación) · rotación de tokens |
@@ -471,3 +473,46 @@ Motor ejecutado en Node contra el Excel real (44,584 registros): **10/10 cifras 
 | Tesorería — a pagar | $190.6158 |
 | **TOTAL EL SALVADOR a pagar** | **$347.6939** |
 | GT neto / IVA / total | Q130.8717 / Q15.7046 / **Q146.5763** |
+
+---
+
+# §17 — VOLUMETRÍA: DESGLOSE POR CAJERO INDIVIDUAL (sesión 06/08/2026 · v2.7)
+
+## 17.1 Naturaleza del cambio
+
+**Clasificación:** Mejora funcional (no corrección de error).
+**Archivo modificado:** únicamente `cash_today.html`, función `renderVolumentria()` (sub-funciones `aggBySM()`, `buildTable()`, `volToggleDrill()`).
+**Solicitud de origen:** Charly reportó que el drill-down de sede en Volumetría mostraba "Billetes" como bucket consolidado (suma de todos los cajeros no-Monedera), sin visibilidad del cajero individual.
+
+## 17.2 Comportamiento anterior vs. nuevo
+
+| | Antes | Ahora |
+|---|---|---|
+| Drill-down CDA | Billetes (consolidado I+II) · Monedas | Billetes (subtotal) → ↳ PDC AMATITLÁN I → ↳ PDC AMATITLÁN II SDM500 · Monedas |
+| Otras sedes (Xela, Sta. Tecla, San Miguel) | Billetes · Monedas | **Sin cambio** — cada una tiene un solo cajero de Billetes |
+
+## 17.3 Alcance — decisión explícita de Charly (06/08/2026)
+
+El desglose por cajero se activa **únicamente para `s==='CDA'`** (gate `if(r.s==='CDA')` en la acumulación y en el render), por ser la única sede con más de un cajero de Billetes activo hoy. Preguntas de alcance resueltas antes de codificar:
+
+1. ¿Aplicar a todas las sedes o solo CDA? → **Solo CDA**.
+2. ¿Reemplazar la fila "Billetes" o mantenerla como subtotal? → **Mantener como subtotal**, con los cajeros indentados debajo.
+3. ¿Cómo tratar la métrica Visitas (lógica de días únicos, no de conteo)? → **Cada cajero muestra sus propios días únicos de recolección; el total de sede sigue siendo la unión de días** (sin duplicar si ambos cajeros recogieron el mismo día).
+
+## 17.4 Implementación técnica
+
+- Nueva propiedad `detalle[sede][mes].porCaj = {}` — objeto `{ nombreCajero: valor }`, poblado solo cuando `r.s==='CDA' && !isMonedera(r.c)`.
+- Aplica a las 4 métricas del selector: `monto`, `txn`, `piezas` (acumulación directa por registro) y `visitas` (Set de días únicos por cajero, vía estructura `vCaj`).
+- Los nombres de cajero se descubren dinámicamente desde los datos (`r.c`), no están hardcodeados — si en el futuro aparece un tercer cajero de Billetes en CDA, se desglosará automáticamente sin tocar código.
+- El toggle de expandir/colapsar (`volToggleDrill`) se extendió con una clase CSS `${drillId}-child` para mostrar/ocultar las filas de cajero junto con Billetes/Monedas, sin alterar la lógica existente de esas dos filas (que siguen referenciadas por `id`).
+- El botón de exportación a Excel (`volExportExcel`) **no fue modificado** — queda fuera del alcance solicitado; sigue exportando el consolidado Billetes/Monedas como hasta ahora.
+
+## 17.5 Validación previa al deploy
+
+- `node --check` sobre los 2 bloques `<script>` del archivo — sin errores.
+- Prueba funcional simulada en Node replicando `aggBySM()` con dataset sintético: confirmó que CDA desglosa correctamente por cajero (AMAT I + AMAT II = subtotal Billetes) y que Xela **no** genera `porCaj` (alcance respetado).
+- Verificación post-deploy contra `raw.githubusercontent.com` — cambio presente en producción.
+
+## 17.6 Extensibilidad futura (recomendación, no implementada)
+
+Si otra sede llega a operar con más de un cajero de Billetes, el mismo patrón se puede extender quitando el gate `s==='CDA'` (2 puntos en el código: acumulación en `aggBySM()` y render en `buildTable()`). No se implementó en esta sesión por decisión explícita de alcance — queda documentado como mejora futura, sujeta a autorización cuando aplique.
