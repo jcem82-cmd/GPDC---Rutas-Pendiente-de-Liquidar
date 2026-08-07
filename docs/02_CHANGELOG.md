@@ -1,4 +1,39 @@
 
+## [07/08/2026 · tarde] — Tendencias KPI: acumulación incremental + congelamiento en "Cierre"
+
+**Clasificación:** Corrección de errores. **Archivo:** únicamente `index.html`, función `processWorkbook()` (bloque `kpiData`/`KPI_HIST`).
+
+**Síntoma reportado por Charly:** gráfica "Tendencia de Cierre Mensual" mostraba jun-26=1 vencida en vez de 12, jul-26=0 en vez de 3.
+
+### RCA
+
+`KPI_HIST` se reconstruía desde cero en cada publicación desde "Efectividad" (`mas15`, antigüedad ≥15 días) como aproximación para TODOS los meses, con una única excepción: el último mes del arreglo (mes vigente al publicar) recibía el conteo real de negocio (`Estado Real='Vencidas'`). Al dejar de ser vigente, cada mes perdía su cifra real para siempre en la siguiente publicación.
+
+### Corrección — rediseño de arquitectura (instrucción explícita de Charly)
+
+Charly aclaró que la tabla "Tendencia de Rutas / Cierre Mensual" de la hoja "KPI" (que coincidía exacto con sus cifras: jun=12, jul=3) es solo su paleativo de referencia manual — el dashboard debe calcular por su cuenta, igual que ya hace con el mes vigente, y el resultado debería coincidir con esa tabla como validación puntual, no depender de leerla.
+
+`KPI_HIST` pasa a **acumulación incremental**: se parte del arreglo ya embebido en la página, solo se actualiza/agrega la entrada del mes vigente con cálculo en vivo; los meses anteriores quedan intactos. Un mes queda **permanentemente congelado** (`closed:true`) únicamente cuando el nombre del archivo subido contiene **"Cierre"**. Publicaciones intermedias durante el mes actualizan la cifra en vivo sin bloquearlo; un mes ya cerrado queda protegido contra sobreescrituras accidentales de archivos viejos. REGLA #20 en `04_PROJECT_RULES.md`.
+
+### Backfill único (no repetible)
+
+Se corrigió una sola vez el histórico ya embebido (2022-01 a 2026-07, 55 meses) usando la tabla de la hoja "KPI" como fuente de verificación puntual — todos marcados `closed:true`. El mes vigente (2026-08) se dejó con su valor ya calculado en vivo (152/1042), `closed:false`.
+
+### Incidente durante la sesión (transparencia)
+
+En el primer intento de deploy de este fix, se usó por error un archivo local que no reflejaba una republicación de Charly hecha entre turnos de conversación (commit `8448864597`), sobrescribiéndola por ~4 minutos. Detectado de inmediato vía `git log`, recuperado el contenido correcto desde el historial de Git, reaplicado el fix sobre esos datos, y redesplegado antes de continuar. Ver §19.5 en `01_MASTER_PROJECT_CONTEXT.md` para el detalle completo y la lección aplicada.
+
+### Validación
+
+- Simulación en Python de la extracción de la tabla de la hoja "KPI" contra el Excel real — coincide exacto con las cifras de Charly.
+- `node --check` sobre los 5 bloques `<script>` — sin errores, en los 3 deploys de la sesión.
+- Verificado post-deploy vía API de GitHub (blob directo, sin caché) y luego vía `raw.githubusercontent.com` — ambos coinciden: jun-26=12, jul-26=3, ago-26=152 (en curso).
+
+**Commits:** `19f1977` (intento 1) → `a99bd84` (corrección de sobrescritura) → `b2659a0` (arquitectura final desplegada)
+
+---
+
+
 ## [07/08/2026] — Tableros: corrección de % >100% (RCA + salvaguarda permanente)
 
 **Clasificación:** Corrección de errores. **Archivo:** únicamente `index.html`, función `processWorkbook()` (bloque `canalTotals`).
