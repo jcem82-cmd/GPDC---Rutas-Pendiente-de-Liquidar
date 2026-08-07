@@ -1,4 +1,37 @@
 
+## [07/08/2026] — Tableros: corrección de % >100% (RCA + salvaguarda permanente)
+
+**Clasificación:** Corrección de errores. **Archivo:** únicamente `index.html`, función `processWorkbook()` (bloque `canalTotals`).
+
+**Síntoma reportado por Charly:** el módulo Tableros mostraba porcentajes "pend/total canal" imposibles: GT 190040 Detalle 101%, **GT 190070 Distribuidores 155%**, PE Mayoristas+Distribuidores 102%.
+
+### RCA
+
+El numerador (`p_rows.length`, hoja "General (seguimiento)" + criterio `notLiq`) y el denominador (`canal_totals[...].pend`, hoja "Total Rutas (Gral)" + criterio `Estatus Real ∈ {60,63,67}`) venían de dos hojas distintas del mismo Excel que podían desincronizarse. Prueba decisiva: aplicando ambos criterios sobre la MISMA hoja, los resultados coincidían exactamente — el criterio de negocio no era el problema, sino la falta de universo de filas en "Total Rutas (Gral)" para ciertos canales (GT Distribuidores: 49 filas vs. 76 reales en "General (seguimiento)", +27 de diferencia).
+
+Charly corrigió el error de datos en el Excel fuente y republicó; se validó que con el dataset corregido los 9 pares país/canal daban 100% exacto — confirmando el diagnóstico.
+
+### Corrección aplicada
+
+`canal_totals[mon][canal].pend/all` se recalculan desde `routes` (misma fuente que el numerador) con el mismo predicado `notLiq`, en vez de depender de "Total Rutas (Gral)" + `Estatus Real`. Efecto matemático: el numerador es subconjunto por construcción del denominador — el % de Tableros ya no puede superar 100%, incluso si las hojas del Excel vuelven a desincronizarse en el futuro. Documentado como **REGLA #19** en `01_MASTER_PROJECT_CONTEXT.md` §9 y §18.
+
+### Fuera de alcance (evaluado y cerrado sin cambios)
+
+- **Migración GLT/Tradicional/Mayoristas a columna `Territorio`:** descartada — `Canal 3` en "General (seguimiento)" ya contiene los mismos valores categóricos (verificado: replica exacto 71 GLT / 24 Tradicional).
+- **Rediseño visual del módulo Tableros:** evaluado contra `07_DESIGN_SYSTEM.md` — el componente ya usa las variables y patrones canónicos de la plataforma (navy header, semáforo `--gb`/`--yb`/`--rb`, shadows, acordeón). Charly confirmó dejarlo tal como está.
+
+### Validación
+
+- Simulación en Python replicando la lógica JS contra `RAW` embebido: numerador = denominador exacto (100%) en los 9 pares país/canal, sin excepción.
+- `node --check` sobre los 5 bloques `<script>` — sin errores.
+- SHA fresco obtenido inmediatamente antes del PUT (regla #14).
+- Verificado post-deploy contra `raw.githubusercontent.com`.
+
+**Commit:** `b7e9b9b`
+
+---
+
+
 ## [06/08/2026] — Cash Today · Volumetría: desglose por cajero individual (solo CDA)
 
 **Clasificación:** Mejora funcional. **Archivo:** únicamente `cash_today.html`, función `renderVolumentria()`.
