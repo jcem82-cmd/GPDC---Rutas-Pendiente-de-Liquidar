@@ -254,7 +254,8 @@ Toda reconstrucción de `_R` vía Python (flujo alterno: usuario sube Excel a es
 
 | Versión | Fecha | Descripción |
 |---|---|---|
-| **v2.9** | **07/08/2026** | **index.html · Tendencias KPI: KPI_HIST pasa a acumulación incremental + congelamiento permanente vía archivo "Cierre", backfill único del histórico 2022–07/26 — ver §19** |
+| **v2.10** | **07/08/2026** | **index.html · Tendencias KPI: nuevo Comparativo Mensual y Anual de Total de Rutas (MoM/YoY por país + total, mes cerrado vs. mes en curso) — ver §20** |
+| v2.9 | 07/08/2026 | index.html · Tendencias KPI: KPI_HIST pasa a acumulación incremental + congelamiento permanente vía archivo "Cierre", backfill único del histórico 2022–07/26 — ver §19 |
 | v2.8 | 07/08/2026 | index.html · Tableros: corrección de % >100% (RCA — canal_totals recalculado desde General/seguimiento+notLiq en vez de Total Rutas Gral+Estatus Real) — ver §18 |
 | v2.7 | 06/08/2026 | Cash Today · Volumetría: desglose por cajero individual (AMAT I / AMAT II) dentro de Billetes, alcance CDA — ver §17 |
 | v2.6 | 05/08/2026 | Facturación Mensual: correcciones post-revisión (tesorería 4 filas, gráfica en neto) — ver §16 |
@@ -600,3 +601,37 @@ Al desplegar el primer intento de este fix, Claude usó un archivo local que no 
 - Simulación en Python de la extracción de la tabla "Tendencia de Rutas / Cierre Mensual" contra el Excel real — coincide exacto con las cifras reportadas por Charly (jun=12, jul=3).
 - `node --check` sobre los 5 bloques `<script>` — sin errores, en cada uno de los 3 deploys de la sesión.
 - Verificado post-deploy vía API de GitHub (blob directo, sin caché de CDN) y luego vía `raw.githubusercontent.com` tras expirar la caché — ambos coinciden.
+
+---
+
+# §20 — COMPARATIVO MENSUAL Y ANUAL DE RUTAS (sesión 07/08/2026 · v2.10 · nueva funcionalidad)
+
+## 20.1 Solicitud de Charly
+
+Mostrar en el dashboard el incremento/decremento de rutas mensuales: mes actual vs. mes anterior (MoM) y mes actual vs. mismo mes año anterior (YoY), por país y total. Fuente indicada: hoja "KPI" del Excel, tabla "Total Rutas" (Mes | GTQ | HNL | PEN | USD | Total general), con historial desde 2024. Charly delegó explícitamente en Claude la decisión de módulo y el diseño visual ("como arquitecto... realiza una visualización perfecta").
+
+## 20.2 Decisión de arquitectura
+
+**Ubicación:** dentro de la pestaña **Tendencias KPI** existente (no se creó pestaña nueva) — mantiene el histórico de rutas en un solo lugar. Nueva sección `.tend-card` insertada arriba de la gráfica "Tendencia de Cierre Mensual" ya existente.
+
+**Fuente de datos:** tabla "Total Rutas" de la hoja "KPI", localizada dinámicamente (búsqueda de encabezados "Mes"+"GTQ", igual patrón que la tabla de Vencidas de §19) — no asume posición fija de filas/columnas. **HNL se excluye** (Honduras sin datos reales, ya eliminado de Regional — ver §9).
+
+**A diferencia de `KPI_HIST` (§19), esta tabla SÍ se reconstruye completa en cada publicación** (no requiere acumulación incremental ni congelamiento por "Cierre"): el conteo de rutas totales por mes es un dato estable una vez cerrado el mes — no sufre el problema de "Estado Real" que pierde precisión al liquidarse una ruta.
+
+## 20.3 Punto de diseño resuelto con Charly — mes en curso parcial
+
+Comparar un mes en curso (ej. Ago-26 con 1 día transcurrido) contra un mes completo (Jul-26 o Ago-25) produce una variación falsa y engañosa (~-86%). Se presentó un mockup con dos alternativas a Charly, quien eligió: **mostrar ambos lado a lado** — mes cerrado (oficial) a la izquierda, mes en curso (parcial, con etiqueta explícita y borde punteado ámbar) a la derecha. El gráfico de barras usa únicamente el mes cerrado para no distorsionar la escala.
+
+## 20.4 Implementación
+
+- Nuevo parser en `processWorkbook()`: extrae `totalRutasHist` (array `{mes, GTQ, PEN, USD, total}`) desde la tabla "Total Rutas" de la hoja "KPI".
+- Nueva constante embebida `TOTAL_RUTAS_HIST`, reemplazada en ambos flujos de self-publish (botón manual y automático) junto a `RAW`/`KPI_HIST`/`EFECT`/`KPI_TOTALS`.
+- Nuevas funciones JS: `shiftMonth()`, `mesLbl()`, `cmpDeltaHTML()`, `cmpBuildCards()`, `renderComparativo()` — cálculo de MoM/YoY vía aritmética de fechas sobre claves `YYYY-MM`, sin asumir contigüidad de meses.
+- Nuevas clases CSS (`.cmp-cols`, `.cmp-card`, `.cmp-delta`, etc.) reutilizando variables del sistema de diseño (`--navy`, `--gb`, `--yb`, `--rb`, `--bg`, `--sh`) — sin introducir colores nuevos fuera de paleta.
+- `renderComparativo()` se invoca dentro de `initTrendYrBtns()`, junto a `RTend()`/`REf()`, al abrir la pestaña Tendencias KPI.
+
+## 20.5 Validación
+
+- Simulación en Node de la lógica real (`shiftMonth`, cálculo de deltas) contra los datos reales del Excel — MoM/YoY del mes cerrado (Jul-26) coincidieron con el mockup presentado y aprobado por Charly.
+- `node --check` sobre los 5 bloques `<script>` — sin errores, tanto en el archivo de trabajo como en el contenido efectivamente desplegado (verificado post-deploy).
+- Verificación de ausencia de commits externos antes del deploy (lección aplicada de §19.5) — sin conflictos.
