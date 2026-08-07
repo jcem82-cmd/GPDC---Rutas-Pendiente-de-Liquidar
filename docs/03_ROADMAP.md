@@ -1,10 +1,20 @@
 # 03 — ROADMAP
 ## PDC Analytics Center · Plan de Evolución
 
-**Estado actual: v2.8 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
-**Última actualización:** 07/08/2026 (sesión Tableros — corrección % >100%, ver §18 en MASTER)
+**Estado actual: v2.9 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
+**Última actualización:** 07/08/2026 (sesión Tendencias KPI — acumulación incremental + congelamiento en Cierre, ver §19 en MASTER)
 
 ---
+
+---
+
+## ✅ FASE 10 — Tendencias KPI: acumulación incremental (COMPLETADA · v2.9 · 07/08/2026)
+
+- [x] RCA: KPI_HIST se reconstruía desde cero en cada publicación, perdiendo la cifra real de Vencidas de negocio apenas un mes dejaba de ser vigente
+- [x] Rediseño: acumulación incremental (nunca se reconstruye) + congelamiento permanente solo con archivo nombrado "Cierre"
+- [x] Backfill único del histórico 2022–07/2026 (55 meses) usando la tabla de la hoja KPI como referencia de validación puntual
+- [x] Confirmado por Charly: la tabla de la hoja KPI es un paleativo, no la fuente — el dashboard calcula por su cuenta
+- [x] Incidente de sobrescritura accidental durante la sesión, detectado y corregido en el momento — documentado con transparencia en §19.5
 
 ---
 
