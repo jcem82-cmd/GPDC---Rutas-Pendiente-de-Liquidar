@@ -252,3 +252,7 @@ Si un subtotal ya existe en la estructura de datos, la vista **lo consume**; no 
 Regla: `Subtotal tesorería` → `esv.resumen.tesoreria.valor`. Un descuadre entre desglose y resumen es estructuralmente imposible cuando ambos leen el mismo campo.
 
 ---
+
+## REGLA #19 — TABLEROS: canal_totals SIEMPRE DESDE LA MISMA HOJA/CRITERIO QUE EL NUMERADOR (agregada 07/08/2026)
+
+En cualquier cálculo de % pendiente/total por canal, país, o categoría en `index.html` (módulo Tableros u otro futuro), el denominador ("total del período") debe calcularse desde la MISMA hoja fuente y el MISMO criterio de negocio que ya usa el numerador — nunca desde una hoja auxiliar distinta del Excel (ej. "Total Rutas (Gral)"), aunque en apariencia represente el mismo concepto. Dos hojas del mismo Excel pueden desincronizarse en su universo de filas sin previo aviso, produciendo porcentajes >100%. Ver `01_MASTER_PROJECT_CONTEXT.md` §9 (REGLA #19) y §18 para el caso documentado (GT Distribuidores: 155%).
