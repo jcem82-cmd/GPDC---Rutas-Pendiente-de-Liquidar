@@ -1,10 +1,20 @@
 # 03 — ROADMAP
 ## PDC Analytics Center · Plan de Evolución
 
-**Estado actual: v2.16 ESTABLE** · Próxima versión objetivo: v2.17
-**Última actualización:** 05/08/2026 (sesión Facturación Mensual — motor de cálculo propio + 6 correcciones de cierre)
+**Estado actual: v2.8 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
+**Última actualización:** 07/08/2026 (sesión Tableros — corrección % >100%, ver §18 en MASTER)
 
 ---
+
+---
+
+## ✅ FASE 9 — Tableros: corrección % >100% (COMPLETADA · v2.8 · 07/08/2026)
+
+- [x] RCA: numerador y denominador del % "pend/total canal" venían de dos hojas distintas del Excel ("General (seguimiento)" vs "Total Rutas (Gral)") que podían desincronizarse
+- [x] Prueba decisiva descartó el criterio de negocio como causa — confirmado problema de origen de datos (GT Distribuidores: 49 vs 76 filas reales)
+- [x] Salvaguarda permanente: canal_totals.pend/all recalculado desde la misma hoja/criterio que el numerador (REGLA #19) — el % ya no puede superar 100% matemáticamente
+- [x] Evaluada migración GLT/Tradicional/Mayoristas a columna Territorio — descartada, Canal 3 ya es equivalente
+- [x] Evaluado rediseño visual del módulo — ya alineado con 07_DESIGN_SYSTEM.md, Charly confirmó dejar tal como está
 
 ---
 
