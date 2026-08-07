@@ -2835,14 +2835,27 @@ function processWorkbook(wb, filename) {
     return !isNaN(d) && d.getFullYear()===currY && d.getMonth()===currM;
   });
   const totalByMon = {};
-  const canalTotals = {};
   ['GTQ','USD','PEN'].forEach(mon => {
     const mr = currRows.filter(r=>r['Moneda']===mon);
     totalByMon[mon] = mr.length;
+  });
+  // REGLA #15 (RCA 07/08/2026 - correccion Tableros >100%): canal_totals.pend/all
+  // se recalculan desde 'routes' (hoja "General (seguimiento)"), con el MISMO
+  // criterio notLiq que usa Tableros para el numerador, en vez de "Total Rutas
+  // (Gral)" + Estatus Real. Antes numerador y denominador venian de hojas
+  // distintas del Excel que podian desincronizarse (ej. GT Distribuidores:
+  // 76 reales en General/seguimiento vs 49 en Total Rutas Gral -> 155% en el
+  // dashboard). Con este fix tot_pend es por construccion >= numerador: el %
+  // en Tableros ya no puede superar 100%. Ver docs/02_CHANGELOG.md.
+  const canalTotals = {};
+  const notLiqCT = r => r['Estado (Facturación)']!=='Liquidada' && r['Estado Real']!=='Liquidada';
+  ['GTQ','USD','PEN'].forEach(mon => {
+    const mrCT = routes.filter(r=>r['Moneda']===mon);
     canalTotals[mon] = {};
     ['190040 DETALLE','190030 MAYORISTAS','190070 DISTRIBUIDORES'].forEach(canal => {
-      const cr = mr.filter(r=>r['Canal']===canal);
-      const cp = cr.filter(r=>[60,63,67].includes(Number(r['Estatus Real']||0)));
+      const code = canal.split(' ')[0];
+      const cr = mrCT.filter(r=>String(r['Canal2']||'').includes(code));
+      const cp = cr.filter(notLiqCT);
       canalTotals[mon][canal] = {all:cr.length, pend:cp.length};
     });
   });
