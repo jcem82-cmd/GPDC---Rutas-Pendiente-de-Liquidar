@@ -1,10 +1,20 @@
 # 03 — ROADMAP
 ## PDC Analytics Center · Plan de Evolución
 
-**Estado actual: v2.9 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
-**Última actualización:** 07/08/2026 (sesión Tendencias KPI — acumulación incremental + congelamiento en Cierre, ver §19 en MASTER)
+**Estado actual: v2.10 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
+**Última actualización:** 07/08/2026 (sesión Comparativo Mensual/Anual de Rutas, ver §20 en MASTER)
 
 ---
+
+---
+
+## ✅ FASE 11 — Comparativo Mensual y Anual de Rutas (COMPLETADA · v2.10 · 07/08/2026)
+
+- [x] Nueva funcionalidad solicitada por Charly: incremento/decremento MoM y YoY de rutas, por país y total
+- [x] Ubicado dentro de Tendencias KPI (sin pestaña nueva), fuente tabla "Total Rutas" de hoja "KPI"
+- [x] Mockup presentado y aprobado por Charly antes de implementar (mostrar mes cerrado y mes en curso lado a lado)
+- [x] 4 tarjetas por bloque (GT/SV/PE/Total) con flechas y variación MoM/YoY + grafico de barras comparativo
+- [x] Reutiliza el sistema de diseño existente — sin colores ni componentes nuevos fuera de paleta
 
 ---
 
