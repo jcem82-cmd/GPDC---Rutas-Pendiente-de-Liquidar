@@ -1,4 +1,38 @@
 
+## [07/08/2026 · noche] — Nueva funcionalidad: Comparativo Mensual y Anual de Rutas
+
+**Clasificación:** Nueva funcionalidad. **Archivo:** únicamente `index.html` (pestaña Tendencias KPI, `processWorkbook()`, nuevas funciones de render).
+
+**Solicitud de Charly:** ver el incremento/decremento de rutas mes actual vs. mes anterior (MoM) y mes actual vs. mismo mes año anterior (YoY), por país y total, usando el histórico de la tabla "Total Rutas" (hoja "KPI", datos desde 2024). Delegó explícitamente la decisión de módulo y el diseño visual en Claude como arquitecto.
+
+### Decisión de arquitectura
+
+Se agregó dentro de la pestaña **Tendencias KPI** existente (sin pestaña nueva), arriba de la gráfica de tendencia ya conocida. Fuente: tabla "Total Rutas" de la hoja "KPI" (Mes|GTQ|HNL|PEN|USD|Total general), localizada dinámicamente — mismo patrón robusto que la tabla de Vencidas (§19). HNL excluido (Honduras sin datos reales).
+
+A diferencia de `KPI_HIST`, esta tabla **se reconstruye completa en cada publicación** — el total de rutas por mes es estable una vez cerrado, no requiere acumulación incremental ni congelamiento por "Cierre".
+
+### Punto de diseño resuelto con Charly
+
+Comparar un mes en curso (ej. Ago-26, 1 día transcurrido) contra un mes completo produce una variación falsa (~-86%). Se presentó un mockup interactivo con alternativas; Charly eligió **mostrar ambos lado a lado**: mes cerrado (oficial) a la izquierda, mes en curso (parcial, con etiqueta explícita y borde punteado ámbar) a la derecha. El gráfico de barras usa solo el mes cerrado para no distorsionar la escala.
+
+### Implementación
+
+- Nuevo parser `totalRutasHist` en `processWorkbook()`.
+- Nueva constante embebida `TOTAL_RUTAS_HIST`, integrada en ambos flujos de self-publish.
+- Nuevas funciones: `shiftMonth()`, `mesLbl()`, `cmpDeltaHTML()`, `cmpBuildCards()`, `renderComparativo()`.
+- Nuevas clases CSS reutilizando variables del sistema de diseño existente — sin colores nuevos fuera de paleta.
+
+### Validación
+
+- Simulación en Node de la lógica de deltas contra datos reales — MoM/YoY del mes cerrado coincidió con el mockup aprobado por Charly.
+- `node --check` sobre los 5 bloques `<script>` — sin errores, verificado en el archivo de trabajo y en el contenido efectivamente desplegado.
+- Verificación de ausencia de commits externos antes del deploy (lección aplicada de la sesión anterior).
+
+**Commit:** `66acccc`
+
+---
+
+
 ## [07/08/2026 · tarde] — Tendencias KPI: acumulación incremental + congelamiento en "Cierre"
 
 **Clasificación:** Corrección de errores. **Archivo:** únicamente `index.html`, función `processWorkbook()` (bloque `kpiData`/`KPI_HIST`).
