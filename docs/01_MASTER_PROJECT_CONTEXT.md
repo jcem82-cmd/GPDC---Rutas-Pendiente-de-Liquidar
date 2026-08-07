@@ -235,6 +235,7 @@ Toda reconstrucción de `_R` vía Python (flujo alterno: usuario sube Excel a es
 | **Honduras** | Sin datos reales — eliminado de Regional; `honduras/index.html` existe pero sin tarjeta |
 | **PDC_MASTER_PATH** | Obligatorio definir antes de incluir `js/pdc_data_bridge.js` en cualquier archivo fuera de la raíz |
 | **REGLA #19 — Tableros: canal_totals.pend/all** (07/08/2026) | Se calculan desde `routes` ("General (seguimiento)") + criterio `notLiq`, NUNCA desde la hoja "Total Rutas (Gral)" + `Estatus Real`. Antes numerador y denominador venían de hojas distintas del Excel que podían desincronizarse, produciendo % >100% en el módulo Tableros (ver §18). Con esta regla, `tot_pend` es por construcción ≥ numerador — el % nunca puede superar 100% |
+| **REGLA #20 — KPI_HIST es acumulativo, nunca se reconstruye** (07/08/2026) | `KPI_HIST` (Tendencias KPI) se parte del arreglo YA embebido en la página; solo se actualiza/agrega la entrada del mes vigente con cálculo en vivo (`Estado Real==='Vencidas'`). Un mes se congela (`closed:true`) permanentemente SOLO cuando el nombre del archivo subido contiene "Cierre" (`/cierre/i` sobre `filename`). Nunca reconstruir el arreglo completo desde `Efectividad` ni desde la hoja "KPI" — esa hoja es un paleativo de referencia de Charly, no la fuente de datos. Ver §19 |
 
 ---
 
@@ -253,7 +254,8 @@ Toda reconstrucción de `_R` vía Python (flujo alterno: usuario sube Excel a es
 
 | Versión | Fecha | Descripción |
 |---|---|---|
-| **v2.8** | **07/08/2026** | **index.html · Tableros: corrección de % >100% (RCA — canal_totals recalculado desde General/seguimiento+notLiq en vez de Total Rutas Gral+Estatus Real) — ver §18** |
+| **v2.9** | **07/08/2026** | **index.html · Tendencias KPI: KPI_HIST pasa a acumulación incremental + congelamiento permanente vía archivo "Cierre", backfill único del histórico 2022–07/26 — ver §19** |
+| v2.8 | 07/08/2026 | index.html · Tableros: corrección de % >100% (RCA — canal_totals recalculado desde General/seguimiento+notLiq en vez de Total Rutas Gral+Estatus Real) — ver §18 |
 | v2.7 | 06/08/2026 | Cash Today · Volumetría: desglose por cajero individual (AMAT I / AMAT II) dentro de Billetes, alcance CDA — ver §17 |
 | v2.6 | 05/08/2026 | Facturación Mensual: correcciones post-revisión (tesorería 4 filas, gráfica en neto) — ver §16 |
 | **v2.3** | **23/07/2026** | **Perú/ESV/Regional: histórico real, KPI_HIST expuesto en PDCBridge (vencidas vs vencidas_real), mes_actual_pais por país, fix fila sin Moneda, fix filtro Vencida, Último Acceso vía Supabase — ver §12** |
@@ -559,3 +561,42 @@ Charly corrigió posteriormente el error de datos en el Excel fuente y republic�
 - `node --check` sobre los 5 bloques `<script>` del archivo — sin errores.
 - SHA fresco obtenido inmediatamente antes del PUT.
 - Verificado post-deploy contra `raw.githubusercontent.com` — cambio presente en producción (commit `b7e9b9b`).
+
+---
+
+# §19 — TENDENCIAS KPI: ACUMULACIÓN INCREMENTAL + CONGELAMIENTO EN "CIERRE" (sesión 07/08/2026 · v2.9)
+
+## 19.1 Síntoma reportado por Charly
+
+En "Tendencias KPI" (gráfica "Tendencia de Cierre Mensual"), jun-26 mostraba 1 vencida en vez de 12; jul-26 mostraba 0 en vez de 3.
+
+## 19.2 RCA
+
+`KPI_HIST` se reconstruía **desde cero en cada publicación**, no se acumulaba. Todos los meses recibían `vencidas_real = mas15` (antigüedad ≥15 días, hoja "Efectividad") como aproximación, con una única excepción: el último mes del arreglo (mes vigente al momento de publicar) recibía el conteo real de negocio (`Estado Real==='Vencidas'`). En cuanto ese mes dejaba de ser vigente, la siguiente publicación volvía a sobreescribirlo con `mas15` — el dato real se perdía para siempre, mes tras mes.
+
+Charly señaló que la hoja "KPI" tiene una tabla ya calculada ("Tendencia de Rutas / Cierre Mensual", cols Mes|Vencidas|Total rutas|%) con el Vencidas de negocio correcto — validado exacto contra sus cifras (jun=12, jul=3). **Aclaración explícita de Charly:** esa tabla es solo su paleativo/referencia manual — el dashboard NO debe depender de leerla en cada publicación; debe calcular por su cuenta (igual que ya hace con el mes vigente) y el resultado debería coincidir con la tabla como validación.
+
+## 19.3 Rediseño de arquitectura (instrucción explícita de Charly)
+
+`KPI_HIST` pasa de "reconstruir todo cada vez" a **acumulación incremental**:
+
+1. Se parte del arreglo `KPI_HIST` **ya embebido en la página** (variable global disponible en memoria al momento del self-publish) — nunca se recalcula desde `Efectividad` ni desde la hoja "KPI".
+2. Solo se actualiza/agrega la entrada del **mes vigente** (`reportMonth`), con cálculo en vivo (`Estado Real==='Vencidas'`, mismo criterio que el resto del dashboard).
+3. Los meses anteriores quedan intactos — **nunca se recalculan**.
+4. Un mes queda **permanentemente congelado** (`closed:true`) únicamente cuando el **nombre del archivo subido contiene "Cierre"** (`/cierre/i` sobre `filename`). Esa publicación es la definitiva para ese mes.
+5. Si se sube después, por error, un archivo viejo (no-Cierre) cuyo mes máximo ya está marcado `closed:true`, ese mes queda protegido — no se sobreescribe.
+6. Publicaciones intermedias durante el mes en curso (sin "Cierre" en el nombre) sí actualizan la cifra en vivo, mostrando avance, pero no lo congelan.
+
+## 19.4 Backfill único (esta sesión, no repetible)
+
+El histórico ya embebido (2022-01 a 2026-07) tenía valores incorrectos (mas15 en vez de negocio) por el diseño anterior. Se corrigió **una sola vez** usando la tabla de la hoja "KPI" del Excel subido por Charly como fuente de verificación puntual, marcando esos 55 meses como `closed:true`. El mes vigente (2026-08) se dejó con su valor ya calculado en vivo (152/1042), `closed:false`. A partir de este backfill, el mecanismo de acumulación incremental es autosuficiente — no se requiere ni se debe repetir este backfill manual.
+
+## 19.5 Incidente durante la sesión — sobrescritura accidental (transparencia)
+
+Al desplegar el primer intento de este fix, Claude usó un archivo local que no reflejaba la republicación más reciente de Charly (commit `8448864597`, hecha entre turnos de conversación) y la sobrescribió por ~4 minutos (commit `19f19771`). Se detectó de inmediato al revisar el historial de commits, se recuperó el contenido correcto desde Git (`git show 8448864597:index.html`), se reaplicó el fix sobre esos datos, y se redesplegó (commit `a99bd842`) antes de continuar con el rediseño de arquitectura. **Lección aplicada:** cuando el flujo de self-publish del cliente puede generar commits fuera de la sesión de Claude, no basta con "SHA fresco antes del PUT" — antes de reescribir un archivo grande con una copia local, se debe verificar el commit history reciente (`git log --oneline -5 -- <archivo>`) para descartar cambios externos entre turnos.
+
+## 19.6 Validación
+
+- Simulación en Python de la extracción de la tabla "Tendencia de Rutas / Cierre Mensual" contra el Excel real — coincide exacto con las cifras reportadas por Charly (jun=12, jul=3).
+- `node --check` sobre los 5 bloques `<script>` — sin errores, en cada uno de los 3 deploys de la sesión.
+- Verificado post-deploy vía API de GitHub (blob directo, sin caché de CDN) y luego vía `raw.githubusercontent.com` tras expirar la caché — ambos coinciden.
