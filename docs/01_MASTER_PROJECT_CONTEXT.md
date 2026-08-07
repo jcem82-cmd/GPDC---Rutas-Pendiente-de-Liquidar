@@ -234,6 +234,7 @@ Toda reconstrucción de `_R` vía Python (flujo alterno: usuario sube Excel a es
 | **Usuarios vía Supabase** | `login.html`/`analytics.html` leen `profiles` en Supabase — ya no hay arreglo dual que sincronizar (obsoleto desde 20/07/2026). **`profiles.ultimo_acceso`** (columna agregada 23/07/2026): login exitoso la actualiza (no bloqueante); Gestión de Usuarios la lee — antes leía `localStorage`, que solo reflejaba el navegador de quien viera el panel |
 | **Honduras** | Sin datos reales — eliminado de Regional; `honduras/index.html` existe pero sin tarjeta |
 | **PDC_MASTER_PATH** | Obligatorio definir antes de incluir `js/pdc_data_bridge.js` en cualquier archivo fuera de la raíz |
+| **REGLA #19 — Tableros: canal_totals.pend/all** (07/08/2026) | Se calculan desde `routes` ("General (seguimiento)") + criterio `notLiq`, NUNCA desde la hoja "Total Rutas (Gral)" + `Estatus Real`. Antes numerador y denominador venían de hojas distintas del Excel que podían desincronizarse, produciendo % >100% en el módulo Tableros (ver §18). Con esta regla, `tot_pend` es por construcción ≥ numerador — el % nunca puede superar 100% |
 
 ---
 
@@ -252,7 +253,8 @@ Toda reconstrucción de `_R` vía Python (flujo alterno: usuario sube Excel a es
 
 | Versión | Fecha | Descripción |
 |---|---|---|
-| **v2.7** | **06/08/2026** | **Cash Today · Volumetría: desglose por cajero individual (AMAT I / AMAT II) dentro de Billetes, alcance CDA — ver §17** |
+| **v2.8** | **07/08/2026** | **index.html · Tableros: corrección de % >100% (RCA — canal_totals recalculado desde General/seguimiento+notLiq en vez de Total Rutas Gral+Estatus Real) — ver §18** |
+| v2.7 | 06/08/2026 | Cash Today · Volumetría: desglose por cajero individual (AMAT I / AMAT II) dentro de Billetes, alcance CDA — ver §17 |
 | v2.6 | 05/08/2026 | Facturación Mensual: correcciones post-revisión (tesorería 4 filas, gráfica en neto) — ver §16 |
 | **v2.3** | **23/07/2026** | **Perú/ESV/Regional: histórico real, KPI_HIST expuesto en PDCBridge (vencidas vs vencidas_real), mes_actual_pais por país, fix fila sin Moneda, fix filtro Vencida, Último Acceso vía Supabase — ver §12** |
 | v2.1 | 20/07/2026 | Multi-select de país (gate por rol) + multi-select en Canal/Responsable/Rango (todos los usuarios) — index.html, cash_today.html, cartas_salida.html |
@@ -427,7 +429,7 @@ Fórmula general: `excedente = MAX(base - cupo, 0)` → `cobro = excedente × ta
 
 ## 16.4 REGLA PERMANENTE — persistir `_M` e `_IMP` en toda publicación
 
-**REGLA #15 (05/08/2026).** El flujo de publicación self-service debe persistir `_M` (metas) e `_IMP` (impuestos) junto a `_R`, `_TC_MENSUAL` y `_COSTOS`.
+**REGLA #18 (05/08/2026).** El flujo de publicación self-service debe persistir `_M` (metas) e `_IMP` (impuestos) junto a `_R`, `_TC_MENSUAL` y `_COSTOS`.
 
 **Origen:** `dlHTML()` sí regrababa `_M`, pero la publicación vía Edge Function nunca lo hizo. Las metas embebidas quedaron congeladas y divergieron del Excel (excedente variable 1.0 vs. 0.35; cupo AMAT 9MM vs. 8MM). Mientras `metas` solo alimentaba semáforos el impacto era cosmético; con un motor de facturación dependiente de esos parámetros habría producido **cobros errados** (×2.86 en el excedente de PDC Comercial).
 
@@ -516,3 +518,44 @@ El desglose por cajero se activa **únicamente para `s==='CDA'`** (gate `if(r.s=
 ## 17.6 Extensibilidad futura (recomendación, no implementada)
 
 Si otra sede llega a operar con más de un cajero de Billetes, el mismo patrón se puede extender quitando el gate `s==='CDA'` (2 puntos en el código: acumulación en `aggBySM()` y render en `buildTable()`). No se implementó en esta sesión por decisión explícita de alcance — queda documentado como mejora futura, sujeta a autorización cuando aplique.
+
+---
+
+# §18 — TABLEROS: CORRECCIÓN % >100% (sesión 07/08/2026 · v2.8)
+
+## 18.1 Síntoma reportado por Charly
+
+En el módulo Tableros de `index.html`, el badge "pend/total canal" mostraba porcentajes imposibles: GT 190040 Detalle 101%, GT 190070 Distribuidores **155%**, PE Mayoristas+Distribuidores 102%. Ninguno debería poder superar 100% por definición (pendientes ⊆ total del canal).
+
+## 18.2 RCA — causa raíz confirmada
+
+El % se calculaba como `numerador / denominador` proveniente de **dos hojas y dos criterios distintos del mismo Excel**:
+
+| | Fuente (antes) | Criterio |
+|---|---|---|
+| Numerador (`p_rows.length`) | `FD` — hoja "General (seguimiento)", en vivo | `notLiq` |
+| Denominador (`canal_totals[...].pend`) | Hoja "Total Rutas (Gral)", snapshot | `Estatus Real` ∈ {60,63,67} |
+
+**Prueba decisiva:** al aplicar ambos criterios (`notLiq` y `Estatus Real{60,63,67}`) sobre la MISMA hoja ("General (seguimiento)"), los resultados coincidieron exactamente en los 5 pares país/canal probados. Esto descartó el criterio de negocio como causa — el problema era puramente de origen de datos: "Total Rutas (Gral)" no reflejaba el mismo universo de filas que "General (seguimiento)" para ciertos canales (GT Distribuidores: 49 vs. 76 reales, +27 rutas de diferencia).
+
+Charly corrigió posteriormente el error de datos en el Excel fuente y republicó — validado que con el dataset corregido los 9 pares país/canal daban 100% exacto, confirmando el diagnóstico.
+
+## 18.3 Corrección aplicada (salvaguarda permanente)
+
+`processWorkbook()`, bloque de construcción de `canalTotals` (antes ~línea 2837): `canal_totals[mon][canal].pend/all` ahora se calculan desde `routes` (mismo array que alimenta `RAW`/`FD`, hoja "General (seguimiento)") filtrando por `Canal2` + el mismo predicado `notLiq` que usa Tableros para el numerador — ver **REGLA #19** (§9). `totalByMon`/`total_by_moneda` (usado en el KPI global "% del mes") no se tocó — no presentaba el bug.
+
+**Efecto matemático:** el numerador es ahora un subconjunto por construcción del denominador — el % de Tableros no puede volver a superar 100%, sin importar futuras desincronizaciones entre hojas del Excel.
+
+## 18.4 Alcance — decisión explícita de Charly
+
+- Único archivo afectado: `index.html`, función `processWorkbook()`.
+- No se tocó `renderTableros()`, `buildCard()`, `buildCardMay()` ni ningún HTML/CSS.
+- Migración del split GLT/Tradicional/Mayoristas a la columna `Territorio` (propuesta por Charly en la misma sesión) — **evaluada y descartada**: el campo `Canal 3` de "General (seguimiento)" ya contiene los mismos valores categóricos que `Territorio` en "Total Rutas (Gral)" (verificado: replica exacto el 71 GLT / 24 Tradicional ya mostrado). No había nada que migrar.
+- Rediseño visual del módulo Tableros — evaluado contra `07_DESIGN_SYSTEM.md`: el componente ya usa las variables y patrones canónicos (navy header, semáforo `--gb`/`--yb`/`--rb`, card shadows, acordeón con acento navy). Charly confirmó dejarlo tal como está — no se aplicó ningún cambio de diseño.
+
+## 18.5 Validación previa al deploy
+
+- Simulación en Python replicando la lógica JS contra el `RAW` embebido: confirmó que con la fórmula nueva, numerador = denominador exacto en los 9 pares país/canal (100%, sin excepción).
+- `node --check` sobre los 5 bloques `<script>` del archivo — sin errores.
+- SHA fresco obtenido inmediatamente antes del PUT.
+- Verificado post-deploy contra `raw.githubusercontent.com` — cambio presente en producción (commit `b7e9b9b`).
