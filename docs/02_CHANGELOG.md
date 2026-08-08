@@ -1,4 +1,28 @@
 
+## [08/08/2026] — Rediseño: Comparador BASE(B)/COMPARATIVO(A) (patrón Cash Today)
+
+**Clasificación:** Mejora funcional (sobre `66acccc`/`ae76c31`). **Archivo:** únicamente `index.html`.
+
+**Solicitud de Charly:** el comparativo seguía limitado a mes anterior/mes en curso — pidió replicar el patrón del Comparador de Cash Today: BASE (B) y COMPARATIVO (A) como selects independientes con todo el historial, botón "Comparar períodos", para poder comparar cualquier mes contra cualquier otro (ej. Jul-26 vs Jul-25 directo).
+
+### Implementado
+
+- `#cmpSelB`/`#cmpSelA`: selects con historial completo de `TOTAL_RUTAS_HIST`, botón `#cmpRunBtn` dispara `renderComparativo()`.
+- Tarjetas (GT/SV/PE/Total): valor de B + delta vs A.
+- Panel "B vs A por país" (barras agrupadas) + nuevo panel "Variación % por país" (barras verde/rojo).
+- Mes en curso marcado "(parcial)" si se selecciona como B o A.
+
+### Validación
+
+- `node --check` sobre los 5 bloques `<script>`.
+- Simulación en Node del caso exacto reportado (Jul-26 vs Jul-25): GT -15.8%, SV -5.3%, PE +8.8%, Total -10.9%.
+- Verificado post-deploy vía API de GitHub.
+
+**Commit:** `80cbf94`
+
+---
+
+
 ## [07/08/2026 · noche, cont.] — Mejora funcional: selector de mes + historial completo en Comparativo
 
 **Clasificación:** Mejora funcional (sobre lo desplegado en `66acccc`). **Archivo:** únicamente `index.html`.
