@@ -644,3 +644,19 @@ Charly reportó que el Comparativo solo mostraba mes actual/anterior sin poder e
 - `renderComparativo(selectedMes)` ahora acepta parámetro opcional; sin argumento usa el último mes cerrado por defecto (comportamiento original preservado).
 
 Commit: `ae76c31`.
+
+## 20.7 Rediseño (misma sesión) — patrón BASE(B)/COMPARATIVO(A) tipo Cash Today
+
+Charly señaló que el selector de "mes de referencia" seguía limitado a mes anterior/mes en curso — no permitía, por ejemplo, Jul-26 vs Jul-25 directo. Solicitó replicar el patrón del Comparador de Cash Today (BASE/COMPARATIVO con selects independientes + botón "Comparar períodos").
+
+**Cambios:**
+- Reemplazados `#cmpMesSel` + columnas fijas por `#cmpSelB`/`#cmpSelA` (ambos poblados con el historial completo de `TOTAL_RUTAS_HIST`, más reciente primero) + botón `#cmpRunBtn`.
+- `renderComparativo()` ya no acepta parámetro de mes — lee directamente `selB.value`/`selA.value` al momento de ejecutarse.
+- Tarjetas ahora muestran valor de B + delta vs A (una sola comparación, no MoM+YoY fijos).
+- Nuevo panel `#cCmpPct` — barras de variación % por país, coloreadas verde/rojo (patrón "Variación % por Cajero" de Cash Today).
+- Si B o A corresponde al mes en curso, se marca "(parcial)" en el select y en las etiquetas del gráfico/leyenda.
+- Gráfico de historial completo (§20.6) sin cambios.
+
+Validado en Node con el caso exacto reportado por Charly (Jul-26 vs Jul-25): GT -15.8%, SV -5.3%, PE +8.8%, Total -10.9%.
+
+Commit: `80cbf94`.
