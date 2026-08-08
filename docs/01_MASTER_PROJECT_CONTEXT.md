@@ -635,3 +635,12 @@ Comparar un mes en curso (ej. Ago-26 con 1 día transcurrido) contra un mes comp
 - Simulación en Node de la lógica real (`shiftMonth`, cálculo de deltas) contra los datos reales del Excel — MoM/YoY del mes cerrado (Jul-26) coincidieron con el mockup presentado y aprobado por Charly.
 - `node --check` sobre los 5 bloques `<script>` — sin errores, tanto en el archivo de trabajo como en el contenido efectivamente desplegado (verificado post-deploy).
 - Verificación de ausencia de commits externos antes del deploy (lección aplicada de §19.5) — sin conflictos.
+
+## 20.6 Mejora funcional posterior (misma sesión) — selector de mes + historial completo
+
+Charly reportó que el Comparativo solo mostraba mes actual/anterior sin poder elegir mes/año ni ver tendencia. Se agregó:
+- **Selector `<select id=\"cmpMesSel\">`**: lista todos los meses de `TOTAL_RUTAS_HIST` (excepto el mes en curso), permite recalcular MoM/YoY y el gráfico de 3 barras para cualquier mes histórico seleccionado. La columna "mes en curso (parcial)" no se ve afectada por el selector — siempre refleja el mes real vigente.
+- **Gráfico `#cCmpHist`**: barra por mes con `Total Rutas`, con botones de año (`cmpSetAllYrs()`/`cmpToggleYr()`, mismo patrón que `setAllYrs('tend')`/`toggleYr('tend',...)` de §19), independiente del filtro de años de la gráfica de Vencidas.
+- `renderComparativo(selectedMes)` ahora acepta parámetro opcional; sin argumento usa el último mes cerrado por defecto (comportamiento original preservado).
+
+Commit: `ae76c31`.
