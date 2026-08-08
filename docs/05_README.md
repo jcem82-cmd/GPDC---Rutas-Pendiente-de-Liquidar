@@ -37,13 +37,13 @@ GET /repos/{owner}/{repo}/git/blobs/{sha}  (Accept: application/vnd.github.raw) 
 
 ---
 
-## 🗂 Archivos en producción (05/08/2026)
+## 🗂 Archivos en producción (08/08/2026)
 
 | Archivo | Descripción | Versión |
 |---|---|---|
 | `login.html` | Auth · 14 usuarios · bloqueo 3 intentos | v1.1 |
 | `analytics.html` | Portal Hub · 5 dashboards · panel admin | v1.3 |
-| `index.html` | Liquidación de Rutas · Export PDF | v12 |
+| `index.html` | Liquidación de Rutas · Tableros + Tendencias KPI (Comparador BASE/A) | v2.10 |
 | `cash_today.html` | Cash Today · 12 módulos · Presupuesto + **Facturación Mensual** | v2.9 |
 | `regional/index.html` | Consolidado Regional · 4 países | v1.0 |
 | `peru/index.html` | Dashboard Perú · PEN | v1.0 |
@@ -56,11 +56,11 @@ GET /repos/{owner}/{repo}/git/blobs/{sha}  (Accept: application/vnd.github.raw) 
 ## 🧭 Cómo responder cuando el usuario dice "continuemos"
 
 1. Revisar `CHANGELOG.md` → última versión y fecha
-2. Revisar `ROADMAP.md` → siguiente ítem en Fase 3
+2. Revisar `ROADMAP.md` → siguiente ítem disponible
 3. Si trae un Excel nuevo → procesar según flujo en `MASTER_PROJECT_CONTEXT.md §7`
 4. Si no especifica → proponer el siguiente ítem del Roadmap
 
-**Siguiente ítem disponible:** ver `03_ROADMAP.md` → pendientes derivados de la sesión 05/08/2026
+**Siguiente ítem disponible:** ver `03_ROADMAP.md` → pendientes derivados de la sesión 07–08/08/2026 (Tableros §18, Tendencias KPI §19, Comparador §20)
 
 ---
 
@@ -120,4 +120,4 @@ docs/
 
 ---
 
-*PDC Analytics Center · 05_README · v2.0 · 22 Jun 2026*
+*PDC Analytics Center · 05_README · v2.1 · 08 Ago 2026*
