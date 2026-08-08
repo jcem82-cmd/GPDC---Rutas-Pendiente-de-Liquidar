@@ -214,6 +214,10 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
   margin-bottom:8px;padding:4px 10px;border-radius:16px;display:inline-block}
 .cmp-col-lbl.closed{background:var(--gbg);color:var(--gt)}
 .cmp-col-lbl.partial{background:var(--ybg);color:var(--yt)}
+.cmp-selector{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.cmp-selector label{font-size:.68rem;font-weight:700;color:var(--t3)}
+.cmp-selector select{padding:5px 10px;border:1px solid var(--silver);border-radius:8px;
+  font-size:.72rem;font-weight:700;color:var(--navy);background:var(--w);cursor:pointer}
 .cmp-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .cmp-card{background:var(--bg);border-radius:10px;padding:10px 12px}
 .cmp-card.total{background:var(--navy);grid-column:1/-1}
@@ -1035,9 +1039,13 @@ function pdcLogout(){
 <div id="tab-tendencias" class="panel" style="display: none;">
   <div class="tend-card">
     <h4>Comparativo Mensual y Anual — Total de Rutas</h4>
+    <div class="cmp-selector">
+      <label for="cmpMesSel">Mes de referencia (comparación oficial):</label>
+      <select id="cmpMesSel" onchange="renderComparativo(this.value)"></select>
+    </div>
     <div class="cmp-cols">
       <div class="cmp-col">
-        <div class="cmp-col-lbl closed">Mes cerrado (oficial)</div>
+        <div class="cmp-col-lbl closed">Mes seleccionado</div>
         <div class="cmp-cards" id="cmpCardsClosed"></div>
       </div>
       <div class="cmp-col">
@@ -1049,6 +1057,13 @@ function pdcLogout(){
       <div class="cmp-chart-ttl" id="cmpChartTtl">Comparación por país</div>
       <div style="height:220px;position:relative"><canvas id="cCmp"></canvas></div>
       <div class="cmp-legend" id="cmpLegend"></div>
+    </div>
+    <div class="cmp-chart-wrap" style="margin-top:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:6px">
+        <div class="cmp-chart-ttl" style="margin-bottom:0">Historial completo — Total de Rutas por mes</div>
+        <div class="yr-btn-grp" id="cmpYrBtns" style="margin-bottom:0"></div>
+      </div>
+      <div style="height:240px;position:relative"><canvas id="cCmpHist"></canvas></div>
     </div>
   </div>
   <div class="tend-card">
@@ -2220,43 +2235,89 @@ function cmpBuildCards(entry, hist, targetEl, isPartial){
     </div>`;
   targetEl.innerHTML = html;
 }
-function renderComparativo(){
+function renderComparativo(selectedMes){
   if (typeof TOTAL_RUTAS_HIST==='undefined' || !TOTAL_RUTAS_HIST.length) return;
   const hist = TOTAL_RUTAS_HIST.slice().sort((a,b)=>a.mes.localeCompare(b.mes));
   const current = hist[hist.length-1];
-  const closed  = hist.length>1 ? hist[hist.length-2] : null;
+  const closedDefault = hist.length>1 ? hist[hist.length-2] : null;
+
+  // Poblar selector de mes (todos los meses excepto el mes en curso, más reciente primero)
+  const sel = document.getElementById('cmpMesSel');
+  if (sel && !sel.dataset.filled) {
+    const opts = hist.slice(0, hist.length-1).slice().reverse();
+    sel.innerHTML = opts.map(h=>`<option value="${h.mes}">${mesLbl(h.mes)}</option>`).join('');
+    sel.dataset.filled = '1';
+  }
+  const closed = selectedMes ? hist.find(h=>h.mes===selectedMes) : closedDefault;
+  if (sel && closed) sel.value = closed.mes;
 
   cmpBuildCards(current, hist, document.getElementById('cmpCardsCurrent'), true);
   const closedEl = document.getElementById('cmpCardsClosed');
   if (closed) cmpBuildCards(closed, hist, closedEl, false);
   else closedEl.innerHTML = '<div class="cmp-note">Sin mes cerrado anterior disponible.</div>';
 
-  document.querySelector('.cmp-col-lbl.closed').textContent = 'Mes cerrado (oficial) — '+(closed?mesLbl(closed.mes):'—');
+  document.querySelector('.cmp-col-lbl.closed').textContent = 'Mes seleccionado — '+(closed?mesLbl(closed.mes):'—');
   document.querySelector('.cmp-col-lbl.partial').textContent = 'Mes en curso (parcial) — '+mesLbl(current.mes)+' hasta '+((typeof KPI_TOTALS!=='undefined'&&KPI_TOTALS.report_date)?KPI_TOTALS.report_date:'hoy');
 
-  if (!closed) { document.getElementById('cmpChartTtl').textContent='Sin datos suficientes para comparar'; return; }
-  const prevYrClosed = hist.find(h=>h.mes===shiftMonth(closed.mes,-12));
-  document.getElementById('cmpChartTtl').textContent = 'Comparación por país — mes cerrado ('+mesLbl(closed.mes)+')';
-  dc('cCmp');
-  const labels = ['Guatemala','El Salvador','Perú'];
-  const dsPrevYr = prevYrClosed ? [prevYrClosed.GTQ,prevYrClosed.USD,prevYrClosed.PEN] : [0,0,0];
-  const dsPrevMon = [map0(hist,shiftMonth(closed.mes,-1),'GTQ'),map0(hist,shiftMonth(closed.mes,-1),'USD'),map0(hist,shiftMonth(closed.mes,-1),'PEN')];
-  const dsClosed = [closed.GTQ, closed.USD, closed.PEN];
-  CH['cCmp']=new Chart(document.getElementById('cCmp'),{
+  if (!closed) { document.getElementById('cmpChartTtl').textContent='Sin datos suficientes para comparar'; }
+  else {
+    const prevYrClosed = hist.find(h=>h.mes===shiftMonth(closed.mes,-12));
+    document.getElementById('cmpChartTtl').textContent = 'Comparación por país — '+mesLbl(closed.mes);
+    dc('cCmp');
+    const labels = ['Guatemala','El Salvador','Perú'];
+    const dsPrevYr = prevYrClosed ? [prevYrClosed.GTQ,prevYrClosed.USD,prevYrClosed.PEN] : [0,0,0];
+    const dsPrevMon = [map0(hist,shiftMonth(closed.mes,-1),'GTQ'),map0(hist,shiftMonth(closed.mes,-1),'USD'),map0(hist,shiftMonth(closed.mes,-1),'PEN')];
+    const dsClosed = [closed.GTQ, closed.USD, closed.PEN];
+    CH['cCmp']=new Chart(document.getElementById('cCmp'),{
+      type:'bar',
+      data:{labels, datasets:[
+        {label:mesLbl(prevYrClosed?prevYrClosed.mes:shiftMonth(closed.mes,-12)), data:dsPrevYr, backgroundColor:'#B4C4E0', borderRadius:4},
+        {label:mesLbl(shiftMonth(closed.mes,-1)), data:dsPrevMon, backgroundColor:'#4A6FA5', borderRadius:4},
+        {label:mesLbl(closed.mes), data:dsClosed, backgroundColor:'#002060', borderRadius:4},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fmt(c.parsed.y)}`}}},
+        scales:{y:{beginAtZero:true,grid:{color:'rgba(0,32,96,.06)'}},x:{grid:{display:false}}}}
+    });
+    document.getElementById('cmpLegend').innerHTML =
+      `<span><i style="background:#B4C4E0"></i>${mesLbl(prevYrClosed?prevYrClosed.mes:shiftMonth(closed.mes,-12))} (mismo mes año ant.)</span>`+
+      `<span><i style="background:#4A6FA5"></i>${mesLbl(shiftMonth(closed.mes,-1))} (mes anterior)</span>`+
+      `<span><i style="background:#002060"></i>${mesLbl(closed.mes)}</span>`;
+  }
+
+  cmpRenderHistChart(hist);
+}
+function cmpRenderHistChart(hist){
+  const yrs = [...new Set(hist.map(h=>h.mes.substring(0,4)))].sort();
+  if (typeof window.cmpYrs === 'undefined') window.cmpYrs = new Set(yrs);
+  const btnsEl = document.getElementById('cmpYrBtns');
+  if (btnsEl && !btnsEl.dataset.filled) {
+    btnsEl.innerHTML = `<button class="yr-btn act" onclick="cmpSetAllYrs()">Todos</button>`+
+      yrs.map(y=>`<button class="yr-btn act" data-yr="${y}" onclick="cmpToggleYr('${y}')">${y}</button>`).join('');
+    btnsEl.dataset.filled='1';
+  }
+  const data = hist.filter(h=>window.cmpYrs.has(h.mes.substring(0,4)));
+  dc('cCmpHist');
+  CH['cCmpHist']=new Chart(document.getElementById('cCmpHist'),{
     type:'bar',
-    data:{labels, datasets:[
-      {label:mesLbl(prevYrClosed?prevYrClosed.mes:shiftMonth(closed.mes,-12)), data:dsPrevYr, backgroundColor:'#B4C4E0', borderRadius:4},
-      {label:mesLbl(shiftMonth(closed.mes,-1)), data:dsPrevMon, backgroundColor:'#4A6FA5', borderRadius:4},
-      {label:mesLbl(closed.mes)+' (cerrado)', data:dsClosed, backgroundColor:'#002060', borderRadius:4},
+    data:{labels:data.map(h=>mesLbl(h.mes)), datasets:[
+      {label:'Total Rutas', data:data.map(h=>h.total), backgroundColor:'#002060', borderRadius:3, maxBarThickness:28}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fmt(c.parsed.y)}`}}},
-      scales:{y:{beginAtZero:true,grid:{color:'rgba(0,32,96,.06)'}},x:{grid:{display:false}}}}
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`Total Rutas: ${fmt(c.parsed.y)}`}}},
+      scales:{y:{beginAtZero:true,grid:{color:'rgba(0,32,96,.06)'}},x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true}}}}
   });
-  document.getElementById('cmpLegend').innerHTML =
-    `<span><i style="background:#B4C4E0"></i>${mesLbl(prevYrClosed?prevYrClosed.mes:shiftMonth(closed.mes,-12))} (mismo mes año ant.)</span>`+
-    `<span><i style="background:#4A6FA5"></i>${mesLbl(shiftMonth(closed.mes,-1))} (mes anterior)</span>`+
-    `<span><i style="background:#002060"></i>${mesLbl(closed.mes)} (mes cerrado)</span>`;
+}
+function cmpSetAllYrs(){
+  const yrs=[...new Set(TOTAL_RUTAS_HIST.map(h=>h.mes.substring(0,4)))];
+  window.cmpYrs=new Set(yrs);
+  document.querySelectorAll('#cmpYrBtns .yr-btn[data-yr]').forEach(b=>b.classList.add('act'));
+  cmpRenderHistChart(TOTAL_RUTAS_HIST.slice().sort((a,b)=>a.mes.localeCompare(b.mes)));
+}
+function cmpToggleYr(yr){
+  if (window.cmpYrs.has(yr)) window.cmpYrs.delete(yr); else window.cmpYrs.add(yr);
+  document.querySelectorAll('#cmpYrBtns .yr-btn[data-yr]').forEach(b=>b.classList.toggle('act', window.cmpYrs.has(b.dataset.yr)));
+  cmpRenderHistChart(TOTAL_RUTAS_HIST.slice().sort((a,b)=>a.mes.localeCompare(b.mes)));
 }
 function map0(hist, mes, key){ const h=hist.find(x=>x.mes===mes); return h?(h[key]||0):0; }
 
