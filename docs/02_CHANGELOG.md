@@ -1,4 +1,25 @@
 
+## [07/08/2026 · noche, cont.] — Mejora funcional: selector de mes + historial completo en Comparativo
+
+**Clasificación:** Mejora funcional (sobre lo desplegado en `66acccc`). **Archivo:** únicamente `index.html`.
+
+**Solicitud de Charly:** el Comparativo solo mostraba mes actual y mes anterior cerrado — sin poder elegir mes/año ni ver la tendencia histórica.
+
+### Implementado
+
+- Selector de mes de referencia (`#cmpMesSel`): permite elegir cualquier mes histórico disponible en `TOTAL_RUTAS_HIST`; recalcula MoM/YoY y el gráfico de 3 barras para el mes elegido. La columna "mes en curso" no se ve afectada — siempre refleja el mes real vigente.
+- Nuevo gráfico de historial completo (`#cCmpHist`): Total de Rutas por mes, con botones de año independientes (mismo patrón visual que la gráfica de Vencidas existente).
+
+### Validación
+
+- `node --check` sobre los 5 bloques `<script>` — sin errores, verificado en archivo de trabajo y en contenido desplegado.
+- Verificación de ausencia de commits externos antes del deploy.
+
+**Commit:** `ae76c31`
+
+---
+
+
 ## [07/08/2026 · noche] — Nueva funcionalidad: Comparativo Mensual y Anual de Rutas
 
 **Clasificación:** Nueva funcionalidad. **Archivo:** únicamente `index.html` (pestaña Tendencias KPI, `processWorkbook()`, nuevas funciones de render).
