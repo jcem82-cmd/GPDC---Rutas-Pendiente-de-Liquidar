@@ -473,6 +473,9 @@ function pagina(delta) {
 async function exportarPDF() {
   // Mismo patron que exportarPDF() en index.html: ventana de impresion A4,
   // el usuario elige "Guardar como PDF" en el dialogo nativo del navegador.
+  // Incluye: KPIs, tarjetas por pais, graficas (capturadas como imagen desde
+  // los canvas de Chart.js) y el detalle de rutas COMPLETO respetando los
+  // filtros activos en pantalla (no solo la pagina visible).
   const btn = document.getElementById('btnPDF');
   const origTxt = btn.textContent;
   btn.textContent = '⏳ Preparando...'; btn.disabled = true;
@@ -485,6 +488,36 @@ async function exportarPDF() {
     const s = JSON.parse(sessionStorage.getItem('pdc_session')||sessionStorage.getItem('pdc_user')||'{}');
     userName = s.nombre ? s.nombre.split(' ').slice(0,2).join(' ') : '';
   } catch(e){}
+
+  // Imagenes de las graficas (Chart.js expone toBase64Image() directamente)
+  const imgFact = donutFactChart ? donutFactChart.toBase64Image() : '';
+  const imgDesp = donutDespChart ? donutDespChart.toBase64Image() : '';
+
+  // Detalle de rutas: TODAS las que cumplen los filtros activos (no solo la
+  // pagina visible en pantalla) — mismo criterio que filtrar() usa en vivo.
+  const filtered = filtrar();
+  const fPaisVal = document.getElementById('fPais').value;
+  const fEstadoVal = document.getElementById('fEstado').value;
+  const fEstadoRealVal = document.getElementById('fEstadoReal').value;
+  const filtrosActivos = [
+    fPaisVal ? 'País: '+fPaisVal : null,
+    fEstadoVal ? 'Estado (Facturación): '+fEstadoVal : null,
+    fEstadoRealVal ? 'Estado Real (Despacho): '+fEstadoRealVal : null,
+  ].filter(Boolean);
+  const filtrosTxt = filtrosActivos.length ? filtrosActivos.join(' · ') : 'Sin filtros — todas las rutas del snapshot';
+
+  const detalleRows = filtered.map(r => `
+    <tr>
+      <td>${r['Numero de Despacho']||''}</td>
+      <td>${r['Fecha Ruta']||''}</td>
+      <td>${r['Pais']||''}</td>
+      <td>${r['Canal']||''}</td>
+      <td>${r['Estado (Facturación)']||''}</td>
+      <td>${r['Estado Real']||''}</td>
+      <td style="text-align:center">${r['Días']!=null?r['Días']:''}</td>
+      <td>${r['cliente']||''}</td>
+      <td>${r['Responsable']||''}</td>
+    </tr>`).join('');
 
   const printWin = window.open('', '_blank', 'width=900,height=700');
   if (!printWin) {
@@ -512,9 +545,13 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#0d1b3e;backg
 .rpt-meta{text-align:right;font-size:.72rem;opacity:.75;line-height:1.6}
 .rpt-meta strong{opacity:1;font-weight:700}
 .banner{background:#FFF4CC;border:1px solid #e0ac00;border-radius:8px;padding:8px 14px;
-  font-size:.68rem;color:#7a5800;font-weight:600;margin-bottom:14px}
+  font-size:.68rem;color:#7a5800;font-weight:600;margin-bottom:8px}
+.filtros{background:#EEF2F8;border:1px solid #DBDBDB;border-radius:8px;padding:7px 14px;
+  font-size:.68rem;color:#3a4a70;font-weight:600;margin-bottom:14px}
+.filtros strong{color:#002060}
 .sec-lbl{font-size:.68rem;font-weight:700;color:#5a6480;text-transform:uppercase;
-  letter-spacing:.1em;margin:14px 0 8px;border-bottom:1px solid #e2e8f0;padding-bottom:4px}
+  letter-spacing:.1em;margin:14px 0 8px;border-bottom:1px solid #e2e8f0;padding-bottom:4px;
+  page-break-after:avoid}
 .kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
 .kpi{background:#fff;border-radius:8px;padding:13px 15px;border:1px solid #e2e8f0;
   border-top:3px solid #002060;break-inside:avoid;page-break-inside:avoid}
@@ -533,6 +570,16 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#0d1b3e;backg
 .sm{font-size:.65rem;font-weight:700;padding:2px 6px;border-radius:10px}
 .sm.r{background:#FFBDBD;color:#8a0f0f}.sm.y{background:#FFF4CC;color:#7a5800}.sm.g{background:#DCF0C6;color:#2a6000}
 .pb{display:none}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:10px;
+  break-inside:avoid;page-break-inside:avoid}
+.chart-box{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;text-align:center}
+.chart-box h4{font-size:.68rem;font-weight:700;color:#002060;text-transform:uppercase;margin-bottom:6px}
+.chart-box img{max-width:100%;height:auto}
+table.dt{width:100%;border-collapse:collapse;font-size:.62rem;margin-top:4px}
+table.dt th{background:#EEF2F8;color:#3a4a70;font-weight:700;text-align:left;padding:6px 7px;
+  text-transform:uppercase;font-size:.55rem;border-bottom:1.5px solid #DBDBDB}
+table.dt td{padding:5px 7px;border-bottom:1px solid #f0f4f8}
+table.dt tr{break-inside:avoid;page-break-inside:avoid}
 .rpt-footer{border-top:1px solid #e2e8f0;margin-top:16px;padding-top:10px;
   display:flex;align-items:center;justify-content:space-between;font-size:.65rem;color:#7a8aaa}
 .rpt-footer strong{color:#002060}
@@ -552,12 +599,28 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#0d1b3e;backg
   </div>
 </div>
 <div class="banner">⚠️ Vista histórica de solo lectura — no refleja el estado actual del dashboard en vivo.</div>
+<div class="filtros"><strong>Filtros aplicados al detalle:</strong> ${filtrosTxt}</div>
 
 <div class="sec-lbl">KPIs Globales · Rutas Pendientes de Liquidación</div>
 <div class="kgrid">${kpiHTML}</div>
 
 <div class="sec-lbl">Detalle por País · Estado de Liquidación</div>
 <div class="ccgrid">${ccHTML}</div>
+
+<div class="sec-lbl">Estado de Rutas · Facturación y Despacho</div>
+<div class="charts-grid">
+  <div class="chart-box"><h4>Facturación</h4>${imgFact ? '<img src="'+imgFact+'"/>' : '<p style="font-size:.7rem;color:#7a8aaa">Sin datos</p>'}</div>
+  <div class="chart-box"><h4>Despacho</h4>${imgDesp ? '<img src="'+imgDesp+'"/>' : '<p style="font-size:.7rem;color:#7a8aaa">Sin datos</p>'}</div>
+</div>
+
+<div class="sec-lbl">Detalle de Rutas (${filtered.length.toLocaleString('es-GT')})</div>
+<table class="dt">
+  <thead><tr>
+    <th>Despacho</th><th>Fecha ruta</th><th>País</th><th>Canal</th>
+    <th>Estado (Fact.)</th><th>Estado (Real)</th><th>Días</th><th>Cliente</th><th>Responsable</th>
+  </tr></thead>
+  <tbody>${detalleRows || '<tr><td colspan="9" style="text-align:center;color:#7a8aaa;padding:14px">Sin resultados para este filtro</td></tr>'}</tbody>
+</table>
 
 <div class="rpt-footer">
   <span>Grupo PDC · Departamento Financiero · © 2026</span>
