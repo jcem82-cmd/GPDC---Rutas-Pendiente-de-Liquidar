@@ -3180,6 +3180,42 @@ function processWorkbook(wb, filename) {
     }
   }
 
+  // ── Efectividad — tabla "Tendencia de Rutas" (hoja "Efectividad") ────────
+  // FIX 10/08/2026 (RCA): efData se referenciaba en el return y en publish/
+  // download pero nunca se calculaba -> ReferenceError "efData is not
+  // defined" (se hizo visible recien gracias al fix de showParseError).
+  // Localizacion dinamica de tabla (mismo patron que totalRutasHist), cols
+  // Mes | Total rutas | Rutas >15 dias | %. Se detiene en fila "RESUMEN" o
+  // en la primera fila sin Total rutas (meses futuros sin datos aun).
+  const wsEfect = wb.Sheets['Efectividad'];
+  const efData = [];
+  if (wsEfect) {
+    const efRaw = XLSX.utils.sheet_to_json(wsEfect, {header:1, defval:null, cellDates:true});
+    let efHdrRow=-1, efHdrCol=-1;
+    for (let r=0; r<efRaw.length && efHdrRow<0; r++) {
+      const row = efRaw[r]||[];
+      for (let c=0; c<row.length; c++) {
+        if (String(row[c]||'').trim()==='Mes' && String(row[c+1]||'').trim()==='Total rutas') { efHdrRow=r; efHdrCol=c; break; }
+      }
+    }
+    if (efHdrRow>=0) {
+      for (let r=efHdrRow+1; r<efRaw.length; r++) {
+        const row = efRaw[r]||[];
+        const mesV=row[efHdrCol], totV=row[efHdrCol+1], m15V=row[efHdrCol+2], pctV=row[efHdrCol+3];
+        if (String(mesV||'').trim().toUpperCase()==='RESUMEN') break; // fin de tabla
+        const d = pXlDate(mesV);
+        if (!d || isNaN(d)) continue;
+        if (totV===null || totV===undefined) continue; // mes futuro sin datos aun
+        const tot=parseInt(totV)||0, m15=parseInt(m15V)||0;
+        efData.push({
+          mes: d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),
+          total: tot, mas15: m15,
+          pct: (pctV!=null && !isNaN(pctV)) ? Number(pctV) : (tot>0 ? m15/tot : 0)
+        });
+      }
+    }
+  }
+
   return {
     routes, kpiData: finalKpiData, efData, totalRutasHist,
     kpiTotals: {
