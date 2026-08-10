@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Histórico de Rutas · PDC Analytics Center</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 :root{
   --navy:#002060;--navy-l:#003090;--navy-10:rgba(0,32,96,.08);--navy-20:rgba(0,32,96,.14);
@@ -53,11 +54,34 @@ select:disabled{opacity:.5}
 .status.err{color:var(--rt)}
 .status.ok{color:var(--gt)}
 
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
-.kpi{background:var(--w);border-radius:var(--r);box-shadow:var(--sh);padding:16px}
-.kpi-lbl{font-size:.62rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
-.kpi-val{font-size:1.6rem;font-weight:800;color:var(--navy)}
-.kpi-val.r{color:var(--rt)}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:1000px){.kpis{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--w);border-radius:var(--r);box-shadow:var(--sh);padding:14px}
+.kpi.g{border-left:3px solid var(--gb)}.kpi.r{border-left:3px solid var(--rb)}.kpi.y{border-left:3px solid var(--yb)}
+.kico{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:8px}
+.kico.g{background:var(--gbg)}.kico.r{background:var(--rbg)}.kico.y{background:var(--ybg)}.kico.n{background:var(--bg)}
+.klbl{font-size:.6rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.02em;margin-bottom:4px}
+.kval{font-size:1.35rem;font-weight:800;color:var(--t1)}
+.ksub{font-size:.62rem;color:var(--t3);margin-top:2px}
+
+.ccards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+@media(max-width:900px){.ccards{grid-template-columns:1fr}}
+.cc{background:var(--w);border-radius:var(--rl);box-shadow:var(--sh);padding:16px;border-top:4px solid var(--silver)}
+.cc.gt{border-top-color:#2a9d3f}.cc.sv{border-top-color:#2d6ecf}.cc.pe{border-top-color:#d03030}
+.cc h3{font-size:.85rem;font-weight:800;color:var(--navy);margin-bottom:10px}
+.cc-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:.76rem}
+.cc-lbl{color:var(--t3)}.cc-val{font-weight:700;color:var(--t1)}
+.sm{padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:700}
+.sm.g{background:var(--gbg);color:var(--gt)}.sm.y{background:var(--ybg);color:var(--yt)}.sm.r{background:var(--rbg);color:var(--rt)}
+.pb{height:5px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:8px}
+.pb-f{height:100%}.pb-f.g{background:var(--gb)}.pb-f.y{background:var(--yb)}.pb-f.r{background:var(--rb)}
+
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+@media(max-width:800px){.charts-row{grid-template-columns:1fr}}
+.chart-card{background:var(--w);border-radius:var(--rl);box-shadow:var(--sh);padding:16px}
+.chart-card h4{font-size:.72rem;font-weight:800;color:var(--navy);text-transform:uppercase;margin-bottom:10px}
+.chart-card canvas{max-height:230px}
 
 .tbl-wrap{background:var(--w);border-radius:var(--rl);box-shadow:var(--sh);overflow:hidden}
 .tbl-hd{padding:14px 18px;border-bottom:2px solid var(--silver);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
@@ -127,6 +151,11 @@ tr:hover td{background:var(--navy-10)}
 
   <div id="resultado" style="display:none">
     <div class="kpis" id="kpiCards"></div>
+    <div class="ccards" id="countryCards"></div>
+    <div class="charts-row">
+      <div class="chart-card"><h4>Estado rutas · Facturación</h4><canvas id="donutFact"></canvas></div>
+      <div class="chart-card"><h4>Estado rutas · Despacho</h4><canvas id="donutDesp"></canvas></div>
+    </div>
     <div class="tbl-wrap">
       <div class="tbl-hd">
         <h4 id="tblTitle">Detalle de rutas</h4>
@@ -229,13 +258,24 @@ async function cargarSnapshot() {
 
     const rawMatch = html.match(/const RAW = (\[[\s\S]*?\]);/);
     const totMatch = html.match(/const KPI_TOTALS = (\{[\s\S]*?\});/);
+    const fxMatch = html.match(/const FX_DEF = \{GTQ:([\d./]+), USD:1, PEN:([\d./]+)\};/);
     if (!rawMatch) throw new Error('Este snapshot no contiene datos de rutas leíbles (versión muy antigua del archivo)');
 
     currentRoutes = JSON.parse(rawMatch[1]);
     currentTotals = totMatch ? JSON.parse(totMatch[1]) : null;
+    // FX_DEF se guarda como fracciones (ej. "1/7.63627") — se resuelven sin eval().
+    function parseFX(expr) {
+      const parts = String(expr).split('/');
+      return parts.length === 2 ? (Number(parts[0])/Number(parts[1])) : Number(expr);
+    }
+    currentFX = fxMatch
+      ? {GTQ: parseFX(fxMatch[1]), USD: 1, PEN: parseFX(fxMatch[2])}
+      : {GTQ:1, USD:1, PEN:1};
     page = 0;
 
     renderKPIs(snap);
+    renderCountryCards();
+    renderDonuts();
     initFiltros();
     renderTabla();
     document.getElementById('resultado').style.display = 'block';
@@ -251,23 +291,111 @@ async function cargarSnapshot() {
   }
 }
 
+let currentFX = {GTQ:1, USD:1, PEN:1};
+const SYM = {GTQ:'Q', USD:'$', PEN:'S/'};
+let donutFactChart=null, donutDespChart=null;
+
+// FIX (RCA 10/08/2026): RAW incluye TODA la historia de rutas, no solo las
+// pendientes — igual que en index.html, hay que excluir las ya liquidadas
+// (mismo criterio notLiq que usa RK()/RCC() en el dashboard en vivo) antes
+// de calcular cualquier KPI. Sin este filtro los totales no coinciden con
+// el dashboard real (ej. 744 en vez de 370 rutas pendientes).
+function notLiq(d) { return d['Estado (Facturación)']!=='Liquidada' && d['Estado Real']!=='Liquidada'; }
+
+function toUSD(v,mon){ return (v||0)*(currentFX[mon]||1); }
+function SC(v,t){ if(!t||v===0)return 'g'; const p=v/t*100; return p<=0?'g':p<=10?'y':'r'; }
+function fmt(v){ if(v===null||v===undefined||isNaN(v))return '—'; return Number(v).toLocaleString('es-GT',{maximumFractionDigits:0}); }
+
 function renderKPIs(snap) {
-  const total = currentRoutes.length;
-  const vencFact = currentRoutes.filter(r=>r['Estado (Facturación)']==='Vencidas').length;
-  const vencReal = currentRoutes.filter(r=>r['Estado Real']==='Vencidas').length;
-  const liq = currentRoutes.filter(r=>r['Estado (Facturación)']==='Liquidada').length;
-  document.getElementById('kpiCards').innerHTML = `
-    <div class="kpi"><div class="kpi-lbl">Fecha del reporte</div><div class="kpi-val">${currentTotals ? currentTotals.report_date : snap.label}</div></div>
-    <div class="kpi"><div class="kpi-lbl">Total rutas en snapshot</div><div class="kpi-val">${total.toLocaleString('es-GT')}</div></div>
-    <div class="kpi"><div class="kpi-lbl">Vencidas (Facturación)</div><div class="kpi-val r">${vencFact.toLocaleString('es-GT')}</div></div>
-    <div class="kpi"><div class="kpi-lbl">Vencidas (Real)</div><div class="kpi-val r">${vencReal.toLocaleString('es-GT')}</div></div>
-    <div class="kpi"><div class="kpi-lbl">Liquidadas</div><div class="kpi-val">${liq.toLocaleString('es-GT')}</div></div>
-  `;
+  // Replica EXACTA de RK() en index.html — mismas formulas, mismos campos.
+  const FD = currentRoutes.filter(notLiq);
+  const tot=FD.length;
+  const vf=FD.filter(r=>r['Estado (Facturación)']==='Vencidas').length;
+  const vd=FD.filter(r=>r['Estado Real']==='Vencidas').length;
+  const et=FD.filter(r=>r['Estado (Facturación)']==='En Tiempo').length;
+  const m15=FD.filter(r=>r['Rango Real']==='15 +').length;
+  const d11=FD.filter(r=>r.Rango==='11 a 15').length;
+  const valUSD=FD.reduce((s,r)=>s+toUSD(r['Valor Asignado']||0,r.Moneda),0);
+  const pct=tot>0?(vf/tot*100).toFixed(1):0;
+  const ks=[
+    {l:'Total rutas pendientes',v:tot,s:'Sin liquidar',c:'',ic:'n',e:'📦'},
+    {l:'En tiempo (Facturación)',v:et,s:`${tot>0?((et/tot)*100).toFixed(1):0}% del total`,c:'g',ic:'g',e:'✅'},
+    {l:'Vencidas Facturación',v:vf,s:`${pct}% de pendientes`,c:'r',ic:'r',e:'⚠️'},
+    {l:'Vencidas Despacho',v:vd,s:`${tot>0?((vd/tot)*100).toFixed(1):0}%`,c:'r',ic:'r',e:'🚚'},
+    {l:'+15 días vencidas',v:m15,s:`${d11} en rango 11-15 días`,c:'r',ic:'r',e:'🔴'},
+    {l:'Valor total (USD equiv.)',v:'$'+fmt(valUSD),s:'Fecha del reporte: '+(currentTotals?currentTotals.report_date:snap.label),c:'y',ic:'y',e:'💰'},
+  ];
+  document.getElementById('kpiCards').innerHTML = ks.map(k=>`
+    <div class="kpi ${k.c}"><div class="kico ${k.ic}">${k.e}</div>
+    <div class="klbl">${k.l}</div><div class="kval">${k.v}</div><div class="ksub">${k.s}</div></div>`).join('');
+}
+
+function renderCountryCards() {
+  // Replica EXACTA de RCC() en index.html.
+  const FD = currentRoutes.filter(notLiq);
+  const cfg=[
+    {pais:'Guatemala',mon:'GTQ',cls:'gt',flag:'🇬🇹'},
+    {pais:'El Salvador',mon:'USD',cls:'sv',flag:'🇸🇻'},
+    {pais:'Perú',mon:'PEN',cls:'pe',flag:'🇵🇪'},
+  ];
+  let h='';
+  cfg.forEach(({pais,mon,cls,flag})=>{
+    const rows=FD.filter(r=>r.Pais===pais);
+    if(!rows.length)return;
+    const vf=rows.filter(r=>r['Estado (Facturación)']==='Vencidas').length;
+    const vd=rows.filter(r=>r['Estado Real']==='Vencidas').length;
+    const vl=rows.reduce((s,r)=>s+(r['Valor Asignado']||0),0);
+    const vu=vl*(currentFX[mon]||1);
+    const dp=(rows.reduce((s,r)=>s+(r['Días']||0),0)/rows.length).toFixed(1);
+    const pct=rows.length>0?(vf/rows.length*100).toFixed(1):0;
+    const s=SC(vf,rows.length);
+    h+=`<div class="cc ${cls}">
+      <h3>${flag} ${pais}</h3>
+      <div class="cc-row"><span class="cc-lbl">Total rutas</span><span class="cc-val">${rows.length}</span></div>
+      <div class="cc-row"><span class="cc-lbl">Vencidas Fact.</span><span class="sm ${s}">${vf} (${pct}%)</span></div>
+      <div class="cc-row"><span class="cc-lbl">Vencidas Desp.</span><span class="sm ${SC(vd,rows.length)}">${vd} (${rows.length>0?(vd/rows.length*100).toFixed(1):0}%)</span></div>
+      <div class="cc-row"><span class="cc-lbl">Valor ${mon}</span><span class="cc-val">${SYM[mon]} ${fmt(vl)}</span></div>
+      <div class="cc-row"><span class="cc-lbl">Valor USD equiv.</span><span class="cc-val">$ ${fmt(vu)}</span></div>
+      <div class="cc-row"><span class="cc-lbl">Días promedio</span><span class="cc-val">${dp}</span></div>
+      <div class="pb"><div class="pb-f ${s}" style="width:${Math.min(100,parseFloat(pct))}%"></div></div>
+    </div>`;
+  });
+  document.getElementById('countryCards').innerHTML = h || '<div style="color:var(--t3);padding:16px">Sin datos por país</div>';
+}
+
+function renderDonuts() {
+  // Replica EXACTA de RC() (donuts) en index.html — mismos colores, mismas etiquetas.
+  const FD = currentRoutes.filter(notLiq);
+  if (donutFactChart) donutFactChart.destroy();
+  if (donutDespChart) donutDespChart.destroy();
+
+  const etF=FD.filter(r=>r['Estado (Facturación)']==='En Tiempo').length;
+  const vF=FD.filter(r=>r['Estado (Facturación)']==='Vencidas').length;
+  donutFactChart = new Chart(document.getElementById('donutFact'), {
+    type:'doughnut',
+    data:{labels:['En Tiempo','Vencidas'],datasets:[{data:[etF,vF],
+      backgroundColor:['#DCF0C6','#FFBDBD'],borderColor:['#48a010','#d03030'],borderWidth:2,hoverOffset:10}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
+      plugins:{legend:{position:'bottom',labels:{font:{family:'Plus Jakarta Sans',size:11},padding:12}},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed} rutas (${FD.length>0?(c.parsed/FD.length*100).toFixed(1):0}%)`}}}}
+  });
+
+  const etD=FD.filter(r=>r['Estado Real']==='En Tiempo').length;
+  const vD=FD.filter(r=>r['Estado Real']==='Vencidas').length;
+  donutDespChart = new Chart(document.getElementById('donutDesp'), {
+    type:'doughnut',
+    data:{labels:['En Tiempo','Vencidas'],datasets:[{data:[etD,vD],
+      backgroundColor:['rgba(207,238,252,.8)','rgba(255,189,189,.8)'],borderColor:['#3060c0','#d03030'],borderWidth:2,hoverOffset:10}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
+      plugins:{legend:{position:'bottom',labels:{font:{family:'Plus Jakarta Sans',size:11},padding:12}},
+        tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed} rutas (${FD.length>0?(c.parsed/FD.length*100).toFixed(1):0}%)`}}}}
+  });
 }
 
 function initFiltros() {
-  const paises = [...new Set(currentRoutes.map(r=>r['Pais']).filter(Boolean))].sort();
-  const estados = [...new Set(currentRoutes.map(r=>r['Estado (Facturación)']).filter(Boolean))].sort();
+  const FD = currentRoutes.filter(notLiq);
+  const paises = [...new Set(FD.map(r=>r['Pais']).filter(Boolean))].sort();
+  const estados = [...new Set(FD.map(r=>r['Estado (Facturación)']).filter(Boolean))].sort();
   document.getElementById('fPais').innerHTML = '<option value="">Todos los países</option>' +
     paises.map(p=>`<option value="${p}">${p}</option>`).join('');
   document.getElementById('fEstado').innerHTML = '<option value="">Todos los estados</option>' +
@@ -277,7 +405,7 @@ function initFiltros() {
 function filtrar() {
   const pais = document.getElementById('fPais').value;
   const estado = document.getElementById('fEstado').value;
-  return currentRoutes.filter(r =>
+  return currentRoutes.filter(notLiq).filter(r =>
     (!pais || r['Pais']===pais) && (!estado || r['Estado (Facturación)']===estado)
   );
 }
