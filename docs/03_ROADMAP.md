@@ -1,10 +1,34 @@
 # 03 — ROADMAP
 ## PDC Analytics Center · Plan de Evolución
 
-**Estado actual: v2.10 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
-**Última actualización:** 07/08/2026 (sesión Comparativo Mensual/Anual de Rutas, ver §20 en MASTER)
+**Estado actual: v2.11 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
+**Última actualización:** 10/08/2026 (sesión Histórico de Rutas + espejo Cloudflare)
 
 ---
+
+---
+
+## ✅ FASE 12 — Histórico de Rutas (COMPLETADA · v2.11 · 10/08/2026)
+
+- [x] Nueva funcionalidad solicitada por Charly: consultar el estado de las rutas en fechas pasadas sin afectar el dashboard en vivo
+- [x] Arquitectura: reutiliza el historial de commits de GitHub ya existente (sin duplicar almacenamiento), lee snapshots vía `raw.githubusercontent.com`
+- [x] `historico_index.json` como manifiesto — decisión deliberada de evitar la API de commits de GitHub desde el navegador (límite 60/hora sin auth, riesgo real con varios usuarios en la misma IP)
+- [x] Réplica exacta de fórmulas del "Resumen General" (`RK()`/`RCC()`/`RC()`), incluyendo el filtro `notLiq()` — verificado cifra por cifra contra el dashboard en vivo
+- [x] Filtros combinables: País, Estado (Facturación), Estado Real (Despacho)
+- [x] Exportar a PDF: KPIs + tarjetas por país + gráficas (imagen) + detalle completo según filtros activos
+- [x] Tarjeta nueva en el Hub (`analytics.html`), acceso controlado vía `profiles.dashboards` en Supabase
+
+---
+
+## 🔜 PENDIENTE — Sesión de arquitectura (próxima semana, autorizada por Charly)
+
+- [ ] Ramas `main` / `develop` / `feature-*` (código de plataforma; publicaciones diarias de Excel siguen escribiendo directo a `main`)
+- [ ] Respaldo automático programado del repositorio (posible destino: Supabase Storage)
+- [ ] Versionado semántico formal (`v1.0`, `v1.1`, `v2.0`) vía git tags, vinculado a CHANGELOG
+- [ ] Cloudflare Access sobre el espejo `pdc-analytics.jcem82.workers.dev` (autenticación previa) antes de considerarlo apto para compartir ampliamente
+- [ ] Dominio propio para el espejo de Cloudflare
+- [ ] **Editor de permisos de dashboards en el panel de administración** (`analytics.html`) — hoy solo se pueden ver los `dashboards` asignados por usuario, no editarlos; requiere entrar directo a Supabase Table Editor. Recomendación surgida durante el lanzamiento de Histórico de Rutas (10/08/2026)
+- [ ] Automatizar la regeneración de `historico_index.json` en cada publicación de Excel (integrarlo en `publishToGitHub()` de `index.html` — requiere autorización explícita por tocar archivo sensible)
 
 ---
 
