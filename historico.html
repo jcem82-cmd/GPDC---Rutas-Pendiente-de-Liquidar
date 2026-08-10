@@ -33,6 +33,10 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
 .hback{background:none;border:1px solid rgba(207,238,252,.3);color:var(--sky);
   border-radius:6px;padding:6px 12px;font-size:.72rem;font-weight:700;cursor:pointer;text-decoration:none}
 .hback:hover{background:rgba(207,238,252,.1)}
+.pdf-btn{display:none;align-items:center;gap:6px;background:linear-gradient(135deg,#b91c1c,#dc2626);
+  border:none;color:#fff;border-radius:6px;padding:7px 14px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:var(--fn)}
+.pdf-btn:hover{background:linear-gradient(135deg,#991b1b,#b91c1c)}
+.pdf-btn.visible{display:flex}
 
 .wrap{max-width:1200px;margin:0 auto;padding:20px 18px 60px}
 .banner{background:var(--ybg);border:1px solid var(--yb);border-radius:var(--r);
@@ -133,6 +137,7 @@ tr:hover td{background:var(--navy-10)}
   </div>
   <div class="hdr-badges">
     <span class="hbadge" id="hdrUser"></span>
+    <button class="pdf-btn" id="btnPDF" onclick="exportarPDF()">📄 Exportar PDF</button>
     <a href="analytics.html" class="hback">← Volver al Hub</a>
   </div>
 </div>
@@ -161,7 +166,8 @@ tr:hover td{background:var(--navy-10)}
         <h4 id="tblTitle">Detalle de rutas</h4>
         <div class="tbl-filters">
           <select id="fPais" onchange="renderTabla()"><option value="">Todos los países</option></select>
-          <select id="fEstado" onchange="renderTabla()"><option value="">Todos los estados</option></select>
+          <select id="fEstado" onchange="renderTabla()"><option value="">Estado (Facturación): todos</option></select>
+          <select id="fEstadoReal" onchange="renderTabla()"><option value="">Estado Real (Despacho): todos</option></select>
         </div>
       </div>
       <div class="tbl-scroll">
@@ -240,6 +246,8 @@ async function init() {
   }
 }
 
+let currentSnapLabel = '';
+
 async function cargarSnapshot() {
   const sel = document.getElementById('fechaSel');
   const idx = Number(sel.value);
@@ -247,7 +255,9 @@ async function cargarSnapshot() {
   if (!snap) return;
   const statusEl = document.getElementById('status');
   const btn = document.getElementById('btnCargar');
+  const pdfBtn = document.getElementById('btnPDF');
   btn.disabled = true;
+  pdfBtn.classList.remove('visible');
   statusEl.textContent = '⏳ Cargando snapshot del ' + snap.label + '…';
   statusEl.className = 'status';
   try {
@@ -263,6 +273,7 @@ async function cargarSnapshot() {
 
     currentRoutes = JSON.parse(rawMatch[1]);
     currentTotals = totMatch ? JSON.parse(totMatch[1]) : null;
+    currentSnapLabel = snap.label;
     // FX_DEF se guarda como fracciones (ej. "1/7.63627") — se resuelven sin eval().
     function parseFX(expr) {
       const parts = String(expr).split('/');
@@ -279,6 +290,7 @@ async function cargarSnapshot() {
     initFiltros();
     renderTabla();
     document.getElementById('resultado').style.display = 'block';
+    pdfBtn.classList.add('visible');
     statusEl.textContent = '✓ Mostrando snapshot del ' + snap.label;
     statusEl.className = 'status ok';
   } catch(err) {
@@ -396,17 +408,23 @@ function initFiltros() {
   const FD = currentRoutes.filter(notLiq);
   const paises = [...new Set(FD.map(r=>r['Pais']).filter(Boolean))].sort();
   const estados = [...new Set(FD.map(r=>r['Estado (Facturación)']).filter(Boolean))].sort();
+  const estadosReal = [...new Set(FD.map(r=>r['Estado Real']).filter(Boolean))].sort();
   document.getElementById('fPais').innerHTML = '<option value="">Todos los países</option>' +
     paises.map(p=>`<option value="${p}">${p}</option>`).join('');
-  document.getElementById('fEstado').innerHTML = '<option value="">Todos los estados</option>' +
+  document.getElementById('fEstado').innerHTML = '<option value="">Estado (Facturación): todos</option>' +
     estados.map(e=>`<option value="${e}">${e}</option>`).join('');
+  document.getElementById('fEstadoReal').innerHTML = '<option value="">Estado Real (Despacho): todos</option>' +
+    estadosReal.map(e=>`<option value="${e}">${e}</option>`).join('');
 }
 
 function filtrar() {
   const pais = document.getElementById('fPais').value;
   const estado = document.getElementById('fEstado').value;
+  const estadoReal = document.getElementById('fEstadoReal').value;
   return currentRoutes.filter(notLiq).filter(r =>
-    (!pais || r['Pais']===pais) && (!estado || r['Estado (Facturación)']===estado)
+    (!pais || r['Pais']===pais) &&
+    (!estado || r['Estado (Facturación)']===estado) &&
+    (!estadoReal || r['Estado Real']===estadoReal)
   );
 }
 
@@ -450,6 +468,111 @@ function renderTabla() {
 function pagina(delta) {
   page += delta;
   renderTabla();
+}
+
+async function exportarPDF() {
+  // Mismo patron que exportarPDF() en index.html: ventana de impresion A4,
+  // el usuario elige "Guardar como PDF" en el dialogo nativo del navegador.
+  const btn = document.getElementById('btnPDF');
+  const origTxt = btn.textContent;
+  btn.textContent = '⏳ Preparando...'; btn.disabled = true;
+
+  const kpiHTML = document.getElementById('kpiCards').innerHTML;
+  const ccHTML = document.getElementById('countryCards').innerHTML;
+  const fecha = currentTotals ? currentTotals.report_date : currentSnapLabel;
+  let userName = '';
+  try {
+    const s = JSON.parse(sessionStorage.getItem('pdc_session')||sessionStorage.getItem('pdc_user')||'{}');
+    userName = s.nombre ? s.nombre.split(' ').slice(0,2).join(' ') : '';
+  } catch(e){}
+
+  const printWin = window.open('', '_blank', 'width=900,height=700');
+  if (!printWin) {
+    alert('No se pudo abrir la ventana de impresión.\nEn Chrome: ícono de popup en la barra de direcciones → Permitir siempre.');
+    btn.textContent = origTxt; btn.disabled = false;
+    return;
+  }
+
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<title>Reporte Histórico · Liquidación de Rutas · ${fecha}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+body{font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#0d1b3e;background:#fff;padding:0}
+@page{size:A4;margin:12mm 14mm}
+.rpt-hdr{background:#002060;color:#fff;padding:16px 20px;display:flex;align-items:center;
+  justify-content:space-between;gap:16px;margin-bottom:8px;border-radius:10px}
+.rpt-logo{background:#fff;border-radius:6px;padding:5px 14px;font-size:.95rem;font-weight:800;color:#002060}
+.rpt-title{flex:1;padding:0 16px}
+.rpt-title h1{font-size:1rem;font-weight:800;letter-spacing:.04em;margin-bottom:2px}
+.rpt-title p{font-size:.7rem;opacity:.7}
+.rpt-meta{text-align:right;font-size:.72rem;opacity:.75;line-height:1.6}
+.rpt-meta strong{opacity:1;font-weight:700}
+.banner{background:#FFF4CC;border:1px solid #e0ac00;border-radius:8px;padding:8px 14px;
+  font-size:.68rem;color:#7a5800;font-weight:600;margin-bottom:14px}
+.sec-lbl{font-size:.68rem;font-weight:700;color:#5a6480;text-transform:uppercase;
+  letter-spacing:.1em;margin:14px 0 8px;border-bottom:1px solid #e2e8f0;padding-bottom:4px}
+.kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+.kpi{background:#fff;border-radius:8px;padding:13px 15px;border:1px solid #e2e8f0;
+  border-top:3px solid #002060;break-inside:avoid;page-break-inside:avoid}
+.kpi.g{border-top-color:#48a010;background:#f8fff4}
+.kpi.y{border-top-color:#e0ac00;background:#fffef0}
+.kpi.r{border-top-color:#d03030;background:#fff8f8}
+.kico{display:none}
+.klbl{font-size:.65rem;font-weight:700;color:#7a8aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.kval{font-size:1.4rem;font-weight:800;color:#0d1b3e;line-height:1}
+.ksub{font-size:.65rem;color:#7a8aaa;margin-top:3px}
+.ccgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px}
+.cc{background:#fff;border-radius:8px;border:1px solid #e2e8f0;padding:12px 14px;break-inside:avoid;page-break-inside:avoid}
+.cc h3{font-size:.8rem;font-weight:800;color:#002060;margin-bottom:8px}
+.cc-row{display:flex;justify-content:space-between;padding:3px 0;font-size:.72rem}
+.cc-lbl{color:#7a8aaa}.cc-val{font-weight:700;color:#0d1b3e}
+.sm{font-size:.65rem;font-weight:700;padding:2px 6px;border-radius:10px}
+.sm.r{background:#FFBDBD;color:#8a0f0f}.sm.y{background:#FFF4CC;color:#7a5800}.sm.g{background:#DCF0C6;color:#2a6000}
+.pb{display:none}
+.rpt-footer{border-top:1px solid #e2e8f0;margin-top:16px;padding-top:10px;
+  display:flex;align-items:center;justify-content:space-between;font-size:.65rem;color:#7a8aaa}
+.rpt-footer strong{color:#002060}
+</style>
+</head>
+<body>
+<div class="rpt-hdr">
+  <div class="rpt-logo">PDC</div>
+  <div class="rpt-title">
+    <h1>REPORTE HISTÓRICO · LIQUIDACIÓN DE RUTAS</h1>
+    <p>Dashboard Ejecutivo · Grupo PDC · Departamento Financiero</p>
+  </div>
+  <div class="rpt-meta">
+    <strong>Corte:</strong> ${fecha}<br>
+    <strong>Generado:</strong> ${new Date().toLocaleString('es-GT')}<br>
+    ${userName ? '<strong>Usuario:</strong> '+userName : ''}
+  </div>
+</div>
+<div class="banner">⚠️ Vista histórica de solo lectura — no refleja el estado actual del dashboard en vivo.</div>
+
+<div class="sec-lbl">KPIs Globales · Rutas Pendientes de Liquidación</div>
+<div class="kgrid">${kpiHTML}</div>
+
+<div class="sec-lbl">Detalle por País · Estado de Liquidación</div>
+<div class="ccgrid">${ccHTML}</div>
+
+<div class="rpt-footer">
+  <span>Grupo PDC · Departamento Financiero · © 2026</span>
+  <strong>Histórico de Rutas · Reporte de solo lectura</strong>
+  <span>Datos al ${fecha}</span>
+</div>
+</body></html>`);
+
+  printWin.document.close();
+  printWin.focus();
+  btn.textContent = '🖨️ Abriendo...';
+  setTimeout(function(){
+    try { printWin.print(); } catch(pe) { console.warn('print blocked:', pe); }
+    btn.textContent = origTxt; btn.disabled = false;
+  }, 800);
 }
 
 init();
