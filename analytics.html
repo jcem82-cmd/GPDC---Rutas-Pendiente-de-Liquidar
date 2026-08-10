@@ -684,6 +684,22 @@ var _pdcProfilesCache = []; /* caché en memoria de la tabla profiles, cargada a
 
 var PDC_DASHBOARDS = [
   {
+    id: 'historico',
+    nombre: 'Histórico de Rutas',
+    descripcion: 'Consulta de solo lectura: cómo estaban las rutas en cualquier fecha en la que se publicó un Excel. No modifica ni afecta el dashboard en vivo de Liquidación de Rutas.',
+    archivo: 'historico.html',
+    icono: '🕐',
+    categoria: 'Financiero · Consulta histórica',
+    paises: { GT:'🇬🇹 Guatemala', ESV:'🇸🇻 El Salvador', PE:'🇵🇪 Perú' },
+    kpis: [
+      { val:'54',  lbl:'Snapshots disponibles' },
+      { val:'📖',  lbl:'Solo lectura' },
+      { val:'0',   lbl:'Impacto en vivo' }
+    ],
+    actualizacion: '10 ago 2026',
+    activo: true
+  },
+  {
     id: 'rutas',
     nombre: 'Liquidación de Rutas',
     descripcion: 'Monitoreo en tiempo real del estado de liquidación de rutas de despacho. KPIs financieros, análisis por transportista, rutas vencidas y control de efectividad operativa.',
