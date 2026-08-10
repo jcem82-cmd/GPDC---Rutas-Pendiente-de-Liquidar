@@ -587,6 +587,9 @@ function pdcLogout(){
   <button class="ftog" id="ftog" onclick="TM()" title="Ver solo rutas vencidas por Despacho / ver todo">
     <span class="fdot"></span><span id="ftlbl">TODAS LAS RUTAS</span>
   </button>
+  <button class="ftog" id="ftogTerm" onclick="TMTerm()" title="Ver solo rutas Dedicado Terminal (pendientes)">
+    <span class="fdot"></span><span id="ftlblTerm">🎯 DEDICADO TERMINAL</span>
+  </button>
   <div class="fb-r"><button class="freset" onclick="RF()">↺ Limpiar</button></div>
 </div>
 
@@ -1136,7 +1139,7 @@ function pdcLogout(){
 <div id="tab-detalle" class="panel" style="display: none;">
   <div class="tc">
     <div class="tc-hdr">
-      <h4>Detalle Completo de Rutas Pendientes</h4>
+      <h4 id="detTitle">Detalle Completo de Rutas Pendientes</h4>
       <input class="tsrch" type="text" id="srchM" oninput="RM()" placeholder="Buscar en todas las columnas...">
     </div>
     <div class="tsc">
@@ -1653,6 +1656,7 @@ const MONP = {GTQ:'Guatemala', USD:'El Salvador', PEN:'Perú'};
 // ═══ STATE ═══════════════════════════════════════════════════════
 let FD = [...RAW];
 let excl = false;
+let terminalOnly = false;
 let CH = {};
 let DX = {};
 let tSrt = {col:3,dir:-1};
@@ -1696,6 +1700,18 @@ function TM(){
   btn.classList.toggle('excl',excl);
   // When ON (excl mode = showing only Despacho vencidas), filter to vencidas despacho
   document.getElementById('ftlbl').textContent = excl ? 'SOLO VENCIDAS DESPACHO' : 'TODAS LAS RUTAS';
+  if(excl && terminalOnly){ terminalOnly=false; document.getElementById('ftogTerm').classList.remove('excl'); }
+  AF();
+}
+
+function TMTerm(){
+  // Toggle "Dedicado Terminal" (RCA 10/08/2026, columna nueva del Excel).
+  // Mutuamente excluyente con el toggle de "Solo Vencidas Despacho" — activar
+  // uno desactiva el otro, mismo comportamiento que ya tenían entre sí los
+  // filtros de dropdown vs. excl.
+  terminalOnly=!terminalOnly;
+  document.getElementById('ftogTerm').classList.toggle('excl',terminalOnly);
+  if(terminalOnly && excl){ excl=false; document.getElementById('ftog').classList.remove('excl'); document.getElementById('ftlbl').textContent='TODAS LAS RUTAS'; }
   AF();
 }
 
@@ -1779,8 +1795,11 @@ function AF(){
     return true;
   };
   const notLiq=d=>d['Estado (Facturación)']!=='Liquidada'&&d['Estado Real']!=='Liquidada';
+  const isDedicadoTerminal=d=>String(d['Terminal']||'').trim().toUpperCase()==='DEDICADO TERMINAL';
   if(excl){
     FD=RAW.filter(d=>d['Estado Real']==='Vencidas'&&notLiq(d));
+  } else if(terminalOnly){
+    FD=RAW.filter(d=>isDedicadoTerminal(d)&&notLiq(d));
   } else {
     FD=RAW.filter(d=>notLiq(d)&&filt(d));
   }
@@ -1798,6 +1817,7 @@ function RF(){
   if(window._PDC_RESP_MULTI_reset)window._PDC_RESP_MULTI_reset();
   if(window._PDC_RANGO_MULTI_reset)window._PDC_RANGO_MULTI_reset();
   if(excl){excl=false;document.getElementById('ftog').classList.remove('excl');document.getElementById('ftlbl').textContent='TODAS LAS RUTAS';}
+  if(terminalOnly){terminalOnly=false;document.getElementById('ftogTerm').classList.remove('excl');}
   AF();
 }
 
@@ -2497,7 +2517,13 @@ function sD(col){if(dSrt.col===col)dSrt.dir*=-1;else{dSrt.col=col;dSrt.dir=-1;}d
 // ═══ MAIN TABLE ═════════════════════════════════════════════════
 function RM(){
   const srch=(document.getElementById('srchM').value||'').toLowerCase();
-  let data=FD.filter(r=>r['Estado (Facturación)']==='Vencidas'&&(!srch||Object.values(r).some(v=>v&&String(v).toLowerCase().includes(srch))));
+  const titleEl=document.getElementById('detTitle');
+  if(titleEl){
+    titleEl.textContent = terminalOnly
+      ? '🎯 Detalle · Dedicado Terminal (Vencidas y En Tiempo)'
+      : (excl ? 'Detalle · Solo Vencidas Despacho' : 'Detalle Completo de Rutas Pendientes');
+  }
+  let data=FD.filter(r=>(terminalOnly||r['Estado (Facturación)']==='Vencidas')&&(!srch||Object.values(r).some(v=>v&&String(v).toLowerCase().includes(srch))));
   const ks=[null,'Numero de Despacho','Fecha Ruta','Días','Dias Real','Estado (Facturación)','Estado Real',
     'Fecha Max. Liquidacion - Facturación','Fecha Max. Liq. Despacho','Pais','Canal',
     'Responsable','Resp. Liq.','Transportista','cliente','Valor Asignado',null,'Effective_Target','Gap'];
@@ -3028,6 +3054,7 @@ function processWorkbook(wb, filename) {
       'Resp. Liq.':                              respMap[nd]||getStr(r,'Resp. Liq.'),
       'Comentario':                              getStr(r,'Comentario'),
       'Seguimiento':                             getStr(r,'Seguimiento'),
+      'Terminal':                                 getStr(r,'Terminal'),
       'Effective_Target':                        effT,
       'Gap':                                     effT!=null ? dias-effT : null,
       'Gap_Real':                                effT!=null ? diasR-effT : null,
