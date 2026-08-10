@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.8 | **Última actualización:** 10/08/2026 | **Estado:** Producción ✅
+**Versión vigente:** v2.9 | **Última actualización:** 10/08/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -24,8 +24,11 @@ PDC Analytics Center
 ├── analytics.html          ← Portal Hub · cards con KPIs EN VIVO vía PDCBridge
 │
 ├── index.html              ← Dashboard Liquidación de Rutas (fuente única de verdad)
+├── historico.html          ← Histórico de Rutas · solo lectura, NO conectado a la lógica en vivo (NUEVO 10/08)
+├── historico_index.json    ← Manifiesto de snapshots publicados (mantenimiento manual, NUEVO 10/08)
 ├── cash_today.html         ← Dashboard Cash Today · dataset propio (no conectado a PDCBridge)
 ├── admin.html              ← Panel administrativo · chat Supabase
+├── wrangler.jsonc          ← Config del espejo Cloudflare Workers (assets estáticos, NUEVO 06/08)
 │
 ├── regional/index.html     ← Consolidado Regional · KPIs EN VIVO vía PDCBridge (GT·SV·PE)
 ├── peru/index.html         ← Dashboard Perú · KPIs EN VIVO vía PDCBridge
@@ -67,6 +70,17 @@ login.html  →  sessionStorage[pdc_session] (TTL 8h)
 | Despliegue | GitHub Pages · GitHub Actions (`.github/workflows/deploy.yml`) |
 | Método | PUT directo vía GitHub REST API |
 | Archivos grandes (>1MB, ej. `cash_today.html`) | Git Trees API → blob SHA → `GET /git/blobs/{sha}` con `Accept: application/vnd.github.raw` |
+
+### Histórico de Rutas — visor de solo lectura (desde 10/08/2026)
+Consulta snapshots pasados de `index.html` directamente del historial de commits de GitHub — no duplica almacenamiento, no toca la lógica en vivo. Replica el "Resumen General" con fidelidad (mismas fórmulas `RK()`/`RCC()`/`RC()`, mismo filtro `notLiq()`).
+
+| Aspecto | Detalle |
+|---|---|
+| Acceso | Requiere `"historico"` en el arreglo `dashboards` del perfil del usuario en Supabase (no se agrega automáticamente a nadie) |
+| Fuente de datos | `raw.githubusercontent.com/{sha}/index.html` por snapshot — NO la API de commits de GitHub (límite 60/hora sin auth, riesgo real con varios usuarios en la misma IP de oficina) |
+| Índice de snapshots | `historico_index.json` — **mantenimiento manual**, no se regenera solo con cada publicación de Excel |
+| Filtros del detalle | País, Estado (Facturación), Estado Real (Despacho) — combinables |
+| Exportar PDF | Incluye KPIs, tarjetas por país, gráficas (capturadas como imagen vía `Chart.js.toBase64Image()`) y detalle de rutas completo según filtros activos |
 
 ### Espejo de contingencia — Cloudflare Workers (desde 06-10/08/2026)
 Motivado por el incidente de GitHub Actions/Pages del 06/08/2026 (~15:22–~00:05 UTC, publicaciones correctamente commiteadas al repo pero sin poder desplegarse en Pages durante varias horas). Cloudflare se conecta al mismo repo (`main`) vía GitHub App, con build propio e independiente de GitHub Actions — no depende de `deploy.yml`.
