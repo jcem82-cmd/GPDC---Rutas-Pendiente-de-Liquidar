@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.7 | **Última actualización:** 06/08/2026 | **Estado:** Producción ✅
+**Versión vigente:** v2.8 | **Última actualización:** 10/08/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -67,6 +67,17 @@ login.html  →  sessionStorage[pdc_session] (TTL 8h)
 | Despliegue | GitHub Pages · GitHub Actions (`.github/workflows/deploy.yml`) |
 | Método | PUT directo vía GitHub REST API |
 | Archivos grandes (>1MB, ej. `cash_today.html`) | Git Trees API → blob SHA → `GET /git/blobs/{sha}` con `Accept: application/vnd.github.raw` |
+
+### Espejo de contingencia — Cloudflare Workers (desde 06-10/08/2026)
+Motivado por el incidente de GitHub Actions/Pages del 06/08/2026 (~15:22–~00:05 UTC, publicaciones correctamente commiteadas al repo pero sin poder desplegarse en Pages durante varias horas). Cloudflare se conecta al mismo repo (`main`) vía GitHub App, con build propio e independiente de GitHub Actions — no depende de `deploy.yml`.
+
+| Recurso | Valor |
+|---|---|
+| URL espejo | `https://pdc-analytics.jcem82.workers.dev` |
+| Config | `wrangler.jsonc` (raíz del repo) — assets estáticos, sin build step |
+| Acceso GitHub App | Restringido únicamente a este repositorio (mínimo privilegio) |
+| Estado de seguridad | Subdominio público `workers.dev` — **NO compartir** hasta activar Cloudflare Access (pendiente, autorizado) |
+| Actualización | Automática en cada push a `main` — mismo flujo de publicación de Excel de siempre, sin pasos adicionales para Charly |
 
 ### ⚠️ Incidencia conocida de CI/CD — GitHub Actions
 El workflow usa `concurrency: {group:"pages", cancel-in-progress:true}`. Publicaciones cercanas en el tiempo pueden cancelar un deploy a medias y dejar el siguiente en estado inconsistente (falla rápida en el paso "Deploy to GitHub Pages"). **Recuperación:** disparar `workflow_dispatch` (ejecución nueva, no "rerun") vía API. Puede requerir 2-3 intentos si el problema es de fondo (backend de GitHub), no solo de Actions.
@@ -236,6 +247,7 @@ Toda reconstrucción de `_R` vía Python (flujo alterno: usuario sube Excel a es
 | **PDC_MASTER_PATH** | Obligatorio definir antes de incluir `js/pdc_data_bridge.js` en cualquier archivo fuera de la raíz |
 | **REGLA #19 — Tableros: canal_totals.pend/all** (07/08/2026) | Se calculan desde `routes` ("General (seguimiento)") + criterio `notLiq`, NUNCA desde la hoja "Total Rutas (Gral)" + `Estatus Real`. Antes numerador y denominador venían de hojas distintas del Excel que podían desincronizarse, produciendo % >100% en el módulo Tableros (ver §18). Con esta regla, `tot_pend` es por construcción ≥ numerador — el % nunca puede superar 100% |
 | **REGLA #20 — KPI_HIST es acumulativo, nunca se reconstruye** (07/08/2026) | `KPI_HIST` (Tendencias KPI) se parte del arreglo YA embebido en la página; solo se actualiza/agrega la entrada del mes vigente con cálculo en vivo (`Estado Real==='Vencidas'`). Un mes se congela (`closed:true`) permanentemente SOLO cuando el nombre del archivo subido contiene "Cierre" (`/cierre/i` sobre `filename`). Nunca reconstruir el arreglo completo desde `Efectividad` ni desde la hoja "KPI" — esa hoja es un paleativo de referencia de Charly, no la fuente de datos. Ver §19 |
+| **REGLA #21 — Toda variable nueva en `processWorkbook()` debe declararse Y usarse en el mismo commit** (10/08/2026) | RCA: el refactor del Comparador (`80cbf94`, 08/08) dejó `wsKPI` y `efData` referenciadas sin declarar (`ReferenceError`), y `showParseError()` referenciada sin definir — el resultado combinado dejaba la UI congelada en "Procesando..." con **cualquier** Excel, sin mostrar error. Antes de publicar un cambio a `processWorkbook()`, verificar con `node --check` Y con una simulación real (no solo sintaxis) que cubra el `return` completo de la función — la sintaxis válida no garantiza que todas las variables referenciadas existan en tiempo de ejecución. Ver CHANGELOG 10/08/2026 |
 
 ---
 
