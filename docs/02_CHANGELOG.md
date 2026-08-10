@@ -1,5 +1,30 @@
 
-## [10/08/2026] — Nueva funcionalidad: Histórico de Rutas (visor de solo lectura)
+## [10/08/2026] — Nueva funcionalidad: Filtro "Dedicado Terminal"
+
+**Clasificación:** Nueva funcionalidad, autorizada por Charly. **Archivo:** únicamente `index.html`.
+
+**Contexto:** Charly agregó una columna nueva ("Terminal") a la hoja `General (seguimiento)` del Excel de Rutas, para identificar rutas con la definición "Dedicado Terminal" y poder validar su estatus (vencida/en tiempo), valor y piloto de forma aislada.
+
+### Implementado
+
+- **Parser:** nuevo campo `Terminal` capturado de la columna homónima del Excel (`processWorkbook()`).
+- **Toggle "🎯 DEDICADO TERMINAL"** en la barra de filtros, junto al toggle existente "TODAS LAS RUTAS / SOLO VENCIDAS DESPACHO" — mutuamente excluyentes entre sí (activar uno desactiva el otro), mismo patrón de UX ya establecido.
+- **Alcance confirmado con Charly:** solo rutas **pendientes** (excluye Liquidadas, mismo criterio `notLiq()` que el resto del dashboard) — decisión tomada explícitamente vía pregunta de clarificación antes de implementar.
+- **Ajuste en tabla "Detalle de Rutas":** esa tabla tenía un filtro fijo que solo mostraba "Vencidas" sin importar el contenido de `FD` — se abrió esa restricción específicamente cuando el toggle de Terminal está activo, para mostrar ambos estados (Vencida y En Tiempo) tal como pidió Charly. El comportamiento por defecto (sin el toggle) no cambió.
+- Título de la tabla de detalle ahora refleja dinámicamente el modo activo.
+
+### Incidente durante el rollout (resuelto)
+
+Tras el primer intento de Charly de subir el Excel con la columna nueva, el toggle mostraba todo en cero. RCA: la pestaña del navegador de Charly ya estaba abierta desde *antes* de que se publicara el fix del parser — publicar un Excel no vuelve a descargar el código del dashboard, solo procesa el archivo con el JavaScript ya cargado en memoria. Solución: recarga forzada (Ctrl+Shift+R) antes de volver a publicar. Documentado como recordatorio operativo: **cualquier fix de código publicado requiere que el usuario recargue la pestaña antes de su siguiente publicación de Excel para tomar efecto**, no solo esperar a que termine el deploy.
+
+### Validación
+
+- Simulación en Node con el Excel real de Charly: 7 rutas con "Dedicado Terminal" en total (histórico), 3 pendientes al momento de la primera revisión.
+- Verificado contra el commit final publicado por Charly (`3c642ec`): 2 rutas pendientes con Dedicado Terminal, ambas Vencidas — Piloto, valor y moneda coinciden exactamente con el Excel fuente.
+
+**Commit:** `9e10a71`
+
+---
 
 **Clasificación:** Nueva funcionalidad, autorizada por Charly. **Archivos nuevos:** `historico.html`, `historico_index.json`. **Archivo con cambio menor:** `analytics.html` (1 tarjeta nueva en el array declarativo `PDC_DASHBOARDS`). **No se modificó** `index.html`, `cash_today.html` ni `cartas_salida.html`.
 
