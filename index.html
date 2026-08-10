@@ -2844,6 +2844,22 @@ function handleDrop(e) {
   if (file) handleFile(file);
 }
 
+function showParseError(msg) {
+  // FIX 10/08/2026 (RCA): funcion referenciada en 2 puntos del flujo de carga
+  // pero nunca definida -> al fallar el parseo, el intento de avisar al
+  // usuario generaba un segundo error no controlado y la UI quedaba
+  // congelada en "Procesando..." sin mostrar nada.
+  const errEl = document.getElementById('parse-error');
+  if (errEl) { errEl.textContent = '⚠️ ' + msg; errEl.style.display = 'block'; }
+  const progEl = document.getElementById('parse-progress');
+  if (progEl) progEl.style.display = 'none';
+  const statusEl = document.getElementById('prev-status');
+  if (statusEl) { statusEl.textContent = '✗ Error al procesar'; statusEl.style.color = 'var(--rb)'; }
+  const ghBtn = document.getElementById('btnPublishGH');
+  if (ghBtn) ghBtn.style.display = 'none';
+  console.error('[PDC parse error]', msg);
+}
+
 function handleFile(file) {
   if (!file || !/\.(xlsx|xlsm)$/i.test(file.name)) {
     showParseError('Por favor selecciona un archivo Excel (.xlsx o .xlsm)');
@@ -3134,6 +3150,10 @@ function processWorkbook(wb, filename) {
   // "KPI", tabla "Total Rutas" (cols Mes|GTQ|HNL|PEN|USD|Total general),
   // localizada dinámicamente. HNL se excluye (Honduras sin datos reales,
   // eliminado de Regional — ver §9). No depende de posición fija de filas.
+  // FIX 10/08/2026 (RCA): wsKPI se usaba sin declarar -> ReferenceError que
+  // detenia processWorkbook() a mitad de camino en CUALQUIER archivo subido,
+  // dejando la UI congelada en "Procesando..." (ver Bug #2 / showParseError).
+  const wsKPI = wb.Sheets['KPI'];
   const totalRutasHist = [];
   if (wsKPI) {
     const trRaw = XLSX.utils.sheet_to_json(wsKPI, {header:1, defval:null, cellDates:true});
