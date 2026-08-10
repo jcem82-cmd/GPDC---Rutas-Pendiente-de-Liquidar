@@ -1,5 +1,37 @@
 
-## [10/08/2026] — Corrección: 3 bugs en cadena bloqueaban `processWorkbook()` con cualquier Excel
+## [10/08/2026] — Nueva funcionalidad: Histórico de Rutas (visor de solo lectura)
+
+**Clasificación:** Nueva funcionalidad, autorizada por Charly. **Archivos nuevos:** `historico.html`, `historico_index.json`. **Archivo con cambio menor:** `analytics.html` (1 tarjeta nueva en el array declarativo `PDC_DASHBOARDS`). **No se modificó** `index.html`, `cash_today.html` ni `cartas_salida.html`.
+
+**Objetivo:** consultar cómo estaban las rutas en cualquier fecha en la que se publicó un Excel, sin distorsionar ni afectar el dashboard en vivo.
+
+### Arquitectura
+
+- Cada publicación de Excel ya genera un commit completo de `index.html` en GitHub — `historico.html` reutiliza ese historial existente en vez de duplicar almacenamiento.
+- **`historico_index.json`** (manifiesto de snapshots): lista `{sha, date}` de cada commit de publicación, leído por `historico.html` vía `raw.githubusercontent.com` (CDN, sin límite práctico de solicitudes). **Decisión de arquitectura importante:** se descartó consultar la API de commits de GitHub directamente desde el navegador — esa API tiene límite de **60 solicitudes/hora por IP sin autenticación**, lo cual se agotó durante las pruebas y habría sido un riesgo real de producción con varios usuarios de PDC consultando desde la misma red de oficina.
+- Al elegir una fecha, se lee el `index.html` de ese commit específico vía `raw.githubusercontent.com/{sha}/index.html`, se extraen `RAW`, `KPI_TOTALS` y `FX_DEF` con el mismo patrón de regex que usa `PDCBridge` (`js/pdc_data_bridge.js`), y se renderiza en modo solo lectura.
+- Reutiliza el bridge de sesión (`sessionStorage['pdc_session']`) — sin login válido, redirige a `login.html` igual que el resto de dashboards.
+
+### RCA — corrección de fórmula (mismo día)
+
+Primera versión no coincidía con los totales del dashboard en vivo (744 vs 370 rutas reales). Causa: `RAW` contiene **todo el historial** de rutas, incluyendo ya liquidadas — `index.html` aplica un filtro `notLiq()` (`Estado (Facturación)!=='Liquidada' && Estado Real!=='Liquidada'`) antes de calcular cualquier KPI (`RK()`, `RCC()`). Se aplicó el mismo filtro en `historico.html`. Verificado cifra por cifra contra el dashboard en vivo tras la corrección: 370 pendientes, 261 vencidas Facturación, 128 vencidas Despacho, $3.35M — coincidencia exacta.
+
+### Limitación conocida (no automatizada aún)
+
+`historico_index.json` **no se regenera automáticamente** con cada nueva publicación de Excel — requiere generación manual (o una futura integración en `publishToGitHub()` de `index.html`, fuera de alcance de esta sesión por tocar un archivo sensible). 54 snapshots indexados al cierre de esta sesión (desde el inicio del proyecto hasta 10/08/2026).
+
+### Incidencia de permisos (resuelta en la misma sesión)
+
+El acceso a cada dashboard está controlado por el arreglo `dashboards` en la tabla `profiles` de Supabase, asignado por usuario — un dashboard nuevo no aparece automáticamente para nadie, ni siquiera para el admin, hasta agregar su `id` (`historico`) al arreglo de cada usuario autorizado. Charly lo hizo manualmente vía Table Editor de Supabase. **No hay UI de administración para editar este campo** (el panel de administración en `analytics.html` solo lo muestra, no lo edita) — documentado como recomendación para el ROADMAP.
+
+### Mejoras del mismo día (2 iteraciones post-lanzamiento)
+
+1. **Filtro por Estado Real** — nuevo selector "Estado Real (Despacho)" independiente del de "Estado (Facturación)" en el detalle de rutas, ambos aplicables simultáneamente. Verificado: 128 rutas al filtrar Vencidas (coincide con "Vencidas Desp.").
+2. **Exportar PDF completo** — mismo mecanismo que `index.html` (ventana de impresión A4, `window.print()`). Ampliado para incluir: los 2 donuts capturados como imagen (`Chart.js .toBase64Image()`) y el detalle de rutas **completo** (no solo la página visible) respetando los filtros activos en pantalla — con un recuadro en el reporte que declara explícitamente qué filtros se aplicaron, para trazabilidad.
+
+**Commits:** `f7db9a0` (historico.html inicial), `9aeba6a` (historico_index.json), `c2d0dbe` (tarjeta en Hub), `7413cee` (resumen completo: KPIs + tarjetas por país + donuts, fix notLiq), `56e49d6` (filtro Estado Real + botón PDF), `527228f` (PDF con gráficas + detalle completo)
+
+---
 
 **Clasificación:** Corrección de errores. **Archivo:** únicamente `index.html`.
 
