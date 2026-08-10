@@ -1,5 +1,58 @@
 
-## [08/08/2026] — Rediseño: Comparador BASE(B)/COMPARATIVO(A) (patrón Cash Today)
+## [10/08/2026] — Corrección: 3 bugs en cadena bloqueaban `processWorkbook()` con cualquier Excel
+
+**Clasificación:** Corrección de errores. **Archivo:** únicamente `index.html`.
+
+**Síntoma reportado por Charly:** al subir un Excel de Rutas, el dashboard quedaba congelado indefinidamente en "Procesando...", sin publicar y sin mostrar ningún error.
+
+### RCA
+
+El refactor del Comparador BASE/COMPARATIVO (`80cbf94`, 08/08/2026) introdujo una regresión que dejó `processWorkbook()` roto para **cualquier** archivo, independientemente de su contenido:
+
+1. **`wsKPI` no declarada** (usada en `if (wsKPI)` para localizar la tabla "Total Rutas" de la hoja KPI) → `ReferenceError` que detenía el procesamiento a mitad de camino.
+2. **`showParseError()` no existía** (llamada por el `catch` para avisar del error) → un segundo error no controlado dejaba la UI congelada en el último texto escrito ("⚙️ Procesando..."), sin mostrar nada al usuario.
+3. **`efData` no declarada** (el bloque que lee la tabla "Tendencia de Rutas" de la hoja `Efectividad` se perdió en el mismo refactor) — quedó oculto hasta corregir el bug #1, momento en que el proceso avanzó lo suficiente para alcanzarlo.
+
+### Corrección
+
+- `const wsKPI = wb.Sheets['KPI'];` restaurada.
+- `showParseError(msg)` implementada: muestra el error en `#parse-error`, oculta el spinner, resetea el estado — en vez de fallar en silencio.
+- Bloque de lectura de `efData` reconstruido con el mismo patrón de localización dinámica de tabla que ya usa `totalRutasHist` (búsqueda de encabezado `Mes | Total rutas`, corte en fila `RESUMEN`).
+
+### Validación
+
+- `node --check` sobre los 5 bloques `<script>` en cada uno de los 2 commits.
+- Simulación en Node con el Excel real reportado por Charly (`Rutas_no_Liquidadas_07_08_2026.xlsm`): `wsKPI` resuelto, tabla KPI localizada en fila 2; `efData` reconstruida (56 meses) coincidiendo exactamente con el `EFECT` ya publicado (primer y último registro idénticos).
+- Confirmado por Charly: carga y publicación exitosas tras el segundo fix.
+
+**Commits:** `7cf1ec4` (bugs #1/#2), `aff3da6` (bug #3)
+
+---
+
+## [06-10/08/2026] — Mejora arquitectónica: espejo de despliegue en Cloudflare Workers
+
+**Clasificación:** Mejora funcional (infraestructura), autorizada por Charly. **Archivo nuevo:** `wrangler.jsonc` (raíz del repo). No se modificó `index.html`, `cash_today.html` ni `cartas_salida.html`.
+
+**Motivación:** incidente prolongado de GitHub Actions/Pages (06/08/2026, ~15:22–~00:05 UTC, ver githubstatus.com) dejó el dashboard sin poder desplegarse durante varias horas pese a que los datos publicados en el repositorio eran correctos — el cuello de botella fue exclusivamente la "última milla" de GitHub Pages.
+
+### Implementado
+
+- Cuenta de Cloudflare conectada al repositorio vía GitHub App, con acceso restringido únicamente a `GPDC---Rutas-Pendiente-de-Liquidar` (principio de mínimo privilegio).
+- `wrangler.jsonc` agregado (assets estáticos apuntando a la raíz del repo) — requerido por el flujo actual de Cloudflare (Workers con assets, sucesor de "Pages" clásico).
+- Deploy verificado: 108 archivos publicados correctamente en `https://pdc-analytics.jcem82.workers.dev`, contenido idéntico y datos verificados por Charly como coincidentes con GitHub Pages.
+- Cloudflare hace build automático en cada push a `main`, en paralelo e independiente del pipeline de GitHub Actions.
+
+### Pendiente (autorizado, no implementado aún)
+
+- Restringir el subdominio `workers.dev` con Cloudflare Access (autenticación previa) antes de considerarlo apto para compartir más ampliamente — de momento es de uso interno/contingencia, no se distribuye el link.
+- Conectar dominio propio.
+- Resto del plan arquitectónico de la próxima sesión: ramas `main`/`develop`/`feature-*`, respaldo automático programado del repositorio, versionado semántico — ver `03_ROADMAP.md`.
+
+**Commits:** `e6bf86d` (`wrangler.jsonc`)
+
+---
+
+
 
 **Clasificación:** Mejora funcional (sobre `66acccc`/`ae76c31`). **Archivo:** únicamente `index.html`.
 
