@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Histórico de Rutas · PDC Analytics Center</title>
+<style>
+:root{
+  --navy:#002060;--navy-l:#003090;--navy-10:rgba(0,32,96,.08);--navy-20:rgba(0,32,96,.14);
+  --sky:#CFEEFC;--sky2:#8dd4f5;--silver:#DBDBDB;--bg:#eef2f8;
+  --w:#fff;--ybg:#FFF4CC;--yb:#e0ac00;--yt:#7a5800;
+  --rbg:#FFBDBD;--rb:#d03030;--rt:#8a0f0f;
+  --gbg:#DCF0C6;--gb:#48a010;--gt:#2a6000;
+  --t1:#0d1b3e;--t2:#3a4a70;--t3:#7a8aaa;
+  --r:10px;--rl:14px;--sh:0 2px 12px rgba(0,32,96,.10);--shl:0 6px 28px rgba(0,32,96,.15);
+  --fn:'Plus Jakarta Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px}
+.hdr{background:linear-gradient(135deg,#001848 0%,var(--navy-l) 100%);
+  padding:0 24px;display:flex;align-items:center;justify-content:space-between;
+  height:56px;position:sticky;top:0;z-index:300;box-shadow:0 2px 18px rgba(0,0,0,.3)}
+.hdr-logo{display:flex;align-items:center;gap:10px}
+.hdr-ico{width:32px;height:32px;background:rgba(207,238,252,.12);border:1.5px solid rgba(207,238,252,.3);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.hdr-name{font-size:.95rem;font-weight:800;color:var(--sky);letter-spacing:.04em}
+.hdr-sub{font-size:.62rem;color:rgba(207,238,252,.55);font-weight:400;margin-top:1px}
+.hdr-badges{display:flex;gap:10px;align-items:center}
+.hbadge{background:rgba(207,238,252,.1);border:1px solid rgba(207,238,252,.18);
+  border-radius:6px;padding:4px 11px;font-size:.68rem;font-weight:600;color:rgba(207,238,252,.8)}
+.hbadge strong{color:var(--sky);font-size:.85rem}
+.hback{background:none;border:1px solid rgba(207,238,252,.3);color:var(--sky);
+  border-radius:6px;padding:6px 12px;font-size:.72rem;font-weight:700;cursor:pointer;text-decoration:none}
+.hback:hover{background:rgba(207,238,252,.1)}
+
+.wrap{max-width:1200px;margin:0 auto;padding:20px 18px 60px}
+.banner{background:var(--ybg);border:1px solid var(--yb);border-radius:var(--r);
+  padding:10px 16px;font-size:.76rem;color:var(--yt);font-weight:600;margin-bottom:18px;
+  display:flex;align-items:center;gap:8px}
+
+.panel{background:var(--w);border-radius:var(--rl);box-shadow:var(--sh);padding:18px 20px;margin-bottom:18px}
+.panel h4{font-size:.82rem;font-weight:800;color:var(--navy);margin-bottom:12px;
+  text-transform:uppercase;letter-spacing:.03em}
+.sel-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+select{font-family:var(--fn);font-size:.8rem;padding:9px 12px;border:1.5px solid var(--silver);
+  border-radius:8px;background:var(--w);color:var(--t1);min-width:260px;font-weight:600}
+select:disabled{opacity:.5}
+.btn{font-family:var(--fn);font-size:.78rem;font-weight:800;padding:9px 18px;border:none;
+  border-radius:8px;background:var(--navy);color:#fff;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:hover:not(:disabled){background:var(--navy-l)}
+.status{font-size:.74rem;color:var(--t3);font-weight:600}
+.status.err{color:var(--rt)}
+.status.ok{color:var(--gt)}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:var(--w);border-radius:var(--r);box-shadow:var(--sh);padding:16px}
+.kpi-lbl{font-size:.62rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
+.kpi-val{font-size:1.6rem;font-weight:800;color:var(--navy)}
+.kpi-val.r{color:var(--rt)}
+
+.tbl-wrap{background:var(--w);border-radius:var(--rl);box-shadow:var(--sh);overflow:hidden}
+.tbl-hd{padding:14px 18px;border-bottom:2px solid var(--silver);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.tbl-hd h4{font-size:.82rem;font-weight:800;color:var(--navy);text-transform:uppercase}
+.tbl-filters{display:flex;gap:8px;flex-wrap:wrap}
+.tbl-filters select{min-width:140px;padding:6px 10px;font-size:.72rem}
+table{width:100%;border-collapse:collapse;font-size:.74rem}
+th{background:var(--bg);color:var(--t2);font-weight:700;text-align:left;padding:9px 12px;
+  text-transform:uppercase;font-size:.62rem;letter-spacing:.03em;position:sticky;top:0}
+td{padding:8px 12px;border-bottom:1px solid #eef0f6;color:var(--t1)}
+tr:hover td{background:var(--navy-10)}
+.tbl-scroll{max-height:520px;overflow:auto}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.66rem;font-weight:700}
+.badge.venc{background:var(--rbg);color:var(--rt)}
+.badge.tiempo{background:var(--gbg);color:var(--gt)}
+.badge.liq{background:var(--sky);color:var(--navy)}
+.empty{padding:40px;text-align:center;color:var(--t3);font-size:.82rem}
+.pager{display:flex;justify-content:center;align-items:center;gap:12px;padding:12px;border-top:1px solid var(--silver)}
+.pager button{background:none;border:1px solid var(--silver);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:.72rem;font-weight:700;color:var(--navy)}
+.pager button:disabled{opacity:.4;cursor:not-allowed}
+</style>
+</head>
+<body>
+<script>
+/* Bridge de sesion — mismo patron que index.html / cash_today.html.
+   Solo lectura de sesion, no crea ni modifica nada. */
+(function(){
+  var u = sessionStorage.getItem('pdc_user');
+  if (!u) {
+    var unified = sessionStorage.getItem('pdc_session');
+    if (unified) {
+      var s = JSON.parse(unified);
+      u = JSON.stringify({ nombre: s.nombre, email: s.email, role: s.rol, pais: s.pais });
+      sessionStorage.setItem('pdc_user', u);
+    } else {
+      window.location.replace('analytics.html');
+    }
+  }
+})();
+</script>
+
+<div class="hdr">
+  <div class="hdr-logo">
+    <div class="hdr-ico">🕐</div>
+    <div>
+      <div class="hdr-name">HISTÓRICO DE RUTAS</div>
+      <div class="hdr-sub">Consulta de solo lectura · PDC Analytics Center</div>
+    </div>
+  </div>
+  <div class="hdr-badges">
+    <span class="hbadge" id="hdrUser"></span>
+    <a href="analytics.html" class="hback">← Volver al Hub</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="banner">⚠️ Vista de solo lectura. Muestra cómo estaban las rutas en la fecha seleccionada — no modifica ni afecta el dashboard en vivo. Solo disponible para fechas en las que se publicó un Excel.</div>
+
+  <div class="panel">
+    <h4>Seleccionar fecha de publicación</h4>
+    <div class="sel-row">
+      <select id="fechaSel" disabled><option>Cargando fechas disponibles…</option></select>
+      <button class="btn" id="btnCargar" disabled onclick="cargarSnapshot()">Ver snapshot</button>
+      <span class="status" id="status">Consultando historial de publicaciones en GitHub…</span>
+    </div>
+  </div>
+
+  <div id="resultado" style="display:none">
+    <div class="kpis" id="kpiCards"></div>
+    <div class="tbl-wrap">
+      <div class="tbl-hd">
+        <h4 id="tblTitle">Detalle de rutas</h4>
+        <div class="tbl-filters">
+          <select id="fPais" onchange="renderTabla()"><option value="">Todos los países</option></select>
+          <select id="fEstado" onchange="renderTabla()"><option value="">Todos los estados</option></select>
+        </div>
+      </div>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr>
+            <th>Despacho</th><th>Fecha ruta</th><th>País</th><th>Canal</th>
+            <th>Estado (Fact.)</th><th>Estado (Real)</th><th>Días</th><th>Cliente</th><th>Responsable</th>
+          </tr></thead>
+          <tbody id="tblBody"></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <button id="pPrev" onclick="pagina(-1)">‹ Anterior</button>
+        <span class="status" id="pInfo"></span>
+        <button id="pNext" onclick="pagina(1)">Siguiente ›</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const REPO = 'jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar';
+let snapshots = []; // [{sha, date, label}]
+let currentRoutes = [];
+let currentTotals = null;
+let page = 0;
+const PAGE_SIZE = 50;
+
+(function initUser(){
+  try {
+    const u = JSON.parse(sessionStorage.getItem('pdc_user')||'{}');
+    document.getElementById('hdrUser').textContent = u.nombre || u.email || 'Usuario';
+  } catch(e){}
+})();
+
+async function init() {
+  const statusEl = document.getElementById('status');
+  try {
+    // Se lee un manifiesto estatico (historico_index.json) via raw.githubusercontent.com
+    // en vez de la API de commits de GitHub directamente: la API tiene limite de 60
+    // solicitudes/hora POR IP sin autenticacion — varios usuarios de PDC consultando
+    // desde la misma red de oficina lo agotarian rapido. raw.githubusercontent.com
+    // es un CDN sin ese limite practico. El manifiesto se regenera tras cada sesion
+    // de mantenimiento (ver docs/01_MASTER_PROJECT_CONTEXT.md).
+    const r = await fetch(`https://raw.githubusercontent.com/${REPO}/main/historico_index.json?t=${Date.now()}`);
+    if (!r.ok) throw new Error('HTTP '+r.status+' al leer el índice de snapshots');
+    const idx = await r.json();
+
+    snapshots = (idx.snapshots||[]).map(s => {
+      const dt = new Date(s.date);
+      return {
+        sha: s.sha,
+        date: dt,
+        label: dt.toLocaleDateString('es-GT', {day:'2-digit', month:'2-digit', year:'numeric'}) +
+               ' · ' + dt.toLocaleTimeString('es-GT', {hour:'2-digit', minute:'2-digit'})
+      };
+    });
+
+    const sel = document.getElementById('fechaSel');
+    if (snapshots.length === 0) {
+      sel.innerHTML = '<option>No se encontraron publicaciones</option>';
+      statusEl.textContent = 'No hay snapshots disponibles.';
+      statusEl.className = 'status err';
+      return;
+    }
+    sel.innerHTML = snapshots.map((s,i) => `<option value="${i}">${s.label}</option>`).join('');
+    sel.disabled = false;
+    document.getElementById('btnCargar').disabled = false;
+    statusEl.textContent = snapshots.length + ' publicaciones disponibles' +
+      (idx.generated_at ? ' · índice actualizado ' + new Date(idx.generated_at).toLocaleDateString('es-GT') : '') + '.';
+    statusEl.className = 'status ok';
+  } catch(err) {
+    statusEl.textContent = '⚠️ Error al consultar el índice: ' + err.message;
+    statusEl.className = 'status err';
+    console.error('[historico]', err);
+  }
+}
+
+async function cargarSnapshot() {
+  const sel = document.getElementById('fechaSel');
+  const idx = Number(sel.value);
+  const snap = snapshots[idx];
+  if (!snap) return;
+  const statusEl = document.getElementById('status');
+  const btn = document.getElementById('btnCargar');
+  btn.disabled = true;
+  statusEl.textContent = '⏳ Cargando snapshot del ' + snap.label + '…';
+  statusEl.className = 'status';
+  try {
+    const url = `https://raw.githubusercontent.com/${REPO}/${snap.sha}/index.html`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('HTTP '+r.status+' al leer snapshot');
+    const html = await r.text();
+
+    const rawMatch = html.match(/const RAW = (\[[\s\S]*?\]);/);
+    const totMatch = html.match(/const KPI_TOTALS = (\{[\s\S]*?\});/);
+    if (!rawMatch) throw new Error('Este snapshot no contiene datos de rutas leíbles (versión muy antigua del archivo)');
+
+    currentRoutes = JSON.parse(rawMatch[1]);
+    currentTotals = totMatch ? JSON.parse(totMatch[1]) : null;
+    page = 0;
+
+    renderKPIs(snap);
+    initFiltros();
+    renderTabla();
+    document.getElementById('resultado').style.display = 'block';
+    statusEl.textContent = '✓ Mostrando snapshot del ' + snap.label;
+    statusEl.className = 'status ok';
+  } catch(err) {
+    statusEl.textContent = '⚠️ ' + err.message;
+    statusEl.className = 'status err';
+    document.getElementById('resultado').style.display = 'none';
+    console.error('[historico]', err);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderKPIs(snap) {
+  const total = currentRoutes.length;
+  const vencFact = currentRoutes.filter(r=>r['Estado (Facturación)']==='Vencidas').length;
+  const vencReal = currentRoutes.filter(r=>r['Estado Real']==='Vencidas').length;
+  const liq = currentRoutes.filter(r=>r['Estado (Facturación)']==='Liquidada').length;
+  document.getElementById('kpiCards').innerHTML = `
+    <div class="kpi"><div class="kpi-lbl">Fecha del reporte</div><div class="kpi-val">${currentTotals ? currentTotals.report_date : snap.label}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Total rutas en snapshot</div><div class="kpi-val">${total.toLocaleString('es-GT')}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Vencidas (Facturación)</div><div class="kpi-val r">${vencFact.toLocaleString('es-GT')}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Vencidas (Real)</div><div class="kpi-val r">${vencReal.toLocaleString('es-GT')}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Liquidadas</div><div class="kpi-val">${liq.toLocaleString('es-GT')}</div></div>
+  `;
+}
+
+function initFiltros() {
+  const paises = [...new Set(currentRoutes.map(r=>r['Pais']).filter(Boolean))].sort();
+  const estados = [...new Set(currentRoutes.map(r=>r['Estado (Facturación)']).filter(Boolean))].sort();
+  document.getElementById('fPais').innerHTML = '<option value="">Todos los países</option>' +
+    paises.map(p=>`<option value="${p}">${p}</option>`).join('');
+  document.getElementById('fEstado').innerHTML = '<option value="">Todos los estados</option>' +
+    estados.map(e=>`<option value="${e}">${e}</option>`).join('');
+}
+
+function filtrar() {
+  const pais = document.getElementById('fPais').value;
+  const estado = document.getElementById('fEstado').value;
+  return currentRoutes.filter(r =>
+    (!pais || r['Pais']===pais) && (!estado || r['Estado (Facturación)']===estado)
+  );
+}
+
+function badgeClass(estado) {
+  if (estado==='Vencidas') return 'venc';
+  if (estado==='Liquidada') return 'liq';
+  return 'tiempo';
+}
+
+function renderTabla() {
+  const filtered = filtrar();
+  const start = page * PAGE_SIZE;
+  const rows = filtered.slice(start, start + PAGE_SIZE);
+  const tbody = document.getElementById('tblBody');
+
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty">Sin resultados para este filtro</td></tr>';
+  } else {
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td>${r['Numero de Despacho']||''}</td>
+        <td>${r['Fecha Ruta']||''}</td>
+        <td>${r['Pais']||''}</td>
+        <td>${r['Canal']||''}</td>
+        <td><span class="badge ${badgeClass(r['Estado (Facturación)'])}">${r['Estado (Facturación)']||''}</span></td>
+        <td><span class="badge ${badgeClass(r['Estado Real'])}">${r['Estado Real']||''}</span></td>
+        <td>${r['Días']!=null?r['Días']:''}</td>
+        <td>${r['cliente']||''}</td>
+        <td>${r['Responsable']||''}</td>
+      </tr>
+    `).join('');
+  }
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  document.getElementById('pInfo').textContent = `Página ${page+1} de ${totalPages} · ${filtered.length.toLocaleString('es-GT')} rutas`;
+  document.getElementById('pPrev').disabled = page <= 0;
+  document.getElementById('pNext').disabled = page >= totalPages-1;
+  document.getElementById('tblTitle').textContent = 'Detalle de rutas (' + filtered.length.toLocaleString('es-GT') + ')';
+}
+
+function pagina(delta) {
+  page += delta;
+  renderTabla();
+}
+
+init();
+</script>
+</body>
+</html>
