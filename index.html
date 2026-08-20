@@ -66,6 +66,7 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
 .fdot{width:7px;height:7px;border-radius:50%;background:var(--gb);transition:.2s}
 .ftog.excl .fdot{background:var(--rb)}
 .ftog.excl{border-color:rgba(255,80,80,.4)}
+.mtog.act{background:rgba(255,255,255,.22);border-color:rgba(207,238,252,.6);color:#fff}
 .freset{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);
   color:rgba(207,238,252,.7);border-radius:6px;padding:5px 10px;
   font-size:.68rem;font-weight:700;cursor:pointer;transition:.2s;letter-spacing:.03em}
@@ -422,6 +423,12 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
       var tcHide = document.getElementById('tabTC');
       if(tcHide) tcHide.style.display = 'none';
     }
+    /* FEATURE MUNDOS (20/08/2026): visible para admin y supervisor,
+       oculto para consulta hasta que se indique lo contrario. */
+    if (data.role === 'admin' || data.role === 'supervisor') {
+      var mundoBarEl = document.getElementById('mundoBar');
+      if (mundoBarEl) mundoBarEl.style.display = 'flex';
+    }
     if (urlTab) {
       if (typeof ST === 'function') ST(urlTab);
       else setTimeout(function(){ if(typeof ST==='function') ST(urlTab); }, 500);
@@ -483,6 +490,7 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
           btn.textContent = label() + ' \u25be';
           if (typeof AF === 'function') AF();
         }
+        var paisItemRefs = {};
         OPTS.forEach(function(o){
           var row = document.createElement('label');
           row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 2px;cursor:pointer;font-size:.82rem;color:#1a2b52;font-weight:500;';
@@ -498,7 +506,9 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
           row.appendChild(cb);
           row.appendChild(document.createTextNode(' ' + o.t));
           panel.appendChild(row);
+          paisItemRefs[o.v] = {row:row, cb:cb};
         });
+        window.fP_ITEMS = paisItemRefs; // FEATURE MUNDOS (20/08/2026)
         btn.addEventListener('click', function(ev){
           ev.stopPropagation();
           panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
@@ -591,6 +601,13 @@ function pdcLogout(){
     <span class="fdot"></span><span id="ftlblTerm">🎯 DEDICADO TERMINAL</span>
   </button>
   <div class="fb-r"><button class="freset" onclick="RF()">↺ Limpiar</button></div>
+</div>
+
+<div class="fb" id="mundoBar" style="display:none">
+  <span class="fl">Mundo</span>
+  <button class="ftog mtog act" id="mtogAll" onclick="SM('')">🌍 Todos los Mundos</button>
+  <button class="ftog mtog" id="mtogVik" onclick="SM('vikingo')">⚔️ Mundo Vikingo</button>
+  <button class="ftog mtog" id="mtogBrands" onclick="SM('brands')">🏢 Mundo PDC Brands</button>
 </div>
 
 <div class="cnt">
@@ -1657,6 +1674,7 @@ const MONP = {GTQ:'Guatemala', USD:'El Salvador', PEN:'Perú'};
 let FD = [...RAW];
 let excl = false;
 let terminalOnly = false;
+let mundo = ''; // '', 'vikingo', 'brands' — FEATURE MUNDOS (20/08/2026)
 let CH = {};
 let DX = {};
 let tSrt = {col:3,dir:-1};
@@ -1746,6 +1764,7 @@ function pdcInitMultiFilter(selId, globalVar, allLabel){
     return s.length+' seleccionados';
   }
   function sync(){ btn.textContent=label()+' \u25be'; if(typeof AF==='function')AF(); }
+  var itemRefs={};
   items.forEach(function(it){
     var row=document.createElement('label');
     row.style.cssText='display:flex;align-items:center;gap:8px;padding:5px 2px;cursor:pointer;font-size:.8rem;color:#1a2b52;font-weight:500;';
@@ -1760,7 +1779,9 @@ function pdcInitMultiFilter(selId, globalVar, allLabel){
     row.appendChild(cb);
     row.appendChild(document.createTextNode(' '+it.t));
     panel.appendChild(row);
+    itemRefs[it.v]={row:row,cb:cb};
   });
+  window[selId+'_ITEMS']=itemRefs; // FEATURE MUNDOS (20/08/2026): permite deshabilitar opciones fuera del Mundo activo
   btn.addEventListener('click',function(ev){ev.stopPropagation();panel.style.display=panel.style.display==='none'?'block':'none';});
   document.addEventListener('click',function(){panel.style.display='none';});
   panel.addEventListener('click',function(ev){ev.stopPropagation();});
@@ -1776,6 +1797,19 @@ function pdcInitMultiFilter(selId, globalVar, allLabel){
   btn.textContent=label()+' \u25be';
 }
 
+// FEATURE MUNDOS (20/08/2026): partición excluyente Vikingo / PDC Brands.
+// Vikingo = GT+ESV excepto canal 29 DISTRIBUIDORES.
+// PDC Brands = Perú + (GT+ESV solo canal 29 DISTRIBUIDORES).
+function mundoOk(d){
+  if(mundo==='vikingo'){
+    return (d.Pais==='Guatemala'||d.Pais==='El Salvador') && d.Canal!=='29 DISTRIBUIDORES';
+  }
+  if(mundo==='brands'){
+    return d.Pais==='Perú' || ((d.Pais==='Guatemala'||d.Pais==='El Salvador') && d.Canal==='29 DISTRIBUIDORES');
+  }
+  return true;
+}
+
 function AF(){
   const p=document.getElementById('fP').value;
   const e=document.getElementById('fE').value;
@@ -1783,6 +1817,7 @@ function AF(){
   const resp=document.getElementById('fR2').value;
   const rg=document.getElementById('fRg').value;
   const filt = d => {
+    if(!mundoOk(d))return false;
     if(window._PDC_PAIS_MULTI){ if(window._PDC_PAIS_MULTI.length&&window._PDC_PAIS_MULTI.indexOf(d.Pais)===-1)return false; }
     else if(p&&d.Pais!==p)return false;
     if(e&&d['Estado (Facturación)']!==e)return false;
@@ -1797,9 +1832,9 @@ function AF(){
   const notLiq=d=>d['Estado (Facturación)']!=='Liquidada'&&d['Estado Real']!=='Liquidada';
   const isDedicadoTerminal=d=>String(d['Terminal']||'').trim().toUpperCase()==='DEDICADO TERMINAL';
   if(excl){
-    FD=RAW.filter(d=>d['Estado Real']==='Vencidas'&&notLiq(d));
+    FD=RAW.filter(d=>d['Estado Real']==='Vencidas'&&notLiq(d)&&mundoOk(d));
   } else if(terminalOnly){
-    FD=RAW.filter(d=>isDedicadoTerminal(d)&&notLiq(d));
+    FD=RAW.filter(d=>isDedicadoTerminal(d)&&notLiq(d)&&mundoOk(d));
   } else {
     FD=RAW.filter(d=>notLiq(d)&&filt(d));
   }
@@ -1818,7 +1853,59 @@ function RF(){
   if(window._PDC_RANGO_MULTI_reset)window._PDC_RANGO_MULTI_reset();
   if(excl){excl=false;document.getElementById('ftog').classList.remove('excl');document.getElementById('ftlbl').textContent='TODAS LAS RUTAS';}
   if(terminalOnly){terminalOnly=false;document.getElementById('ftogTerm').classList.remove('excl');}
+  if(mundo){ SM(''); } else { AF(); }
+}
+
+// FEATURE MUNDOS (20/08/2026): cambia el Mundo activo, actualiza el estado
+// visual de las 3 pestañas y deshabilita las opciones de País/Canal que no
+// pertenecen al Mundo seleccionado (para que el usuario no pueda combinar
+// entre Mundos, solo dentro del Mundo activo — según lo solicitado).
+function SM(m){
+  mundo = m;
+  var ids = {'':'mtogAll','vikingo':'mtogVik','brands':'mtogBrands'};
+  Object.keys(ids).forEach(function(k){
+    var el = document.getElementById(ids[k]);
+    if(el) el.classList.toggle('act', k===m);
+  });
+  pdcApplyMundoOptionGating();
   AF();
+}
+
+function pdcApplyMundoOptionGating(){
+  var lockPeru = (mundo==='vikingo');
+  var lockCanal29 = (mundo==='vikingo');
+  // <select> simple de País (solo aplica si NO está bloqueado por país de sesión)
+  var fPEl = document.getElementById('fP');
+  if(fPEl && !fPEl.disabled){
+    Array.prototype.slice.call(fPEl.options).forEach(function(o){
+      if(o.value==='Perú'){ o.disabled = lockPeru; }
+    });
+    if(lockPeru && fPEl.value==='Perú') fPEl.value='';
+  }
+  // <select> simple de Canal
+  var fCEl = document.getElementById('fC');
+  if(fCEl){
+    Array.prototype.slice.call(fCEl.options).forEach(function(o){
+      if(o.value==='29 DISTRIBUIDORES'){ o.disabled = lockCanal29; }
+    });
+    if(lockCanal29 && fCEl.value==='29 DISTRIBUIDORES') fCEl.value='';
+  }
+  // Checkbox de País (multi-select, solo usuarios sin país de sesión)
+  if(window.fP_ITEMS && window.fP_ITEMS['Perú']){
+    var pI = window.fP_ITEMS['Perú'];
+    pI.row.style.opacity = lockPeru ? '.35' : '';
+    pI.row.style.pointerEvents = lockPeru ? 'none' : '';
+    pI.cb.disabled = lockPeru;
+    if(lockPeru && pI.cb.checked){ pI.cb.checked=false; pI.cb.dispatchEvent(new Event('change')); }
+  }
+  // Checkbox de Canal (multi-select genérico)
+  if(window.fC_ITEMS && window.fC_ITEMS['29 DISTRIBUIDORES']){
+    var cI = window.fC_ITEMS['29 DISTRIBUIDORES'];
+    cI.row.style.opacity = lockCanal29 ? '.35' : '';
+    cI.row.style.pointerEvents = lockCanal29 ? 'none' : '';
+    cI.cb.disabled = lockCanal29;
+    if(lockCanal29 && cI.cb.checked){ cI.cb.checked=false; cI.cb.dispatchEvent(new Event('change')); }
+  }
 }
 
 function RA(){
