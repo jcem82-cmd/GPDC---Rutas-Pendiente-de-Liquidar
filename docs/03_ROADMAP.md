@@ -1,8 +1,8 @@
 # 03 — ROADMAP
 ## PDC Analytics Center · Plan de Evolución
 
-**Estado actual: v2.12 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
-**Última actualización:** 20/08/2026 (sesión Filtro Mundos)
+**Estado actual: v2.13 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
+**Última actualización:** 20/08/2026 (sesión Filtro Mundos, extendida a historico.html)
 
 ---
 
@@ -28,7 +28,7 @@
 - [x] Barra de pestañas nueva arriba de los KPIs, aplica a todas las gráficas/tablas/tendencias vía `FD`
 - [x] Anti-mezcla: opciones de País/Canal incompatibles con el Mundo activo se deshabilitan automáticamente
 - [x] Visible solo para admin y supervisor (oculto para consulta, ampliable a futuro)
-- [ ] **Pendiente confirmado con Charly:** replicar el mismo filtro Mundos en `historico.html`
+- [x] Replicado en `historico.html`: mismo Mundo, misma regla, KPIs/tarjetas/donuts/tabla conectados a `baseFD()` (20/08/2026)
 
 ---
 
