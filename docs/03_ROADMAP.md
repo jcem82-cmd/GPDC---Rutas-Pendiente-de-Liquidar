@@ -1,8 +1,8 @@
 # 03 — ROADMAP
 ## PDC Analytics Center · Plan de Evolución
 
-**Estado actual: v2.11 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
-**Última actualización:** 10/08/2026 (sesión Histórico de Rutas + espejo Cloudflare)
+**Estado actual: v2.12 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
+**Última actualización:** 20/08/2026 (sesión Filtro Mundos)
 
 ---
 
@@ -17,6 +17,18 @@
 - [x] Filtros combinables: País, Estado (Facturación), Estado Real (Despacho)
 - [x] Exportar a PDF: KPIs + tarjetas por país + gráficas (imagen) + detalle completo según filtros activos
 - [x] Tarjeta nueva en el Hub (`analytics.html`), acceso controlado vía `profiles.dashboards` en Supabase
+
+---
+
+## ✅ FASE 13 — Filtro Mundos: Vikingo / PDC Brands (COMPLETADA · v2.12 · 20/08/2026)
+
+- [x] Nueva funcionalidad solicitada por Charly: segmentar `index.html` en dos Mundos comerciales sin construir dashboards separados
+- [x] Regla: Mundo Vikingo = GT+ESV excepto canal 29 DISTRIBUIDORES; Mundo PDC Brands = Perú + (GT+ESV solo canal 29 DISTRIBUIDORES)
+- [x] Partición validada como exhaustiva y excluyente contra datos reales (636 rutas pendientes: 527 Vikingo + 109 Brands, 0 intersección, 0 huérfanas)
+- [x] Barra de pestañas nueva arriba de los KPIs, aplica a todas las gráficas/tablas/tendencias vía `FD`
+- [x] Anti-mezcla: opciones de País/Canal incompatibles con el Mundo activo se deshabilitan automáticamente
+- [x] Visible solo para admin y supervisor (oculto para consulta, ampliable a futuro)
+- [ ] **Pendiente confirmado con Charly:** replicar el mismo filtro Mundos en `historico.html`
 
 ---
 
