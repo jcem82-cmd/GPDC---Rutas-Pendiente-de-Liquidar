@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.10 | **Última actualización:** 20/08/2026 | **Estado:** Producción ✅
+**Versión vigente:** v2.11 | **Última actualización:** 20/08/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -24,7 +24,7 @@ PDC Analytics Center
 ├── analytics.html          ← Portal Hub · cards con KPIs EN VIVO vía PDCBridge
 │
 ├── index.html              ← Dashboard Liquidación de Rutas (fuente única de verdad) · filtro Mundos (Vikingo/PDC Brands)
-├── historico.html          ← Histórico de Rutas · solo lectura, NO conectado a la lógica en vivo (NUEVO 10/08)
+├── historico.html          ← Histórico de Rutas · solo lectura · filtro Mundos (Vikingo/PDC Brands) también aplicado
 ├── historico_index.json    ← Manifiesto de snapshots publicados (mantenimiento manual, NUEVO 10/08)
 ├── cash_today.html         ← Dashboard Cash Today · dataset propio (no conectado a PDCBridge)
 ├── admin.html              ← Panel administrativo · chat Supabase
