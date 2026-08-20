@@ -106,6 +106,12 @@ tr:hover td{background:var(--navy-10)}
 .pager{display:flex;justify-content:center;align-items:center;gap:12px;padding:12px;border-top:1px solid var(--silver)}
 .pager button{background:none;border:1px solid var(--silver);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:.72rem;font-weight:700;color:var(--navy)}
 .pager button:disabled{opacity:.4;cursor:not-allowed}
+.mundo-bar{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.mundo-bar .mlbl{font-size:.72rem;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.03em;margin-right:4px}
+.mtog{font-family:var(--fn);font-size:.74rem;font-weight:700;padding:7px 14px;border-radius:20px;
+  border:1.5px solid var(--silver);background:var(--w);color:var(--t2);cursor:pointer;transition:.15s}
+.mtog:hover{background:var(--bg)}
+.mtog.act{background:var(--navy);border-color:var(--navy);color:#fff}
 </style>
 </head>
 <body>
@@ -155,6 +161,12 @@ tr:hover td{background:var(--navy-10)}
   </div>
 
   <div id="resultado" style="display:none">
+    <div class="mundo-bar" id="mundoBar" style="display:none">
+      <span class="mlbl">Mundo</span>
+      <button class="mtog act" id="mtogAll" onclick="SM('')">🌍 Todos los Mundos</button>
+      <button class="mtog" id="mtogVik" onclick="SM('vikingo')">⚔️ Mundo Vikingo</button>
+      <button class="mtog" id="mtogBrands" onclick="SM('brands')">🏢 Mundo PDC Brands</button>
+    </div>
     <div class="kpis" id="kpiCards"></div>
     <div class="ccards" id="countryCards"></div>
     <div class="charts-row">
@@ -195,11 +207,18 @@ let currentRoutes = [];
 let currentTotals = null;
 let page = 0;
 const PAGE_SIZE = 50;
+let mundo = ''; // '', 'vikingo', 'brands' — FEATURE MUNDOS (20/08/2026), replica de index.html
 
 (function initUser(){
   try {
     const u = JSON.parse(sessionStorage.getItem('pdc_user')||'{}');
     document.getElementById('hdrUser').textContent = u.nombre || u.email || 'Usuario';
+    // FEATURE MUNDOS (20/08/2026): visible para admin y supervisor, oculto
+    // para consulta hasta que se indique lo contrario — mismo criterio que index.html.
+    if (u.role === 'admin' || u.role === 'supervisor') {
+      var mb = document.getElementById('mundoBar');
+      if (mb) mb.style.display = 'flex';
+    }
   } catch(e){}
 })();
 
@@ -283,6 +302,13 @@ async function cargarSnapshot() {
       ? {GTQ: parseFX(fxMatch[1]), USD: 1, PEN: parseFX(fxMatch[2])}
       : {GTQ:1, USD:1, PEN:1};
     page = 0;
+    // FEATURE MUNDOS: cada snapshot arranca en "Todos los Mundos" — evita
+    // arrastrar un Mundo activo de una consulta anterior a un snapshot distinto.
+    mundo = '';
+    ['mtogAll','mtogVik','mtogBrands'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.classList.toggle('act', id==='mtogAll');
+    });
 
     renderKPIs(snap);
     renderCountryCards();
@@ -314,13 +340,30 @@ let donutFactChart=null, donutDespChart=null;
 // el dashboard real (ej. 744 en vez de 370 rutas pendientes).
 function notLiq(d) { return d['Estado (Facturación)']!=='Liquidada' && d['Estado Real']!=='Liquidada'; }
 
+// FEATURE MUNDOS (20/08/2026): misma regla exacta de partición que index.html.
+// Vikingo = GT+ESV excepto canal 29 DISTRIBUIDORES.
+// PDC Brands = Perú + (GT+ESV solo canal 29 DISTRIBUIDORES).
+function mundoOk(d){
+  if(mundo==='vikingo'){
+    return (d.Pais==='Guatemala'||d.Pais==='El Salvador') && d.Canal!=='29 DISTRIBUIDORES';
+  }
+  if(mundo==='brands'){
+    return d.Pais==='Perú' || ((d.Pais==='Guatemala'||d.Pais==='El Salvador') && d.Canal==='29 DISTRIBUIDORES');
+  }
+  return true;
+}
+// Base compartida por KPIs, tarjetas por país, donuts y tabla de detalle —
+// antes cada función repetía `currentRoutes.filter(notLiq)` de forma aislada
+// y ninguna reflejaba ningún filtro; ahora todas reflejan el Mundo activo.
+function baseFD(){ return currentRoutes.filter(notLiq).filter(mundoOk); }
+
 function toUSD(v,mon){ return (v||0)*(currentFX[mon]||1); }
 function SC(v,t){ if(!t||v===0)return 'g'; const p=v/t*100; return p<=0?'g':p<=10?'y':'r'; }
 function fmt(v){ if(v===null||v===undefined||isNaN(v))return '—'; return Number(v).toLocaleString('es-GT',{maximumFractionDigits:0}); }
 
 function renderKPIs(snap) {
   // Replica EXACTA de RK() en index.html — mismas formulas, mismos campos.
-  const FD = currentRoutes.filter(notLiq);
+  const FD = baseFD();
   const tot=FD.length;
   const vf=FD.filter(r=>r['Estado (Facturación)']==='Vencidas').length;
   const vd=FD.filter(r=>r['Estado Real']==='Vencidas').length;
@@ -344,7 +387,7 @@ function renderKPIs(snap) {
 
 function renderCountryCards() {
   // Replica EXACTA de RCC() en index.html.
-  const FD = currentRoutes.filter(notLiq);
+  const FD = baseFD();
   const cfg=[
     {pais:'Guatemala',mon:'GTQ',cls:'gt',flag:'🇬🇹'},
     {pais:'El Salvador',mon:'USD',cls:'sv',flag:'🇸🇻'},
@@ -377,7 +420,7 @@ function renderCountryCards() {
 
 function renderDonuts() {
   // Replica EXACTA de RC() (donuts) en index.html — mismos colores, mismas etiquetas.
-  const FD = currentRoutes.filter(notLiq);
+  const FD = baseFD();
   if (donutFactChart) donutFactChart.destroy();
   if (donutDespChart) donutDespChart.destroy();
 
@@ -405,7 +448,7 @@ function renderDonuts() {
 }
 
 function initFiltros() {
-  const FD = currentRoutes.filter(notLiq);
+  const FD = baseFD();
   const paises = [...new Set(FD.map(r=>r['Pais']).filter(Boolean))].sort();
   const estados = [...new Set(FD.map(r=>r['Estado (Facturación)']).filter(Boolean))].sort();
   const estadosReal = [...new Set(FD.map(r=>r['Estado Real']).filter(Boolean))].sort();
@@ -421,7 +464,7 @@ function filtrar() {
   const pais = document.getElementById('fPais').value;
   const estado = document.getElementById('fEstado').value;
   const estadoReal = document.getElementById('fEstadoReal').value;
-  return currentRoutes.filter(notLiq).filter(r =>
+  return baseFD().filter(r =>
     (!pais || r['Pais']===pais) &&
     (!estado || r['Estado (Facturación)']===estado) &&
     (!estadoReal || r['Estado Real']===estadoReal)
@@ -470,6 +513,24 @@ function pagina(delta) {
   renderTabla();
 }
 
+// FEATURE MUNDOS (20/08/2026): cambia el Mundo activo dentro del snapshot ya
+// cargado y vuelve a renderizar TODO (KPIs, tarjetas, donuts, dropdown de
+// País y tabla) — mismo comportamiento que SM() en index.html.
+function SM(m){
+  mundo = m;
+  var ids = {'':'mtogAll','vikingo':'mtogVik','brands':'mtogBrands'};
+  Object.keys(ids).forEach(function(k){
+    var el = document.getElementById(ids[k]);
+    if(el) el.classList.toggle('act', k===m);
+  });
+  page = 0;
+  renderKPIs({label:currentSnapLabel});
+  renderCountryCards();
+  renderDonuts();
+  initFiltros();
+  renderTabla();
+}
+
 async function exportarPDF() {
   // Mismo patron que exportarPDF() en index.html: ventana de impresion A4,
   // el usuario elige "Guardar como PDF" en el dialogo nativo del navegador.
@@ -499,7 +560,9 @@ async function exportarPDF() {
   const fPaisVal = document.getElementById('fPais').value;
   const fEstadoVal = document.getElementById('fEstado').value;
   const fEstadoRealVal = document.getElementById('fEstadoReal').value;
+  const mundoVal = mundo==='vikingo' ? '⚔️ Mundo Vikingo' : (mundo==='brands' ? '🏢 Mundo PDC Brands' : null);
   const filtrosActivos = [
+    mundoVal,
     fPaisVal ? 'País: '+fPaisVal : null,
     fEstadoVal ? 'Estado (Facturación): '+fEstadoVal : null,
     fEstadoRealVal ? 'Estado Real (Despacho): '+fEstadoRealVal : null,
