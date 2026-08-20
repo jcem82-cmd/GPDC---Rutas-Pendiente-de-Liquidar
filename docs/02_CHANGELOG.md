@@ -1,3 +1,32 @@
+## [20/08/2026] — Nueva funcionalidad: Filtro "Mundos" replicado en historico.html
+
+**Clasificación:** Nueva funcionalidad, autorizada por Charly. **Archivo:** únicamente `historico.html`.
+
+**Contexto:** continuación directa de la sesión de Mundos en `index.html` (ver entrada anterior). Charly pidió el mismo comportamiento en el visor histórico: "mostrar un dashboard por mundos".
+
+**Hallazgo previo a implementar (documentado, no es un bug nuevo):** en `historico.html`, los KPIs, tarjetas por país y donuts nunca estuvieron conectados a ningún filtro — siempre mostraban el snapshot completo sin importar la selección en pantalla. Solo la tabla de detalle respetaba País/Estado/Estado Real. Para que Mundo module "todo el dashboard" como en `index.html`, fue necesario introducir una función base compartida `baseFD()`.
+
+### Implementado
+
+- **Misma regla de partición exacta que `index.html`** (`mundoOk(d)`), validada con el mismo dataset — reproduce cifra por cifra: 527 Vikingo (GT 366 + ESV 161) + 109 PDC Brands (Perú 64 + GT canal 29: 45) = 636 total.
+- **`baseFD()` nueva:** `currentRoutes.filter(notLiq).filter(mundoOk)` — única fuente para KPIs, tarjetas por país, donuts, el dropdown de País (`initFiltros()`) y la tabla de detalle (`filtrar()`). Antes cada función repetía `currentRoutes.filter(notLiq)` de forma aislada, sin filtro real aplicado.
+- **Barra de pestañas "Mundo"** (`#mundoBar`), mismo patrón visual y de comportamiento que `index.html`, adaptada al estilo claro de `historico.html` (pills en vez del toggle oscuro de la barra de filtros).
+- **Anti-mezcla automática:** al reconstruirse desde `baseFD()`, el dropdown de País (`initFiltros()`) directamente deja de ofrecer "Perú" como opción cuando Mundo Vikingo está activo — no requiere lógica de deshabilitado adicional como en `index.html`, es una consecuencia natural de la arquitectura de este archivo.
+- **`SM(m)`:** cambia el Mundo activo dentro del snapshot ya cargado y vuelve a renderizar todo (KPIs, tarjetas, donuts, dropdown de país, tabla).
+- **Reset de Mundo al cargar un snapshot distinto:** evita arrastrar un Mundo activo de una consulta anterior a un snapshot con otra fecha.
+- **Exportación PDF:** el Mundo activo se agrega a "Filtros aplicados al detalle" (mismo patrón que País/Estado ya existentes) — trazabilidad completa sin tocar la lógica de generación del PDF, que ya consumía `filtrar()` y el HTML de los KPIs/tarjetas en vivo.
+- **Gate de visibilidad por rol:** idéntico a `index.html` — visible para `admin` y `supervisor`, oculto para `consulta`.
+
+### Validado antes de deploy
+
+- `node --check` en los 2 bloques `<script>` — sin errores de sintaxis.
+- Simulación funcional en Node.js contra el `RAW` real de `index.html` (mismo universo de datos que consumiría un snapshot): confirmó paridad exacta con la validación ya hecha en `index.html` (636 = 527 + 109).
+- Verificado post-deploy vía `raw.githubusercontent.com` apuntando al SHA del commit exacto (el CDN de la rama `main` tuvo el delay de caché habitual ya documentado en REGLA de deploy).
+
+**Alcance:** únicamente `historico.html`. Cero cambios en `index.html`, `cash_today.html`, `cartas_salida.html`, `analytics.html`, diseño corporativo, ni en el manifiesto `historico_index.json` — la lectura de snapshots vía `raw.githubusercontent.com` sigue exactamente igual.
+
+---
+
 ## [20/08/2026] — Nueva funcionalidad: Filtro "Mundos" (Vikingo / PDC Brands) en index.html
 
 **Clasificación:** Nueva funcionalidad, autorizada por Charly. **Archivo:** únicamente `index.html`.
