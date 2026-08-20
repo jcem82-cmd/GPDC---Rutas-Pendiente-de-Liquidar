@@ -1,3 +1,40 @@
+## [20/08/2026] — Nueva funcionalidad: Filtro "Mundos" (Vikingo / PDC Brands) en index.html
+
+**Clasificación:** Nueva funcionalidad, autorizada por Charly. **Archivo:** únicamente `index.html`.
+
+**Contexto:** Charly solicitó segmentar el dashboard de Rutas en dos "Mundos" comerciales, sin construir dashboards separados ni tocar diseño/gráficas existentes.
+
+**Regla de negocio (partición exhaustiva y excluyente):**
+- **Mundo Vikingo** = Pais ∈ {Guatemala, El Salvador} AND Canal ≠ "29 DISTRIBUIDORES"
+- **Mundo PDC Brands** = Pais = Perú OR (Pais ∈ {Guatemala, El Salvador} AND Canal = "29 DISTRIBUIDORES")
+
+**Validación funcional (datos reales, 636 rutas pendientes al 20/08/2026):**
+- Mundo Vikingo: 527 (GT 366 · ESV 161)
+- Mundo PDC Brands: 109 (Perú 64 · GT canal 29: 45)
+- Intersección entre Mundos: 0 · Rutas fuera de ambos Mundos: 0 · Suma = Total pendientes (636 = 636)
+
+### Implementado
+
+- **Estado global `mundo`** ('', 'vikingo', 'brands') y función `mundoOk(d)` con la regla de partición.
+- **`AF()` modificado:** se agrega `mundoOk(d)` en sus 3 ramas (filtro normal, toggle "Solo Vencidas Despacho", toggle "Dedicado Terminal") — el Mundo activo nunca se salta en ningún modo de vista, garantizando que las gráficas/KPIs/tablas nunca mezclen datos de ambos Mundos.
+- **Barra de pestañas "Mundo"** (`#mundoBar`) nueva, ubicada entre la barra de Filtros y el contenido (arriba de los KPIs) — 3 botones: Todos los Mundos / Mundo Vikingo / Mundo PDC Brands, mismo estilo visual del toggle `ftog` ya existente (`.mtog.act` nueva regla CSS).
+- **Anti-mezcla de filtros:** `pdcApplyMundoOptionGating()` deshabilita visualmente la opción "Perú" (filtro País) y "29 DISTRIBUIDORES" (filtro Canal) cuando Mundo Vikingo está activo, tanto en el `<select>` simple como en los checkboxes multi-select — el usuario puede combinar libremente dentro del Mundo activo, pero no puede seleccionar una combinación que pertenezca al otro Mundo.
+- **`pdcInitMultiFilter()` y el bloque multi-select de País:** ambos ahora exponen referencias a sus checkboxes (`window[selId+'_ITEMS']`, `window.fP_ITEMS`) para que `pdcApplyMundoOptionGating()` pueda deshabilitarlas — cambio quirúrgico, no altera su comportamiento existente.
+- **`RF()` (Limpiar filtros):** ahora también resetea el Mundo activo a "Todos los Mundos".
+- **Gate de visibilidad por rol:** la barra `#mundoBar` está oculta por defecto (`display:none`) y se activa vía JS únicamente si `data.role==='admin'` o `data.role==='supervisor'`. Usuarios `consulta` no la ven (decisión explícita de Charly, ampliable a futuro).
+
+### Validado antes de deploy
+
+- `node --check` en los 5 bloques `<script>` — sin errores de sintaxis.
+- Simulación funcional en Python contra el dataset `RAW` real embebido: confirmó partición 100% exhaustiva y excluyente (ver cifras arriba).
+- Verificado post-deploy vía `raw.githubusercontent.com` (no GitHub Pages, bloqueado por sandbox egress).
+
+**Alcance:** únicamente `index.html`. Cero cambios en `RK()`, `RDE()`, `RCC()`, `RC()`, `RD()`, `RT()`, `RM()`, exportación PDF, diseño corporativo, u otros dashboards (`cash_today.html`, `cartas_salida.html`, `analytics.html`, `historico.html`) — todos siguen intactos.
+
+**Pendiente explícitamente confirmado con Charly para próxima sesión:** replicar el mismo filtro Mundos en `historico.html`.
+
+---
+
 
 ## [10/08/2026] — Nueva funcionalidad: Filtro "Dedicado Terminal"
 
