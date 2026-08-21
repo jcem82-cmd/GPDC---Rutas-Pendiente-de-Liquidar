@@ -1,8 +1,8 @@
 # 03 — ROADMAP
 ## PDC Analytics Center · Plan de Evolución
 
-**Estado actual: v2.16 ESTABLE (Rutas) / v2.17 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
-**Última actualización:** 21/08/2026 (fix regional/index.html - fechas congeladas)
+**Estado actual: v2.17 ESTABLE (Rutas) / v2.18 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
+**Última actualización:** 21/08/2026 (rebranding identidad oficial Grupo pdc)
 
 ---
 
@@ -70,6 +70,23 @@
 - [x] Validado con simulación funcional contra los 47,265 registros reales de `_R` + simulación end-to-end con jsdom (DOM real, 29 elementos verificados uno por uno)
 - [x] `cash_summary.json` republicado de inmediato con datos reales (no se esperó la próxima publicación de Charly para ver el efecto)
 - [x] Cifras reales reveladas: Junio real GT USD 2,390,579 / SV USD 1,882,001 (vs. referencia estática USD 949,926 / USD 821,012) — YTD real a agosto USD 31,223,737 (vs. USD 21,678,140 de referencia)
+
+---
+
+## ✅ FASE 17 — Rebranding: identidad oficial Grupo pdc (COMPLETADA · v2.17/v2.18 · 21/08/2026)
+
+- [x] Nueva funcionalidad/diseño solicitada y autorizada explícitamente por Charly, a partir del manual de marca corporativo oficial del Grupo (logos + guía de identidad visual)
+- [x] Auditoría previa obligatoria: verificado que toda la documentación (`01_MASTER_PROJECT_CONTEXT.md` v2.14, `02_CHANGELOG.md`, `03_ROADMAP.md`) estaba sincronizada en GitHub antes de tocar código — sin pendientes congelados
+- [x] Auditoría de código real (no asunciones): descubierto que el logo en producción ya era una imagen (ícono `pdc` + arco), no el fallback de texto que documentaba `07_DESIGN_SYSTEM.md` v1.0 — corregido en la documentación
+- [x] Logotipo oficial "Grupo pdc" (con arco/sonrisa) desplegado en 9 archivos: `index.html` (header vivo + reporte PDF), `analytics.html`, `login.html`, `historico.html` (reporte PDF, antes texto `"PDC"` literal), `regional/`, `peru/`, `elsalvador/index.html`, `cash_today.html`, `cartas_salida.html`
+- [x] Paleta alineada al manual oficial: `--navy:#002060→#00216f` (Pantone 2747C) · `--sky:#CFEEFC→#7dbfe6` (Pantone 637C) — validado contraste WCAG antes de aplicar (7.23:1–14.51:1, todo AAA)
+- [x] Tipografía de marca: Museo Sans Rounded (oficial, de pago, no disponible) sustituida por **Poppins** (gratuita, geometría redondeada similar) — aplicada **solo a títulos/marca**, Inter se mantiene en cuerpo/tablas por legibilidad numérica ya validada
+- [x] `node --check` en todos los bloques `<script>` de los 9 archivos antes de cada deploy (incluido el bloque de datos de 12.4MB de `cash_today.html`)
+- [x] Verificación byte-a-byte contra `raw.githubusercontent.com` tras cada commit
+- [x] Piloto validado primero en el Hub (`analytics.html`) antes de replicar al resto, por instrucción explícita de Charly
+- [x] Excluidos deliberadamente: `honduras/index.html` (módulo huérfano, sin datos reales, sin tarjeta en portal), `admin.html` (widget de chat, sin header de marca)
+- [x] `07_DESIGN_SYSTEM.md` actualizado a v1.1: logo real documentado, paleta oficial, decisión técnica de tipografía justificada
+- [ ] **Pendiente documentado, NO implementado:** `cartas_salida.html` usa un sistema de color propio (`--navy:#0f2340`, paleta tipo Tailwind) distinto al resto de la plataforma — solo recibió el logo, su paleta no fue tocada (fuera del alcance autorizado). Recomendación: evaluar migración en sesión dedicada — ver `07_DESIGN_SYSTEM.md` §10.5
 
 ---
 
