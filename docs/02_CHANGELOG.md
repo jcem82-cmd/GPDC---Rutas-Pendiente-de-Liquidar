@@ -1,3 +1,44 @@
+## [21/08/2026] — Nueva funcionalidad/diseño: Rebranding con identidad oficial Grupo pdc
+
+**Clasificación:** Mejora funcional / diseño (branding) — sin cambios de estructura ni lógica de negocio. Autorizada explícitamente por Charly a partir del manual de marca corporativo oficial (logos color/blanco + guía de identidad visual del Grupo). **Archivos:** `index.html`, `analytics.html`, `login.html`, `historico.html`, `regional/index.html`, `peru/index.html`, `elsalvador/index.html`, `cash_today.html`, `cartas_salida.html`, `docs/07_DESIGN_SYSTEM.md`.
+
+**Contexto:** Charly proporcionó el manual de marca oficial de Grupo PDC y solicitó evaluar su aplicación en PDC Analytics Center, con instrucción explícita de verificar primero que toda la documentación del proyecto estuviera sincronizada antes de tocar cualquier código, y de señalar cualquier conflicto con las políticas ya establecidas (confidencialidad, credenciales, etc.).
+
+### Auditoría previa (antes de escribir código)
+
+- Verificado contra GitHub en vivo (no contra archivos estáticos del Project, que resultaron ser snapshots desactualizados): `01_MASTER_PROJECT_CONTEXT.md` en v2.14, `02_CHANGELOG.md` y `03_ROADMAP.md` al día — sin pendientes congelados. Sin conflicto entre el manual de marca y las políticas del proyecto (el manual es puramente identidad visual).
+- Hallazgo de confidencialidad señalado a Charly (no relacionado al manual): tokens de GitHub/Supabase persistidos en texto plano en la memoria de conversaciones — recomendación de rotación futura.
+- Auditoría de código real: el logo en producción ya era una imagen embebida (ícono `pdc` + arco turquesa), no el fallback de texto que documentaba `07_DESIGN_SYSTEM.md` v1.0 — discrepancia corregida en la documentación como parte de este cierre.
+- Validación de contraste WCAG de la nueva paleta ANTES de aplicarla: navy oficial `#00216f` sobre blanco = 14.51:1 (AAA); sky oficial `#7dbfe6` con texto navy = 7.23:1 (AAA, mejora sobre el 12.57:1 anterior) — sin riesgo de accesibilidad.
+
+### Implementado
+
+**Logotipo oficial "Grupo pdc"** (con arco/sonrisa, versión a color): reemplaza el ícono `pdc` anterior en 9 archivos activos. Un solo asset (PNG optimizado a 3.97 KB, prácticamente el mismo peso que el ícono anterior de 3.68 KB) cubre todo el header en vivo (`index.html`, `analytics.html`, `regional/`, `peru/`, `elsalvador/index.html`, `cash_today.html`, `cartas_salida.html`) y los reportes PDF (`index.html`, `historico.html` — este último tenía texto literal `"PDC"` como fallback, ahora es el logo real).
+
+**Paleta corporativa** alineada al manual oficial en 8 de los 9 archivos: `--navy:#002060→#00216f` (Pantone 2747C), `--sky:#CFEEFC→#7dbfe6` (Pantone 637C). `cartas_salida.html` quedó excluido de este punto — usa un sistema de color propio, ajeno al resto de la plataforma (ver Pendiente).
+
+**Tipografía de marca:** el manual especifica Museo Sans Rounded (comercial, de pago, sin disponibilidad en Google Fonts). Decisión técnica, consultada y confirmada con Charly: sustituir por **Poppins** (gratuita, geometría redondeada visualmente cercana), aplicada exclusivamente a títulos/elementos de marca (`.hero-title`, `.header-title`, `.hdr-title`, `.hdr-name`, `.left-headline`, `.rpt-title h1`). Inter se mantiene sin cambios en cuerpo y tablas — decisión deliberada para no arriesgar la legibilidad numérica ya validada en producción (REGLA #16/#19).
+
+**Excluidos deliberadamente** (documentados, no implementados sin autorización aparte): `honduras/index.html` (módulo huérfano, sin datos reales, sin tarjeta en portal), `admin.html` (widget de chat flotante, no tiene header de marca).
+
+### Validado antes de cada deploy
+
+- `node --check` en todos los bloques `<script>` de los 9 archivos, incluyendo el bloque de datos de 12.4MB de `cash_today.html` y el de 3.4MB de `cartas_salida.html`.
+- Cada reemplazo aplicado con `assert count==N` antes de escribir (patrón `html.replace(OLD, NEW, N)`), nunca reconstrucción de módulos.
+- SHA fresco inmediato antes de cada PUT (9 commits secuenciales + 1 de documentación, con gap de 35-36s entre cada uno).
+- Verificación post-deploy contra `raw.githubusercontent.com` (no la URL de rama, por el delay de CDN de 15-30s) en los 9 archivos: logo nuevo presente, `--navy`/`--sky` oficiales presentes donde correspondía.
+- Piloto validado primero en el Hub (`analytics.html`) — Charly confirmó antes de autorizar la réplica al resto de archivos ("validemos con el Hub, una vez todo bien, te informo para proceder con todo").
+
+### Pendiente documentado — NO implementado
+
+- `cartas_salida.html` usa un sistema de color propio (`--navy:#0f2340`, paleta tipo Tailwind con `--blue`/`--red`/`--green` independientes) que rompe la consistencia visual "una plataforma, no dashboards individuales". Solo recibió el logo; su paleta y tipografía no fueron tocadas por disciplina de alcance (no autorizado explícitamente). Recomendación en `07_DESIGN_SYSTEM.md` §10.5 para evaluación en sesión dedicada.
+
+### Documentación actualizada en este cierre
+
+`07_DESIGN_SYSTEM.md` → v1.1 (logo real documentado, paleta oficial, tipografía justificada, cobertura por archivo). `03_ROADMAP.md` → FASE 17 agregada, versión de plataforma → v2.17/v2.18. `02_CHANGELOG.md` → esta entrada.
+
+---
+
 ## [21/08/2026] — Nueva funcionalidad: montos reales de Cash Today en regional/index.html
 
 **Clasificación:** Nueva funcionalidad, autorizada explícitamente por Charly ("todo debe de estar actualizado y en sintonia, nada congelado, procedamos") como cierre del pendiente documentado en la corrección anterior del mismo día. **Archivos:** `cash_today.html`, `regional/index.html`, `cash_summary.json` (dato).
