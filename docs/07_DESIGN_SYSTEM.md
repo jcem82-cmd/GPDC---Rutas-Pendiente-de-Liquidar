@@ -1,20 +1,26 @@
 # 07 — DESIGN SYSTEM
 ## PDC Analytics Center · Sistema Visual Corporativo Unificado
-> **Versión:** 1.0 · **Fecha:** 22/06/2026
+> **Versión:** 1.1 · **Fecha:** 21/08/2026
 > Aplica a todos los dashboards de la plataforma. Fuente única de verdad visual.
 > Antes de modificar colores, tipografía o componentes, consultar este documento.
+>
+> **Cambio v1.1:** Rebranding con identidad oficial Grupo pdc (manual de marca corporativo). Logo real desplegado en 9/10 archivos activos. Paleta `--navy`/`--sky` alineada a Pantone oficial. Tipografía de marca (Poppins) aplicada a títulos/logo — cuerpo y tablas se mantienen en Inter por legibilidad numérica ya validada en producción.
 
 ---
 
 ## 1. IDENTIDAD CORPORATIVA
 
-### Logo PDC
+### Logo Grupo pdc (oficial — actualizado 21/08/2026)
 | Atributo | Valor |
 |---|---|
-| Formato | Texto `PDC` · fallback cuando no hay imagen disponible |
-| Contenedor | Fondo blanco · `border-radius: 8px` · `padding: 5px 13px` · `height: 38px` |
-| Tipografía | `Inter 800` · `color: var(--navy)` · `letter-spacing: .06em` |
+| Formato | Logotipo real "Grupo pdc" con arco/sonrisa · PNG optimizado (~4 KB) embebido en base64 inline (mismo patrón que el resto del código — sin dependencias externas) |
+| Variante estándar | Versión a color (texto navy + arco turquesa) — se usa SIEMPRE dentro de un contenedor/pill blanco, incluso en headers de fondo navy |
+| Variante alterna | Versión monocromática blanca — reservada para uso futuro directo sobre fondo oscuro sin pill (no usada actualmente; ningún header actual carece de fondo blanco de soporte) |
+| Contenedor | Fondo blanco · `border-radius: 6–8px` · padding variable por dashboard (`4px 12px` a `5px 14px`) · altura de imagen 24–36px según contexto |
 | Posición | Header superior izquierdo · alineado verticalmente al centro |
+| Cobertura | Desplegado en: `index.html`, `analytics.html`, `login.html`, `historico.html` (header vivo + reporte PDF), `regional/`, `peru/`, `elsalvador/index.html`, `cash_today.html`, `cartas_salida.html` |
+| Excluido deliberadamente | `honduras/index.html` (módulo huérfano, sin datos reales, sin tarjeta en portal) · `admin.html` (widget de chat flotante, no tiene header de marca) |
+| Fuente | Manual de marca corporativo Grupo PDC (activo de marca, propiedad del cliente) |
 | Regla | No modificar sin autorización del propietario del proyecto |
 
 ### Títulos de sistema
@@ -33,12 +39,13 @@
 
 ```css
 :root {
-  /* ── Marca PDC ── */
-  --navy:       #002060;   /* Azul corporativo primario */
-  --navy2:      #003090;   /* Azul medio — hover, acentos */
-  --navy-dark:  #001440;   /* Azul oscuro — hero gradients */
-  --sky:        #CFEEFC;   /* Azul claro — fondos, chips */
-  --sky2:       #e8f6ff;   /* Azul muy claro — hover states */
+  /* ── Marca PDC (oficial — manual de marca corporativo, 21/08/2026) ── */
+  --navy:       #00216f;   /* Azul corporativo primario · Pantone 2747 C */
+  --navy2:      #003090;   /* Azul medio — hover, acentos (derivado, sin cambio) */
+  --navy-dark:  #001440;   /* Azul oscuro — hero gradients (derivado, sin cambio) */
+  --sky:        #7dbfe6;   /* Celeste — fondos, chips, hover · Pantone 637 C */
+  --sky2:       #e8f6ff;   /* Azul muy claro — hover states (derivado, sin cambio) */
+  /* Hex anteriores (pre-21/08/2026, deprecados): --navy:#002060 · --sky:#CFEEFC */
 
   /* ── Neutros ── */
   --white:      #FFFFFF;
@@ -93,10 +100,22 @@ Usar consistentemente en Chart.js, SVG y elementos visuales por país.
 ## 4. TIPOGRAFÍA
 
 ### Fuente canónica
+**Marca oficial (manual corporativo):** Museo Sans Rounded — tipografía comercial de pago (Adobe Fonts/Monotype), no disponible en Google Fonts.
+
+**Decisión técnica (21/08/2026):** se aplica **Poppins** (Google Fonts, gratuita) como sustituto de marca — geometría redondeada visualmente cercana a Museo Sans Rounded, pesos 600/700/800 disponibles. Uso **exclusivo en títulos y elementos de marca** (H1 de módulo, `.hero-title`, `.header-title`, `.hdr-title`, `.hdr-name`, `.left-headline`). **Inter se mantiene como fuente de cuerpo y tablas** — decisión deliberada para no arriesgar la legibilidad numérica ya validada en producción (REGLA #16/#19 de precisión de datos).
+
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap&font-display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap&font-display=swap" rel="stylesheet"/>
+```
+
+```css
+/* Aplicar SOLO a selectores de título/marca — nunca a body, tablas o KPIs */
+.hero-title, .header-title, .hdr-title, .hdr-name, .left-headline {
+  font-family: 'Poppins', system-ui, sans-serif;
+}
 ```
 
 ```css
@@ -276,7 +295,13 @@ a:focus:not(:focus-visible) { outline: none; }
 3. **Precisión decimal:** GTQ = `fmt(v, 0)` · USD = `fmt(v, 2)` · en celdas Y subtotales Y totales Y grand total
 4. **TC mensual:** siempre `usd(r)` — nunca dividir directamente por `tcGTQ`
 5. **No usar `localStorage`/`sessionStorage`** dentro de artefactos Claude.ai
-6. **No modificar** logo, paleta `:root` ni estructura de header sin autorización
+6. **No modificar** logo, paleta `:root` ni estructura de header sin autorización (rebranding 21/08/2026 autorizado explícitamente por el propietario del proyecto)
+
+---
+
+## 10.5 Pendiente documentado — NO implementado (fuera de alcance del rebranding 21/08/2026)
+
+**`cartas_salida.html` usa un sistema de color propio, distinto al resto de la plataforma:** `--navy:#0f2340`, `--blue:#2563eb`, `--red:#dc2626`, `--green:#16a34a`, etc. — no comparte `--navy`/`--sky` con el resto del ecosistema (que ahora usa `#00216f`/`#7dbfe6`). Solo se le aplicó el logo oficial en esta sesión; su paleta y tipografía quedaron intactas por disciplina de alcance (no fue autorizado tocar su sistema de color). **Recomendación:** evaluar en una sesión dedicada si conviene migrar `cartas_salida.html` al esquema `--navy`/`--sky` estándar, dado que rompe la consistencia visual "una plataforma, no dashboards individuales" documentada en la Visión del Proyecto.
 
 ---
 
@@ -297,4 +322,4 @@ fmt(NaN)          // → "—"              (fallback seguro)
 
 ---
 
-*PDC Analytics Center · 07_DESIGN_SYSTEM · v1.0 · 22 Jun 2026*
+*PDC Analytics Center · 07_DESIGN_SYSTEM · v1.1 · 21 Ago 2026*
