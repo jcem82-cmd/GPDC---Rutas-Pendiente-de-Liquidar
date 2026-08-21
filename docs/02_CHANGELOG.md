@@ -1,3 +1,49 @@
+## [21/08/2026] — Corrección: fechas y períodos congelados en regional/index.html
+
+**Clasificación:** Corrección de errores, reportada por Charly con captura de pantalla. **Archivo:** únicamente `regional/index.html`.
+
+**Síntoma reportado:** el header de "Consolidado Regional" mostraba "Datos al: 24 Jun 2026 · Rutas: 18 Jun 2026 · Cash Today: 21 Jun 2026", a pesar de que el dashboard llevaba semanas publicándose con normalidad (Agosto 2026).
+
+### RCA (Root Cause Analysis)
+
+Las 3 etiquetas de fecha del header (`Datos al` / `Rutas` / `Cash Today`) estaban **100% hardcodeadas en el HTML**, sin ninguna conexión a PDCBridge ni a ningún dato en vivo — a diferencia de las tarjetas KPI de esa misma página, que sí se actualizan correctamente en cada publicación. Quedaron congeladas desde la construcción del archivo.
+
+**Auditoría preventiva realizada** (a pedido explícito de Charly: *"validar la efectividad de esto y esta falla no debe de volver a pasar"*) — se revisaron todos los dashboards con el mismo patrón de sincronización en vivo:
+
+| Archivo | Resultado |
+|---|---|
+| `regional/index.html` | ❌ Bug confirmado + 3 hallazgos adicionales del mismo origen (ver abajo) |
+| `peru/index.html` | ✅ Sin bug — ya tenía el reemplazo de fecha correctamente conectado |
+| `elsalvador/index.html` | ✅ Sin bug — mismo mecanismo que Perú |
+| `analytics.html` (Hub) | ✅ Sin bug — ya usa `cash_summary.json`/`cartas_summary.json` en vivo |
+
+**Hallazgos adicionales en `regional/index.html`, mismo origen, corregidos en el mismo commit:**
+1. El reemplazo dinámico de mes ("Junio 2026" → mes actual) solo cubría el **formato largo**. El formato corto ("Jun 2026"), presente en varios paneles de la misma página, nunca se reemplazaba — el mismo hueco ya se había corregido en `peru.html`/`elsalvador.html` el 23/07/2026, pero nunca se replicó aquí.
+2. **Hallazgo de mayor riesgo:** ese mismo reemplazo de mes se aplicaba sin distinguir de página — lo que estaba renombrando automáticamente el título de la pestaña **Cash Today** a "Agosto 2026" aunque las cifras en USD de esa sección siguen siendo referencia estática de junio (Cash Today nunca tuvo datos en vivo en este dashboard, es una limitación de arquitectura ya documentada). Esto generaba un estado peor que el original: fecha viva + cifra congelada, sin ninguna señal de que los montos no correspondían a esa fecha.
+3. Las tarjetas de la pestaña "Por País" mostraban el mes en formato crudo `"2026-08"` en vez de `"Ago 2026"` (sí eran datos en vivo, solo mal formateados).
+4. El pie de página mostraba `"Datos: 18–24 Jun 2026"` estático.
+
+### Corrección aplicada
+
+- **Nuevas funciones:** `pdcParseFecha()`, `pdcFmtFecha()`, `pdcFmtRango()`, `pdcApplyFechas()` — parsean `KPI_TOTALS.report_date` (Rutas, vía PDCBridge, sin fetch adicional) y `cash_summary.json` (Cash Today — archivo liviano ~150 bytes, mismo patrón que ya usa `analytics.html`; se evitó cargar `cash_today.html` completo, ~11MB, solo para leer una fecha).
+- Las 5 etiquetas de fecha (3 en Resumen + 1 en Rutas + 1 en Cash Today) ahora se calculan en vivo. "Datos al" toma la más reciente entre Rutas y Cash Today.
+- El reemplazo de mes se **limitó explícitamente a `#page-resumen` y `#page-rutas`** — la pestaña Cash Today deja de renombrarse automáticamente hasta que tenga su propia fuente de datos en vivo.
+- Se agregó cobertura del formato corto "Jun 2026" dentro de ese mismo alcance limitado.
+- Formato de mes corregido en la pestaña "Por País" (`Ago 2026` en vez de `2026-08`).
+- Pie de página conectado al rango real de fechas (`pdcFmtRango`).
+- Degradación seleccionable y segura: si `cash_summary.json` no responde, las fechas de Rutas se siguen actualizando con normalidad; solo se conservan los valores de referencia para Cash Today.
+
+### Validado antes de deploy
+
+- `node --check` en los 3 bloques `<script>` de cada commit — sin errores de sintaxis.
+- Simulación funcional en Node.js con los datos reales de producción (`KPI_TOTALS.report_date = "21/08/2026"`, `cash_summary.json.report_date = "2026-08-20"`): confirmó `Datos al = 21 Ago 2026`, `Rutas = 21 Ago 2026`, `Cash Today = 20 Ago 2026`, `footerRango = 20–21 Ago 2026`, `Por País = Ago 2026`.
+- Verificado que el bloque HTML de Cash Today conserva su texto original intacto (no se le aplicó el reemplazo de mes), y que el scoping `['#page-resumen', '#page-rutas']` quedó presente en el JS publicado.
+- Verificado post-deploy vía el SHA exacto del commit.
+
+**Alcance — qué se dejó deliberadamente sin tocar (documentado, no implementado sin autorización):** los montos en USD de la pestaña Cash Today dentro de `regional/index.html` (tabla histórica Ene–Jun 2026 y tarjetas "Efectivo Jun 2026" en "Por País") siguen siendo referencia estática — esto es una limitación de arquitectura previa a esta sesión (Cash Today es un dataset independiente, ~11MB, nunca integrado a PDCBridge). Conectarlo en vivo sería un alcance mayor, no autorizado en esta corrección. Documentado como recomendación en ROADMAP.
+
+---
+
 ## [21/08/2026] — Optimización: automatización de la regeneración de historico_index.json
 
 **Clasificación:** Optimización / automatización, autorizada por Charly como seguimiento directo de la corrección anterior. **Archivos:** `.github/workflows/update-historico-index.yml` (nuevo), `.github/scripts/update_historico_index.py` (nuevo). Cero cambios en `index.html` ni `historico.html`.
