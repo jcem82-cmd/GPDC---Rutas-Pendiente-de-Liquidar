@@ -1,7 +1,7 @@
 # 03 — ROADMAP
 ## PDC Analytics Center · Plan de Evolución
 
-**Estado actual: v2.15 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
+**Estado actual: v2.16 ESTABLE (Rutas) / v2.17 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
 **Última actualización:** 21/08/2026 (fix regional/index.html - fechas congeladas)
 
 ---
@@ -56,7 +56,20 @@
 - [x] Cubierto formato corto "Jun 2026" (hueco que ya se había corregido en Perú/El Salvador el 23/07 pero nunca se replicó en Regional)
 - [x] Formato de mes corregido en pestaña "Por País" (antes mostraba `"2026-08"` crudo)
 - [x] Pie de página conectado al rango real de fechas
-- [ ] **Pendiente, fuera de alcance de esta corrección, requiere autorización:** conectar los montos en USD de Cash Today dentro de `regional/index.html` (tabla histórica mensual + tarjetas "Efectivo" en "Por País") a datos reales — hoy siguen siendo referencia estática de junio. Requeriría ampliar `cash_summary.json` con más campos (desglose por país/mes) o una fuente intermedia adicional.
+- [x] Montos en USD de Cash Today conectados a datos reales — ver FASE 16 (completada el mismo día, autorizada por Charly)
+
+---
+
+## ✅ FASE 16 — Montos reales de Cash Today en regional/index.html (COMPLETADA · v2.14 · 21/08/2026)
+
+- [x] Autorizado explícitamente por Charly: "todo debe de estar actualizado y en sintonia, nada congelado, procedamos"
+- [x] `cash_summary.json` ampliado con `mes_actual`/`ytd`/`serie_mensual` por país (GT/SV), generado en cada publicación real de `cash_today.html` — ver esquema completo en `01_MASTER_PROJECT_CONTEXT.md` §8.5
+- [x] Conversión GTQ→USD reutiliza `_TC_MENSUAL`/`tcGTQ` — sin segunda fuente de tipo de cambio
+- [x] `regional/index.html`: nueva función `pdcApplyCashData()` conecta 2 KPIs de Resumen, 4 KPIs de Cash Today, 4 tarjetas de "Por País", 4 gráficas (2 antes con literales fijos) y la tabla "Detalle Mensual" (ahora reconstruida dinámicamente, ya no 6 filas fijas)
+- [x] Degradación segura: si `cash_summary.json` no trae los campos nuevos, no rompe la vista — se conservan valores de referencia
+- [x] Validado con simulación funcional contra los 47,265 registros reales de `_R` + simulación end-to-end con jsdom (DOM real, 29 elementos verificados uno por uno)
+- [x] `cash_summary.json` republicado de inmediato con datos reales (no se esperó la próxima publicación de Charly para ver el efecto)
+- [x] Cifras reales reveladas: Junio real GT USD 2,390,579 / SV USD 1,882,001 (vs. referencia estática USD 949,926 / USD 821,012) — YTD real a agosto USD 31,223,737 (vs. USD 21,678,140 de referencia)
 
 ---
 
