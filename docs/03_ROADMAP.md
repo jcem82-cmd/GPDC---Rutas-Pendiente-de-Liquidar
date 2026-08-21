@@ -1,8 +1,8 @@
 # 03 — ROADMAP
 ## PDC Analytics Center · Plan de Evolución
 
-**Estado actual: v2.13 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
-**Última actualización:** 20/08/2026 (sesión Filtro Mundos, extendida a historico.html)
+**Estado actual: v2.14 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
+**Última actualización:** 21/08/2026 (fix + automatización historico_index.json)
 
 ---
 
@@ -32,8 +32,22 @@
 
 ---
 
+## ✅ FASE 14 — Automatización de historico_index.json (COMPLETADA · v2.12 · 21/08/2026)
+
+- [x] Corrección de incidencia: `historico_index.json` (manifiesto de snapshots) llevaba 11 días sin regenerarse, 14 publicaciones reales de Excel invisibles en `historico.html`
+- [x] RCA: manifiesto era de mantenimiento 100% manual desde su creación (10/08/2026)
+- [x] Regeneración inmediata: 54 → 68 snapshots (fix puntual)
+- [x] **Automatización permanente:** `.github/workflows/update-historico-index.yml` + `.github/scripts/update_historico_index.py`
+  - Dispara en cada push a `index.html`
+  - Filtra únicamente commits "Actualizacion..." que además modifican `index.html` (excluye commits de código: feat/fix/refactor/docs)
+  - Regenera, ordena descendente y hace commit/push automático del manifiesto — `[skip ci]` evita rebuilds de Pages innecesarios
+  - Permiso `default_workflow_permissions` del repo elevado a `write` (era `read`) — requisito técnico para que el GITHUB_TOKEN del Action pueda hacer commit
+- [x] Validado con simulación local en git (repo temporal, manifiesto real de producción): publicación real se agrega correctamente, commit de código se ignora correctamente, re-ejecución del mismo push es idempotente (no duplica)
+- [ ] Pendiente: confirmar en la próxima publicación real de Excel de Charly que el flujo end-to-end funciona en producción (primer disparo en vivo)
+
+---
+
 ## 🔜 PENDIENTE — Sesión de arquitectura (próxima semana, autorizada por Charly)
-- [ ] Automatizar regeneración de `historico_index.json` vía GitHub Action tras cada commit "Actualizacion dashboard..." — evita depender de mantenimiento manual (causó incidencia del 21/08/2026: manifiesto desactualizado 11 días, 14 publicaciones invisibles en historico.html)
 
 - [ ] Ramas `main` / `develop` / `feature-*` (código de plataforma; publicaciones diarias de Excel siguen escribiendo directo a `main`)
 - [ ] Respaldo automático programado del repositorio (posible destino: Supabase Storage)
