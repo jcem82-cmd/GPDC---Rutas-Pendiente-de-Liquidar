@@ -1,3 +1,35 @@
+## [21/08/2026] — Corrección: historico.html no mostraba publicaciones posteriores al 10/08/2026
+
+**Clasificación:** Corrección de errores, reportada por Charly. **Archivo:** únicamente `historico_index.json` (dato, sin cambios de código).
+
+**Síntoma reportado:** el selector de fechas de `historico.html` seguía mostrando el 10/08/2026 como la publicación más reciente, a pesar de que el dashboard en vivo se había seguido actualizando (confirmado por Charly: 20/08 y 21/08 entre otras).
+
+### RCA (Root Cause Analysis)
+
+`historico_index.json` es un manifiesto de **mantenimiento manual** (documentado en `01_MASTER_PROJECT_CONTEXT.md` desde su creación el 10/08/2026: *"no se regenera solo con cada publicación de Excel"*). Su última regeneración fue el 10/08/2026 18:29 UTC. Desde entonces se hicieron 7 publicaciones reales de Excel (10/8 tarde, 11/8, 13/8, 14/8 ×2, 17/8, 18/8, 19/8, 20/8 ×3, 21/8 — 14 commits en total) que nunca se incorporaron al índice. **No es un defecto de código** — ni `index.html` ni `historico.html` tienen ningún bug; el manifiesto simplemente no se había vuelto a generar en 11 días.
+
+**Verificación del criterio de inclusión** (comparé el manifiesto contra el historial completo de commits de `index.html` vía GitHub API, 147 commits desde 03/06/2026): confirmé que el manifiesto **únicamente incluye commits de publicación real de datos** (mensajes que empiezan con "Actualizacion..."), excluyendo deliberadamente commits de código (`feat`, `fix`, `refactor`) — incluyendo los 2 de hoy mismo (Mundos, Dedicado Terminal). Este criterio es correcto y se respetó al regenerar.
+
+### Corrección aplicada
+
+- Se regeneró `historico_index.json` completo: 54 → **68 snapshots**.
+- Se agregaron las 14 publicaciones de datos faltantes (10/08 tarde → 21/08/2026).
+- De paso se recuperó 1 snapshot antiguo del 08/06/2026 que también cumplía el criterio pero había quedado fuera de la primera generación del 10/08 (mensaje "Actualizacion diaria" en vez de "Actualizacion dashboard" — mismo criterio de fondo, se incluyó por consistencia).
+- `generated_at` actualizado a la fecha real de esta regeneración.
+
+### Validado antes de deploy
+
+- `json.loads()` estricto — válido.
+- 0 SHAs duplicados, orden descendente por fecha verificado.
+- Sanity check: se descargó el snapshot más reciente (21/08, sha `6d71bdf`) directamente de `raw.githubusercontent.com` y se confirmó que contiene `const RAW = [...]` y `const KPI_TOTALS = {...}` leíbles por `historico.html`.
+- Verificado post-deploy vía el SHA del commit exacto del manifiesto.
+
+**Alcance:** únicamente `historico_index.json`. Cero cambios en `index.html`, `historico.html` ni ningún otro archivo.
+
+**Recomendación (fuera de alcance, no implementada sin autorización):** automatizar la regeneración de `historico_index.json` con un GitHub Action que corra tras cada commit "Actualizacion dashboard..." a `index.html`, para eliminar la dependencia del mantenimiento manual que causó esta incidencia. Documentado en ROADMAP para la próxima sesión de arquitectura.
+
+---
+
 ## [20/08/2026] — Nueva funcionalidad: Filtro "Mundos" replicado en historico.html
 
 **Clasificación:** Nueva funcionalidad, autorizada por Charly. **Archivo:** únicamente `historico.html`.
