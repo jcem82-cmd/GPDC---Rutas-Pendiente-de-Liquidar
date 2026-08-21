@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.12 | **Última actualización:** 21/08/2026 | **Estado:** Producción ✅
+**Versión vigente:** v2.13 | **Última actualización:** 21/08/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -207,8 +207,9 @@ Módulo compartido, reutilizable, que en tiempo de ejecución:
 **⚠️ Bug ya corregido (no repetir):** la primera versión de `pdc_data_bridge.js` usaba `fetch('index.html')` con ruta fija — funcionaba en la raíz pero causaba auto-fetch (self-fetch) en subcarpetas. Corregido con `PDC_MASTER_PATH`.
 
 ### 7.3 Pendiente — no conectado aún a PDCBridge
-- **Cash Today** (tarjeta del Hub + Efectivo YTD en Regional): dataset independiente (~11-20MB), no se integra por costo de performance de descargarlo en cada visita al Hub. Recomendación pendiente: generar un `cash_summary.json` liviano al publicar.
+- **Cash Today, montos en USD** (Efectivo YTD y tabla histórica mensual en Regional, tarjetas "Efectivo Jun 2026" de la pestaña "Por País"): dataset independiente (~11-20MB), no se integra por costo de performance de descargarlo en cada visita. La recomendación de un `cash_summary.json` liviano YA está implementada y en uso (ver `analytics.html` y, desde 21/08/2026, también `regional/index.html` — pero **solo para la fecha "Cash Today:" del header**, no para los montos). Conectar los montos reales requeriría ampliar `cash_summary.json` con más campos o una fuente intermedia adicional — pendiente, no autorizado aún.
 - **`peru/index.html` y `regional/index.html` como dashboards completos** (más allá de los KPIs ya conectados): estos SÍ están conectados para sus KPIs principales, PERO la tabla "Resumen por País y Canal" de Regional y algunos gráficos de tendencia histórica de Perú aún usan datos parcialmente estáticos donde no hay fuente histórica disponible.
+- **⚠️ Patrón de riesgo confirmado (21/08/2026):** cualquier página que mezcle contenido en vivo (vía PDCBridge) con contenido estático en la misma vista corre el riesgo de que un reemplazo de texto genérico (ej. reemplazar "Junio 2026" por el mes actual) se aplique también sobre las secciones estáticas, generando una mezcla fecha-viva/cifra-congelada — peor que dejarlo todo estático. Ver incidencia y corrección en `docs/02_CHANGELOG.md` [21/08/2026]. Regla a seguir en futuras integraciones: cualquier reemplazo de texto por mes/fecha debe delimitarse explícitamente (por selector de página/sección) a las zonas que realmente tienen datos en vivo detrás.
 
 ---
 
