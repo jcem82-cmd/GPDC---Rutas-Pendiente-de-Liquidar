@@ -3114,12 +3114,62 @@ async function publishToGitHub(){
         return r.t === 'Depósito' && r.yr === anioActual;
       }).length;
       var fechasValidas = currentR.map(function(r){ return r.f; }).filter(Boolean).sort();
+
+      /* HOTFIX 21/08/2026 (RCA de Charly - regional/index.html mostraba
+         montos de Cash Today 100% congelados en referencia de junio):
+         se agregan mes_actual/ytd/serie_mensual por pais (GT/SV) para que
+         regional/index.html tenga datos reales, sin tener que cargar este
+         archivo completo. Conversion GTQ->USD con el mismo _TC_MENSUAL/tcGTQ
+         que ya usa el resto del dashboard (fuente unica, ver linea ~1037). */
+      var MESES_ABR_CS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      var toUSD_CS = function(imp, div, ym){
+        if(div === 'USD') return imp;
+        var tc = (ym && _TC_MENSUAL[ym]) ? _TC_MENSUAL[ym] : tcGTQ;
+        return imp / tc;
+      };
+      var aggDepositos = function(pais, yr, mo){
+        var rows = currentR.filter(function(r){
+          return r.t === 'Depósito' && r.p === pais && r.yr === yr && (mo ? r.mo === mo : true);
+        });
+        var usd = rows.reduce(function(s,r){ return s + toUSD_CS(r.imp, r.div, r.ym); }, 0);
+        return { usd: Math.round(usd), txn: rows.length };
+      };
+      var ymMaxNum = currentR.reduce(function(a,r){ var v = r.yr*100+r.mo; return v > a ? v : a; }, 0);
+      var mesActualNum = ymMaxNum % 100;
+
+      var serieMensual = [];
+      for(var mm = 1; mm <= mesActualNum; mm++){
+        var gtM = aggDepositos('Guatemala', anioActual, mm);
+        var svM = aggDepositos('El Salvador', anioActual, mm);
+        serieMensual.push({
+          ym: anioActual+'-'+String(mm).padStart(2,'0'),
+          mes: MESES_ABR_CS[mm-1],
+          GT_usd: gtM.usd, SV_usd: svM.usd, total_usd: gtM.usd+svM.usd
+        });
+      }
+      var gtMesActual = aggDepositos('Guatemala', anioActual, mesActualNum);
+      var svMesActual = aggDepositos('El Salvador', anioActual, mesActualNum);
+      var gtYTD = aggDepositos('Guatemala', anioActual, null);
+      var svYTD = aggDepositos('El Salvador', anioActual, null);
+
       var summary = {
         report_date: fechasValidas.length ? fechasValidas[fechasValidas.length-1].substring(0,10) : '',
         anio: anioActual,
         transacciones_anio: transaccionesAnio,
         sedes: 4,
-        modulos: 10
+        modulos: 10,
+        mes_actual: {
+          ym: anioActual+'-'+String(mesActualNum).padStart(2,'0'),
+          mes_abr: MESES_ABR_CS[mesActualNum-1],
+          GT_usd: gtMesActual.usd, GT_txn: gtMesActual.txn,
+          SV_usd: svMesActual.usd, SV_txn: svMesActual.txn,
+          total_usd: gtMesActual.usd + svMesActual.usd
+        },
+        ytd: {
+          GT_usd: gtYTD.usd, SV_usd: svYTD.usd,
+          total_usd: gtYTD.usd + svYTD.usd
+        },
+        serie_mensual: serieMensual
       };
 
       var summaryPath = 'cash_summary.json';
