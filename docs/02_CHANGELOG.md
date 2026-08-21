@@ -1,3 +1,30 @@
+## [21/08/2026] — Optimización: automatización de la regeneración de historico_index.json
+
+**Clasificación:** Optimización / automatización, autorizada por Charly como seguimiento directo de la corrección anterior. **Archivos:** `.github/workflows/update-historico-index.yml` (nuevo), `.github/scripts/update_historico_index.py` (nuevo). Cero cambios en `index.html` ni `historico.html`.
+
+**Contexto:** tras corregir el manifiesto desactualizado (ver entrada anterior del mismo día), Charly pidió eliminar la causa raíz de fondo — que el proceso dependiera de que alguien lo recordara ejecutar manualmente.
+
+### Implementado
+
+- **Workflow `update-historico-index.yml`:** se dispara en cada push a `index.html`. Usa `permissions: contents: write` para poder hacer commit/push del manifiesto regenerado.
+- **Script `update_historico_index.py`:** lee los commits del push actual (`GITHUB_EVENT_PATH`), y para cada uno verifica (a) que el mensaje empiece con "Actualizacion" y (b) que el commit efectivamente haya modificado `index.html` (`git diff-tree`) — mismo criterio exacto usado en la regeneración manual de hoy, documentado explícitamente en el script para que no se desvíe sin actualizar también el CHANGELOG. Agrega solo las entradas nuevas (dedupe por SHA), reordena descendente y actualiza `generated_at`.
+- **Commit automático:** `chore(historico_index): auto-regenerado tras publicacion de Excel [skip ci]` — el `[skip ci]` evita que ese commit dispare un rebuild innecesario de GitHub Pages (el manifiesto se lee directo de `raw.githubusercontent.com`, no pasa por Pages).
+- **Cambio de configuración del repositorio:** `default_workflow_permissions` de `read` → `write` (vía API de Administración de Actions) — requisito técnico obligatorio, sin esto el GITHUB_TOKEN del workflow no puede hacer push. No afecta a `deploy.yml`, que ya declara sus propios permisos explícitos.
+
+### Validado antes de deploy
+
+- `ast.parse()` en el script Python — sin errores de sintaxis.
+- **Simulación end-to-end en un repositorio git temporal**, usando el manifiesto real de 68 snapshots ya en producción: se crearon 3 commits (2 publicaciones "Actualizacion dashboard..." + 1 "fix(index): ..." de código) y se corrió el script con un evento `GITHUB_EVENT_PATH` simulado.
+  - Las 2 publicaciones reales se agregaron correctamente ✅
+  - El commit de código fue correctamente ignorado ✅
+  - Orden descendente y 0 duplicados verificado ✅
+  - Re-ejecución del mismo evento confirmó idempotencia (no duplica) ✅
+- No se probó con un commit real en `index.html` de producción — deliberado, para no contaminar el historial de publicaciones con una entrada de prueba. El primer disparo en vivo será la próxima publicación real de Excel de Charly.
+
+**Documentación corregida de paso:** `01_MASTER_PROJECT_CONTEXT.md` tenía 2 afirmaciones que quedaron obsoletas con este cambio ("mantenimiento manual" del índice de snapshots) — actualizadas para reflejar la automatización.
+
+---
+
 ## [21/08/2026] — Corrección: historico.html no mostraba publicaciones posteriores al 10/08/2026
 
 **Clasificación:** Corrección de errores, reportada por Charly. **Archivo:** únicamente `historico_index.json` (dato, sin cambios de código).
