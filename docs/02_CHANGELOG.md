@@ -1,3 +1,38 @@
+## [21/08/2026] — Nueva funcionalidad: montos reales de Cash Today en regional/index.html
+
+**Clasificación:** Nueva funcionalidad, autorizada explícitamente por Charly ("todo debe de estar actualizado y en sintonia, nada congelado, procedamos") como cierre del pendiente documentado en la corrección anterior del mismo día. **Archivos:** `cash_today.html`, `regional/index.html`, `cash_summary.json` (dato).
+
+**Contexto:** tras corregir las fechas congeladas de `regional/index.html`, quedó documentado como pendiente que los MONTOS en USD de Cash Today en ese mismo dashboard seguían siendo referencia estática de junio (limitación de arquitectura previa: Cash Today es un dataset independiente, ~11-12MB, nunca integrado a PDCBridge). Charly autorizó cerrar ese pendiente en la misma sesión.
+
+### Implementado
+
+**`cash_today.html` — ampliación de `cash_summary.json`:**
+- El bloque de generación del resumen liviano (dentro de `publishToGitHub()`, ya usado por `analytics.html`) ahora también calcula, en cada publicación real:
+  - `mes_actual`: efectivo recolectado del mes en curso por país (GT/SV) en USD equivalente + transacciones
+  - `ytd`: acumulado año a la fecha por país
+  - `serie_mensual`: array mes a mes (enero → mes actual) por país, para alimentar gráficas de tendencia y tabla histórica
+- Conversión GTQ→USD reutiliza exactamente `_TC_MENSUAL`/`tcGTQ`, la misma fuente única de tipo de cambio que ya usa el resto del dashboard — sin introducir una segunda fuente de verdad.
+- El archivo sigue siendo liviano (unos pocos KB, no los ~12MB del dataset completo).
+
+**`regional/index.html` — consumo en vivo:**
+- Nueva función `pdcApplyCashData(cashSummary)`, con el mismo criterio de degradación segura ya usado en `pdcApplyFechas()`: si `cash_summary.json` no trae los campos nuevos (versión vieja, o fetch fallido), no hace nada y se conservan los valores de referencia — nunca rompe la vista.
+- Conectados a datos reales: las 2 tarjetas KPI de "Resumen" (Efectivo Recolectado del mes + YTD), las 4 tarjetas KPI de la pestaña "Cash Today" (GT/SV × mes/YTD, incluyendo el % de las barras de proporción), las 4 tarjetas de "Efectivo" en la pestaña "Por País" (GT y SV — Perú se dejó intacto, marca "No operativo aún" por diseño), las 4 gráficas que usan `D.cashMonths`/`D.cashGT`/`D.cashSV`/`D.cashYTD_GT`/`D.cashYTD_SV` (antes con literales fijos `[10479907,11198233]` en dos de ellas).
+- **Tabla "Detalle Mensual" reconstruida dinámicamente** (antes 6 filas fijas Ene-Jun): ahora genera tantas filas como meses haya en `serie_mensual` (hoy 8: Ene-Ago), más la fila `TOTAL YTD`.
+- Textos de rango ("Ene–Jun 2026" en 4 lugares) y el pie de nota (`"* Junio 2026 parcial..."`) ahora son dinámicos.
+
+### Validado antes de deploy
+
+- `node --check` en los bloques `<script>` de ambos archivos.
+- **Simulación funcional en Node.js contra el dataset real de `_R`** (47,265 registros): agregación por país/mes/año validada — `transacciones_anio` calculado coincidió exactamente (35,746) con el valor ya publicado en el `cash_summary.json` anterior (control cruzado de que la lógica nueva es consistente con la ya existente).
+- **Simulación end-to-end con jsdom**: se cargó `regional_work.html` completo en un DOM real, se ejecutaron sus 3 bloques `<script>`, y se llamó a `pdcApplyFechas()` + `pdcApplyCashData()` con el `cash_summary.json` real generado — se verificaron los 29 elementos del DOM afectados uno por uno (valores, sub-labels, tabla completa de 9 filas, arrays `D.cash*`) y que las barras de proporción GT+SV suman exactamente 100%.
+- Verificado post-deploy vía el SHA exacto de cada uno de los 3 commits.
+
+**Cifras reales reveladas (antes ocultas tras datos de referencia obsoletos):** el efectivo real de junio 2026 fue GT USD 2,390,579 / SV USD 1,882,001 — muy por encima de los USD 949,926 / USD 821,012 que mostraba la referencia estática (esos números databan de una captura parcial de mediados de junio, nunca actualizada). El YTD real a agosto es USD 31,223,737 (vs. USD 21,678,140 de referencia).
+
+**Alcance:** no se tocó `honduras/index.html`, `peru/index.html` (Cash Today no aplica ahí — "No operativo aún"), ni el flujo de publicación principal de `cash_today.html` (solo se amplió el bloque de generación de su resumen liviano, que ya se ejecutaba en cada publicación).
+
+---
+
 ## [21/08/2026] — Corrección: fechas y períodos congelados en regional/index.html
 
 **Clasificación:** Corrección de errores, reportada por Charly con captura de pantalla. **Archivo:** únicamente `regional/index.html`.
