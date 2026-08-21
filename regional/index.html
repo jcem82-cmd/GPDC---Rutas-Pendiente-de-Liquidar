@@ -521,7 +521,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
 <footer class="page-footer">
   <div class="page-footer-inner">
     <div class="footer-l">Grupo PDC · Departamento Financiero · Consolidado Regional © 2026</div>
-    <div class="footer-r">PDC Analytics Center · regional/index.html · v1.1 · Datos: 18–24 Jun 2026</div>
+    <div class="footer-r">PDC Analytics Center · regional/index.html · v1.1 · Datos: <span id="footerRango">18–24 Jun 2026</span></div>
   </div>
 </footer>
 
@@ -737,13 +737,28 @@ function pdcApplyLiveData(data){
   if(!(byPais['Guatemala'].pend || byPais['El Salvador'].pend || byPais['Perú'].pend)) return;
 
   /* HOTFIX 23/07/2026: encabezados de período dinámicos (antes texto fijo "Junio 2026") */
+  /* HOTFIX 21/08/2026 (ampliación por RCA de Charly): esta pasada solo cubría
+     el formato largo "Junio 2026" — el formato corto "Jun 2026", presente en
+     varios paneles de esta misma página, quedaba sin reemplazar (mismo hueco
+     que ya se había corregido en peru.html/elsalvador.html el 23/07/2026,
+     nunca replicado aquí). Además, el reemplazo se limita ahora a
+     #page-resumen y #page-rutas a propósito: la pestaña Cash Today no tiene
+     datos en vivo en este dashboard (dataset separado, ver comentario al
+     inicio de esta sección) — renombrar su título automáticamente crearía
+     un mensaje engañoso (título "Agosto 2026" con cifras en USD que en
+     realidad siguen siendo de referencia estática de junio). */
   var mesInfo = pdcMesInfo(data.KPI_TOTALS && data.KPI_TOTALS.report_month);
   if(mesInfo){
     var mesLargoAnio = mesInfo.largo+' '+mesInfo.anio;
-    pdcReplaceTxt('.sec-title','Junio 2026',mesLargoAnio);
-    pdcReplaceTxt('.sec-sub','Junio 2026',mesLargoAnio);
-    pdcReplaceTxt('.panel-sub','Junio 2026',mesLargoAnio);
-    pdcReplaceTxt('.panel-sub','enero–junio','enero–'+mesInfo.largo.toLowerCase());
+    var mesAbrAnio = mesInfo.abr+' '+mesInfo.anio;
+    ['#page-resumen', '#page-rutas'].forEach(function(scope){
+      pdcReplaceTxt(scope+' .sec-title','Junio 2026',mesLargoAnio);
+      pdcReplaceTxt(scope+' .sec-sub','Junio 2026',mesLargoAnio);
+      pdcReplaceTxt(scope+' .panel-sub','Junio 2026',mesLargoAnio);
+      pdcReplaceTxt(scope+' .panel-sub','enero–junio','enero–'+mesInfo.largo.toLowerCase());
+      pdcReplaceTxt(scope+' .panel-sub','Jun 2026',mesAbrAnio);
+      pdcReplaceTxt(scope+' .sec-sub','Jun 2026',mesAbrAnio);
+    });
   }
 
   var totalPend = byPais['Guatemala'].pend + byPais['El Salvador'].pend + byPais['Perú'].pend;
@@ -785,15 +800,15 @@ function pdcApplyLiveData(data){
   /* Pestaña "Por País" (page-paises) — mismos valores, otras tarjetas */
   var pctVenc = function(v,t){ return t ? Math.round(v/t*1000)/10 : 0; };
   setTxt('pPaisGT_pend', byPais['Guatemala'].pend);
-  setTxt('pPaisGT_pendSub', (data.KPI_TOTALS && data.KPI_TOTALS.report_month) || 'Mes actual');
+  setTxt('pPaisGT_pendSub', mesInfo ? mesInfo.abr+' '+mesInfo.anio : 'Mes actual'); // HOTFIX 21/08/2026: antes mostraba el string crudo "2026-08"
   setTxt('pPaisGT_venc', byPais['Guatemala'].venc);
   setTxt('pPaisGT_vencSub', pctVenc(byPais['Guatemala'].venc, byPais['Guatemala'].pend)+'% de pendientes');
   setTxt('pPaisSV_pend', byPais['El Salvador'].pend);
-  setTxt('pPaisSV_pendSub', (data.KPI_TOTALS && data.KPI_TOTALS.report_month) || 'Mes actual');
+  setTxt('pPaisSV_pendSub', mesInfo ? mesInfo.abr+' '+mesInfo.anio : 'Mes actual');
   setTxt('pPaisSV_venc', byPais['El Salvador'].venc);
   setTxt('pPaisSV_vencSub', pctVenc(byPais['El Salvador'].venc, byPais['El Salvador'].pend)+'% de pendientes');
   setTxt('pPaisPE_pend', byPais['Perú'].pend);
-  setTxt('pPaisPE_pendSub', (data.KPI_TOTALS && data.KPI_TOTALS.report_month) || 'Mes actual');
+  setTxt('pPaisPE_pendSub', mesInfo ? mesInfo.abr+' '+mesInfo.anio : 'Mes actual');
   setTxt('pPaisPE_venc', byPais['Perú'].venc);
   setTxt('pPaisPE_vencSub', pctVenc(byPais['Perú'].venc, byPais['Perú'].pend)+'% de pendientes');
 
@@ -858,6 +873,16 @@ function pdcParseFecha(str){
 function pdcFmtFecha(dt){
   return dt ? (dt.getUTCDate()+' '+MESES_ABR_REG[dt.getUTCMonth()]+' '+dt.getUTCFullYear()) : null;
 }
+function pdcFmtRango(dtA, dtB){
+  if(!dtA && !dtB) return null;
+  if(dtA && !dtB) return pdcFmtFecha(dtA);
+  if(!dtA && dtB) return pdcFmtFecha(dtB);
+  var lo = dtA < dtB ? dtA : dtB, hi = dtA < dtB ? dtB : dtA;
+  if(lo.getUTCFullYear()===hi.getUTCFullYear() && lo.getUTCMonth()===hi.getUTCMonth()){
+    return lo.getUTCDate()+'–'+hi.getUTCDate()+' '+MESES_ABR_REG[hi.getUTCMonth()]+' '+hi.getUTCFullYear();
+  }
+  return pdcFmtFecha(lo)+' – '+pdcFmtFecha(hi);
+}
 function pdcApplyFechas(kpiTotals, cashSummary){
   var dtRutas = kpiTotals ? pdcParseFecha(kpiTotals.report_date) : null;
   var dtCash = cashSummary ? pdcParseFecha(cashSummary.report_date) : null;
@@ -874,6 +899,9 @@ function pdcApplyFechas(kpiTotals, cashSummary){
   setFecha('fechaCashResumen', dtCash);
   setFecha('fechaDatosAlRutas', dtRutas);
   setFecha('fechaDatosAlCash', dtCash);
+
+  var rangoTxt = pdcFmtRango(dtRutas, dtCash);
+  if(rangoTxt){ var elR = document.getElementById('footerRango'); if(elR) elR.textContent = rangoTxt; }
 }
 
 /* ══ INIT ══ */
