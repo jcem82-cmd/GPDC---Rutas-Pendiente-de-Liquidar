@@ -7,8 +7,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 :root{
-  --navy:#002060;--navy-l:#003090;--navy-10:rgba(0,32,96,.08);--navy-20:rgba(0,32,96,.14);
-  --sky:#CFEEFC;--sky2:#8dd4f5;--silver:#DBDBDB;--bg:#eef2f8;
+  --navy:#00216f;--navy-l:#003090;--navy-10:rgba(0,32,96,.08);--navy-20:rgba(0,32,96,.14);
+  --sky:#7dbfe6;--sky2:#8dd4f5;--silver:#DBDBDB;--bg:#eef2f8;
   --w:#fff;--ybg:#FFF4CC;--yb:#e0ac00;--yt:#7a5800;
   --rbg:#FFBDBD;--rb:#d03030;--rt:#8a0f0f;
   --gbg:#DCF0C6;--gb:#48a010;--gt:#2a6000;
@@ -24,7 +24,7 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
 .hdr-logo{display:flex;align-items:center;gap:10px}
 .hdr-ico{width:32px;height:32px;background:rgba(207,238,252,.12);border:1.5px solid rgba(207,238,252,.3);
   border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
-.hdr-name{font-size:.95rem;font-weight:800;color:var(--sky);letter-spacing:.04em}
+.hdr-name{font-family:'Poppins',system-ui,sans-serif;font-size:.95rem;font-weight:800;color:var(--sky);letter-spacing:.04em}
 .hdr-sub{font-size:.62rem;color:rgba(207,238,252,.55);font-weight:400;margin-top:1px}
 .hdr-badges{display:flex;gap:10px;align-items:center}
 .hbadge{background:rgba(207,238,252,.1);border:1px solid rgba(207,238,252,.18);
@@ -595,15 +595,16 @@ async function exportarPDF() {
 <meta charset="UTF-8"/>
 <title>Reporte Histórico · Liquidación de Rutas · ${fecha}</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 body{font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#0d1b3e;background:#fff;padding:0}
 @page{size:A4;margin:12mm 14mm}
 .rpt-hdr{background:#002060;color:#fff;padding:16px 20px;display:flex;align-items:center;
   justify-content:space-between;gap:16px;margin-bottom:8px;border-radius:10px}
-.rpt-logo{background:#fff;border-radius:6px;padding:5px 14px;font-size:.95rem;font-weight:800;color:#002060}
+.rpt-logo{background:#fff;border-radius:6px;padding:4px 12px;display:flex;align-items:center}
 .rpt-title{flex:1;padding:0 16px}
-.rpt-title h1{font-size:1rem;font-weight:800;letter-spacing:.04em;margin-bottom:2px}
+.rpt-title h1{font-family:'Poppins',system-ui,sans-serif;font-size:1rem;font-weight:800;letter-spacing:.04em;margin-bottom:2px}
 .rpt-title p{font-size:.7rem;opacity:.7}
 .rpt-meta{text-align:right;font-size:.72rem;opacity:.75;line-height:1.6}
 .rpt-meta strong{opacity:1;font-weight:700}
@@ -650,7 +651,7 @@ table.dt tr{break-inside:avoid;page-break-inside:avoid}
 </head>
 <body>
 <div class="rpt-hdr">
-  <div class="rpt-logo">PDC</div>
+  <div class="rpt-logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOAAAACMCAMAAABSxVXyAAAAflBMVEUAGnJa4vVOsfFFwusAAP89uvJFwutGxO0AJXA+vb4AAKlDveUAf/9EvuYIf39UqKpEv+c0zOB/f/8AHoAAAAAAG3JFwuoAAH1EvuYAGG8AGnIAGnEAGnEAAFUAGnIA//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADP3D5eAAAAIHRSTlOfDxGgAQdd1wkEA2ACowID0AUC/wD9/QP7Ec5TLwNwAUzeMDUAAA6VSURBVHja7Z2JlqI4FECTCLKUWls0hi3//5eTDcgGAdQqqs9wpnpsy0gub38JNMCPHi0hpMW7PcCD48se818FxLTpurr5ZyVIuuoqjqrLk38PMCEUXPXxXXMtJRyS/xCi4In8jLDSQYFJqX/5JwAJ5nxVTSmtq4oq5sBlGG2UJD9vr+AR/1JzPgWGc/HT8L/wH9oQZZ1E/MHfqmvKr4b4j79s5Iu/ACgF2EidzNuEq17HccEV0Ou15sD59dph8VqqcS00tpEvq9qTYaKOvakoR6jGuQreCnx/g0aQ5bjRgPxDwhEJSfYG29mEo1m2ewIkYsJAqlte10ILhXxATV3ALieduBTyNbdXSUssI6XqCNrw7wO2whaFEgLxd4wdQKCVWZB1YmDdX5fhe3pfzJWX7AcwEbMXKspnWPWATUITB7ATqRwXYSN+eF7XJpUJSEbNlV/S7snJVL2y0VwDUjVhDtiGAVs5rDIBgQEIni7ChwDHMNF4gOJvlormUkWJYboBwGu+q0DfVjrQd9cBsJUAeVlfRyfTDk6mJqSRcm8tPRgPuq9Mhlam+SgJJnmlI4MVJmrpXdRr28fsF1AQAp1rVzwZBd98fol2qlVz/VYqyt/Wgb6udBgk+G8AyhBW83KJ4qbhuUujyyb+Xs3dqMjaOGBbd32qlqsPJ/ivAA65h52ZjH8qJ9N/IPzhfQPipJQdC1kRtaTPvUgp3iIKkH8iGfsbZYL/FGAsF/iOhLY/DSgCpGNy/xzgsnzoDwO2JPm3Af95Cf59wPWdBnvEGsAtbY2HclFSDq8WdQONj7X9q0WASUtKgtedbCWgjtXlmIW08g3RaciN1GWuCycHkFw1J7Bu+8cBE83T9n0Nu4/zHEDivhKgTQd0X7sCXYPHhYpwk1EERdCPUAPaOKDUEp7cgkp/rgJ6LHkioOibVOIAumvCZ1ZbhaqoKOh0W0x0SDtvQM7fnwfktYk/UI5tFiIuAmyNvkknuzB95WMffMblhPjaLjCgqiMS5N/WgGv4AM28yqwBTKg1BV72TJy1CjeNWtWWCs0yx9OAyVBvTiOSZwDqElYf/FtpNXnSLnBK0fOeOio6CcgvVXedPwCNdlLBIgu0AZtq7pyeDJ22kktoawM11HNWfHp0E5PhBkBazV9V55Qtnp8nCAOS+es4Xp/nA8auq01IMLiuOGiwHzxzNJFW8XrA+HxNT1NG7SgI2C7li/bC1wMumeWQZywWhA24YljMzbwEcHQ0sje8HrDNJ4ZV/qlK/CpAntY0lPL0q5o0jFCAEMP40YFpwDJkt/JsPJG1RlY0VlBvBqzqQfdbL60ZREj9YYOfDEYBGjZAkdaNB+2Wr0ZtBRQpCGlJkojmoJ/ZqPDkC5BHZp4+i0U00WcMBAIqK4UqMKwspbAS2aXUFwfEk7WNgB222++uTqlQkeBqZlhCAikRDZ2udlIysTdFZP/dgtXEbYBuMCdOyszjb0jVALYtJuAsuVMkSRVSh2BHHb8GsGpL73zUdzNujK+8KtW/dNSnDq9r8wo8KV8F2Piq75qbknEVSzq8PIeqpdPnLfpuAQQhBSG5LS1pYtGQ5WkxdT1vRR9btd8CGNQZVxbUGxbMGl3jpdgZ1T24ar8FkMaqfoWT21pbteHv7tzvBvGTvRYQTLgw6ojZMaawLbkuxQV8eNvFBsAJpXF0VGy0qOLOUG4IszV70ahXAk6kR8S99KU91WbRdaGOIjS/ADg5084GdKY6Udd4+2RslX1438wzAesIIF4PWOFfAJwUxSxgVU59eTcLSP4HfAHgc1W025uK/qiTob8AuDRMOGXPxHVpfyZMsAJeGEovDwT6NhroJ7Jmp3Vv95s2pKKnFLELLJgJiPpfQsg2p2p5NZuqhaea+JYKlpxs6mAQ9i/RCAgxOh6y7HAUv4Qo2ZJsk1iyHc4qS/+7/apk8eo/ElBQsaT4vQdE+O2mD8XIXlIuBada+sVDvbXeZYpOo2RHKUMg+M7qrbtmvDj+bmHBWznzcmUa0tEkoZGCd7kIGb5oOgVyexOEQMlPv3W/ixcZZKdIy6KN1XWSxmn/0QVLh9RThUkREtIaeyLwiaFMwt0HcQlCwJJU8enf8P9lZwznm07eOQmhficsPlWvVxXQ7Gmvbe+OgOycKQFpFP4DGQMpPvbM+jf8P2SZod/7cs+ZeA008YE21h8jfo+epwNJ7nVTSw+xTcTmBDB+I8NKUIOcxM8bTsEJf+g3DucPTZkhlsQav2YLsPQav/oKkNkOp98v1o3fLtBmthBFN72zoytLYG9p2eGsX35gyG1QQR3g6ILexsA41brvxKYgohuU/jJDPrH2IrYNtLoDn4RWJ6jvr/rtBkTuXEzUnqdhOYQmpA97b5lykp+c5KAIuQ1KF8qFVmAZRNLj4fDmxIng4gsw7tv1Fl+0ABN/8aWjM8M0YBlaCzFvEybGHp2xGXnBbwcV5jhJkUnCIwbph1RbLjSGsHYubNHyGahpzq92E9gBk5Pp9Ws5rKWhYX0SEVzWB51YP/PX6xrDDFXWIlFUaP84gTfJd0/Fr0WakyKIli+AVlV4WbnsnU8eHlXNLoAmhC5fNzV8M596qihOWFskBCrIn3HKEDfAA8Knh1d4jUSgXb36vXKJ3gk+J6woWIqVOzmA3p9+4jO30ezjE7EHAa1V1zK+ySK0EWjFKc28ir3DTFCcucs5qtgAVNRIT9Kb3gVqEasmohs7TJc+udw+fj68jWQpYW0seRTc9GSs54EcqogIDoL4jZsm1EEeMhip6MGajSsER+ypphMbgerVGgqFlCQFf4Ul2QF8itoCfvE4qTOAsydCt6KfnbFXgkcIOxwGXLjVyUqOII95d52psFMqyBCvJuCnku5xyG+KSEU/PWMQyP3buU1nPGLSid7bss14rcn3plMxjYA4GUiQqn0Zg31G6hQTPuDkdsoOh5fIpmYq7kpOzHzOWkMkM7tFVUS1TicJpAA/0Impkl5kMvwXmr8XoaukoZ5MKAuZ3r85sfGTC6C0I4mj4LENsa2ZMqdKQfnPsU9YmNVVg/Dj1leKaQSQz9jJROQm48lFcznTKjBDmdA1QG6YBvwdp11CJrY0A5HyJZa2pENf4sOs9gxANKgw97LvEQmK7eSN3mLe70mf20OdyAH91nLOUo87vO2HBmAfUTy0Bpgb4OV2IdsYkPagMkagcF8UDTLOUjPch9uGalpic5XxdJW57qr+mNiPpaRq3QmhjuC16d/Oh6GYuDu4GEwzzXe2aiETsLdSaYZpvC86PCdm6a0a4+dWPgYqaccziNvyfUGPBnhDl9NUZ1v42btvhk5m2OEffubNnAZ7Bnh7s/stwO4rwo/RDNFET/cXAaeOPoURIYKhmbUJpOp7lbKNdYVdE+wP0ODj036fW3wptCrLdGd0NFYFujtAUUP0s/bSMAeQITR89myZIdgtYCJqv14qqVvtuctnRjiRRWKAcG+An0ZnHmEYWx8sek96t1yp0fncGeDn6EBDxawHmBSjwMOE+wJMh5WHUKUXWuE9MXQLEXIt7fYHaPI5IX5yCXtcTZNKnboZzZ4AU2xJAy1bo+/TngAhL16+dwSYGi7RrYFmAEe/6xLyqqcDdIfyc9PnyC6Ly6mPhr4Md+VfDL4MhbYXTG0jeTeHWoS4LPfC9zmu3AYj4BygjIbj4LB278Z/qimG+SY3Ahn1hxxesJ3ln3ChCMD0BTobhEfMTruqH5hYe7jfZh3oPCAeXalc/r2EgsxvHdwrjHz322HGhKYBeeF4GK/R7ZDuxxC5+8xuo34d5gwIzKl5MRIKP4xTthPzG6KY5GPvM/Oa2214EkuGd9PVTLmqnzx4wX68mXzFae66z26nPAlVNwgP77+vpqlpfoIPzbu/+f2iLiFXU3T5TbzTuzQ/U34R9x7ZEGsRqngRqLl+7Cgs9RSu7z0WvmI7fk/sYmmEWMX/LSGekFyBNyeDWWwu0S3NFyuk3n9RiFp8Fh+M+vX4nm2GLLVQQmTvPx/bLfHpAjcetxZsSk+MzLsXIs9rTj+snYUpvuUlwKIH5liFs3KnQk9/LOwzoZ2ZMwW0LGQte6ZTajlneSG5nv4QosCDB0t8IvwtDMkLn8oFrfD6k4gCL7Xw1uX+S5+rBt0IJPfyvRxRSu94c8+8onpb/GQ87kyRawbcFMXmt6+XVX1Q4zkOAK24rCse/Zc6aqq0RmzQ9G+1eMKRoB7P0E5duK2Iw2uebfhuR9r+yoq9wrh4ctT4EgzCtXjnO66raVY9vJEpX3NzCG+HYzFxV9DWio9rPVL7qx08Lr5151n5dMoiLERujHIr8TMYGRRZEjxmHt568a0HFDmaFKJlFhJY3/lUPFQTq+FKeLbpaWNAay/h+ueLQpVVBDRVM+ICbjLIE5S+Y7z7yDmy45aOwoYHqDKVF9pCHM1RzaEo1qgrg4VyjNA3vCHoXtaLD298Qmyf2Tvz0DfWZD3kpUjRV2RO7AulOqiJW/yMr7EtgDsXvKmC2fYI3MRLDy1VVZCwF3iaFuj968L0tkbMX1y+3lGRDjsGINRwIendVSTaWIOCzb4uFKbsGXLKI4xYTYqOI9vN/64+0G72z9sfYixur4BBi5HzMjA55xFBmMJPOUv2CSFCHOx4OGQOS+AQeGh7NvjIU5rhIMXgzO52DsmPjyz7ED9u9J75Aim9RyLPY8/ZjiAaBGHlu88OfALe4w8SF4qKZFy83+cnq4jkp+Ifvfe3kaFHe+mPPwr+pNLibM6O1h+ZSuEfb1A+41n3TLi4IUQ/xHg30gX2lOz9SQ/zl1lWOtwEvQVy8LwqTyietM7ztH+tgA036T+mmaJHgBF6Wun1zH+Ogak7Dx3I+y3iYQ04KTUEn9nmefK/N8FQqlB5EHdJrLafg33o89cUPbmJ9YJ/UONLmw9PMMVTJWI6KfK5T23IL+iWv+ZfDElgkWonkUrO8zn7uMsgKKXHc5qDJOtvp4Vp8ZW8ZCr/Aadtji8iPNPqAAAAAElFTkSuQmCC" alt="Grupo pdc" style="height:24px;width:auto;display:block;"></div>
   <div class="rpt-title">
     <h1>REPORTE HISTÓRICO · LIQUIDACIÓN DE RUTAS</h1>
     <p>Dashboard Ejecutivo · Grupo PDC · Departamento Financiero</p>
