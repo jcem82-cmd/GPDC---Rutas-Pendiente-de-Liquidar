@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.13 | **Última actualización:** 21/08/2026 | **Estado:** Producción ✅
+**Versión vigente:** v2.14 | **Última actualización:** 21/08/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -207,7 +207,7 @@ Módulo compartido, reutilizable, que en tiempo de ejecución:
 **⚠️ Bug ya corregido (no repetir):** la primera versión de `pdc_data_bridge.js` usaba `fetch('index.html')` con ruta fija — funcionaba en la raíz pero causaba auto-fetch (self-fetch) en subcarpetas. Corregido con `PDC_MASTER_PATH`.
 
 ### 7.3 Pendiente — no conectado aún a PDCBridge
-- **Cash Today, montos en USD** (Efectivo YTD y tabla histórica mensual en Regional, tarjetas "Efectivo Jun 2026" de la pestaña "Por País"): dataset independiente (~11-20MB), no se integra por costo de performance de descargarlo en cada visita. La recomendación de un `cash_summary.json` liviano YA está implementada y en uso (ver `analytics.html` y, desde 21/08/2026, también `regional/index.html` — pero **solo para la fecha "Cash Today:" del header**, no para los montos). Conectar los montos reales requeriría ampliar `cash_summary.json` con más campos o una fuente intermedia adicional — pendiente, no autorizado aún.
+- **✅ RESUELTO (21/08/2026):** los montos en USD de Cash Today en `regional/index.html` (KPIs de Resumen, 4 tarjetas de la pestaña Cash Today, tarjetas "Efectivo" de "Por País", gráficas de tendencia/donut, tabla "Detalle Mensual") ya están conectados a datos reales. `cash_summary.json` se amplió con 3 campos nuevos (`mes_actual`, `ytd`, `serie_mensual` por país) generados en cada publicación de `cash_today.html` — ver §8.4 y `docs/02_CHANGELOG.md` [21/08/2026]. La tabla "Detalle Mensual" ahora se reconstruye dinámicamente (antes 6 filas fijas Ene-Jun; hoy tantas filas como meses lleve el año).
 - **`peru/index.html` y `regional/index.html` como dashboards completos** (más allá de los KPIs ya conectados): estos SÍ están conectados para sus KPIs principales, PERO la tabla "Resumen por País y Canal" de Regional y algunos gráficos de tendencia histórica de Perú aún usan datos parcialmente estáticos donde no hay fuente histórica disponible.
 - **⚠️ Patrón de riesgo confirmado (21/08/2026):** cualquier página que mezcle contenido en vivo (vía PDCBridge) con contenido estático en la misma vista corre el riesgo de que un reemplazo de texto genérico (ej. reemplazar "Junio 2026" por el mes actual) se aplique también sobre las secciones estáticas, generando una mezcla fecha-viva/cifra-congelada — peor que dejarlo todo estático. Ver incidencia y corrección en `docs/02_CHANGELOG.md` [21/08/2026]. Regla a seguir en futuras integraciones: cualquier reemplazo de texto por mes/fecha debe delimitarse explícitamente (por selector de página/sección) a las zonas que realmente tienen datos en vivo detrás.
 
@@ -244,6 +244,25 @@ Toda reconstrucción de `_R` vía Python (flujo alterno: usuario sube Excel a es
 1. Usar `pd.notna()` en **cada campo**, no solo en el importe — un campo de texto vacío (`Nombre usuario`) serializado sin chequeo produce `NaN` literal (inválido en JSON estricto, aunque Python lo acepta silenciosamente vía `allow_nan=True`).
 2. Validar con `json.dump(..., allow_nan=False)` para forzar un error si algo se escapa.
 3. Validar el resultado final con `JSON.parse()` en **Node**, no solo con `json.loads()` de Python — Python es permisivo con `NaN`/`Infinity`, el navegador no.
+
+### 8.5 `cash_summary.json` — esquema ampliado (21/08/2026)
+Generado dentro de `publishToGitHub()` en `cash_today.html`, en cada publicación real (aislado en `try/catch`, nunca bloquea el dataset principal si falla). Esquema actual:
+```json
+{
+  "report_date": "2026-08-20",
+  "anio": 2026,
+  "transacciones_anio": 35746,
+  "sedes": 4,
+  "modulos": 10,
+  "mes_actual": { "ym":"2026-08", "mes_abr":"Ago", "GT_usd":1519520, "GT_txn":1515, "SV_usd":1142967, "SV_txn":1665, "total_usd":2662487 },
+  "ytd": { "GT_usd":15974527, "SV_usd":15249210, "total_usd":31223737 },
+  "serie_mensual": [ { "ym":"2026-01", "mes":"Ene", "GT_usd":802611, "SV_usd":2515432, "total_usd":3318043 }, "... un objeto por cada mes desde enero hasta el mes actual" ]
+}
+```
+- **Consumidores:** `analytics.html` (campos base: `report_date`, `transacciones_anio`, etc. — sin cambios) y `regional/index.html` (todos los campos, vía `pdcApplyCashData()`).
+- **Conversión GTQ→USD:** reutiliza `_TC_MENSUAL`/`tcGTQ` — la misma fuente única de tipo de cambio de todo el dashboard, nunca una segunda fuente.
+- **`serie_mensual` es de longitud variable** (crece cada mes) — cualquier consumidor debe iterar el array, nunca asumir un número fijo de meses (la tabla "Detalle Mensual" de `regional/index.html` tenía 6 filas hardcodeadas antes de este cambio; ver incidencia en `docs/02_CHANGELOG.md` [21/08/2026]).
+- **Regla para futuras ampliaciones de este archivo:** si se agregan campos nuevos, todo consumidor debe seguir el mismo patrón de degradación segura ya establecido (`if(!cashSummary || !cashSummary.campoNuevo) return;` — nunca asumir que el campo existe, el archivo puede quedar en una versión anterior del esquema si el deploy de `cash_today.html` falla parcialmente).
 
 ---
 
