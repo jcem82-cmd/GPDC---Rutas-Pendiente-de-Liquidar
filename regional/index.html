@@ -227,16 +227,16 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
     </div>
     <div class="kc g anim" style="animation-delay:.15s">
       <div class="kc-flag">💵</div>
-      <div class="kc-label">Efectivo Recolectado · Jun</div>
-      <div class="kc-val-sm">USD 1,770,938</div>
-      <div class="kc-sub">GT: 949,926 · SV: 821,012</div>
+      <div class="kc-label" id="kpiCashMesLabel">Efectivo Recolectado · Jun</div>
+      <div class="kc-val-sm" id="kpiCashMesVal">USD 1,770,938</div>
+      <div class="kc-sub" id="kpiCashMesSub">GT: 949,926 · SV: 821,012</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--green2)"></div></div>
     </div>
     <div class="kc n anim" style="animation-delay:.2s">
       <div class="kc-flag">📈</div>
       <div class="kc-label">Efectivo YTD 2026</div>
-      <div class="kc-val-sm">USD 21,678,140</div>
-      <div class="kc-sub">GT: 10.48M · SV: 11.20M</div>
+      <div class="kc-val-sm" id="kpiCashYTDVal">USD 21,678,140</div>
+      <div class="kc-sub" id="kpiCashYTDSub">GT: 10.48M · SV: 11.20M</div>
       <div class="kc-bar"><div class="kc-bar-fill" style="width:100%;background:var(--gt1)"></div></div>
     </div>
   </div>
@@ -390,31 +390,31 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
   <div class="grid-4" style="margin-bottom:28px">
     <div class="kc g anim" style="animation-delay:.05s">
       <div class="kc-flag">🇬🇹</div>
-      <div class="kc-label">Guatemala · Jun 2026</div>
-      <div class="kc-val-sm">USD 949,926</div>
-      <div class="kc-sub">1,008 transacciones</div>
-      <div class="kc-bar"><div class="kc-bar-fill" style="width:54%;background:var(--gt1)"></div></div>
+      <div class="kc-label" id="ctGTMesLabel">Guatemala · Jun 2026</div>
+      <div class="kc-val-sm" id="ctGTMesVal">USD 949,926</div>
+      <div class="kc-sub" id="ctGTMesSub">1,008 transacciones</div>
+      <div class="kc-bar"><div class="kc-bar-fill" id="ctGTMesBar" style="width:54%;background:var(--gt1)"></div></div>
     </div>
     <div class="kc g anim" style="animation-delay:.1s">
       <div class="kc-flag">🇸🇻</div>
-      <div class="kc-label">El Salvador · Jun 2026</div>
-      <div class="kc-val-sm">USD 821,012</div>
-      <div class="kc-sub">1,090 transacciones</div>
-      <div class="kc-bar"><div class="kc-bar-fill" style="width:46%;background:var(--sv1)"></div></div>
+      <div class="kc-label" id="ctSVMesLabel">El Salvador · Jun 2026</div>
+      <div class="kc-val-sm" id="ctSVMesVal">USD 821,012</div>
+      <div class="kc-sub" id="ctSVMesSub">1,090 transacciones</div>
+      <div class="kc-bar"><div class="kc-bar-fill" id="ctSVMesBar" style="width:46%;background:var(--sv1)"></div></div>
     </div>
     <div class="kc n anim" style="animation-delay:.15s">
       <div class="kc-flag">🇬🇹</div>
       <div class="kc-label">Guatemala · YTD 2026</div>
-      <div class="kc-val-sm">USD 10,479,907</div>
-      <div class="kc-sub">Ene–Jun acumulado</div>
-      <div class="kc-bar"><div class="kc-bar-fill" style="width:48%;background:var(--gt1)"></div></div>
+      <div class="kc-val-sm" id="ctGTYTDVal">USD 10,479,907</div>
+      <div class="kc-sub" id="ctGTYTDSub">Ene–Jun acumulado</div>
+      <div class="kc-bar"><div class="kc-bar-fill" id="ctGTYTDBar" style="width:48%;background:var(--gt1)"></div></div>
     </div>
     <div class="kc n anim" style="animation-delay:.2s">
       <div class="kc-flag">🇸🇻</div>
       <div class="kc-label">El Salvador · YTD 2026</div>
-      <div class="kc-val-sm">USD 11,198,233</div>
-      <div class="kc-sub">Ene–Jun acumulado</div>
-      <div class="kc-bar"><div class="kc-bar-fill" style="width:52%;background:var(--sv1)"></div></div>
+      <div class="kc-val-sm" id="ctSVYTDVal">USD 11,198,233</div>
+      <div class="kc-sub" id="ctSVYTDSub">Ene–Jun acumulado</div>
+      <div class="kc-bar"><div class="kc-bar-fill" id="ctSVYTDBar" style="width:52%;background:var(--sv1)"></div></div>
     </div>
   </div>
 
@@ -422,7 +422,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
   <div class="grid-2" style="margin-bottom:24px">
     <div class="panel anim" style="animation-delay:.22s">
       <div class="panel-hdr">
-        <div><div class="panel-title">Efectivo Mensual por País (USD)</div><div class="panel-sub">Ene–Jun 2026</div></div>
+        <div><div class="panel-title">Efectivo Mensual por País (USD)</div><div class="panel-sub" id="ctChartRango">Ene–Jun 2026</div></div>
       </div>
       <div class="panel-body">
         <div class="chart-wrap" style="height:220px"><canvas id="chartCTMensual"></canvas></div>
@@ -441,7 +441,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
   <!-- Tabla mensual -->
   <div class="panel anim" style="animation-delay:.3s">
     <div class="panel-hdr">
-      <div><div class="panel-title">Detalle Mensual · Efectivo Recolectado (USD)</div><div class="panel-sub">Ene–Jun 2026</div></div>
+      <div><div class="panel-title">Detalle Mensual · Efectivo Recolectado (USD)</div><div class="panel-sub" id="ctTablaRango">Ene–Jun 2026</div></div>
     </div>
     <div class="panel-body" style="padding:0">
       <table class="tbl">
@@ -453,7 +453,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
             <th class="r">Total USD</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="tblDetalleMensual">
           <tr><td>Enero 2026</td><td class="r">802,611</td><td class="r">2,515,432</td><td class="r" style="font-weight:600">3,318,043</td></tr>
           <tr><td>Febrero 2026</td><td class="r">1,947,303</td><td class="r">2,205,289</td><td class="r" style="font-weight:600">4,152,592</td></tr>
           <tr><td>Marzo 2026</td><td class="r">2,300,898</td><td class="r">1,845,166</td><td class="r" style="font-weight:600">4,146,064</td></tr>
@@ -463,7 +463,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
           <tr class="total"><td>TOTAL YTD 2026</td><td class="r">10,479,907</td><td class="r">11,198,233</td><td class="r">21,678,140</td></tr>
         </tbody>
       </table>
-      <div style="padding:10px 16px;font-size:.68rem;color:var(--text2)">* Junio 2026 parcial — datos al 11/06/2026</div>
+      <div style="padding:10px 16px;font-size:.68rem;color:var(--text2)" id="ctFootnote">* Junio 2026 parcial — datos al 11/06/2026</div>
     </div>
   </div>
 </div>
@@ -483,8 +483,8 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
   <div class="grid-4" style="margin-bottom:20px">
     <div class="kc r"><div class="kc-label">Rutas Pendientes</div><div class="kc-val" id="pPaisGT_pend">136</div><div class="kc-sub" id="pPaisGT_pendSub">Jun 2026</div></div>
     <div class="kc r"><div class="kc-label">Rutas Vencidas</div><div class="kc-val" id="pPaisGT_venc">77</div><div class="kc-sub" id="pPaisGT_vencSub">56.6% de pendientes</div></div>
-    <div class="kc g"><div class="kc-label">Efectivo Jun 2026</div><div class="kc-val-sm">USD 949,926</div><div class="kc-sub">1,008 transacciones</div></div>
-    <div class="kc n"><div class="kc-label">Efectivo YTD 2026</div><div class="kc-val-sm">USD 10,479,907</div><div class="kc-sub">Ene–Jun 2026</div></div>
+    <div class="kc g"><div class="kc-label">Efectivo Jun 2026</div><div class="kc-val-sm" id="pPaisGT_cashVal">USD 949,926</div><div class="kc-sub" id="pPaisGT_cashSub">1,008 transacciones</div></div>
+    <div class="kc n"><div class="kc-label">Efectivo YTD 2026</div><div class="kc-val-sm" id="pPaisGT_cashYTDVal">USD 10,479,907</div><div class="kc-sub" id="pPaisGT_cashYTDSub">Ene–Jun 2026</div></div>
   </div>
 
   <!-- EL SALVADOR -->
@@ -497,8 +497,8 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
   <div class="grid-4" style="margin-bottom:20px">
     <div class="kc r"><div class="kc-label">Rutas Pendientes</div><div class="kc-val" id="pPaisSV_pend">6</div><div class="kc-sub" id="pPaisSV_pendSub">Jun 2026</div></div>
     <div class="kc r"><div class="kc-label">Rutas Vencidas</div><div class="kc-val" id="pPaisSV_venc">6</div><div class="kc-sub" id="pPaisSV_vencSub">100% de pendientes</div></div>
-    <div class="kc g"><div class="kc-label">Efectivo Jun 2026</div><div class="kc-val-sm">USD 821,012</div><div class="kc-sub">1,090 transacciones</div></div>
-    <div class="kc n"><div class="kc-label">Efectivo YTD 2026</div><div class="kc-val-sm">USD 11,198,233</div><div class="kc-sub">Ene–Jun 2026</div></div>
+    <div class="kc g"><div class="kc-label">Efectivo Jun 2026</div><div class="kc-val-sm" id="pPaisSV_cashVal">USD 821,012</div><div class="kc-sub" id="pPaisSV_cashSub">1,090 transacciones</div></div>
+    <div class="kc n"><div class="kc-label">Efectivo YTD 2026</div><div class="kc-val-sm" id="pPaisSV_cashYTDVal">USD 11,198,233</div><div class="kc-sub" id="pPaisSV_cashYTDSub">Ene–Jun 2026</div></div>
   </div>
 
   <!-- PERÚ -->
@@ -541,6 +541,8 @@ var D = {
   cashMonths: ['Ene','Feb','Mar','Abr','May','Jun*'],
   cashGT: [802611, 1947303, 2300898, 2105217, 2373953, 949926],
   cashSV: [2515432, 2205289, 1845166, 1833244, 1978090, 821012],
+  cashYTD_GT: 10479907,
+  cashYTD_SV: 11198233,
   /* Rutas tendencia vencidas — HOTFIX 23/07/2026: reemplazado con cierres mensuales
      reales proporcionados por Charly (jun-25 a jul-26). Los valores anteriores
      [4155,6672,7080,6543,6665,3352] eran de referencia/placeholder, no cierres reales. */
@@ -611,7 +613,7 @@ function renderCharts(page){
       type:'doughnut',
       data:{
         labels:['🇬🇹 Guatemala','🇸🇻 El Salvador'],
-        datasets:[{ data:[10479907,11198233], backgroundColor:[C.gt1,C.sv1], borderWidth:0, hoverOffset:8 }]
+        datasets:[{ data:[D.cashYTD_GT,D.cashYTD_SV], backgroundColor:[C.gt1,C.sv1], borderWidth:0, hoverOffset:8 }]
       },
       options:{
         responsive:true, maintainAspectRatio:false,
@@ -688,13 +690,13 @@ function renderCharts(page){
       type:'doughnut',
       data:{
         labels:['🇬🇹 Guatemala','🇸🇻 El Salvador'],
-        datasets:[{ data:[10479907,11198233], backgroundColor:[C.gt1,C.sv1], borderWidth:0, hoverOffset:8 }]
+        datasets:[{ data:[D.cashYTD_GT,D.cashYTD_SV], backgroundColor:[C.gt1,C.sv1], borderWidth:0, hoverOffset:8 }]
       },
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'65%',
         plugins:{
           legend:{ position:'bottom', labels:{ font:{family:"'Inter',sans-serif",size:11}, color:C.text2, padding:16 } },
-          tooltip:{ callbacks:{ label:function(ctx){ return ctx.label+': '+fmtUSD(ctx.raw)+' ('+((ctx.raw/21678140)*100).toFixed(1)+'%)'; } } }
+          tooltip:{ callbacks:{ label:function(ctx){ var tot=D.cashYTD_GT+D.cashYTD_SV; return ctx.label+': '+fmtUSD(ctx.raw)+' ('+(tot?(ctx.raw/tot*100):0).toFixed(1)+'%)'; } } }
         }
       }
     });
@@ -883,6 +885,97 @@ function pdcFmtRango(dtA, dtB){
   }
   return pdcFmtFecha(lo)+' – '+pdcFmtFecha(hi);
 }
+
+/* HOTFIX 21/08/2026 (segunda parte del RCA de Charly — "todo debe estar
+   actualizado y en sintonia, nada congelado"): hasta ahora los MONTOS de
+   Cash Today en este dashboard (KPIs, graficas, tabla mensual) eran 100%
+   referencia estatica de junio — la unica limitacion documentada que
+   quedaba pendiente tras el fix de fechas de esta misma sesion. Se resuelve
+   consumiendo los campos nuevos de cash_summary.json (mes_actual/ytd/
+   serie_mensual), generados en cash_today.html en cada publicacion real
+   (ver docs/02_CHANGELOG.md). Aplica el mismo criterio de degradacion
+   segura que pdcApplyFechas: si cash_summary.json no trae estos campos
+   (version vieja del archivo, o fetch fallido), esta funcion no hace nada
+   y se conservan los valores de referencia — nunca rompe la vista. */
+function pdcApplyCashData(cashSummary){
+  if(!cashSummary || !cashSummary.mes_actual || !cashSummary.ytd || !cashSummary.serie_mensual) return;
+  var mesA = cashSummary.mes_actual, ytd = cashSummary.ytd, serie = cashSummary.serie_mensual;
+  var fmtN = function(n){ return Math.round(n).toLocaleString('es-GT'); };
+  var fmtUSDlbl = function(n){ return 'USD '+fmtN(n); };
+  var setTxt2 = function(id, val){ var el=document.getElementById(id); if(el) el.textContent = val; };
+  var setBar = function(id, pct){ var el=document.getElementById(id); if(el) el.style.width = Math.max(0,Math.min(100,pct))+'%'; };
+
+  /* Series para las 2 graficas de tendencia (comparten D.cashMonths/cashGT/cashSV) */
+  D.cashMonths = serie.map(function(s){ return s.mes; });
+  D.cashGT = serie.map(function(s){ return s.GT_usd; });
+  D.cashSV = serie.map(function(s){ return s.SV_usd; });
+  D.cashYTD_GT = ytd.GT_usd;
+  D.cashYTD_SV = ytd.SV_usd;
+
+  var mesLargoAnio = (function(){
+    var LARGO=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    var idx = MESES_ABR_REG.indexOf(mesA.mes_abr);
+    return idx>-1 ? LARGO[idx]+' '+mesA.ym.substring(0,4) : mesA.mes_abr+' '+mesA.ym.substring(0,4);
+  })();
+  var anioTxt = mesA.ym.substring(0,4);
+  var rangoTxt = 'Ene–'+mesA.mes_abr+' '+anioTxt;
+
+  /* Resumen (page-resumen) */
+  setTxt2('kpiCashMesLabel', 'Efectivo Recolectado · '+mesA.mes_abr);
+  setTxt2('kpiCashMesVal', fmtUSDlbl(mesA.total_usd));
+  setTxt2('kpiCashMesSub', 'GT: '+fmtN(mesA.GT_usd)+' · SV: '+fmtN(mesA.SV_usd));
+  setTxt2('kpiCashYTDVal', fmtUSDlbl(ytd.total_usd));
+  setTxt2('kpiCashYTDSub', 'GT: '+(ytd.GT_usd/1e6).toFixed(2)+'M · SV: '+(ytd.SV_usd/1e6).toFixed(2)+'M');
+
+  /* Pestaña Cash Today — 4 tarjetas KPI */
+  var pctGTMes = mesA.total_usd ? (mesA.GT_usd/mesA.total_usd*100) : 0;
+  var pctYTD_GT = ytd.total_usd ? (ytd.GT_usd/ytd.total_usd*100) : 0;
+  setTxt2('ctGTMesLabel', 'Guatemala · '+mesLargoAnio);
+  setTxt2('ctGTMesVal', fmtUSDlbl(mesA.GT_usd));
+  setTxt2('ctGTMesSub', fmtN(mesA.GT_txn)+' transacciones');
+  setBar('ctGTMesBar', pctGTMes);
+  setTxt2('ctSVMesLabel', 'El Salvador · '+mesLargoAnio);
+  setTxt2('ctSVMesVal', fmtUSDlbl(mesA.SV_usd));
+  setTxt2('ctSVMesSub', fmtN(mesA.SV_txn)+' transacciones');
+  setBar('ctSVMesBar', 100-pctGTMes);
+  setTxt2('ctGTYTDVal', fmtUSDlbl(ytd.GT_usd));
+  setTxt2('ctGTYTDSub', rangoTxt+' acumulado');
+  setBar('ctGTYTDBar', pctYTD_GT);
+  setTxt2('ctSVYTDVal', fmtUSDlbl(ytd.SV_usd));
+  setTxt2('ctSVYTDSub', rangoTxt+' acumulado');
+  setBar('ctSVYTDBar', 100-pctYTD_GT);
+  setTxt2('ctChartRango', rangoTxt);
+  setTxt2('ctTablaRango', rangoTxt);
+
+  /* Pestaña Por País — tarjetas de Efectivo GT/SV */
+  setTxt2('pPaisGT_cashVal', fmtUSDlbl(mesA.GT_usd));
+  setTxt2('pPaisGT_cashSub', fmtN(mesA.GT_txn)+' transacciones');
+  setTxt2('pPaisGT_cashYTDVal', fmtUSDlbl(ytd.GT_usd));
+  setTxt2('pPaisGT_cashYTDSub', rangoTxt);
+  setTxt2('pPaisSV_cashVal', fmtUSDlbl(mesA.SV_usd));
+  setTxt2('pPaisSV_cashSub', fmtN(mesA.SV_txn)+' transacciones');
+  setTxt2('pPaisSV_cashYTDVal', fmtUSDlbl(ytd.SV_usd));
+  setTxt2('pPaisSV_cashYTDSub', rangoTxt);
+
+  /* Tabla "Detalle Mensual" — reconstruida completa (el numero de meses
+     varia segun el mes del año, ya no son siempre 6 filas fijas) */
+  var LARGO_MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  var esMesActual = function(ym){ return ym === mesA.ym; };
+  var filas = serie.map(function(s){
+    var idx = MESES_ABR_REG.indexOf(s.mes);
+    var nombre = (idx>-1 ? LARGO_MESES[idx] : s.mes)+' '+s.ym.substring(0,4);
+    if(esMesActual(s.ym)) nombre += ' *';
+    return '<tr><td>'+nombre+'</td><td class="r">'+fmtN(s.GT_usd)+'</td><td class="r">'+fmtN(s.SV_usd)+
+           '</td><td class="r" style="font-weight:600">'+fmtN(s.total_usd)+'</td></tr>';
+  }).join('');
+  filas += '<tr class="total"><td>TOTAL YTD '+anioTxt+'</td><td class="r">'+fmtN(ytd.GT_usd)+
+           '</td><td class="r">'+fmtN(ytd.SV_usd)+'</td><td class="r">'+fmtN(ytd.total_usd)+'</td></tr>';
+  var tbody = document.getElementById('tblDetalleMensual');
+  if(tbody) tbody.innerHTML = filas;
+
+  var fnEl = document.getElementById('ctFootnote');
+  if(fnEl) fnEl.textContent = '* '+mesLargoAnio+' parcial — datos al '+(cashSummary.report_date || mesA.ym);
+}
 function pdcApplyFechas(kpiTotals, cashSummary){
   var dtRutas = kpiTotals ? pdcParseFecha(kpiTotals.report_date) : null;
   var dtCash = cashSummary ? pdcParseFecha(cashSummary.report_date) : null;
@@ -940,6 +1033,7 @@ function pdcApplyFechas(kpiTotals, cashSummary){
       try{
         pdcApplyLiveData(data);
         pdcApplyFechas(data.KPI_TOTALS, cashSummary);
+        pdcApplyCashData(cashSummary);
       }catch(e){ console.warn('PDCBridge: error aplicando datos en vivo, se usan valores de referencia.', e); }
       startRender();
     }).catch(function(err){
