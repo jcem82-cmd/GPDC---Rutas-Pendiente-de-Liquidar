@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.11 | **Última actualización:** 20/08/2026 | **Estado:** Producción ✅
+**Versión vigente:** v2.12 | **Última actualización:** 21/08/2026 | **Estado:** Producción ✅
 
 ---
 
@@ -25,7 +25,7 @@ PDC Analytics Center
 │
 ├── index.html              ← Dashboard Liquidación de Rutas (fuente única de verdad) · filtro Mundos (Vikingo/PDC Brands)
 ├── historico.html          ← Histórico de Rutas · solo lectura · filtro Mundos (Vikingo/PDC Brands) también aplicado
-├── historico_index.json    ← Manifiesto de snapshots publicados (mantenimiento manual, NUEVO 10/08)
+├── historico_index.json    ← Manifiesto de snapshots publicados (auto-regenerado por Action, NUEVO 10/08, automatizado 21/08)
 ├── cash_today.html         ← Dashboard Cash Today · dataset propio (no conectado a PDCBridge)
 ├── admin.html              ← Panel administrativo · chat Supabase
 ├── wrangler.jsonc          ← Config del espejo Cloudflare Workers (assets estáticos, NUEVO 06/08)
@@ -78,7 +78,7 @@ Consulta snapshots pasados de `index.html` directamente del historial de commits
 |---|---|
 | Acceso | Requiere `"historico"` en el arreglo `dashboards` del perfil del usuario en Supabase (no se agrega automáticamente a nadie) |
 | Fuente de datos | `raw.githubusercontent.com/{sha}/index.html` por snapshot — NO la API de commits de GitHub (límite 60/hora sin auth, riesgo real con varios usuarios en la misma IP de oficina) |
-| Índice de snapshots | `historico_index.json` — **mantenimiento manual**, no se regenera solo con cada publicación de Excel |
+| Índice de snapshots | `historico_index.json` — **auto-regenerado** por `.github/workflows/update-historico-index.yml` tras cada commit "Actualizacion..." a `index.html` (desde 21/08/2026; antes era mantenimiento manual, causó incidencia de 11 días desactualizado) |
 | Filtros del detalle | País, Estado (Facturación), Estado Real (Despacho) — combinables |
 | Exportar PDF | Incluye KPIs, tarjetas por país, gráficas (capturadas como imagen vía `Chart.js.toBase64Image()`) y detalle de rutas completo según filtros activos |
 
