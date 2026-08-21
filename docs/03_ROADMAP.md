@@ -33,6 +33,7 @@
 ---
 
 ## 🔜 PENDIENTE — Sesión de arquitectura (próxima semana, autorizada por Charly)
+- [ ] Automatizar regeneración de `historico_index.json` vía GitHub Action tras cada commit "Actualizacion dashboard..." — evita depender de mantenimiento manual (causó incidencia del 21/08/2026: manifiesto desactualizado 11 días, 14 publicaciones invisibles en historico.html)
 
 - [ ] Ramas `main` / `develop` / `feature-*` (código de plataforma; publicaciones diarias de Excel siguen escribiendo directo a `main`)
 - [ ] Respaldo automático programado del repositorio (posible destino: Supabase Storage)
