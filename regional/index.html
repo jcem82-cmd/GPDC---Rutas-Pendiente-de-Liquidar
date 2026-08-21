@@ -201,11 +201,11 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
 
   <div class="update-wrap">
     <span class="update-lbl">Datos al:</span>
-    <span class="update-val">24 Jun 2026</span>
+    <span class="update-val" id="fechaDatosAl">24 Jun 2026</span>
     <span class="update-lbl" style="margin-left:8px">Rutas:</span>
-    <span class="update-val">18 Jun 2026</span>
+    <span class="update-val" id="fechaRutasResumen">18 Jun 2026</span>
     <span class="update-lbl" style="margin-left:8px">Cash Today:</span>
-    <span class="update-val">21 Jun 2026</span>
+    <span class="update-val" id="fechaCashResumen">21 Jun 2026</span>
   </div>
 
   <!-- Hero KPIs Globales -->
@@ -278,7 +278,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
 <div class="page" id="page-rutas">
 
   <div class="update-wrap">
-    <span class="update-lbl">Datos al:</span><span class="update-val">24 Jun 2026</span>
+    <span class="update-lbl">Datos al:</span><span class="update-val" id="fechaDatosAlRutas">24 Jun 2026</span>
   </div>
 
   <div class="sec-hdr"><span class="sec-title">Liquidación de Rutas · Resumen Regional</span><span class="sec-sub">Estado de rutas pendientes de liquidar por país · Junio 2026</span></div>
@@ -382,7 +382,7 @@ body{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:var(--bg
 <div class="page" id="page-cashtoday">
 
   <div class="update-wrap">
-    <span class="update-lbl">Datos al:</span><span class="update-val">21 Jun 2026</span>
+    <span class="update-lbl">Datos al:</span><span class="update-val" id="fechaDatosAlCash">21 Jun 2026</span>
   </div>
 
   <div class="sec-hdr"><span class="sec-title">Cash Today · Recolección ATM</span><span class="sec-sub">Efectivo depositado en cajeros por país · Junio 2026</span></div>
@@ -836,6 +836,46 @@ function pdcApplyLiveData(data){
   setTxt('canalTOT_venc', totalVenc);
 }
 
+/* HOTFIX 21/08/2026: RCA - las etiquetas "Datos al / Rutas / Cash Today" del
+   encabezado (page-resumen, page-rutas, page-cashtoday) estaban 100%
+   hardcodeadas en el HTML — nunca se conectaron a PDCBridge ni a ningun dato
+   en vivo, a diferencia de las tarjetas KPI de esta misma pagina. Quedaron
+   congeladas en "Jun 2026" mientras el dashboard se seguia publicando con
+   normalidad (reportado por Charly 21/08/2026). Se conectan aqui:
+   - Rutas -> KPI_TOTALS.report_date (ya disponible via PDCBridge, sin fetch adicional)
+   - Cash Today -> cash_summary.json (archivo liviano ~150 bytes, mismo patron
+     que ya usa analytics.html — evita cargar cash_today.html completo, ~11MB,
+     solo para leer una fecha)
+   - "Datos al" (resumen) -> la mas reciente de las dos anteriores */
+var MESES_ABR_REG = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+function pdcParseFecha(str){
+  if(!str) return null;
+  var s = String(str).trim(), m;
+  if((m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/))) return new Date(Date.UTC(+m[1], +m[2]-1, +m[3])); // YYYY-MM-DD
+  if((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/))) return new Date(Date.UTC(+m[3], +m[2]-1, +m[1])); // DD/MM/YYYY
+  return null;
+}
+function pdcFmtFecha(dt){
+  return dt ? (dt.getUTCDate()+' '+MESES_ABR_REG[dt.getUTCMonth()]+' '+dt.getUTCFullYear()) : null;
+}
+function pdcApplyFechas(kpiTotals, cashSummary){
+  var dtRutas = kpiTotals ? pdcParseFecha(kpiTotals.report_date) : null;
+  var dtCash = cashSummary ? pdcParseFecha(cashSummary.report_date) : null;
+  var dtMax = (dtRutas && dtCash) ? (dtRutas > dtCash ? dtRutas : dtCash) : (dtRutas || dtCash);
+
+  var setFecha = function(id, dt){
+    var txt = pdcFmtFecha(dt);
+    if(!txt) return; // sin dato valido -> se conserva el valor de referencia, nunca se rompe la vista
+    var el = document.getElementById(id);
+    if(el) el.textContent = txt;
+  };
+  setFecha('fechaDatosAl', dtMax);
+  setFecha('fechaRutasResumen', dtRutas);
+  setFecha('fechaCashResumen', dtCash);
+  setFecha('fechaDatosAlRutas', dtRutas);
+  setFecha('fechaDatosAlCash', dtCash);
+}
+
 /* ══ INIT ══ */
 (function(){
   /* Usuario en header */
@@ -860,8 +900,19 @@ function pdcApplyLiveData(data){
   }
 
   if(typeof PDCBridge !== 'undefined'){
-    PDCBridge.load().then(function(data){
-      try{ pdcApplyLiveData(data); }catch(e){ console.warn('PDCBridge: error aplicando datos en vivo, se usan valores de referencia.', e); }
+    /* cash_summary.json es independiente de PDCBridge (Cash Today es un
+       dataset separado) — se resuelve con null en caso de fallo para que
+       nunca bloquee la actualizacion de los datos de Rutas. */
+    var cashSummaryPromise = fetch('../cash_summary.json?t='+Date.now())
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .catch(function(){ return null; });
+
+    Promise.all([PDCBridge.load(), cashSummaryPromise]).then(function(results){
+      var data = results[0], cashSummary = results[1];
+      try{
+        pdcApplyLiveData(data);
+        pdcApplyFechas(data.KPI_TOTALS, cashSummary);
+      }catch(e){ console.warn('PDCBridge: error aplicando datos en vivo, se usan valores de referencia.', e); }
       startRender();
     }).catch(function(err){
       console.warn('PDCBridge: no se pudo leer index.html en vivo, se muestran valores de referencia.', err);
