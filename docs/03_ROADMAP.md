@@ -1,8 +1,8 @@
 # 03 — ROADMAP
 ## PDC Analytics Center · Plan de Evolución
 
-**Estado actual: v2.14 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
-**Última actualización:** 21/08/2026 (fix + automatización historico_index.json)
+**Estado actual: v2.15 ESTABLE (Rutas) / v2.16 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
+**Última actualización:** 21/08/2026 (fix regional/index.html - fechas congeladas)
 
 ---
 
@@ -44,6 +44,19 @@
   - Permiso `default_workflow_permissions` del repo elevado a `write` (era `read`) — requisito técnico para que el GITHUB_TOKEN del Action pueda hacer commit
 - [x] Validado con simulación local en git (repo temporal, manifiesto real de producción): publicación real se agrega correctamente, commit de código se ignora correctamente, re-ejecución del mismo push es idempotente (no duplica)
 - [ ] Pendiente: confirmar en la próxima publicación real de Excel de Charly que el flujo end-to-end funciona en producción (primer disparo en vivo)
+
+---
+
+## ✅ FASE 15 — Corrección de fechas/períodos congelados en regional/index.html (COMPLETADA · v2.13 · 21/08/2026)
+
+- [x] Corrección de incidencia reportada por Charly: header "Datos al/Rutas/Cash Today" congelado en Jun 2026
+- [x] RCA ampliado (auditoría preventiva de todos los dashboards con sync en vivo): confirmado que `peru.html`, `elsalvador.html` y `analytics.html` NO tenían el bug
+- [x] Conectadas las 5 etiquetas de fecha del header a datos reales (`KPI_TOTALS.report_date` + `cash_summary.json`)
+- [x] Corregido hallazgo adicional de mayor riesgo: el reemplazo de mes se aplicaba también a la pestaña Cash Today (sin datos en vivo), generando mezcla fecha-viva/cifra-estática — ahora limitado explícitamente a `#page-resumen`/`#page-rutas`
+- [x] Cubierto formato corto "Jun 2026" (hueco que ya se había corregido en Perú/El Salvador el 23/07 pero nunca se replicó en Regional)
+- [x] Formato de mes corregido en pestaña "Por País" (antes mostraba `"2026-08"` crudo)
+- [x] Pie de página conectado al rango real de fechas
+- [ ] **Pendiente, fuera de alcance de esta corrección, requiere autorización:** conectar los montos en USD de Cash Today dentro de `regional/index.html` (tabla histórica mensual + tarjetas "Efectivo" en "Por País") a datos reales — hoy siguen siendo referencia estática de junio. Requeriría ampliar `cash_summary.json` con más campos (desglose por país/mes) o una fuente intermedia adicional.
 
 ---
 
