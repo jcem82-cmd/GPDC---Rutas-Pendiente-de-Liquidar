@@ -1,0 +1,48 @@
+name: Actualizar Indice Historico
+
+# Corrige la incidencia del 21/08/2026: historico_index.json era un
+# manifiesto de mantenimiento manual que se desactualizo 11 dias (14
+# publicaciones de Excel invisibles en historico.html). Ver docs/02_CHANGELOG.md.
+#
+# Este workflow regenera historico_index.json automaticamente cada vez que
+# llega un push a index.html cuyo commit es una publicacion real de Excel
+# (mensaje "Actualizacion..." generado por publishToGitHub()). Los commits
+# de codigo (feat/fix/refactor/docs) NO generan una entrada nueva - mismo
+# criterio que ya se usaba en las regeneraciones manuales.
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'index.html'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: historico-index-update
+  cancel-in-progress: false
+
+jobs:
+  update-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (historial completo para poder inspeccionar commits)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Regenerar historico_index.json si hubo publicaciones de Excel
+        run: python3 .github/scripts/update_historico_index.py
+
+      - name: Commit y push si el manifiesto cambio
+        run: |
+          if git diff --quiet historico_index.json; then
+            echo "Sin cambios en historico_index.json, no se hace commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add historico_index.json
+          git commit -m "chore(historico_index): auto-regenerado tras publicacion de Excel [skip ci]"
+          git push
