@@ -90,6 +90,32 @@
 
 ---
 
+## 📅 AGENDADO — Lunes 24/08/2026: Unificación de diseño/arquitectura de `cartas_salida.html`
+
+**Clasificación preliminar:** Refactorización visual (no de lógica de negocio) — requiere confirmación de alcance exacto al inicio de esa sesión, según protocolo estándar.
+
+**RCA del hallazgo (21/08/2026):** `cartas_salida.html` fue construido con un sistema de diseño propio, independiente del resto de la plataforma:
+
+| Aspecto | `cartas_salida.html` (actual) | Resto de la plataforma (estándar) |
+|---|---|---|
+| Navy | `--navy:#0f2340` | `--navy:#00216f` (oficial, post-rebranding) |
+| Sky/celeste | No existe la variable | `--sky:#7dbfe6` (oficial) |
+| Semánticos | `--blue:#2563eb` `--red:#dc2626` `--green:#16a34a` `--amber:#d97706` (nomenclatura propia) | `--rb/--gb/--yb` + `--rbg/--gbg/--ybg` (nomenclatura compartida) |
+| Tipografía | Stack de sistema (`-apple-system, Segoe UI, Roboto...`), sin fuente web | Inter (cuerpo/tablas) + Poppins (títulos, post-rebranding) |
+| `border-radius` / `shadow` | `10px` / sombra propia | `12px` / `--sh`/`--shl` compartidas |
+| Logo | ✅ Ya actualizado al oficial (21/08/2026) | ✅ |
+
+**Por qué no se corrigió el 21/08:** cambiar nomenclatura de variables (`--blue`→`--sky` o equivalente) implica tocar cada uso individual en un archivo de 3.4MB con datos reales de GT+ESV+PE — no es un simple swap de valor hex como en los demás archivos. Requiere RCA completo y mapeo variable-por-variable antes de escribir una sola línea (REGLA de mínima modificación no aplica igual aquí: es refactorización real, mayor riesgo).
+
+**Alcance propuesto para el lunes (a confirmar con Charly al inicio de la sesión):**
+- [ ] Mapear cada variable propia (`--blue`, `--red`, `--green`, `--amber`, `--navy`, `--navy2`) a su equivalente en el esquema estándar, o decidir cuáles quedan (algunas pueden no tener equivalente 1:1 — p.ej. no hay `--amber` en el esquema estándar, existe `--yb`/`--ybg`)
+- [ ] Unificar tipografía: agregar Inter (cuerpo) + Poppins (títulos), igual que el resto
+- [ ] Unificar `border-radius`/`shadow` a `--r`/`--rl`/`--sh`/`--shl`
+- [ ] `node --check` + simulación funcional contra datos reales de Cartas de Salida (GT+ESV+PE) antes de cualquier deploy — riesgo de romper visualización de estados/semáforos si un color semántico queda mal mapeado
+- [ ] Validar contraste WCAG de cada combinación nueva antes de aplicar (mismo criterio usado el 21/08)
+
+---
+
 ## 🔜 PENDIENTE — Sesión de arquitectura (próxima semana, autorizada por Charly)
 
 - [ ] Ramas `main` / `develop` / `feature-*` (código de plataforma; publicaciones diarias de Excel siguen escribiendo directo a `main`)
