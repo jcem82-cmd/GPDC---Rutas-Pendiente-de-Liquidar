@@ -1,22 +1,22 @@
 {
-  "report_date": "2026-08-20",
+  "report_date": "2026-08-22",
   "anio": 2026,
-  "transacciones_anio": 35746,
+  "transacciones_anio": 36145,
   "sedes": 4,
   "modulos": 10,
   "mes_actual": {
     "ym": "2026-08",
     "mes_abr": "Ago",
-    "GT_usd": 1519520,
-    "GT_txn": 1515,
-    "SV_usd": 1142967,
-    "SV_txn": 1665,
-    "total_usd": 2662487
+    "GT_usd": 1689510,
+    "GT_txn": 1700,
+    "SV_usd": 1297573,
+    "SV_txn": 1879,
+    "total_usd": 2987083
   },
   "ytd": {
-    "GT_usd": 15974527,
-    "SV_usd": 15249210,
-    "total_usd": 31223737
+    "GT_usd": 16144517,
+    "SV_usd": 15403817,
+    "total_usd": 31548334
   },
   "serie_mensual": [
     {
@@ -71,9 +71,9 @@
     {
       "ym": "2026-08",
       "mes": "Ago",
-      "GT_usd": 1519520,
-      "SV_usd": 1142967,
-      "total_usd": 2662487
+      "GT_usd": 1689510,
+      "SV_usd": 1297573,
+      "total_usd": 2987083
     }
   ]
 }
