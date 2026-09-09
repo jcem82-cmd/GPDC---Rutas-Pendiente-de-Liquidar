@@ -271,15 +271,7 @@ tbody tr:last-child td{border-bottom:none}
 </head>
 <body>
 <script>
-/* ══ AUTH BRIDGE v2.0 — Cash Today ══ (PREVIEW: sesión de prueba auto-inyectada,
-   SOLO para revisión local — este bloque NO debe publicarse en GitHub) */
-(function(){
-  if(!sessionStorage.getItem('pdc_session')){
-    sessionStorage.setItem('pdc_session', JSON.stringify({
-      email:'preview@pdc.com', nombre:'Vista Previa (local)', rol:'admin', pais:'', acceso:[]
-    }));
-  }
-})();
+/* ══ AUTH BRIDGE v2.0 — Cash Today ══ */
 (function(){
   var s=null;
   try{s=JSON.parse(sessionStorage.getItem('pdc_session'));}catch(e){}
