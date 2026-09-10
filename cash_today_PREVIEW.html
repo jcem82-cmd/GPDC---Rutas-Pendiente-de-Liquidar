@@ -4612,12 +4612,30 @@ function renderVolChartOnly(){
     document.getElementById('vol-chart-wrap').innerHTML='<p style="color:#bbb;font-size:12px;padding:16px;">Sin datos.</p>';
     return;
   }
-  const maxV=Math.max(...allV);
 
-  const W=900,H=340,PL=72,PR=24,PT=36,PB=58;
+  // ── Doble eje Y: separa sedes de mayor volumen (eje izquierdo) de sedes de
+  // menor volumen (eje derecho, escala propia) para que ambos grupos sean
+  // legibles al mismo tiempo — antes compartían una sola escala lineal y las
+  // sedes pequeñas (ej. Xela, San Miguel) quedaban comprimidas y con
+  // etiquetas superpuestas junto a sedes mucho más grandes (CDA, Santa Tecla).
+  const seriesInfo = series.map(s=>({s, max:Math.max(0,...s.vals.map(p=>p.v).filter(v=>v!==null))}));
+  const globalMax = Math.max(...seriesInfo.map(x=>x.max));
+  seriesInfo.forEach(x=>{ x.s.axis = (x.max < globalMax*0.5) ? 'right' : 'left'; });
+  const hasRight = seriesInfo.some(x=>x.s.axis==='right');
+  const hasLeft  = seriesInfo.some(x=>x.s.axis==='left');
+  // Si por algún motivo todo cae en un solo grupo (ej. valores muy parejos),
+  // se usa un único eje (comportamiento original) — sin eje derecho vacío.
+  if(!hasLeft || !hasRight){ seriesInfo.forEach(x=>{ x.s.axis='left'; }); }
+  const leftMax  = Math.max(1, ...seriesInfo.filter(x=>x.s.axis==='left').map(x=>x.max));
+  const rightMax = Math.max(1, ...seriesInfo.filter(x=>x.s.axis==='right').map(x=>x.max));
+  const showRightAxis = seriesInfo.some(x=>x.s.axis==='right');
+
+  const W=900,H=340,PL=72,PR=showRightAxis?66:24,PT=36,PB=58;
   const cW=W-PL-PR,cH=H-PT-PB,xStep=cW/11;
   const xP=m=>PL+(m-1)*xStep;
-  const yP=v=>PT+cH-(v/(maxV||1))*cH;
+  const yPLeft=v=>PT+cH-(v/(leftMax||1))*cH;
+  const yPRight=v=>PT+cH-(v/(rightMax||1))*cH;
+  const yP=(s,v)=> s.axis==='right' ? yPRight(v) : yPLeft(v);
 
   function fmtK(v){
     if(v>=1000000) return (v/1000000).toFixed(2)+'M';
@@ -4629,10 +4647,15 @@ function renderVolChartOnly(){
   svg+=`<rect x="${PL}" y="${PT}" width="${cW}" height="${cH}" rx="4" fill="#FAFBFF"/>`;
 
   for(let i=0;i<=5;i++){
-    const v=maxV*i/5, y=yP(v);
+    const vL=leftMax*i/5, y=yPLeft(vL);
     svg+=`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="${i===0?'#C0C8E0':'#E4E8F4'}" stroke-width="${i===0?1.5:1}"/>`;
-    const lbl=metric==='monto'?(v>=1000000?(v/1000000).toFixed(1)+'M':(v/1000).toFixed(0)+'K'):Math.round(v);
-    svg+=`<text x="${PL-8}" y="${y+4}" text-anchor="end" font-size="10.5" fill="#7A8299" font-weight="500">${metric==='monto'?'$':''}${lbl}</text>`;
+    const lblL=metric==='monto'?(vL>=1000000?(vL/1000000).toFixed(1)+'M':(vL/1000).toFixed(0)+'K'):Math.round(vL);
+    svg+=`<text x="${PL-8}" y="${y+4}" text-anchor="end" font-size="10.5" fill="#7A8299" font-weight="500">${metric==='monto'?'$':''}${lblL}</text>`;
+    if(showRightAxis){
+      const vR=rightMax*i/5;
+      const lblR=metric==='monto'?(vR>=1000000?(vR/1000000).toFixed(1)+'M':(vR/1000).toFixed(0)+'K'):Math.round(vR);
+      svg+=`<text x="${W-PR+8}" y="${y+4}" text-anchor="start" font-size="10.5" fill="#9AA3BD" font-weight="500">${metric==='monto'?'$':''}${lblR}</text>`;
+    }
   }
   for(let m=1;m<=12;m++){
     const x=xP(m);
@@ -4643,10 +4666,10 @@ function renderVolChartOnly(){
   series.forEach(s=>{
     const pts=s.vals.filter(p=>p.v!==null);
     if(pts.length<2) return;
-    let ap=`M${xP(pts[0].m)},${yP(pts[0].v)}`;
+    let ap=`M${xP(pts[0].m)},${yP(s,pts[0].v)}`;
     for(let i=1;i<pts.length;i++){
       const cx=(xP(pts[i-1].m)+xP(pts[i].m))/2;
-      ap+=` C${cx},${yP(pts[i-1].v)} ${cx},${yP(pts[i].v)} ${xP(pts[i].m)},${yP(pts[i].v)}`;
+      ap+=` C${cx},${yP(s,pts[i-1].v)} ${cx},${yP(s,pts[i].v)} ${xP(pts[i].m)},${yP(s,pts[i].v)}`;
     }
     ap+=` L${xP(pts[pts.length-1].m)},${PT+cH} L${xP(pts[0].m)},${PT+cH} Z`;
     svg+=`<path d="${ap}" fill="${s.fill}"/>`;
@@ -4655,10 +4678,10 @@ function renderVolChartOnly(){
   series.forEach(s=>{
     const pts=s.vals.filter(p=>p.v!==null);
     if(!pts.length) return;
-    let pd=`M${xP(pts[0].m)},${yP(pts[0].v)}`;
+    let pd=`M${xP(pts[0].m)},${yP(s,pts[0].v)}`;
     for(let i=1;i<pts.length;i++){
       const cx=(xP(pts[i-1].m)+xP(pts[i].m))/2;
-      pd+=` C${cx},${yP(pts[i-1].v)} ${cx},${yP(pts[i].v)} ${xP(pts[i].m)},${yP(pts[i].v)}`;
+      pd+=` C${cx},${yP(s,pts[i-1].v)} ${cx},${yP(s,pts[i].v)} ${xP(pts[i].m)},${yP(s,pts[i].v)}`;
     }
     const da=s.dash?`stroke-dasharray="${s.dash}"`:'';
     svg+=`<path d="${pd}" fill="none" stroke="${s.line}" stroke-width="2.5" ${da} stroke-linecap="round" stroke-linejoin="round"/>`;
@@ -4667,11 +4690,15 @@ function renderVolChartOnly(){
   series.forEach(s=>{
     s.vals.forEach(pt=>{
       if(pt.v===null) return;
-      const x=xP(pt.m),y=yP(pt.v);
+      const x=xP(pt.m),y=yP(s,pt.v);
       svg+=`<circle cx="${x}" cy="${y}" r="6" fill="${s.line}" opacity="0.15"/>`;
       svg+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${s.line}" stroke="#fff" stroke-width="1.5"/>`;
       const lbl=metric==='monto'?'$'+fmtK(pt.v):(metric==='visitas'?pt.v+'d':fmtK(pt.v));
-      svg+=`<text x="${x}" y="${y-11}" text-anchor="middle" font-size="9" fill="${s.line}" font-weight="700" opacity="0.9">${lbl}</text>`;
+      // Eje izquierdo: etiqueta arriba del punto. Eje derecho: abajo del
+      // punto. Evita colisión de texto cuando ambas curvas coinciden
+      // visualmente pese a tener escalas independientes.
+      const ly = s.axis==='right' ? y+19 : y-11;
+      svg+=`<text x="${x}" y="${ly}" text-anchor="middle" font-size="9" fill="${s.line}" font-weight="700" opacity="0.9">${lbl}</text>`;
     });
   });
   // X labels
@@ -4680,14 +4707,18 @@ function renderVolChartOnly(){
   // Axis
   svg+=`<line x1="${PL}" y1="${PT}" x2="${PL}" y2="${PT+cH}" stroke="#C0C8E0" stroke-width="1.5"/>`;
   svg+=`<line x1="${PL}" y1="${PT+cH}" x2="${W-PR}" y2="${PT+cH}" stroke="#C0C8E0" stroke-width="1.5"/>`;
-  // Y label
+  if(showRightAxis)
+    svg+=`<line x1="${W-PR}" y1="${PT}" x2="${W-PR}" y2="${PT+cH}" stroke="#E4E8F4" stroke-width="1.5"/>`;
+  // Y label(s)
   const axLbl=metric==='monto'?'USD Equivalente':metric==='visitas'?'Días de visita':'Transacciones';
   svg+=`<text x="12" y="${PT+cH/2}" text-anchor="middle" font-size="10" fill="#8896B3" font-weight="600" transform="rotate(-90,12,${PT+cH/2})">${axLbl}</text>`;
+  if(showRightAxis)
+    svg+=`<text x="${W-8}" y="${PT+cH/2}" text-anchor="middle" font-size="9.5" fill="#9AA3BD" font-weight="600" transform="rotate(90,${W-8},${PT+cH/2})">Escala sedes menores</text>`;
   // Legend
-  const legItems=series.map(s=>({label:(s.pais==='GT'?'🇬🇹':'🇸🇻')+' '+s.sede,color:s.line,dash:s.dash}));
-  const legW=legItems.length*175, legX0=(W-legW)/2;
+  const legItems=series.map(s=>({label:(s.pais==='GT'?'🇬🇹':'🇸🇻')+' '+s.sede+(s.axis==='right'?' (eje der.)':''),color:s.line,dash:s.dash}));
+  const legW=legItems.length*195, legX0=(W-legW)/2;
   legItems.forEach((li,i)=>{
-    const lx=legX0+i*175, ly=H-14;
+    const lx=legX0+i*195, ly=H-14;
     if(li.dash) svg+=`<line x1="${lx}" y1="${ly}" x2="${lx+22}" y2="${ly}" stroke="${li.color}" stroke-width="2.5" stroke-dasharray="${li.dash}"/>`;
     else        svg+=`<line x1="${lx}" y1="${ly}" x2="${lx+22}" y2="${ly}" stroke="${li.color}" stroke-width="2.5"/>`;
     svg+=`<circle cx="${lx+11}" cy="${ly}" r="3" fill="${li.color}" stroke="#fff" stroke-width="1.5"/>`;
@@ -4701,7 +4732,6 @@ function renderVolChartOnly(){
 
   document.getElementById('vol-chart-wrap').innerHTML=svg;
 }
-
 
 
 // ══════════════════════════════════════════════════════════════
