@@ -4579,10 +4579,16 @@ function renderVolChartOnly(){
   };
 
   let allSedes = [];
+  // Nota (integración Remesa Virtual): este gráfico de tendencia se mantiene
+  // acotado a las 4 sedes operativas principales (mismo alcance con el que
+  // fue diseñado — únicas 4 con color propio en PALETTE). Las sedes CDR sin
+  // ATM propio, agregadas por Remesa Virtual a gtAgg.sedes, se excluyen aquí
+  // para no saturar el gráfico con líneas grises superpuestas; su detalle ya
+  // es visible en la tabla con fila expandible.
   if(filtPais==='ambos'||filtPais==='Guatemala')
-    gtAgg.sedes.forEach(s=>allSedes.push({pais:'GT',sede:s,key:'GT_'+s.replace(/\s+/g,''),isGT:true}));
+    gtAgg.sedes.forEach(s=>{ const k='GT_'+s.replace(/\s+/g,''); if(PALETTE[k]) allSedes.push({pais:'GT',sede:s,key:k,isGT:true}); });
   if(filtPais==='ambos'||filtPais==='El Salvador')
-    svAgg.sedes.forEach(s=>allSedes.push({pais:'SV',sede:s,key:'SV_'+s.replace(/\s+/g,''),isGT:false}));
+    svAgg.sedes.forEach(s=>{ const k='SV_'+s.replace(/\s+/g,''); if(PALETTE[k]) allSedes.push({pais:'SV',sede:s,key:k,isGT:false}); });
 
   if(!allSedes.length){
     document.getElementById('vol-chart-wrap').innerHTML='<p style="color:#bbb;font-size:12px;padding:16px;">Sin datos.</p>';
