@@ -4615,122 +4615,85 @@ function renderVolChartOnly(){
 
   // ── Doble eje Y: separa sedes de mayor volumen (eje izquierdo) de sedes de
   // menor volumen (eje derecho, escala propia) para que ambos grupos sean
-  // legibles al mismo tiempo — antes compartían una sola escala lineal y las
-  // sedes pequeñas (ej. Xela, San Miguel) quedaban comprimidas y con
-  // etiquetas superpuestas junto a sedes mucho más grandes (CDA, Santa Tecla).
+  // legibles — antes compartían una sola escala lineal y las sedes pequeñas
+  // (ej. Xela, San Miguel) quedaban comprimidas junto a sedes mucho más
+  // grandes (CDA, Santa Tecla).
   const seriesInfo = series.map(s=>({s, max:Math.max(0,...s.vals.map(p=>p.v).filter(v=>v!==null))}));
   const globalMax = Math.max(...seriesInfo.map(x=>x.max));
   seriesInfo.forEach(x=>{ x.s.axis = (x.max < globalMax*0.5) ? 'right' : 'left'; });
   const hasRight = seriesInfo.some(x=>x.s.axis==='right');
   const hasLeft  = seriesInfo.some(x=>x.s.axis==='left');
-  // Si por algún motivo todo cae en un solo grupo (ej. valores muy parejos),
-  // se usa un único eje (comportamiento original) — sin eje derecho vacío.
   if(!hasLeft || !hasRight){ seriesInfo.forEach(x=>{ x.s.axis='left'; }); }
-  const leftMax  = Math.max(1, ...seriesInfo.filter(x=>x.s.axis==='left').map(x=>x.max));
-  const rightMax = Math.max(1, ...seriesInfo.filter(x=>x.s.axis==='right').map(x=>x.max));
   const showRightAxis = seriesInfo.some(x=>x.s.axis==='right');
-
-  const W=900,H=340,PL=72,PR=showRightAxis?66:24,PT=36,PB=58;
-  const cW=W-PL-PR,cH=H-PT-PB,xStep=cW/11;
-  const xP=m=>PL+(m-1)*xStep;
-  const yPLeft=v=>PT+cH-(v/(leftMax||1))*cH;
-  const yPRight=v=>PT+cH-(v/(rightMax||1))*cH;
-  const yP=(s,v)=> s.axis==='right' ? yPRight(v) : yPLeft(v);
 
   function fmtK(v){
     if(v>=1000000) return (v/1000000).toFixed(2)+'M';
     if(v>=1000) return (v/1000).toFixed(0)+'K';
-    return v.toFixed(0);
+    return Math.round(v).toString();
+  }
+  const fmtTip = v => metric==='monto' ? ('$'+fmtK(v)) : (metric==='visitas' ? (v+'d') : fmtK(v));
+  const fmtAxis = v => (metric==='monto'?'$':'')+fmtK(v);
+
+  // ── Render vía Chart.js (con tooltip interactivo al pasar el mouse) en vez
+  // de SVG con etiquetas siempre visibles — con hasta 4 series simultáneas
+  // (2 escalas), etiquetas fijas se superponían entre sí sin remedio; el
+  // tooltip muestra el valor exacto de cada serie sin saturar el gráfico.
+  document.getElementById('vol-chart-wrap').innerHTML = '<canvas id="vol-chart-canvas"></canvas>';
+
+  const datasets = series.map(s=>({
+    label: (s.pais==='GT'?'🇬🇹':'🇸🇻')+' '+s.sede+(s.axis==='right'?' (eje der.)':''),
+    data: s.vals.map(p=>p.v),
+    borderColor: s.line,
+    backgroundColor: s.fill,
+    borderDash: s.dash ? s.dash.split(',').map(Number) : [],
+    yAxisID: s.axis==='right' ? 'y1' : 'y',
+    tension: 0.35,
+    pointRadius: 4,
+    pointHoverRadius: 6.5,
+    pointBackgroundColor: s.line,
+    pointBorderColor: '#fff',
+    pointBorderWidth: 1.5,
+    borderWidth: 2.5,
+    fill: false,
+    spanGaps: false,
+  }));
+
+  const axLbl = metric==='monto'?'USD Equivalente':metric==='visitas'?'Días de visita':'Transacciones';
+  const scalesCfg = {
+    x: { grid:{color:'#EDF0F7'}, ticks:{color:'#8896B3', font:{size:10.5,weight:'600'}} },
+    y: { position:'left', beginAtZero:true,
+         title:{display:true, text:axLbl, color:'#8896B3', font:{size:10,weight:'600'}},
+         grid:{color:'#E4E8F4'},
+         ticks:{color:'#7A8299', font:{size:10.5}, callback:fmtAxis} },
+  };
+  if(showRightAxis){
+    scalesCfg.y1 = { position:'right', beginAtZero:true,
+         title:{display:true, text:'Escala sedes menores', color:'#9AA3BD', font:{size:9.5,weight:'600'}},
+         grid:{drawOnChartArea:false},
+         ticks:{color:'#9AA3BD', font:{size:10.5}, callback:fmtAxis} };
   }
 
-  let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">`;
-  svg+=`<rect x="${PL}" y="${PT}" width="${cW}" height="${cH}" rx="4" fill="#FAFBFF"/>`;
-
-  for(let i=0;i<=5;i++){
-    const vL=leftMax*i/5, y=yPLeft(vL);
-    svg+=`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="${i===0?'#C0C8E0':'#E4E8F4'}" stroke-width="${i===0?1.5:1}"/>`;
-    const lblL=metric==='monto'?(vL>=1000000?(vL/1000000).toFixed(1)+'M':(vL/1000).toFixed(0)+'K'):Math.round(vL);
-    svg+=`<text x="${PL-8}" y="${y+4}" text-anchor="end" font-size="10.5" fill="#7A8299" font-weight="500">${metric==='monto'?'$':''}${lblL}</text>`;
-    if(showRightAxis){
-      const vR=rightMax*i/5;
-      const lblR=metric==='monto'?(vR>=1000000?(vR/1000000).toFixed(1)+'M':(vR/1000).toFixed(0)+'K'):Math.round(vR);
-      svg+=`<text x="${W-PR+8}" y="${y+4}" text-anchor="start" font-size="10.5" fill="#9AA3BD" font-weight="500">${metric==='monto'?'$':''}${lblR}</text>`;
-    }
-  }
-  for(let m=1;m<=12;m++){
-    const x=xP(m);
-    svg+=`<line x1="${x}" y1="${PT}" x2="${x}" y2="${PT+cH}" stroke="#EDF0F7" stroke-width="1"/>`;
-  }
-
-  // Areas
-  series.forEach(s=>{
-    const pts=s.vals.filter(p=>p.v!==null);
-    if(pts.length<2) return;
-    let ap=`M${xP(pts[0].m)},${yP(s,pts[0].v)}`;
-    for(let i=1;i<pts.length;i++){
-      const cx=(xP(pts[i-1].m)+xP(pts[i].m))/2;
-      ap+=` C${cx},${yP(s,pts[i-1].v)} ${cx},${yP(s,pts[i].v)} ${xP(pts[i].m)},${yP(s,pts[i].v)}`;
-    }
-    ap+=` L${xP(pts[pts.length-1].m)},${PT+cH} L${xP(pts[0].m)},${PT+cH} Z`;
-    svg+=`<path d="${ap}" fill="${s.fill}"/>`;
-  });
-  // Lines
-  series.forEach(s=>{
-    const pts=s.vals.filter(p=>p.v!==null);
-    if(!pts.length) return;
-    let pd=`M${xP(pts[0].m)},${yP(s,pts[0].v)}`;
-    for(let i=1;i<pts.length;i++){
-      const cx=(xP(pts[i-1].m)+xP(pts[i].m))/2;
-      pd+=` C${cx},${yP(s,pts[i-1].v)} ${cx},${yP(s,pts[i].v)} ${xP(pts[i].m)},${yP(s,pts[i].v)}`;
-    }
-    const da=s.dash?`stroke-dasharray="${s.dash}"`:'';
-    svg+=`<path d="${pd}" fill="none" stroke="${s.line}" stroke-width="2.5" ${da} stroke-linecap="round" stroke-linejoin="round"/>`;
-  });
-  // Dots + labels
-  series.forEach(s=>{
-    s.vals.forEach(pt=>{
-      if(pt.v===null) return;
-      const x=xP(pt.m),y=yP(s,pt.v);
-      svg+=`<circle cx="${x}" cy="${y}" r="6" fill="${s.line}" opacity="0.15"/>`;
-      svg+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${s.line}" stroke="#fff" stroke-width="1.5"/>`;
-      const lbl=metric==='monto'?'$'+fmtK(pt.v):(metric==='visitas'?pt.v+'d':fmtK(pt.v));
-      // Eje izquierdo: etiqueta arriba del punto. Eje derecho: abajo del
-      // punto. Evita colisión de texto cuando ambas curvas coinciden
-      // visualmente pese a tener escalas independientes.
-      const ly = s.axis==='right' ? y+19 : y-11;
-      svg+=`<text x="${x}" y="${ly}" text-anchor="middle" font-size="9" fill="${s.line}" font-weight="700" opacity="0.9">${lbl}</text>`;
-    });
-  });
-  // X labels
-  for(let m=1;m<=12;m++)
-    svg+=`<text x="${xP(m)}" y="${PT+cH+18}" text-anchor="middle" font-size="10.5" fill="#8896B3" font-weight="600">${MESES_SHORT[m-1]}</text>`;
-  // Axis
-  svg+=`<line x1="${PL}" y1="${PT}" x2="${PL}" y2="${PT+cH}" stroke="#C0C8E0" stroke-width="1.5"/>`;
-  svg+=`<line x1="${PL}" y1="${PT+cH}" x2="${W-PR}" y2="${PT+cH}" stroke="#C0C8E0" stroke-width="1.5"/>`;
-  if(showRightAxis)
-    svg+=`<line x1="${W-PR}" y1="${PT}" x2="${W-PR}" y2="${PT+cH}" stroke="#E4E8F4" stroke-width="1.5"/>`;
-  // Y label(s)
-  const axLbl=metric==='monto'?'USD Equivalente':metric==='visitas'?'Días de visita':'Transacciones';
-  svg+=`<text x="12" y="${PT+cH/2}" text-anchor="middle" font-size="10" fill="#8896B3" font-weight="600" transform="rotate(-90,12,${PT+cH/2})">${axLbl}</text>`;
-  if(showRightAxis)
-    svg+=`<text x="${W-8}" y="${PT+cH/2}" text-anchor="middle" font-size="9.5" fill="#9AA3BD" font-weight="600" transform="rotate(90,${W-8},${PT+cH/2})">Escala sedes menores</text>`;
-  // Legend
-  const legItems=series.map(s=>({label:(s.pais==='GT'?'🇬🇹':'🇸🇻')+' '+s.sede+(s.axis==='right'?' (eje der.)':''),color:s.line,dash:s.dash}));
-  const legW=legItems.length*195, legX0=(W-legW)/2;
-  legItems.forEach((li,i)=>{
-    const lx=legX0+i*195, ly=H-14;
-    if(li.dash) svg+=`<line x1="${lx}" y1="${ly}" x2="${lx+22}" y2="${ly}" stroke="${li.color}" stroke-width="2.5" stroke-dasharray="${li.dash}"/>`;
-    else        svg+=`<line x1="${lx}" y1="${ly}" x2="${lx+22}" y2="${ly}" stroke="${li.color}" stroke-width="2.5"/>`;
-    svg+=`<circle cx="${lx+11}" cy="${ly}" r="3" fill="${li.color}" stroke="#fff" stroke-width="1.5"/>`;
-    svg+=`<text x="${lx+28}" y="${ly+4}" font-size="10.5" fill="#4A5568" font-weight="600">${li.label}</text>`;
-  });
-  // Title
   const filtLabel = filtPais==='ambos'?'Todos los países':(filtPais==='Guatemala'?'🇬🇹 Guatemala':'🇸🇻 El Salvador');
-  const metLabel=metric==='monto'?'Monto (USD eq.)':metric==='visitas'?'Visitas por mes':'Transacciones';
-  svg+=`<text x="${PL}" y="${PT-14}" font-size="11" fill="#3D4A6B" font-weight="700">${metLabel} — ${selYr} · ${filtLabel}</text>`;
-  svg+='</svg>';
+  const metLabel = metric==='monto'?'Monto (USD eq.)':metric==='visitas'?'Visitas por mes':'Transacciones';
 
-  document.getElementById('vol-chart-wrap').innerHTML=svg;
+  createChart('vol-chart-canvas', 340, {
+    type: 'line',
+    data: { labels: MESES_SHORT, datasets },
+    options: {
+      interaction: { mode:'nearest', intersect:false },
+      plugins: {
+        title: { display:true, text:`${metLabel} — ${selYr} · ${filtLabel}`, align:'start',
+                 color:'#3D4A6B', font:{size:11,weight:'700'}, padding:{bottom:10} },
+        legend: { position:'bottom', labels:{ color:'#4A5568', font:{size:10.5,weight:'600'}, usePointStyle:true, boxWidth:8 } },
+        tooltip: {
+          callbacks: {
+            label: tctx => `${tctx.dataset.label}: ${(tctx.raw===null||tctx.raw===undefined)?'—':fmtTip(tctx.raw)}`
+          }
+        }
+      },
+      scales: scalesCfg
+    }
+  });
 }
 
 
