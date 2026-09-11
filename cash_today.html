@@ -3392,7 +3392,7 @@ function _rvNorm(s){
   return (s||'').toString().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
 }
 function parseRV(wb){
-  const rows=XLSX.utils.sheet_to_json(wb.Sheets['Base'],{header:1,raw:false,cellDates:true,defval:''});
+  const rows=XLSX.utils.sheet_to_json(wb.Sheets['Base'],{header:1,raw:true,cellDates:true,defval:''});
   // localizar fila de encabezado (columna A === 'Fecha')
   let hdrIdx=-1;
   for(let i=0;i<Math.min(rows.length,10);i++){
