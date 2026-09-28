@@ -3823,11 +3823,31 @@ async function downloadDashboard() {
 
 let _pdcPublishing = false; // REGLA #14/#16: bloqueo real contra doble clic (evita commits duplicados en <35s)
 
-async function _pdcCheckDeployStatus(commitSha, tokenActions, btn, origTxt) {
+/* PUBLICACION SELF-SERVICE - via Supabase Edge Function (REGLA seguridad 28/09/2026)
+   El token de GitHub ya NO vive en este archivo. La funcion "github-publish"
+      hace el PUT final con el token guardado como secret server-side (mismo
+         patron que cash_today.html / cartas_salida.html). */
+  const _pdcPublishClientRutas = supabase.createClient(SUPA_URL, SUPA_KEY);
+  async function _pdcCallPublishFunctionRutas(path, contentB64, sha, message){
+      const sessionRes = await _pdcPublishClientRutas.auth.getSession();
+      const token = sessionRes.data && sessionRes.data.session && sessionRes.data.session.access_token;
+      if(!token) throw new Error('Sesion no valida - vuelva a iniciar sesion e intente de nuevo.');
+      const res = await fetch(SUPA_URL + '/functions/v1/github-publish', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: path, content_base64: contentB64, sha: sha, message: message })
+      });
+      const result = await res.json();
+      if(!res.ok || !result.success){
+            throw new Error((result && result.error) ? result.error : ('HTTP '+res.status));
+      }
+      return result;
+  }
+  async function _pdcCheckDeployStatus(commitSha, btn, origTxt) {
   // Verifica el estado real del workflow "Deploy Dashboard" para el commit publicado,
   // en vez de asumir que el deploy terminó tras el PUT exitoso. Poll cada 8s, máx ~3 min.
   const RUNS_URL = 'https://api.github.com/repos/jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar/actions/runs?event=push&per_page=5';
-  const HDRS = {'Authorization':'token '+tokenActions,'Accept':'application/vnd.github.v3+json'};
+  const HDRS = {'Accept':'application/vnd.github.v3+json'};
   const maxTries = 22; // ~176s
   for (let i=0; i<maxTries; i++) {
     await new Promise(r=>setTimeout(r, 8000));
@@ -3868,9 +3888,9 @@ async function publishToGitHub() {
     const gtq = parseFloat(document.getElementById('tcGTQ').value)||7.63627;
     const pen = parseFloat(document.getElementById('tcPEN').value)||3.529;
     /* R1-FIX: Leer HTML limpio desde repo (no DOM en vivo) */
-    const _tR1 = ['github_pat_','11CFIF','Q7A0S','Ue6EHv','YGn4P_','RSWIKu','99Nbt0','lmkmUp','7wG1vF','A2TTCN','hMhoqy','vDNJq6','0OF5XE','R4Iwh9','z5nTm'].join('');
+    const _tR1 = null; // token eliminado - migracion Supabase Edge Function 28/09/2026
     const GH_URL_R1 = 'https://api.github.com/repos/jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar/contents/index.html';
-    const srcR = await fetch(GH_URL_R1,{headers:{'Authorization':'token '+_tR1,'Accept':'application/vnd.github.v3+json'}});
+    const srcR = await fetch(GH_URL_R1,{headers:{'Accept':'application/vnd.github.v3+json'}});
     if(!srcR.ok) throw new Error('Error leyendo fuente: '+srcR.status);
     const srcD = await srcR.json();
     /* R1-FIX-ARCH: TextDecoder para UTF-8 correcto en archivos grandes */
@@ -3897,40 +3917,33 @@ async function publishToGitHub() {
     const b64 = btoa(bin);
     // Token assembled at runtime
     /* Reutilizar srcD.sha y URL del fetch anterior */
-    const _t = ['github_pat_','11CFIF','Q7A0S','Ue6EHv','YGn4P_','RSWIKu','99Nbt0','lmkmUp','7wG1vF','A2TTCN','hMhoqy','vDNJq6','0OF5XE','R4Iwh9','z5nTm'].join('');
-    const GH_URL  = 'https://api.github.com/repos/jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar/contents/index.html';
-    const HDRS    = {'Authorization':'token '+_t,'Accept':'application/vnd.github.v3+json'};
-    const shaD    = srcD;
-    const pushR = await fetch(GH_URL, {
-      method:'PUT', headers:{...HDRS,'Content-Type':'application/json'},
-      body: JSON.stringify({
-        message: 'Actualizacion dashboard '+new Date().toLocaleDateString('es-GT'),
-        content: b64, sha: shaD.sha, branch: 'main'
-      })
-    });
-    if(pushR.ok) {
-      const pushD = await pushR.json();
-      const newSha = pushD && pushD.commit && pushD.commit.sha;
-      btn.innerHTML='✅ Publicado. Verificando despliegue…';
-      btn.style.background='#10b981';
-      // El boton permanece bloqueado hasta que se confirme el estado real del deploy
-      // (o hasta el timeout de seguridad de _pdcCheckDeployStatus), no por un temporizador fijo.
-      if (newSha) {
-        _pdcCheckDeployStatus(newSha, _t, btn, origTxt);
-      } else {
-        setTimeout(()=>{btn.innerHTML=origTxt;btn.style.background='#4f46e5';btn.disabled=false;_pdcPublishing=false;},6000);
-      }
-    } else {
-      const e = await pushR.json();
-      throw new Error(e.message||'HTTP '+pushR.status);
-    }
+    const _t = null; // token eliminado - migracion Supabase Edge Function 28/09/2026
+        /* Publicacion segura via Supabase Edge Function - el token de GitHub nunca sale del backend */
+        await _pdcCallPublishFunctionRutas(
+                'index.html', b64, srcD.sha,
+                'Actualizacion dashboard '+new Date().toLocaleDateString('es-GT')
+              );
+        btn.innerHTML='✅ Publicado. Verificando despliegue…';
+        btn.style.background='#10b981';
+        // El boton permanece bloqueado hasta que se confirme el estado real del deploy
+        // (o hasta el timeout de seguridad de _pdcCheckDeployStatus), no por un temporizador fijo.
+        let newSha = null;
+        try {
+                const cR = await fetch('https://api.github.com/repos/jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar/commits?path=index.html&per_page=1',{headers:{'Accept':'application/vnd.github.v3+json'}});
+                if (cR.ok) { const cD = await cR.json(); if (cD && cD[0]) newSha = cD[0].sha; }
+        } catch(e) { /* fallo puntual de red: no bloquea la publicacion, solo la verificacion visual */ }
+        if (newSha) {
+                _pdcCheckDeployStatus(newSha, btn, origTxt);
+        } else {
+                setTimeout(()=>{btn.innerHTML=origTxt;btn.style.background='#4f46e5';btn.disabled=false;_pdcPublishing=false;},6000);
+        }
   } catch(e) {
-    console.error('publishToGitHub:',e);
-    btn.innerHTML = origTxt;
-    btn.style.background = '#ef4444'; btn.disabled = false;
-    _pdcPublishing = false;
-    alert('Error al publicar en GitHub:\n' + (e.message||String(e)));
-    setTimeout(()=>{btn.style.background='#4f46e5';},4000);
+        console.error('publishToGitHub:',e);
+        btn.innerHTML = origTxt;
+        btn.style.background = '#ef4444'; btn.disabled = false;
+        _pdcPublishing = false;
+        alert('Error al publicar en GitHub:\n' + (e.message||String(e)));
+        setTimeout(()=>{btn.style.background='#4f46e5';},4000);
   }
 }
 </script>
