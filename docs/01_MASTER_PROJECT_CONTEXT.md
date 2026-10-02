@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.14 | **Última actualización:** 21/08/2026 | **Estado:** Producción ✅
+**Versión vigente:** v2.14 | **Última actualización:** 02/10/2026 (ver §21 — publicación de Rutas) | **Estado:** Producción ✅
 
 ---
 
@@ -131,7 +131,7 @@ El workflow usa `concurrency: {group:"pages", cancel-in-progress:true}`. Publica
 - Validado: `node --check` en los 11 bloques de script de los 3 archivos + prueba funcional en Node (12/12 aserciones, modo legacy y multi).
 - **Extensión misma sesión:** multi-select en filtros Canal, Responsable y Rango de `index.html` — a diferencia del anterior, SIN gate de rol/país (aplica a todos los usuarios). Función genérica reutilizable `pdcInitMultiFilter()` — única fuente de verdad para los 3 filtros, deduplica opciones repetidas del `<select>` origen solo en la vista.
 
-**Tokens de publicación (actualizado 20/07/2026):** `cash_today.html` migrado a Supabase Edge Function `github-publish` — ya NO tiene token embebido. **`index.html` (Rutas) SIGUE teniendo el token fine-grained fragmentado embebido en texto plano** (`_tR1`/`_t`) — pendiente de la misma migración, autorizado para próxima sesión. No asumir que el token de `index.html` es seguro de dejar así por más tiempo del necesario.
+**Tokens de publicación (actualizado 20/07/2026):** `cash_today.html` migrado a Supabase Edge Function `github-publish` — ya NO tiene token embebido. **`index.html` (Rutas) SIGUE teniendo el token fine-grained fragmentado embebido en texto plano** (`_tR1`/`_t`) — pendiente de la misma migración, autorizado para próxima sesión. **[RESUELTO 28-29/09/2026 — ver §21]** No asumir que el token de `index.html` es seguro de dejar así por más tiempo del necesario.
 
 ---
 
@@ -159,7 +159,7 @@ El workflow usa `concurrency: {group:"pages", cancel-in-progress:true}`. Publica
 - Función `public.is_admin()` (SECURITY DEFINER en Supabase) evita recursión RLS en las políticas de admin.
 - `js/supabase.min.js`: librería `@supabase/supabase-js` v2.110.7 vendorizada localmente en el repo (no CDN externo) — decisión tomada tras una caída confirmada de jsDelivr que rompió el login en producción durante la validación de esta migración.
 
-**Pendiente — CRÍTICO:** `index.html` (dashboard Rutas) tiene el **mismo problema** que tenía `cash_today.html`: un token GitHub fine-grained embebido en texto plano (variables `_tR1` y `_t`, líneas ~3388/3416) para su propio botón de auto-publicación — mismo patrón, misma exposición pública vía GitHub Pages. Hallazgo del 20/07/2026, **NO resuelto** — autorizado por Charly para próxima sesión. Aplicar la misma corrección ya construida hoy: eliminar el token, agregar `index.html` a la allowlist de rutas de la Edge Function `github-publish` (ya existe y funciona), y actualizar el flujo de publicación de `index.html` para llamarla en vez de hacer PUT directo.
+**Pendiente — CRÍTICO:** `index.html` (dashboard Rutas) tiene el **mismo problema** que tenía `cash_today.html`: un token GitHub fine-grained embebido en texto plano (variables `_tR1` y `_t`, líneas ~3388/3416) para su propio botón de auto-publicación — mismo patrón, misma exposición pública vía GitHub Pages. Hallazgo del 20/07/2026, **NO resuelto** — autorizado por Charly para próxima sesión. Aplicar la misma corrección ya construida hoy: eliminar el token, agregar `index.html` a la allowlist de rutas de la Edge Function `github-publish` (ya existe y funciona), y actualizar el flujo de publicación de `index.html` para llamarla en vez de hacer PUT directo. **[RESUELTO 28-29/09/2026 — ver §21]**
 
 ---
 
@@ -408,7 +408,7 @@ Los KPIs de la tarjeta "Cartas de Salida" estaban escritos a mano en el array `D
 **Estado resultante:** las 3 tarjetas principales del Portal (Rutas vía PDCBridge, Cash Today y Cartas de Salida vía sus respectivos JSON) están sincronizadas en vivo. Ninguna depende ya de valores manuales.
 
 ### 15.5 Edge Function `github-publish` — allowlist actual
-`['cash_today.html', 'cash_summary.json', 'cartas_salida.html', 'cartas_summary.json']`. Cualquier archivo nuevo que deba escribirse desde el navegador requiere agregarse aquí (acción manual de Charly en el Dashboard de Supabase — Claude no tiene acceso a Edge Functions vía API).
+`['cash_today.html', 'cash_summary.json', 'cartas_salida.html', 'cartas_summary.json']` (+ `'index.html'` desde el 29/09/2026, ver §21.2). Cualquier archivo nuevo que deba escribirse desde el navegador requiere agregarse aquí (acción manual de Charly en el Dashboard de Supabase — Claude no tiene acceso a Edge Functions vía API).
 
 **Archivos modificados:** `cartas_salida.html`, `analytics.html`. Nuevo artefacto generado por la aplicación: `cartas_summary.json`.
 
@@ -423,6 +423,8 @@ Los KPIs de la tarjeta "Cartas de Salida" estaban escritos a mano en el array `D
 5. **`node --check` + `JSON.parse()` estricto** antes de cualquier deploy con datos
 6. **Usuarios en Supabase (tabla `profiles`), no en código** — `login.html`/`analytics.html` ya no tienen arreglos de usuarios que sincronizar
 7. **Cash Today: publicación = reemplazo total.** No reintroducir lógica de merge/deduplicación.
+8. **Self-publish de Rutas (`index.html` >1MB):** leer la fuente con `Accept: application/vnd.github.raw` + `cache:'no-store'`; el JSON de la Contents API no trae `content` (ver §21.3). Si "Publicar en GitHub" muestra "Faltan campos requeridos" o "Fuente leida vacia o incompleta", revisar primero esa lectura.
+9. **Al conectar un archivo nuevo a la función Edge `github-publish`, actualizar `ALLOWED_PATHS` es obligatorio** (paso omitido el 28/09/2026 — ver §21.2).
 
 ---
 *PDC Analytics Center · Grupo PDC · Departamento Financiero · v2.5 · 31/07/2026*
@@ -706,3 +708,22 @@ Charly señaló que el selector de "mes de referencia" seguía limitado a mes an
 Validado en Node con el caso exacto reportado por Charly (Jul-26 vs Jul-25): GT -15.8%, SV -5.3%, PE +8.8%, Total -10.9%.
 
 Commit: `80cbf94`.
+
+---
+
+# §21 — PUBLICACIÓN SELF-SERVICE DE RUTAS (sesiones 28/09 → 02/10/2026)
+
+## 21.1 Migración de `index.html` a la función Edge `github-publish` (28/09/2026)
+Cierra el pendiente CRÍTICO del 20/07/2026 (§3 y §5): los dos tokens fine-grained embebidos en `index.html` (`_tR1`/`_t`) fueron eliminados. `publishToGitHub()` llama a `_pdcCallPublishFunctionRutas(path, contentB64, sha, message)`, que obtiene el token de sesión de Supabase (`auth.getSession()`) y hace POST a la función Edge `github-publish`; esta exige sesión válida + `profiles.rol === 'admin'` y escribe a GitHub con el secret `GITHUB_TOKEN` (server-side). Nueva verificación post-publicación `_pdcCheckDeployStatus()` (polling cada 8s, máx. ~3 min, sobre el workflow "Deploy Dashboard"). Commit `c65f4c778c26a605e1944f98db583d1660cbf99`. Los tres dashboards con self-publish (Rutas, Cash Today, Cartas de Salida) usan ahora el mismo patrón.
+
+## 21.2 Allowlist server-side (29/09/2026)
+La migración omitió `index.html` en `ALLOWED_PATHS` de la función Edge → error `Ruta no permitida: index.html`. Corregido agregándolo (allowlist actual: `cash_today.html`, `cash_summary.json`, `cartas_salida.html`, `cartas_summary.json`, `index.html`). **Regla:** al conectar un archivo nuevo a este patrón, actualizar `ALLOWED_PATHS` es un paso obligatorio del checklist (acción manual de Charly en el Dashboard de Supabase).
+
+## 21.3 Lectura de la fuente con `index.html` >1MB (02/10/2026)
+- La función Edge responde "Faltan campos requeridos" cuando `path`, `content_base64`, `sha` o `message` llega vacío.
+- **Causa 1:** `index.html` superó 1MB (≈1.17MB). La Contents API (JSON) devuelve `content: ""` para archivos >1MB → `publishToGitHub()` construía `content_base64` vacío. **Fix:** leer el cuerpo con `Accept: application/vnd.github.raw` (el `sha` se sigue tomando del JSON) y abortar con mensaje claro si la fuente llega vacía o <100,000 caracteres.
+- **Causa 2:** la caché HTTP del navegador devolvió a la segunda llamada (misma URL, otro `Accept`) el JSON cacheado de la primera. **Fix:** `cache:'no-store'` en ambas lecturas (también evita SHA obsoleto → 409).
+- **Reglas:** (a) toda lectura de un archivo que pueda superar 1MB vía Contents API usa `Accept: application/vnd.github.raw`; (b) dos llamadas a la misma URL con distinto `Accept` requieren `cache:'no-store'` (o URLs distintas); (c) mantener la guarda de tamaño — mejor un aborto explícito que publicar una fuente vacía.
+- Validado: `node --check` en los 5 bloques `<script>`; archivo en `main` idéntico byte a byte al validado (1,173,385 → 1,173,544 bytes); workflows en `success`; publicación de Excel confirmada por Charly.
+- Pendiente (recomendación, no implementada): separar el dataset embebido (`RAW`, `KPI_HIST`, `EFECT`, `KPI_TOTALS`, `TOTAL_RUTAS_HIST`) a un JSON aparte; auditar `cartas_salida.html`/`cash_today.html` frente al límite de 1MB y la caché HTTP.
+- Detalle completo: `02_CHANGELOG.md`, entrada 02/10/2026.

@@ -1,3 +1,99 @@
+## [02/10/2026] — Rutas: fix de causa raíz en la publicación de Excel — lectura de fuente con `index.html` >1MB (Contents API) + caché HTTP del navegador
+
+### Corrección de errores (RCA) — `index.html`, función `publishToGitHub()` únicamente
+
+**Síntoma reportado (con capturas), en dos etapas consecutivas:** al publicar una actualización de Excel del dashboard de Rutas con el botón "🚀 Publicar en GitHub":
+
+1. `Error al publicar en GitHub: Faltan campos requeridos`
+2. (tras el primer fix) `Error al publicar en GitHub: Fuente leida vacia o incompleta - publicacion abortada`
+
+Tras el segundo fix la publicación funcionó — **confirmado por Charly**.
+
+**Clasificación:** Corrección de errores. Alcance declarado y confirmado por Charly ("si publica el parche") antes de publicar.
+
+**RCA 1 — Contents API devuelve `content` vacío para archivos >1MB:**
+- "Faltan campos requeridos" no se genera en el cliente: lo devuelve la función Edge `github-publish` cuando alguno de `path`, `content_base64`, `sha`, `message` llega vacío. El cliente siempre envía `path` y `message`, por lo que el campo vacío era `content_base64`.
+- `index.html` ya pesaba 1,173,068 bytes (>1MB). Para archivos de ese tamaño `GET /contents/index.html` (JSON) responde `content: ""` y `encoding: "none"` (el `sha` sí viene). `publishToGitHub()` decodificaba ese vacío → los `replace()` de `RAW`/`KPI_HIST`/`EFECT`/`KPI_TOTALS`/`TOTAL_RUTAS_HIST`/`FX_DEF` no encontraban nada → `btoa('')` → `content_base64` vacío.
+- Por qué apareció ahora: el archivo creció con el último Excel y cruzó el 1MB; hasta la publicación anterior seguía por debajo.
+- Descartado: token, sesión de Supabase y `ALLOWED_PATHS` (el error era de validación de campos, no 401/403/"Ruta no permitida"). No se publicó nada; el repositorio permaneció intacto.
+
+**Corrección 1 (commit "Fix: publishToGitHub lee fuente via media type raw (index.html >1MB)"):** se reemplazaron las 5 líneas que decodificaban `srcD.content` por una lectura con `Accept: application/vnd.github.raw` (válida hasta 100MB), conservando `srcD.sha` del JSON, y se agregó una guarda que aborta con mensaje claro si la fuente llega vacía o con menos de 100,000 caracteres.
+
+**RCA 2 — caché HTTP del navegador:**
+- Tras el primer fix, Charly recibió "Fuente leida vacia o incompleta - publicacion abortada" — la guarda funcionó como diseñada: abortó antes de enviar nada.
+- Reproducido en el navegador contra la API: la segunda llamada (`Accept: application/vnd.github.raw`) a la **misma URL** de la primera (`Accept: application/vnd.github.v3+json`) recibió el JSON cacheado de la primera (1,036 caracteres). Con `cache:'no-store'` devolvió el archivo completo (1,163,242 caracteres). La caché HTTP del navegador no distingue el formato por el header `Accept`.
+
+**Corrección 2 (commit "Fix: cache:no-store en lectura de fuente para publishToGitHub"):** `cache:'no-store'` agregado a las dos lecturas (`srcR` para el SHA y `srcRaw` para el cuerpo). La del SHA además evita un 409 por SHA obsoleto si se publica dos veces seguidas en una ventana corta.
+
+**Código resultante (`publishToGitHub()`):**
+```javascript
+const srcR = await fetch(GH_URL_R1,{headers:{'Accept':'application/vnd.github.v3+json'},cache:'no-store'});
+if(!srcR.ok) throw new Error('Error leyendo fuente: '+srcR.status);
+const srcD = await srcR.json();
+const srcRaw = await fetch(GH_URL_R1,{headers:{'Accept':'application/vnd.github.raw'},cache:'no-store'});
+if(!srcRaw.ok) throw new Error('Error leyendo fuente (raw): '+srcRaw.status);
+let updated = new TextDecoder('utf-8').decode(new Uint8Array(await srcRaw.arrayBuffer()));
+if(!updated || updated.length < 100000) throw new Error('Fuente leida vacia o incompleta - publicacion abortada');
+```
+
+**Validado:**
+- Patch generado con `assert count==1` + `str.replace()` (sin reconstruir módulos); `node --check` sobre los 5 bloques `<script>` sin errores tras cada cambio; diff limitado a las líneas del parche.
+- Tras cada commit, archivo en `main` comparado contra `raw.githubusercontent.com` (parámetro anti-caché): idéntico byte a byte al validado (1,173,385 bytes tras el fix 1; 1,173,544 bytes tras el fix 2).
+- Workflows "Deploy Dashboard" y "Actualizar Indice Historico" en `success` en ambos commits (sin necesidad de `workflow_dispatch`).
+- Publicación de Excel confirmada por Charly.
+
+**Método de publicación (el entorno de trabajo de Claude no tenía acceso de escritura al repositorio):** subida vía "Add file → Upload files" desde el Chrome de Charly con su sesión de GitHub ya iniciada. La herramienta del navegador no admite rutas de archivo del equipo del usuario, por lo que el archivo parcheado se generó dentro de la propia página de subida: descarga de `raw.githubusercontent.com` + reemplazo exacto verificando `count==1` + `File` asignado al input de subida; el tamaño resultante se comparó con el archivo validado antes de confirmar el commit directo a `main`.
+
+**Alcance:** únicamente `index.html`, función `publishToGitHub()` (bloque de lectura de la fuente). Cero cambios en diseño, HTML visible, lógica de KPIs, `processWorkbook()`, función Edge `github-publish` ni otros módulos.
+
+**Recomendaciones (no implementadas, pendientes de autorización):**
+- Separar el dataset embebido de `index.html` (`RAW`, `KPI_HIST`, `EFECT`, `KPI_TOTALS`, `TOTAL_RUTAS_HIST`) a un JSON aparte (con su entrada en `ALLOWED_PATHS`): el HTML crece con cada corte y seguirá acercándose a nuevos límites. Requiere fase propia (toca `publishToGitHub()`, `processWorkbook()` y todo consumidor de `RAW`, incl. `PDCBridge`).
+- Auditar que `cartas_salida.html` y `cash_today.html` no dependan de `content` base64 de la Contents API ni de respuestas cacheadas al leer su fuente (no verificado en esta sesión).
+- Cambiar `cancel-in-progress` a `false` en `.github/workflows/deploy.yml` (recomendación vigente desde 06/07/2026).
+
+---
+
+## [29/09/2026] — Rutas: fix de causa raíz "Ruta no permitida: index.html" tras migración de token (cierre de ciclo 28-29/09/2026)
+
+### Corrección de errores (RCA) — Función Edge `github-publish` (Supabase), sin tocar `index.html`
+
+**Contexto (continuación directa de la migración del 28/09/2026, ver entrada siguiente):** tras migrar `index.html` para publicar vía la función Edge `github-publish` en vez del token embebido, Charly reportó un nuevo error al intentar publicar una actualización de Excel del dashboard de Rutas: `Error al publicar en GitHub: Ruta no permitida: index.html`.
+
+**RCA:** la función Edge `github-publish` (compartida por `cash_today.html` y `cartas_salida.html` desde su creación) valida cada solicitud contra una lista blanca server-side (`ALLOWED_PATHS`) antes de escribir a GitHub. Esa lista nunca incluyó `index.html`; al migrar `index.html` a este patrón (28/09/2026) se actualizó el frontend pero se omitió el allowlist del backend, que es la única fuente de verdad de rutas permitidas.
+
+**Corrección aplicada (alcance mínimo — 1 línea):**
+```javascript
+// Antes:
+const ALLOWED_PATHS = ['cash_today.html', 'cash_summary.json', 'cartas_salida.html', 'cartas_summary.json']
+// Después:
+const ALLOWED_PATHS = ['cash_today.html', 'cash_summary.json', 'cartas_salida.html', 'cartas_summary.json', 'index.html']
+```
+
+**Despliegue:** aplicado en el editor de código de la función Edge (Supabase Dashboard → Functions → `github-publish` → Código) y desplegado vía "Implementar actualizaciones". **Validado:** Charly confirmó que la publicación de Excel en Rutas quedó restablecida.
+
+**Alcance:** únicamente la constante `ALLOWED_PATHS` de la función Edge. Cero cambios en `index.html`, en la lógica de autenticación/autorización ni en `cash_today.html`/`cartas_salida.html`.
+
+---
+
+## [28/09/2026] — Rutas: eliminación de tokens de GitHub embebidos en `index.html` — migración a función Edge `github-publish`
+
+### Mejora de seguridad (arquitectura) — autorizada explícitamente por Charly ("procede")
+
+**Contexto:** `index.html` mantenía dos tokens de GitHub fine-grained embebidos/fragmentados en el cliente (`_tR1` y `_t`; pendiente documentado desde el 20/07/2026) — mismo patrón de riesgo ya corregido en `cash_today.html` y `cartas_salida.html` (exposición en texto público servido por GitHub Pages, sujeto a revocación recurrente por Secret Scanning). Ambos tokens se retiraron.
+
+**Solución aplicada:** `publishToGitHub()` se migró al mismo patrón vigente en los otros dos dashboards: la función Edge `github-publish` realiza el PUT final con el token guardado como secret server-side (`GITHUB_TOKEN`). El cliente solo envía `path`, `content_base64`, `sha` y `message`, autenticado con el token de sesión de Supabase (la función valida sesión válida + `rol === 'admin'`).
+- Lecturas (HTML fuente y SHA vigente) siguen siendo públicas y sin token — el repositorio es público.
+- Nueva verificación post-publicación (`_pdcCheckDeployStatus`): polling cada 8s (máx. ~3 min) sobre el workflow "Deploy Dashboard" del commit publicado, reflejando en el botón el estado real (en cola, desplegando, éxito, fallo).
+- **Restricción explícita de Charly respetada:** el comportamiento visible de publicación/visualización del dashboard es idéntico al anterior; solo cambió dónde vive el token.
+
+**Validado antes de deploy:** `node --check` sobre los bloques modificados. **Commit:** `c65f4c778c26a605e1944f98db583d1660cbf99` (`main`).
+
+**Nota de continuidad:** esta migración dejó pendiente el allowlist server-side (error del 29/09/2026, arriba) y, una vez resuelto, `index.html` (ya >1MB) reveló un problema independiente en la lectura de la fuente (02/10/2026, arriba).
+
+**Alcance:** únicamente `index.html` (tokens eliminados, nuevas `_pdcCallPublishFunctionRutas()` y `_pdcCheckDeployStatus()`, `publishToGitHub()` actualizado). Cero cambios de diseño, HTML visible o lógica de KPIs.
+
+---
+
 ## [21/08/2026] — Nueva funcionalidad/diseño: Rebranding con identidad oficial Grupo pdc
 
 **Clasificación:** Mejora funcional / diseño (branding) — sin cambios de estructura ni lógica de negocio. Autorizada explícitamente por Charly a partir del manual de marca corporativo oficial (logos color/blanco + guía de identidad visual del Grupo). **Archivos:** `index.html`, `analytics.html`, `login.html`, `historico.html`, `regional/index.html`, `peru/index.html`, `elsalvador/index.html`, `cash_today.html`, `cartas_salida.html`, `docs/07_DESIGN_SYSTEM.md`.

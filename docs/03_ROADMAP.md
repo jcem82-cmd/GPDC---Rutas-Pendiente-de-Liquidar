@@ -2,9 +2,20 @@
 ## PDC Analytics Center · Plan de Evolución
 
 **Estado actual: v2.17 ESTABLE (Rutas) / v2.18 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
-**Última actualización:** 21/08/2026 (rebranding identidad oficial Grupo pdc)
+**Última actualización:** 02/10/2026 (publicación de Rutas: tokens server-side + soporte de index.html >1MB)
 
 ---
+
+---
+
+## ✅ FASE 18 — Seguridad y robustez de la publicación self-service de Rutas (COMPLETADA · 28/09–02/10/2026)
+
+- [x] **Tokens de GitHub eliminados de `index.html`** — publicación migrada a la función Edge `github-publish` (token server-side); cierra el pendiente CRÍTICO del 20/07/2026 (28/09/2026)
+- [x] **Verificación post-publicación del deploy** — `_pdcCheckDeployStatus()` refleja en el botón el estado real del workflow "Deploy Dashboard" (28/09/2026)
+- [x] **`ALLOWED_PATHS` incluye `index.html`** — omisión de la migración inicial corregida (29/09/2026)
+- [x] **Lectura de fuente con `index.html` >1MB** — `Accept: application/vnd.github.raw` + guarda de tamaño (Contents API devolvía `content` vacío → "Faltan campos requeridos") (02/10/2026)
+- [x] **Caché HTTP del navegador** — `cache:'no-store'` en ambas lecturas de `publishToGitHub()` (02/10/2026)
+- [x] **Publicación de Excel de Rutas restablecida** — confirmado por Charly (02/10/2026). Ver `01_MASTER_PROJECT_CONTEXT.md` §21 y `02_CHANGELOG.md`.
 
 ---
 
@@ -271,6 +282,9 @@
 - [ ] **Detección de nuevas sedes/cajeros** sin modificar código
 - [ ] **Módulo Presupuesto actualizable** — conectar hoja `Presupuesto` del Excel fuente a `_PRESUPUESTO`
 - [ ] **Alertas vía Teams** — rutas vencidas por umbral configurable
+- [ ] **Separar el dataset de `index.html` a un JSON aparte** *(recomendación, pendiente de autorización — 02/10/2026)* — `index.html` (~1.17MB) crece con cada corte porque embebe `RAW`, `KPI_HIST`, `EFECT`, `KPI_TOTALS` y `TOTAL_RUTAS_HIST`. Mover los datos a un archivo independiente (con su entrada en `ALLOWED_PATHS`) elimina la dependencia de tamaño del HTML en el flujo de publicación. Requiere fase propia: toca `publishToGitHub()`, `processWorkbook()` y todo consumidor de `RAW` (incl. `PDCBridge`)
+- [ ] **Auditar `cartas_salida.html` y `cash_today.html` frente al límite de 1MB de la Contents API y la caché HTTP** *(recomendación, no verificado)*
+- [ ] **`cancel-in-progress: false` en `.github/workflows/deploy.yml`** *(recomendación vigente, no implementada)*
 
 ---
 
