@@ -3890,13 +3890,13 @@ async function publishToGitHub() {
     /* R1-FIX: Leer HTML limpio desde repo (no DOM en vivo) */
     const _tR1 = null; // token eliminado - migracion Supabase Edge Function 28/09/2026
     const GH_URL_R1 = 'https://api.github.com/repos/jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar/contents/index.html';
-    const srcR = await fetch(GH_URL_R1,{headers:{'Accept':'application/vnd.github.v3+json'}});
+    const srcR = await fetch(GH_URL_R1,{headers:{'Accept':'application/vnd.github.v3+json'},cache:'no-store'}); /* no-store: sha siempre fresco */
     if(!srcR.ok) throw new Error('Error leyendo fuente: '+srcR.status);
     const srcD = await srcR.json();
     /* R1-FIX-ARCH: TextDecoder para UTF-8 correcto en archivos grandes */
     /* FIX 02/10/2026: la Contents API devuelve content vacio para archivos >1MB (index.html ya supera 1MB).
        Se lee el cuerpo con media type raw; srcD.sha (del JSON) sigue siendo valido. */
-    const srcRaw = await fetch(GH_URL_R1,{headers:{'Accept':'application/vnd.github.raw'}});
+    const srcRaw = await fetch(GH_URL_R1,{headers:{'Accept':'application/vnd.github.raw'},cache:'no-store'}); /* no-store: evita que la cache HTTP devuelva el JSON de la llamada previa (misma URL) */
     if(!srcRaw.ok) throw new Error('Error leyendo fuente (raw): '+srcRaw.status);
     let updated = new TextDecoder('utf-8').decode(new Uint8Array(await srcRaw.arrayBuffer()));
     if(!updated || updated.length < 100000) throw new Error('Fuente leida vacia o incompleta - publicacion abortada');
