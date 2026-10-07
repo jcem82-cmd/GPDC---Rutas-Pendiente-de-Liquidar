@@ -3020,6 +3020,8 @@ function handleFile(file) {
       if(ghBtn) { ghBtn.style.display = 'inline-flex'; ghBtn.disabled = false; ghBtn.textContent = '🚀 Publicar en GitHub'; ghBtn.style.background = '#4f46e5'; }
       const dlBtn = document.getElementById('btnDownloadHTML');
       if(dlBtn) { dlBtn.style.display = 'none'; }
+      /* CDR 07/10/2026: genera la validación operatoria (módulo aditivo PDC_CDR); aislado, no afecta la carga */
+      try { if (window.PDC_CDR) window.PDC_CDR.prepare(wb); } catch(_cdrErr) { console.error('PDC_CDR:', _cdrErr); }
 
     } catch(err) {
       showParseError('Error al procesar: ' + err.message);
@@ -3947,6 +3949,351 @@ async function publishToGitHub() {
         setTimeout(()=>{btn.style.background='#4f46e5';},4000);
   }
 }
+</script>
+
+<script>
+/* ============================================================================
+   PDC_CDR · Validación operatoria diaria de CDR  (módulo aditivo · 07/10/2026)
+   Genera Estatus73_AAAA-MM-DD_HHMM.json (misma lógica que cdr_validacion.py) a partir del
+   MISMO libro Excel ya leído por handleFile() y lo escribe en la carpeta "Entrada" sincronizada
+   con OneDrive/SharePoint, lo que dispara el flujo CDR_Validacion_Operatoria_Diaria.
+   - No modifica processWorkbook() ni publishToGitHub(); cualquier fallo se aísla en try/catch.
+   - Se escribe una sola vez por archivo Excel cargado, al hacer clic en "Publicar en GitHub".
+   - Requiere Edge/Chrome (File System Access API). Sin carpeta configurada: botón de descarga manual.
+   ============================================================================ */
+(function () {
+  'use strict';
+  var HOJA_ESTATUS = 'Estatus', HOJA_CFG = 'CDR', ESTATUS_OBJ = 73;
+  var MONEDA = { 'Guatemala': 'Q', 'El Salvador': '$' };
+  var AZUL = '#00216f', CELESTE = '#7dbfe6', GRIS = '#606060';
+  var FUENTE = "'Museo Sans Rounded','Segoe UI',Arial,sans-serif";
+  var DB_NAME = 'pdc_cdr', DB_STORE = 'handles', DB_KEY = 'entrada';
+  var _pending = null;      // { json, nombre, resumen, done }
+  var _listening = false;
+
+  /* ---------- utilidades (equivalentes a cdr_validacion.py) ---------- */
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+  }
+  function clave(c) {
+    return String(c).normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^\x00-\x7f]/g, '')
+      .toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+  function isNil(v) { return v === null || v === undefined || (typeof v === 'number' && isNaN(v)); }
+  function s(v) { return isNil(v) ? '' : String(v).trim(); }
+  function normBodega(v) {
+    if (isNil(v)) return '';
+    var t = String(v).trim();
+    if (t === '') return '';
+    var n = Number(t);
+    return isFinite(n) ? String(Math.trunc(n)) : t;
+  }
+  function normEstatus(v) {
+    if (isNil(v)) return null;
+    var m = /^\s*(\d+)/.exec(String(v));
+    return m ? parseInt(m[1], 10) : null;
+  }
+  function toNum(v) {
+    if (typeof v === 'number') return isFinite(v) ? v : NaN;
+    if (typeof v === 'string') {
+      var t = v.trim();
+      return /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(t) ? Number(t) : NaN;
+    }
+    return NaN;
+  }
+  function round2(x) { return Number(x.toFixed(2)); }
+  function fmtMonto(v, moneda) {
+    var neg = v < 0, t = Math.abs(v).toFixed(2).split('.');
+    t[0] = t[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return moneda + ' ' + (neg ? '-' : '') + t[0] + '.' + t[1];
+  }
+  function p2(n) { return String(n).padStart(2, '0'); }
+  function fmtFecha(v) {
+    if (isNil(v)) return '';
+    if (v instanceof Date) {
+      if (isNaN(v.getTime())) return '';
+      return p2(v.getDate()) + '/' + p2(v.getMonth() + 1) + '/' + v.getFullYear();
+    }
+    return String(v).trim();
+  }
+  function cmp(a, b) {
+    if (typeof a === 'number' && typeof b === 'number') return a - b;
+    a = String(a); b = String(b);
+    return a < b ? -1 : (a > b ? 1 : 0);
+  }
+  function ahoraGT(d) {
+    var f = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Guatemala', year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false
+    }).formatToParts(d || new Date());
+    var o = {}; f.forEach(function (p) { o[p.type] = p.value; });
+    var hh = o.hour === '24' ? '00' : o.hour;
+    return { fecha: o.year + '-' + o.month + '-' + o.day, hhmm: hh + ':' + o.minute, hhmmCompacto: hh + o.minute };
+  }
+  function filasHoja(ws) {
+    return XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
+  }
+
+  /* ---------- configuración (pestaña CDR) ---------- */
+  function leerConfig(wb) {
+    var ws = wb.Sheets[HOJA_CFG];
+    if (!ws) return null;
+    var f = filasHoja(ws);
+    if (!f.length) throw new Error('La pestaña CDR está vacía');
+    var alias = { 'bodega': 'Bodega', 'responsable': 'Responsable', 'cdr': 'Responsable', 'pais': 'Pais',
+      'correo (dirigido)': 'Correo (dirigido)', 'en copia - correo': 'en copia - correo' };
+    var idx = {};
+    f[0].forEach(function (h, i) {
+      var k = alias[clave(isNil(h) ? '' : h)];
+      if (k && !(k in idx)) idx[k] = i;
+    });
+    var req = ['Bodega', 'Responsable', 'Pais', 'Correo (dirigido)', 'en copia - correo'];
+    var faltan = req.filter(function (c) { return !(c in idx); });
+    if (faltan.length) throw new Error('Pestaña CDR: faltan columnas ' + faltan.join(', '));
+    var cfg = [];
+    for (var i = 1; i < f.length; i++) {
+      var r = f[i];
+      if (isNil(r[idx['Bodega']])) continue;
+      cfg.push({
+        Bodega: normBodega(r[idx['Bodega']]),
+        Responsable: s(r[idx['Responsable']]),
+        Pais: s(r[idx['Pais']]),
+        Para: s(r[idx['Correo (dirigido)']]),
+        Cc: s(r[idx['en copia - correo']])
+      });
+    }
+    var vistos = {}, dup = [];
+    cfg.forEach(function (c) { if (vistos[c.Bodega]) dup.push(c.Bodega); vistos[c.Bodega] = 1; });
+    if (dup.length) throw new Error('Pestaña CDR: bodegas duplicadas ' + dup.join(', '));
+    return cfg;
+  }
+
+  /* ---------- cuerpo HTML del correo (idéntico a cuerpo_html de Python) ---------- */
+  function cuerpoHtml(cdr, fecha, filas, porBodega, total, rutasN, moneda) {
+    var th = 'padding:6px 8px;background:' + AZUL + ';color:#ffffff;font-size:12px;text-align:left;border:1px solid ' + AZUL;
+    var td = 'padding:5px 8px;font-size:12px;border:1px solid #d9dee3;color:#0f141b';
+    var tdr = td + ';text-align:right';
+    var fRutas = filas.map(function (r) {
+      return "<tr><td style='" + td + "'>" + esc(r.bodega) + '</td>' +
+        "<td style='" + td + "'>" + esc(r.no_ruta) + '</td>' +
+        "<td style='" + td + "'>" + esc(r.fecha) + '</td>' +
+        "<td style='" + td + "'>" + esc(r.piloto) + '</td>' +
+        "<td style='" + td + "'>" + esc(r.transportista) + '</td>' +
+        "<td style='" + tdr + "'>" + esc(fmtMonto(r.monto, moneda)) + '</td></tr>';
+    }).join('');
+    var fBod = Object.keys(porBodega).map(function (b) {
+      var d = porBodega[b];
+      return "<tr><td style='" + td + "'>" + esc(b) + "</td><td style='" + tdr + "'>" + d.rutas + '</td>' +
+        "<td style='" + tdr + "'>" + esc(fmtMonto(d.monto, moneda)) + '</td></tr>';
+    }).join('');
+    var T = esc(fmtMonto(total, moneda));
+    return '<div style="font-family:' + FUENTE + ';color:#0f141b;max-width:900px">\n' +
+      '<div style="background:' + AZUL + ';color:#fff;padding:14px 18px;border-bottom:4px solid ' + CELESTE + '">\n' +
+      '<div style="font-size:11px;letter-spacing:1px;opacity:.85">GRUPO PDC · FINANZAS CORPORATIVAS</div>\n' +
+      '<div style="font-size:18px;font-weight:bold">Validación de operatoria diaria · ' + esc(cdr) + '</div>\n' +
+      '<div style="font-size:12px">Corte: ' + fecha + '</div></div>\n' +
+      '{{ALERTA_PREVIA}}\n' +
+      '<p style="font-size:13px">Estimados, se identificaron <b>' + rutasN + '</b> ruta(s) en estatus <b>' + ESTATUS_OBJ + '</b> en las\n' +
+      'bodegas de su CDR, por un monto asignado total de <b>' + T + '</b>.</p>\n' +
+      '<p style="font-size:13px"><b>Se solicita validar y confirmar la operatoria el mismo día</b> respondiendo la solicitud\n' +
+      'de aprobación enviada por Microsoft Approvals (Aprobar = operatoria validada · Rechazar = requiere revisión, indicar comentario).</p>\n' +
+      '<div style="font-size:13px;font-weight:bold;color:' + AZUL + ';margin:10px 0 4px">Resumen por bodega</div>\n' +
+      '<table style="border-collapse:collapse;font-family:' + FUENTE + '"><tr><th style="' + th + '">Bodega</th>\n' +
+      '<th style="' + th + ';text-align:right">Rutas</th><th style="' + th + ';text-align:right">Monto asignado</th></tr>' + fBod + '\n' +
+      '<tr><td style="' + td + ';font-weight:bold;background:#eef6fb">Total</td><td style="' + tdr + ';font-weight:bold;background:#eef6fb">' + rutasN + '</td>\n' +
+      '<td style="' + tdr + ';font-weight:bold;background:#eef6fb">' + T + '</td></tr></table>\n' +
+      '<div style="font-size:13px;font-weight:bold;color:' + AZUL + ';margin:14px 0 4px">Detalle por ruta</div>\n' +
+      '<table style="border-collapse:collapse;font-family:' + FUENTE + '"><tr><th style="' + th + '">Bodega</th><th style="' + th + '">No. ruta</th>\n' +
+      '<th style="' + th + '">Fecha</th><th style="' + th + '">Piloto</th><th style="' + th + '">Transportista</th>\n' +
+      '<th style="' + th + ';text-align:right">Monto asignado</th></tr>' + fRutas + '\n' +
+      '<tr><td colspan="5" style="' + td + ';font-weight:bold;background:#eef6fb">Total</td>\n' +
+      '<td style="' + tdr + ';font-weight:bold;background:#eef6fb">' + T + '</td></tr></table>\n' +
+      '<p style="font-size:11px;color:' + GRIS + ';margin-top:14px">Mensaje automático generado con cada actualización del dashboard de rutas.\n' +
+      'Respuesta esperada el mismo día; las solicitudes sin respuesta se reportan al día siguiente.</p></div>';
+  }
+
+  /* ---------- construcción del JSON (equivalente a main() de Python) ---------- */
+  function build(wb, ahora) {
+    var cfg = leerConfig(wb);
+    if (!cfg) return null;                       // sin pestaña CDR: el módulo no actúa
+    var wsE = wb.Sheets[HOJA_ESTATUS];
+    if (!wsE) throw new Error('No existe la pestaña ' + HOJA_ESTATUS);
+    var f = filasHoja(wsE), ix = {};
+    f[0].forEach(function (h, i) { var k = String(isNil(h) ? '' : h).trim().toUpperCase(); if (!(k in ix)) ix[k] = i; });
+    ['NO_RUTA', 'ESTATUS_RUTA', 'FECHA', 'BODEGA', 'TRANSPORTISTA', 'PILOTO', 'MONTO_ASIGNADO_A_RUTA_DESPACHO'].forEach(function (c) {
+      if (!(c in ix)) throw new Error('Pestaña Estatus: no existe la columna ' + c);
+    });
+    var cfgBod = {};
+    cfg.forEach(function (c) { cfgBod[c.Bodega] = 1; });
+
+    var d73 = [], fueraSet = {};
+    for (var i = 1; i < f.length; i++) {
+      var r = f[i];
+      if (!r || normEstatus(r[ix.ESTATUS_RUTA]) !== ESTATUS_OBJ) continue;
+      var bod = normBodega(r[ix.BODEGA]);
+      if (!cfgBod[bod]) { fueraSet[bod] = 1; continue; }
+      d73.push({ bod: bod, noRuta: r[ix.NO_RUTA], monto: toNum(r[ix.MONTO_ASIGNADO_A_RUTA_DESPACHO]),
+        fecha: r[ix.FECHA], piloto: r[ix.PILOTO], transp: r[ix.TRANSPORTISTA] });
+    }
+    var alertas = {};
+    alertas.bodegas_73_fuera_de_config = Object.keys(fueraSet).sort();
+    alertas.rutas_con_monto_invalido = d73.filter(function (x) { return isNaN(x.monto); }).map(function (x) { return String(x.noRuta); });
+    d73.forEach(function (x) { if (isNaN(x.monto)) x.monto = 0; });
+    var cuenta = {};
+    d73.forEach(function (x) { var k = String(x.noRuta); cuenta[k] = (cuenta[k] || 0) + 1; });
+    alertas.no_ruta_duplicados = Object.keys(cuenta).filter(function (k) { return cuenta[k] > 1; }).sort();
+    var vistos = {};
+    d73 = d73.filter(function (x) { var k = String(x.noRuta) + '|' + x.bod; if (vistos[k]) return false; vistos[k] = 1; return true; });
+
+    var t = ahoraGT(ahora), fecha = t.fecha, corte = t.fecha + ' ' + t.hhmm;
+    // agrupar configuración por Responsable (orden alfabético)
+    var grupos = {};
+    cfg.forEach(function (c) { (grupos[c.Responsable] = grupos[c.Responsable] || []).push(c); });
+    var cdrs = [], sinRutas = [];
+    Object.keys(grupos).sort().forEach(function (cdr) {
+      var g = grupos[cdr], pais = g[0].Pais, moneda = MONEDA[pais] || '';
+      var bodegas = g.map(function (c) { return c.Bodega; }).sort();
+      function unir(campo) {
+        var set = {};
+        g.forEach(function (c) { c[campo].split(';').forEach(function (x) { x = x.trim(); if (x) set[x] = 1; }); });
+        return Object.keys(set).sort().join('; ');
+      }
+      var para = unir('Para'), cc = unir('Cc');
+      var sub = d73.filter(function (x) { return bodegas.indexOf(x.bod) >= 0; })
+        .sort(function (a, b) { return cmp(a.bod, b.bod) || cmp(a.noRuta, b.noRuta); });
+      if (!sub.length) { sinRutas.push(cdr); return; }
+      var filas = sub.map(function (x) {
+        return { bodega: x.bod, no_ruta: s(x.noRuta), fecha: fmtFecha(x.fecha), piloto: s(x.piloto),
+          transportista: s(x.transp), monto: round2(x.monto) };
+      });
+      var porBodega = {};
+      filas.forEach(function (x) {
+        var d = porBodega[x.bodega] || (porBodega[x.bodega] = { rutas: 0, monto: 0 });
+        d.rutas += 1; d.monto = round2(d.monto + x.monto);
+      });
+      var total = round2(filas.reduce(function (a, x) { return a + x.monto; }, 0));
+      cdrs.push({
+        cdr: cdr, pais: pais, moneda: moneda, bodegas: bodegas,
+        rutas: filas.length, monto_total: total, monto_total_fmt: fmtMonto(total, moneda),
+        para: para, cc: cc,
+        asunto: 'Validación operatoria ' + cdr + ' · ' + fecha + ' · ' + filas.length + ' rutas en estatus ' + ESTATUS_OBJ,
+        por_bodega: Object.keys(porBodega).map(function (b) { return { bodega: b, rutas: porBodega[b].rutas, monto: porBodega[b].monto }; }),
+        html_cuerpo: cuerpoHtml(cdr, corte, filas, porBodega, total, filas.length, moneda)
+      });
+    });
+    var out = { fecha: fecha, corte: corte, estatus: ESTATUS_OBJ, cdrs: cdrs, cdrs_sin_rutas: sinRutas, alertas: alertas };
+    return { out: out, nombre: 'Estatus73_' + t.fecha + '_' + t.hhmmCompacto + '.json', rutas73: d73.length };
+  }
+
+  /* ---------- persistencia del handle de carpeta (IndexedDB) ---------- */
+  function idb() {
+    return new Promise(function (ok, ko) {
+      var q = indexedDB.open(DB_NAME, 1);
+      q.onupgradeneeded = function () { q.result.createObjectStore(DB_STORE); };
+      q.onsuccess = function () { ok(q.result); };
+      q.onerror = function () { ko(q.error); };
+    });
+  }
+  function getHandle() {
+    return idb().then(function (db) {
+      return new Promise(function (ok, ko) {
+        var r = db.transaction(DB_STORE).objectStore(DB_STORE).get(DB_KEY);
+        r.onsuccess = function () { ok(r.result || null); }; r.onerror = function () { ko(r.error); };
+      });
+    });
+  }
+  function setHandle(h) {
+    return idb().then(function (db) {
+      return new Promise(function (ok, ko) {
+        var tx = db.transaction(DB_STORE, 'readwrite'); tx.objectStore(DB_STORE).put(h, DB_KEY);
+        tx.oncomplete = ok; tx.onerror = function () { ko(tx.error); };
+      });
+    });
+  }
+
+  /* ---------- interfaz mínima (barra de estado + botón) ---------- */
+  function barra() {
+    var b = document.getElementById('pdc-cdr-bar');
+    if (b) return b;
+    var pub = document.getElementById('btnPublishGH');
+    if (!pub || !pub.parentNode || !pub.parentNode.parentNode) return null;
+    b = document.createElement('div');
+    b.id = 'pdc-cdr-bar';
+    b.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 8px;padding:8px 12px;' +
+      'background:var(--navy-10);border-radius:8px;font-size:.72rem;color:var(--navy);font-weight:700';
+    b.innerHTML = '<span id="pdc-cdr-msg" style="flex:1 1 220px"></span>' +
+      '<button class="tc-btn" id="pdc-cdr-folder" type="button" style="padding:4px 10px;font-size:.7rem">📁 Carpeta CDR</button>' +
+      '<button class="tc-btn" id="pdc-cdr-dl" type="button" style="padding:4px 10px;font-size:.7rem;background:var(--t3)">⬇ JSON</button>';
+    pub.parentNode.parentNode.insertBefore(b, pub.parentNode);
+    document.getElementById('pdc-cdr-folder').addEventListener('click', elegirCarpeta);
+    document.getElementById('pdc-cdr-dl').addEventListener('click', descargar);
+    return b;
+  }
+  function msg(t, color) {
+    var b = barra(); if (!b) return;
+    var m = document.getElementById('pdc-cdr-msg'); m.textContent = t; m.style.color = color || 'var(--navy)';
+  }
+  function descargar() {
+    if (!_pending) return;
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([_pending.json], { type: 'application/json' }));
+    a.download = _pending.nombre; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+  function elegirCarpeta() {
+    if (!window.showDirectoryPicker) { msg('📨 CDR: este navegador no permite escribir en carpeta; use Edge/Chrome o ⬇ JSON.', '#b45309'); return; }
+    window.showDirectoryPicker({ id: 'pdc-cdr-entrada', mode: 'readwrite' }).then(function (h) {
+      return setHandle(h).then(function () {
+        msg('📨 CDR: carpeta "' + h.name + '" configurada' + (h.name !== 'Entrada' ? ' (¡verifique que sea CDR_Validacion/Entrada!)' : '') +
+          (_pending && !_pending.done ? ' · se enviará al publicar.' : '.'), h.name !== 'Entrada' ? '#b45309' : 'var(--gb)');
+      });
+    }).catch(function (e) { if (e && e.name !== 'AbortError') msg('📨 CDR: no se pudo configurar la carpeta (' + (e.message || e) + ').', '#b91c1c'); });
+  }
+
+  /* ---------- envío (al hacer clic en Publicar) ---------- */
+  function alPublicar() {
+    if (!_pending || _pending.done) return;
+    var p = _pending;
+    getHandle().then(function (h) {
+      if (!h) { msg('📨 CDR: falta configurar la carpeta (botón 📁). Use ⬇ JSON como alternativa.', '#b45309'); return; }
+      return h.queryPermission({ mode: 'readwrite' }).then(function (st) {
+        return st === 'granted' ? st : h.requestPermission({ mode: 'readwrite' });
+      }).then(function (st) {
+        if (st !== 'granted') { msg('📨 CDR: permiso a la carpeta denegado. Reintente al publicar o use ⬇ JSON.', '#b45309'); return; }
+        return h.getFileHandle(p.nombre, { create: true }).then(function (fh) {
+          return fh.createWritable().then(function (w) { return w.write(p.json).then(function () { return w.close(); }); });
+        }).then(function () {
+          p.done = true;
+          msg('✅ CDR: ' + p.nombre + ' guardado en "' + h.name + '" · el flujo se dispara tras la sincronización de OneDrive.', 'var(--gb)');
+        });
+      });
+    }).catch(function (e) { console.error('PDC_CDR:', e); msg('📨 CDR: error al escribir (' + ((e && e.message) || e) + '). Use ⬇ JSON.', '#b91c1c'); });
+  }
+
+  /* ---------- punto de entrada: se llama desde handleFile() tras processWorkbook ---------- */
+  function prepare(wb) {
+    _pending = null;
+    try {
+      var r = build(wb, new Date());
+      if (!r) return;                                   // libro sin pestaña CDR
+      _pending = { json: JSON.stringify(r.out, null, 1), nombre: r.nombre, done: false };
+      var n = r.out.cdrs.length, rutas = r.out.cdrs.reduce(function (a, c) { return a + c.rutas; }, 0);
+      barra();
+      msg('📨 Validación CDR lista: ' + n + ' CDR con envío · ' + rutas + ' rutas en estatus 73' +
+        (r.out.cdrs_sin_rutas.length ? ' · sin rutas: ' + r.out.cdrs_sin_rutas.join(', ') : '') +
+        ' · se enviará al publicar.');
+      var pub = document.getElementById('btnPublishGH');
+      if (pub && !_listening) { pub.addEventListener('click', alPublicar); _listening = true; }
+    } catch (e) {
+      console.error('PDC_CDR:', e);
+      if (barra()) msg('📨 CDR: no se generó la validación (' + (e.message || e) + '). El dashboard no se afecta.', '#b91c1c');
+    }
+  }
+
+  window.PDC_CDR = { prepare: prepare, build: build };
+})();
+
 </script>
 
 <script src="cc_widget.js"></script>
