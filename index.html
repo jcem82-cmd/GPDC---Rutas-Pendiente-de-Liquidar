@@ -3912,6 +3912,8 @@ async function publishToGitHub() {
       updated = updated.replace(/id="hdr-fecha">[^<]+<\/strong>/g,
         'id="hdr-fecha">'+res.kpiTotals.report_date+'<\/strong>');
     }
+    /* GUARDA 09/10/2026: no publicar si la fuente leida no es el HTML del dashboard (p.ej. JSON de la API de GitHub) */
+    if(!/^\s*<(!doctype|html)/i.test(updated) || updated.indexOf('const RAW = ') < 0) throw new Error('Fuente invalida (no es el HTML del dashboard) - publicacion abortada, no se modifico GitHub');
     const bytes = new TextEncoder().encode(updated);
     let bin = '';
     for(let i=0; i<bytes.length; i+=8192) {
