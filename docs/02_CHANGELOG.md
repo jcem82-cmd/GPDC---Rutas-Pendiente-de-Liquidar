@@ -15,10 +15,16 @@
 **Corrección en el repositorio (solo `.md`):**
 - `PDC_MASTER_DOC.md` y `docs/00_MASTER_REQUEST.md`: eliminadas las 5 ocurrencias del token. Se sustituyeron por una nota que remite al secreto de Supabase; el snippet de Python ahora lee el token de la variable de entorno `GITHUB_TOKEN`.
 - Los `.md` no son leídos por ningún HTML, JS ni workflow. `deploy.yml` se ejecuta como en cualquier push; `update-historico-index.yml` no se dispara (solo reacciona a `index.html`).
-- **Limitación:** el valor sigue visible en el historial de commits anteriores. La mitigación real es que el token esté **revocado** en GitHub (Settings → Developer settings → Personal access tokens). Pendiente de confirmación por Charly.
+- **Limitación:** el valor sigue visible en el historial de commits anteriores. La mitigación real es que el token esté **revocado** en GitHub, lo cual se ejecutó (ver siguiente sección).
+
+**Revocación de tokens clásicos (19/10/2026, ejecutada por Charly en GitHub → Settings → Developer settings → Personal access tokens):**
+- Eliminado **"Token para Rutas vencidas"**: sin fecha de caducidad, con permisos de administración total (`admin:enterprise`, `admin:org`, `delete_repo`, `workflow`, entre otros). Candidato más probable al token expuesto en la documentación.
+- Eliminado **"Token para efectivo hoy"**: ya caducado (20/07/2026) y nunca usado.
+- La lista de tokens clásicos quedó vacía. Los dashboards no dependen de tokens clásicos: publican vía Edge Function `github-publish` con el secreto `GITHUB_TOKEN` (fine-grained) de Supabase.
+- **Revisión del Security log de GitHub:** Charly revisó la actividad reciente de la cuenta y todos los ingresos corresponden a su cuenta y a procesos propios de GitHub; no se identificó actividad ajena.
+- Si algún proceso externo (script local, flujo de Power Automate) aún dependía del token eliminado, fallará con 401; la reposición debe hacerse con un token fine-grained limitado a este repositorio (Contents: Read and write) y con fecha de caducidad.
 
 **Recomendaciones (no implementadas):**
-- Confirmar/revocar el token clásico `ghp_` en GitHub.
 - Agendar recordatorio 10 días antes del vencimiento del token nuevo (vigencia sugerida ≥ 90 días).
 - Habilitar *Secret scanning* y *Push protection* en el repositorio (Settings → Code security) para bloquear commits con tokens.
 
