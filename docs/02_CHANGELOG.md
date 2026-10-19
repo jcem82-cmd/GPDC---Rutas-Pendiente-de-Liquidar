@@ -1,3 +1,29 @@
+## [19/10/2026] — Seguridad: renovación del token de publicación (`GITHUB_TOKEN` en Supabase) y retiro de token clásico de la documentación
+
+### Corrección de errores (seguridad) — solo documentación y configuración externa; sin cambios de código
+
+**Síntoma:** GitHub notificó que el token fine-grained `cash-today-publish-server` (cuenta `jcem82-cmd`) caducó (aviso previo de 7 días + aviso de caducidad). La publicación desde los dashboards dependía de ese token.
+
+**RCA:** el token no vive en el repositorio. Desde la migración del 20/07/2026 las publicaciones pasan por la Edge Function de Supabase `github-publish`, que usa el secreto `GITHUB_TOKEN` (Supabase → Edge Functions → Secrets). Al vencer el token, la función habría fallado en el PUT final contra GitHub.
+
+**Corrección (ejecutada por Charly, fuera del repo):** se generó un token equivalente en GitHub (Contents: Read and write sobre este repositorio) y se reemplazó el valor del secreto `GITHUB_TOKEN` en Supabase. No se redesplegó la función.
+
+**Validación en producción:** publicación real de prueba desde `cash_today.html` → Config, sin errores. Commits resultantes en `main` el 19/10/2026 12:01: `a59ea5a` (`cash_today`, 57,164 registros) y `d71cfdb` (`cash_summary.json`, 45,391 transacciones 2026), vía `github-publish`. Login, carga de archivos y acceso de usuarios sin cambios.
+
+**Hallazgo adicional (seguridad):** `PDC_MASTER_DOC.md` (secciones 3 y 8 y prompt final) y `docs/00_MASTER_REQUEST.md` (cabecera del prompt y sección de token) contenían un token clásico (`ghp_`) fragmentado en texto plano. El repositorio es público, por lo que ese token debe considerarse comprometido (mismo patrón de riesgo ya documentado el 06/07 y el 20/07/2026).
+
+**Corrección en el repositorio (solo `.md`):**
+- `PDC_MASTER_DOC.md` y `docs/00_MASTER_REQUEST.md`: eliminadas las 5 ocurrencias del token. Se sustituyeron por una nota que remite al secreto de Supabase; el snippet de Python ahora lee el token de la variable de entorno `GITHUB_TOKEN`.
+- Los `.md` no son leídos por ningún HTML, JS ni workflow. `deploy.yml` se ejecuta como en cualquier push; `update-historico-index.yml` no se dispara (solo reacciona a `index.html`).
+- **Limitación:** el valor sigue visible en el historial de commits anteriores. La mitigación real es que el token esté **revocado** en GitHub (Settings → Developer settings → Personal access tokens). Pendiente de confirmación por Charly.
+
+**Recomendaciones (no implementadas):**
+- Confirmar/revocar el token clásico `ghp_` en GitHub.
+- Agendar recordatorio 10 días antes del vencimiento del token nuevo (vigencia sugerida ≥ 90 días).
+- Habilitar *Secret scanning* y *Push protection* en el repositorio (Settings → Code security) para bloquear commits con tokens.
+
+---
+
 ## [02/10/2026] — Rutas: fix de causa raíz en la publicación de Excel — lectura de fuente con `index.html` >1MB (Contents API) + caché HTTP del navegador
 
 ### Corrección de errores (RCA) — `index.html`, función `publishToGitHub()` únicamente

@@ -33,10 +33,15 @@
 
 ---
 
-## 3. TOKEN GITHUB (ensamblar en runtime)
+## 3. TOKEN GITHUB (NO se documenta en el repositorio)
+
+> **Seguridad (19/10/2026):** el repositorio es público; ningún token debe escribirse en archivos del repo, ni siquiera fragmentado u ofuscado.
+> - Publicaciones desde los dashboards: las realiza la Edge Function de Supabase `github-publish`, que usa el secreto `GITHUB_TOKEN` guardado en Supabase (Edge Functions → Secrets).
+> - Operaciones manuales o scripts: leer el token desde una variable de entorno, nunca desde el código.
 
 ```python
-TOKEN = ''.join(['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'])
+import os
+TOKEN = os.environ['GITHUB_TOKEN']  # nunca incrustar el valor en el código
 ```
 
 ---
@@ -192,7 +197,7 @@ analytics.html (v1.9) — Hub central
 
 | Recurso | Valor |
 |---|---|
-| GitHub Token (fragmentado) | `['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'].join('')` |
+| GitHub Token | No se documenta en el repo. Secreto `GITHUB_TOKEN` en Supabase → Edge Functions → Secrets |
 | Supabase URL | `https://pytsrgtcjytjztwdlvux.supabase.co` |
 | Supabase Key (publishable) | `sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj` |
 | Chart.js CDN | `https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js` |
@@ -347,7 +352,7 @@ Continuamos el desarrollo de PDC Analytics Center, plataforma BI corporativa del
 
 Repo: jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar (branch: main)
 Portal: https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/analytics.html
-Token: ['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'].join('')
+Token: (no se incluye en este documento; se proporciona por separado cuando se requiere)
 
 Adjunto el documento PDC_MASTER_DOC.md con el estado completo del proyecto al 22/06/2026.
 

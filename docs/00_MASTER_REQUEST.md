@@ -13,7 +13,7 @@ Continuamos el desarrollo de PDC Analytics Center, plataforma BI corporativa del
 Repo    : jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar (branch: main)
 Portal  : https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/analytics.html
 Login   : https://jcem82-cmd.github.io/GPDC---Rutas-Pendiente-de-Liquidar/login.html
-Token   : ['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'].join('')
+Token   : (no se incluye en este documento; se proporciona por separado cuando se requiere)
 
 Documentación de referencia disponible en /docs del repo:
   00_MASTER_REQUEST.md          ← este archivo
@@ -66,10 +66,13 @@ analytics.html (v2.0)  —  Hub central
         └──► admin.html              Chat soporte Supabase
 ```
 
-### Token GitHub (ensamblar en runtime)
+### Token GitHub (NO se documenta en el repositorio)
+
+Repo público: ningún token se escribe en archivos del repo, ni fragmentado. Las publicaciones de los dashboards usan la Edge Function `github-publish` (secreto `GITHUB_TOKEN` en Supabase). Para scripts manuales, leer el token de una variable de entorno.
 
 ```python
-TOKEN = ''.join(['ghp_','LiNq','kkiA','FhXTi','v2NRU','dhNkZ','uLiE8','i81V4','2Lc'])
+import os
+TOKEN = os.environ['GITHUB_TOKEN']  # nunca incrustar el valor en el código
 ```
 
 ### Deploy pattern archivos < 1MB
