@@ -26,7 +26,7 @@
 
 **Recomendaciones (no implementadas):**
 - Agendar recordatorio 10 días antes del vencimiento del token nuevo (vigencia sugerida ≥ 90 días).
-- Habilitar *Secret scanning* y *Push protection* en el repositorio (Settings → Code security) para bloquear commits con tokens.
+- ~~Habilitar *Secret scanning* y *Push protection*~~ **Verificado activo el 19/10/2026** por Charly: *Secret Protection* y *Push protection* figuran habilitados en el repositorio (Settings → Advanced Security) y *Push protection for yourself* en la cuenta (Settings → Code security). Limitación conocida: no detectan tokens fragmentados u ofuscados; la regla sigue siendo no escribir secretos en el repositorio.
 
 ---
 
