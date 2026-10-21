@@ -1,3 +1,31 @@
+## [21/10/2026] — Rutas: fix del verificador de despliegue tras "Publicar en GitHub" (aviso "verificación tardó más de lo normal")
+
+### Corrección de errores — solo la verificación visual del botón; sin cambios en la lógica de publicación ni en datos
+
+**Síntoma:** al publicar el Excel, el botón pasaba a "Publicado — verificación tardó más de lo normal, revisa Actions" y el usuario percibía que el dashboard no se actualizaba.
+
+**Hechos verificados:** la publicación sí llegó a `main` (commits `84d9753` 08:28 con datos al 21/10/2026 y `a0ded88` 08:32 con tipos de cambio GTQ 7.63916 / PEN 3.436). El workflow "Actualizar Indice Historico" se ejecutó en ambos casos. El aviso proviene únicamente de `_pdcCheckDeployStatus()` (22 consultas x 8 s sin run completado para el commit); no indica un deploy fallido.
+
+**RCA (causa más probable; no se pudo inspeccionar la corrida de Actions desde la sesión):**
+1. La verificación consulta la API de GitHub sin autenticación (límite 60 req/h por IP; ~25 por publicación) y descartaba en silencio toda respuesta no OK (`if (!rr.ok) continue`). Al agotarse el cupo (403) el ciclo terminaba en el aviso de timeout.
+2. `find(w => w.head_sha === commitSha)` no filtraba por workflow; cada push a `index.html` dispara dos (Deploy Dashboard y Actualizar Indice Historico), por lo que podía tomar el run equivocado (falso "Desplegado").
+3. La consulta `commits?path=index.html&per_page=1` no usaba `cache:'no-store'` (SHA posiblemente desactualizado).
+
+**Corrección (commit `be8252d`, solo `index.html`, funciones `_pdcCheckDeployStatus` y bloque de `newSha` en `publishToGitHub`):**
+- Filtro `w.name === 'Deploy Dashboard'` al buscar el run.
+- Respuesta 403/429: se informa "límite de consultas de GitHub alcanzado, revisa Actions" y se detiene el polling (antes se ocultaba).
+- `cache:'no-store'` en la consulta de runs y en la del SHA; `per_page` de 5 a 10 (dos workflows por push).
+- No se tocó `processWorkbook()`, la Edge Function `github-publish`, HTML/CSS ni el módulo CDR.
+
+**Validación:** `node --check` sobre los 6 bloques `<script>` sin errores; 5 reemplazos con `assert count==1`. Pendiente la validación funcional en la próxima publicación real de Excel (Ctrl+Shift+R antes de publicar).
+
+**Recomendaciones (fuera de alcance, no implementadas):**
+- El commit del bot `chore(historico_index) [skip ci]` no se despliega, por lo que `historico_index.json` queda desactualizado en Pages hasta el siguiente deploy.
+- `concurrency: pages` con `cancel-in-progress: true` hace que un push de Cash Today o Cartas cancele un deploy de Rutas en curso.
+- GitHub Pages sirve con caché de hasta 10 minutos: tras un deploy exitoso conviene Ctrl+Shift+R.
+
+---
+
 ## [19/10/2026] — Seguridad: renovación del token de publicación (`GITHUB_TOKEN` en Supabase) y retiro de token clásico de la documentación
 
 ### Corrección de errores (seguridad) — solo documentación y configuración externa; sin cambios de código
