@@ -3848,16 +3848,21 @@ let _pdcPublishing = false; // REGLA #14/#16: bloqueo real contra doble clic (ev
   async function _pdcCheckDeployStatus(commitSha, btn, origTxt) {
   // Verifica el estado real del workflow "Deploy Dashboard" para el commit publicado,
   // en vez de asumir que el deploy terminó tras el PUT exitoso. Poll cada 8s, máx ~3 min.
-  const RUNS_URL = 'https://api.github.com/repos/jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar/actions/runs?event=push&per_page=5';
+  const RUNS_URL = 'https://api.github.com/repos/jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar/actions/runs?event=push&per_page=10';
   const HDRS = {'Accept':'application/vnd.github.v3+json'};
   const maxTries = 22; // ~176s
   for (let i=0; i<maxTries; i++) {
     await new Promise(r=>setTimeout(r, 8000));
     try {
-      const rr = await fetch(RUNS_URL, {headers:HDRS});
+      const rr = await fetch(RUNS_URL, {headers:HDRS, cache:'no-store'});
+      if (rr.status===403 || rr.status===429) {
+        btn.innerHTML='⚠️ Publicado — límite de consultas de GitHub alcanzado, revisa Actions'; btn.style.background='#f59e0b';
+        setTimeout(()=>{btn.innerHTML=origTxt; btn.style.background='#4f46e5'; btn.disabled=false; _pdcPublishing=false;}, 8000);
+        return;
+      }
       if (!rr.ok) continue;
       const rd = await rr.json();
-      const run = (rd.workflow_runs||[]).find(w=>w.head_sha===commitSha);
+      const run = (rd.workflow_runs||[]).find(w=>w.head_sha===commitSha && w.name==='Deploy Dashboard');
       if (!run) continue; // aún no aparece el run para este commit
       if (run.status==='completed') {
         if (run.conclusion==='success') {
@@ -3934,7 +3939,7 @@ async function publishToGitHub() {
         // (o hasta el timeout de seguridad de _pdcCheckDeployStatus), no por un temporizador fijo.
         let newSha = null;
         try {
-                const cR = await fetch('https://api.github.com/repos/jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar/commits?path=index.html&per_page=1',{headers:{'Accept':'application/vnd.github.v3+json'}});
+                const cR = await fetch('https://api.github.com/repos/jcem82-cmd/GPDC---Rutas-Pendiente-de-Liquidar/commits?path=index.html&per_page=1',{headers:{'Accept':'application/vnd.github.v3+json'},cache:'no-store'});
                 if (cR.ok) { const cD = await cR.json(); if (cD && cD[0]) newSha = cD[0].sha; }
         } catch(e) { /* fallo puntual de red: no bloquea la publicacion, solo la verificacion visual */ }
         if (newSha) {
