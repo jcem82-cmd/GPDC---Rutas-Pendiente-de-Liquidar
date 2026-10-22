@@ -33,6 +33,8 @@
 
 **Fuera de alcance (recomendación, no implementada):** `js/pdc_data_bridge.js` (usado por `regional/index.html`, `peru/index.html`, `elsalvador/index.html`) filtra por `r.Pais` directamente y no conoce Mundos ni Bodega — las rutas AVON de GT/ESV seguirán contándose dentro de esos totales por país, igual que ya ocurría con el canal 29 DISTRIBUIDORES antes de este cambio. Si Charly quiere que esos dashboards también excluyan/aíslen AVON, es un alcance aparte.
 
+**Incidencia detectada en la primera publicación del Excel (RCA, sin cambio de código) — commits `3731573` (12:36) y `131327b`/`e765508` (auto-regenerado histórico):** tras publicar, `RAW` seguía sin la propiedad `Bodega` en las 1,000 filas (0 rutas AVON). Causa: la pestaña del navegador de Charly estaba abierta desde antes del commit `90d89cf` (12:09) y no se recargó antes de subir el Excel — `publishToGitHub()` toma la plantilla de código más reciente del repo, pero los **datos** de `RAW` los calcula `processWorkbook()` con el JavaScript que ya estaba cargado en memoria (el código del commit permaneció intacto; solo los datos reflejaban la versión anterior). Corrección operativa: recarga forzada (`Ctrl+Shift+R`) antes de publicar. **Validado en producción (12:58):** nueva publicación con recarga previa → 225 rutas con `Bodega==='35030'`, 100% Guatemala/GTQ, 100% Vencidas Fact. (confirmado por Charly como esperado, no efecto del cambio). Tarjeta AVON y partición Mundos funcionando correctamente con datos reales.
+
 ---
 
 ## [21/10/2026] — Rutas: fix del verificador de despliegue tras "Publicar en GitHub" (aviso "verificación tardó más de lo normal")
