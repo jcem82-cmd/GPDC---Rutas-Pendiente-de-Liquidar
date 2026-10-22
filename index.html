@@ -117,7 +117,7 @@ body{font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:13.5px
 .cc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:16px}
 .cc{background:var(--w);border-radius:var(--r);box-shadow:var(--sh);padding:14px 16px;
   position:relative;overflow:hidden;border-top:4px solid var(--navy)}
-.cc.gt{border-top-color:var(--gb)}.cc.sv{border-top-color:#3060c0}.cc.pe{border-top-color:var(--rb)}
+.cc.gt{border-top-color:var(--gb)}.cc.sv{border-top-color:#3060c0}.cc.pe{border-top-color:var(--rb)}.cc.avon{border-top-color:#4f46e5}
 .cc-flag{position:absolute;right:-4px;top:-4px;font-size:2.6rem;opacity:.07}
 .cc h3{font-size:.82rem;font-weight:800;color:var(--navy);margin-bottom:9px;display:flex;align-items:center;gap:5px}
 .cc-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
@@ -1801,11 +1801,17 @@ function pdcInitMultiFilter(selId, globalVar, allLabel){
 // FEATURE MUNDOS (20/08/2026): partición excluyente Vikingo / PDC Brands.
 // Vikingo = GT+ESV excepto canal 29 DISTRIBUIDORES.
 // PDC Brands = Perú + (GT+ESV solo canal 29 DISTRIBUIDORES).
+// FEATURE AVON (22/10/2026): Bodega==='35030' (columna AD, "General (seguimiento)")
+// identifica rutas AVON. Pendiente confirmado por Charly: AVON SIEMPRE es
+// PDC Brands, sin importar Pais/Canal, y nunca cae en Vikingo.
+function isAvon(d){ return String(d.Bodega||'').trim()==='35030'; }
 function mundoOk(d){
   if(mundo==='vikingo'){
+    if(isAvon(d)) return false;
     return (d.Pais==='Guatemala'||d.Pais==='El Salvador') && d.Canal!=='29 DISTRIBUIDORES';
   }
   if(mundo==='brands'){
+    if(isAvon(d)) return true;
     return d.Pais==='Perú' || ((d.Pais==='Guatemala'||d.Pais==='El Salvador') && d.Canal==='29 DISTRIBUIDORES');
   }
   return true;
@@ -1975,7 +1981,10 @@ function RCC(){
   ];
   let h='';
   cfg.forEach(({pais,mon,cls,flag})=>{
-    const rows=FD.filter(r=>r.Pais===pais);
+    // FEATURE AVON (22/10/2026): las rutas AVON (Bodega==='35030') se excluyen
+    // de las tarjetas de país y se muestran aparte, para no duplicar el conteo
+    // (confirmado por Charly: AVON se resta de las tarjetas de país).
+    const rows=FD.filter(r=>r.Pais===pais && !isAvon(r));
     if(!rows.length)return;
     const vf=rows.filter(r=>r['Estado (Facturación)']==='Vencidas').length;
     const vd=rows.filter(r=>r['Estado Real']==='Vencidas').length;
@@ -1996,6 +2005,36 @@ function RCC(){
       <div class="pb"><div class="pb-f ${s}" style="width:${Math.min(100,parseFloat(pct))}%"></div></div>
     </div>`;
   });
+  // FEATURE AVON (22/10/2026): tarjeta propia para rutas Bodega==='35030'.
+  // AVON puede abarcar GTQ/USD/PEN simultáneamente -> desglose por moneda
+  // (confirmado por Charly) + un total consolidado en USD.
+  const rowsAvon=FD.filter(isAvon);
+  if(rowsAvon.length){
+    const vfA=rowsAvon.filter(r=>r['Estado (Facturación)']==='Vencidas').length;
+    const vdA=rowsAvon.filter(r=>r['Estado Real']==='Vencidas').length;
+    const dpA=(rowsAvon.reduce((s,r)=>s+(r['Días']||0),0)/rowsAvon.length).toFixed(1);
+    const pctA=rowsAvon.length>0?(vfA/rowsAvon.length*100).toFixed(1):0;
+    const sA=SC(vfA,rowsAvon.length);
+    let monLines='', totalUSD=0;
+    ['GTQ','USD','PEN'].forEach(mon=>{
+      const mrows=rowsAvon.filter(r=>r.Moneda===mon);
+      if(!mrows.length)return;
+      const vl=mrows.reduce((s,r)=>s+(r['Valor Asignado']||0),0);
+      totalUSD+=vl*FX[mon];
+      monLines+=`<div class="cc-row"><span class="cc-lbl">Valor ${mon}</span><span class="cc-val" style="font-size:.78rem">${SYM[mon]} ${fmt(vl)}</span></div>`;
+    });
+    h+=`<div class="cc avon">
+      <div class="cc-flag">🏷️</div>
+      <h3>🏷️ AVON</h3>
+      <div class="cc-row"><span class="cc-lbl">Total Rutas</span><span class="cc-val">${rowsAvon.length}</span></div>
+      <div class="cc-row"><span class="cc-lbl">Vencidas Fact.</span><span class="sm ${sA}">${vfA} (${pctA}%)</span></div>
+      <div class="cc-row"><span class="cc-lbl">Vencidas Desp.</span><span class="sm ${SC(vdA,rowsAvon.length)}">${vdA} (${rowsAvon.length>0?(vdA/rowsAvon.length*100).toFixed(1):0}%)</span></div>
+      ${monLines}
+      <div class="cc-row"><span class="cc-lbl">Valor USD equiv.</span><span class="cc-val" style="font-size:.78rem">$ ${fmt(totalUSD)}</span></div>
+      <div class="cc-row"><span class="cc-lbl">Días Promedio</span><span class="cc-val">${dpA}</span></div>
+      <div class="pb"><div class="pb-f ${sA}" style="width:${Math.min(100,parseFloat(pctA))}%"></div></div>
+    </div>`;
+  }
   document.getElementById('ccards').innerHTML=h||'<div style="color:var(--t3);padding:16px">Sin datos</div>';
 }
 
@@ -3149,6 +3188,10 @@ function processWorkbook(wb, filename) {
       'Gap':                                     effT!=null ? dias-effT : null,
       'Gap_Real':                                effT!=null ? diasR-effT : null,
       'Estatus Real':                            Number(r['Estatus Real'])||null,
+      // FEATURE AVON (22/10/2026): columna AD "Bodega" de "General (seguimiento)".
+      // Bodega==='35030' identifica rutas AVON, que se reclasifican a Mundo PDC
+      // Brands en mundoOk() y se muestran en una tarjeta propia en RCC().
+      'Bodega':                                  getStr(r,'Bodega'),
     });
   }
 

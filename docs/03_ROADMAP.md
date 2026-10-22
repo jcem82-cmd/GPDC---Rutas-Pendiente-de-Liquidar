@@ -40,6 +40,7 @@
 - [x] Anti-mezcla: opciones de País/Canal incompatibles con el Mundo activo se deshabilitan automáticamente
 - [x] Visible solo para admin y supervisor (oculto para consulta, ampliable a futuro)
 - [x] Replicado en `historico.html`: mismo Mundo, misma regla, KPIs/tarjetas/donuts/tabla conectados a `baseFD()` (20/08/2026)
+- [x] Pendiente cerrado (22/10/2026): rutas AVON (`Bodega==='35030'`, columna AD de "General (seguimiento)") reclasificadas a Mundo PDC Brands sin importar Pais/Canal; tarjeta propia en `RCC()`/`renderCountryCards()` (desglose por moneda + total USD), excluida de las tarjetas de país para no duplicar conteos. Replicado en `historico.html`. Ver CHANGELOG 22/10/2026.
 
 ---
 

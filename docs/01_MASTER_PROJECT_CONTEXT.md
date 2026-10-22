@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.14 | **Última actualización:** 02/10/2026 (ver §21 — publicación de Rutas) | **Estado:** Producción ✅
+**Versión vigente:** v2.15 | **Última actualización:** 22/10/2026 (clasificación AVON en Mundo PDC Brands + tarjeta AVON — ver CHANGELOG 22/10/2026) | **Estado:** Producción ✅
 
 ---
 
@@ -23,8 +23,8 @@ PDC Analytics Center
 ├── login.html              ← Autenticación única (Supabase Auth) · 12 usuarios · 3 roles
 ├── analytics.html          ← Portal Hub · cards con KPIs EN VIVO vía PDCBridge
 │
-├── index.html              ← Dashboard Liquidación de Rutas (fuente única de verdad) · filtro Mundos (Vikingo/PDC Brands)
-├── historico.html          ← Histórico de Rutas · solo lectura · filtro Mundos (Vikingo/PDC Brands) también aplicado
+├── index.html              ← Dashboard Liquidación de Rutas (fuente única de verdad) · filtro Mundos (Vikingo/PDC Brands) · AVON (Bodega=35030) clasificado en Brands + tarjeta propia (22/10/2026)
+├── historico.html          ← Histórico de Rutas · solo lectura · filtro Mundos (Vikingo/PDC Brands) y clasificación AVON replicados
 ├── historico_index.json    ← Manifiesto de snapshots publicados (auto-regenerado por Action, NUEVO 10/08, automatizado 21/08)
 ├── cash_today.html         ← Dashboard Cash Today · dataset propio (no conectado a PDCBridge)
 ├── admin.html              ← Panel administrativo · chat Supabase

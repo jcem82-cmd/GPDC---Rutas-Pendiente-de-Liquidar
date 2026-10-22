@@ -72,7 +72,7 @@ select:disabled{opacity:.5}
 .ccards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
 @media(max-width:900px){.ccards{grid-template-columns:1fr}}
 .cc{background:var(--w);border-radius:var(--rl);box-shadow:var(--sh);padding:16px;border-top:4px solid var(--silver)}
-.cc.gt{border-top-color:#2a9d3f}.cc.sv{border-top-color:#2d6ecf}.cc.pe{border-top-color:#d03030}
+.cc.gt{border-top-color:#2a9d3f}.cc.sv{border-top-color:#2d6ecf}.cc.pe{border-top-color:#d03030}.cc.avon{border-top-color:#4f46e5}
 .cc h3{font-size:.85rem;font-weight:800;color:var(--navy);margin-bottom:10px}
 .cc-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:.76rem}
 .cc-lbl{color:var(--t3)}.cc-val{font-weight:700;color:var(--t1)}
@@ -343,11 +343,17 @@ function notLiq(d) { return d['Estado (Facturación)']!=='Liquidada' && d['Estad
 // FEATURE MUNDOS (20/08/2026): misma regla exacta de partición que index.html.
 // Vikingo = GT+ESV excepto canal 29 DISTRIBUIDORES.
 // PDC Brands = Perú + (GT+ESV solo canal 29 DISTRIBUIDORES).
+// FEATURE AVON (22/10/2026): misma regla exacta que index.html. Snapshots
+// anteriores a esta fecha no tienen el campo Bodega en RAW -> isAvon() es
+// false de forma segura (String(undefined||'')==='' !=='35030').
+function isAvon(d){ return String(d.Bodega||'').trim()==='35030'; }
 function mundoOk(d){
   if(mundo==='vikingo'){
+    if(isAvon(d)) return false;
     return (d.Pais==='Guatemala'||d.Pais==='El Salvador') && d.Canal!=='29 DISTRIBUIDORES';
   }
   if(mundo==='brands'){
+    if(isAvon(d)) return true;
     return d.Pais==='Perú' || ((d.Pais==='Guatemala'||d.Pais==='El Salvador') && d.Canal==='29 DISTRIBUIDORES');
   }
   return true;
@@ -395,7 +401,9 @@ function renderCountryCards() {
   ];
   let h='';
   cfg.forEach(({pais,mon,cls,flag})=>{
-    const rows=FD.filter(r=>r.Pais===pais);
+    // FEATURE AVON (22/10/2026): excluir rutas AVON de las tarjetas de país
+    // (mismo criterio exacto que RCC() en index.html, confirmado por Charly).
+    const rows=FD.filter(r=>r.Pais===pais && !isAvon(r));
     if(!rows.length)return;
     const vf=rows.filter(r=>r['Estado (Facturación)']==='Vencidas').length;
     const vd=rows.filter(r=>r['Estado Real']==='Vencidas').length;
@@ -415,6 +423,34 @@ function renderCountryCards() {
       <div class="pb"><div class="pb-f ${s}" style="width:${Math.min(100,parseFloat(pct))}%"></div></div>
     </div>`;
   });
+  // FEATURE AVON (22/10/2026): tarjeta propia — réplica exacta de RCC() en
+  // index.html (desglose por moneda presente + total consolidado en USD).
+  const rowsAvon=FD.filter(isAvon);
+  if(rowsAvon.length){
+    const vfA=rowsAvon.filter(r=>r['Estado (Facturación)']==='Vencidas').length;
+    const vdA=rowsAvon.filter(r=>r['Estado Real']==='Vencidas').length;
+    const dpA=(rowsAvon.reduce((s,r)=>s+(r['Días']||0),0)/rowsAvon.length).toFixed(1);
+    const pctA=rowsAvon.length>0?(vfA/rowsAvon.length*100).toFixed(1):0;
+    const sA=SC(vfA,rowsAvon.length);
+    let monLines='', totalUSD=0;
+    ['GTQ','USD','PEN'].forEach(mon=>{
+      const mrows=rowsAvon.filter(r=>r.Moneda===mon);
+      if(!mrows.length)return;
+      const vl=mrows.reduce((s,r)=>s+(r['Valor Asignado']||0),0);
+      totalUSD+=vl*(currentFX[mon]||1);
+      monLines+=`<div class="cc-row"><span class="cc-lbl">Valor ${mon}</span><span class="cc-val">${SYM[mon]} ${fmt(vl)}</span></div>`;
+    });
+    h+=`<div class="cc avon">
+      <h3>🏷️ AVON</h3>
+      <div class="cc-row"><span class="cc-lbl">Total rutas</span><span class="cc-val">${rowsAvon.length}</span></div>
+      <div class="cc-row"><span class="cc-lbl">Vencidas Fact.</span><span class="sm ${sA}">${vfA} (${pctA}%)</span></div>
+      <div class="cc-row"><span class="cc-lbl">Vencidas Desp.</span><span class="sm ${SC(vdA,rowsAvon.length)}">${vdA} (${rowsAvon.length>0?(vdA/rowsAvon.length*100).toFixed(1):0}%)</span></div>
+      ${monLines}
+      <div class="cc-row"><span class="cc-lbl">Valor USD equiv.</span><span class="cc-val">$ ${fmt(totalUSD)}</span></div>
+      <div class="cc-row"><span class="cc-lbl">Días promedio</span><span class="cc-val">${dpA}</span></div>
+      <div class="pb"><div class="pb-f ${sA}" style="width:${Math.min(100,parseFloat(pctA))}%"></div></div>
+    </div>`;
+  }
   document.getElementById('countryCards').innerHTML = h || '<div style="color:var(--t3);padding:16px">Sin datos por país</div>';
 }
 

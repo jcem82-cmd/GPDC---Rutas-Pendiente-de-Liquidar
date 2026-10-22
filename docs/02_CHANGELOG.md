@@ -1,3 +1,40 @@
+## [22/10/2026] — Rutas: clasificación AVON en Mundo PDC Brands + tarjeta AVON
+
+### Nueva funcionalidad — pendiente del Feature Mundos (20/08/2026), solicitado por Charly
+
+**Solicitud:** las rutas AVON no estaban separadas dentro del Feature Mundos. Charly identificó que se reconocen por `Bodega==='35030'` (columna AD, hoja "General (seguimiento)" del Excel de Rutas) y pidió (a) que caigan siempre en Mundo PDC Brands sin importar Pais/Canal, y (b) una tarjeta propia igual en estructura a las tarjetas de Guatemala/Perú.
+
+**RCA / hallazgos previos a tocar código:**
+- `processWorkbook()` no capturaba `Bodega` hacia `RAW` — variable nueva, aplica REGLA #21 (declarar + simular).
+- `mundoOk(d)` (duplicada en `index.html` e `historico.html`) solo evaluaba Pais/Canal, sin gancho para Bodega.
+- `RCC()` / `renderCountryCards()` filtran estrictamente por `Pais`; una tarjeta AVON adicional sobre el mismo `FD` sin excluirla de las tarjetas de país habría duplicado el conteo de rutas AVON en GT/ESV.
+- AVON puede tener rutas en GTQ, USD y PEN simultáneamente — las tarjetas de país asumen una sola moneda por tarjeta.
+
+**Decisiones confirmadas por Charly (antes de implementar):**
+1. Las rutas AVON se **restan** de las tarjetas de país (mutuamente excluyente, igual que el resto de Mundos).
+2. La tarjeta AVON muestra **desglose por moneda** (una fila `Valor GTQ` / `Valor USD` / `Valor PEN` solo para las monedas presentes) **+** un total consolidado `Valor USD equiv.`.
+3. El cambio se replica en `historico.html` (mismo patrón ya usado para Mundos: "Replica EXACTA de RCC() en index.html").
+
+**Cambio (`index.html`):**
+- `processWorkbook()`: se agrega `'Bodega': getStr(r,'Bodega')` a `routes.push(...)` (General (seguimiento), columna AD).
+- Nueva función `isAvon(d)` y `mundoOk(d)` extendida: AVON nunca cae en `vikingo`; siempre cae en `brands`.
+- `RCC()`: tarjetas de país ahora excluyen `isAvon(r)`; nuevo bloque que construye la tarjeta `.cc.avon` (desglose GTQ/USD/PEN presentes + total USD equiv., mismos campos Vencidas Fact./Desp. y Días Promedio que el resto).
+- CSS: `.cc.avon{border-top-color:#4f46e5}` (indigo, mismo tono del botón "Publicar en GitHub"; no choca con verde GT / azul ESV / rojo PE).
+
+**Cambio (`historico.html`, réplica exacta):**
+- Mismo `isAvon(d)` y `mundoOk(d)` extendido. Snapshots anteriores a esta fecha no tienen `Bodega` en `RAW` embebido → `isAvon()` resuelve `false` de forma segura (no rompe snapshots históricos).
+- `renderCountryCards()`: misma exclusión de país + mismo bloque de tarjeta AVON.
+- CSS: `.cc.avon{border-top-color:#4f46e5}`.
+
+**Validación:**
+- `node --check` sin errores en los 6 bloques `<script>` de `index.html` y los 2 de `historico.html`.
+- Simulación con datos sintéticos (REGLA #21) con rutas AVON en GT/ESV/PE: confirmado que (a) ninguna ruta AVON entra a Vikingo, (b) todas entran a Brands, (c) la tarjeta de Guatemala excluye correctamente la ruta AVON de GT, (d) la tarjeta AVON desglosa las 3 monedas y calcula el total USD equivalente correctamente.
+- No se modificó `publishToGitHub()`, la Edge Function `github-publish`, el módulo CDR, ni ningún HTML/CSS fuera de la clase `.cc.avon`.
+
+**Fuera de alcance (recomendación, no implementada):** `js/pdc_data_bridge.js` (usado por `regional/index.html`, `peru/index.html`, `elsalvador/index.html`) filtra por `r.Pais` directamente y no conoce Mundos ni Bodega — las rutas AVON de GT/ESV seguirán contándose dentro de esos totales por país, igual que ya ocurría con el canal 29 DISTRIBUIDORES antes de este cambio. Si Charly quiere que esos dashboards también excluyan/aíslen AVON, es un alcance aparte.
+
+---
+
 ## [21/10/2026] — Rutas: fix del verificador de despliegue tras "Publicar en GitHub" (aviso "verificación tardó más de lo normal")
 
 ### Corrección de errores — solo la verificación visual del botón; sin cambios en la lógica de publicación ni en datos
