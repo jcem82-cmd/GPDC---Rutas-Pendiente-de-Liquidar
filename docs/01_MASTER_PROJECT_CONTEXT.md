@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.15 | **Última actualización:** 22/10/2026 (clasificación AVON en Mundo PDC Brands + tarjeta AVON — ver CHANGELOG 22/10/2026) | **Estado:** Producción ✅
+**Versión vigente:** v2.16 | **Última actualización:** 23/10/2026 (corrección estética de grids tras tarjeta AVON, Rutas + Hub — ver CHANGELOG 23/10/2026) | **Estado:** Producción ✅
 
 ---
 

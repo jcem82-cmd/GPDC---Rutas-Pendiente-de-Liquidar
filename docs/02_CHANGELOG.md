@@ -1,3 +1,29 @@
+## [23/10/2026] — Rutas / Hub: corrección estética de grids con número variable de tarjetas (secuela directa de la tarjeta AVON)
+
+### Corrección de errores (visual) — `index.html`, `historico.html`, `analytics.html` — solo CSS, sin cambios de HTML/JS
+
+**Síntoma reportado (con capturas), en dos iteraciones:**
+1. Las tarjetas de país (`index.html`/`historico.html`) dejaban 2 columnas en blanco junto a la tarjeta AVON (4ta tarjeta, grid fijo a 3 columnas).
+2. Tras el primer fix (`auto-fit`), la tarjeta "Cartas de Salida" del Hub (`analytics.html`, 7 tarjetas) y el Panel de Administración mostraban el mismo problema de hueco en blanco; al corregir el Hub con `auto-fit` en una primera iteración, Charly señaló correctamente que una tarjeta sola estirada a todo el ancho de 3 columnas se ve desproporcionada — no es una corrección estética aceptable para una plataforma ejecutiva.
+
+**RCA:**
+- `index.html`/`historico.html`: `.cc-grid`/`.ccards`/`.ccgrid` usaban `grid-template-columns:repeat(3,1fr)` fijo, diseñado cuando solo existían 3 tarjetas de país (GT/ESV/PE). Con la tarjeta AVON (22/10/2026) pasaron a ser 4.
+- `analytics.html`: `.cards-grid` y `.admin-actions` usaban CSS Grid con `auto-fill`, que reserva columnas vacías "fantasma" para completar la fila sin que el contenido existente se estire — deja huecos en blanco cuando el número de tarjetas no es múltiplo exacto de columnas.
+
+**Corrección aplicada (2 commits):**
+1. `repeat(3,1fr)` → `repeat(auto-fit,minmax(240px,1fr))` en `index.html` (`.cc-grid`) e `historico.html` (`.ccards` vista en vivo y `.ccgrid` vista de exportación). Breakpoints móviles intactos.
+2. `analytics.html` (`.cards-grid` y `.admin-actions`): se descartó `auto-fit` (estira una tarjeta huérfana a todo el ancho — desproporcionado, corregido tras feedback de Charly) por **flexbox con `justify-content:center`**: `.dash-card{flex:1 1 360px;max-width:420px}` y `.admin-btn{flex:1 1 210px;max-width:260px}`. Filas completas se ven idénticas a como estaban (las tarjetas crecen igual que con `1fr`); una fila incompleta queda centrada con tarjetas del mismo tamaño acotado, sin estirarse ni dejar hueco. Breakpoints `@media(max-width:768px/480px)` migrados de `grid-template-columns` a `flex-direction`/`flex-basis` equivalentes (mismo comportamiento móvil).
+
+**Incidencia operativa durante la validación:** Charly reportó inicialmente "no veo ningún cambio" tras recargar. Verificado contra `raw.githubusercontent.com` que el commit sí estaba en `main`; se identificaron dos causas posibles no excluyentes: (a) caché del CDN de GitHub Pages (hasta 10 min, ya documentado), (b) existe un espejo en Cloudflare Workers (`pdc-analytics.jcem82.workers.dev`, ver §Infraestructura en `01_MASTER_PROJECT_CONTEXT.md`) que se publica **manualmente** y no está sincronizado por ningún workflow con cada push a `main` — si se accedía por esa URL, seguiría desactualizado hasta un `wrangler deploy` manual. Confirmado por Charly tras una segunda recarga que el cambio ya es visible (sin determinar cuál de las dos causas aplicó).
+
+**Validado:** `node --check` sin errores en los bloques `<script>` de los 3 archivos tras cada iteración.
+
+**Alcance:** únicamente las reglas CSS de grid/flex mencionadas. Cero cambios en HTML, JS, diseño de colores/tipografía o cualquier otro módulo.
+
+**Recomendación (no implementada, pendiente de autorización):** si el espejo de Cloudflare (`pdc-analytics.jcem82.workers.dev`) sigue en uso activo, automatizar su publicación en el mismo workflow de `deploy.yml` (o uno aparte con `wrangler-action`) evitaría que vuelva a quedar desactualizado tras cada cambio.
+
+---
+
 ## [22/10/2026] — Rutas: clasificación AVON en Mundo PDC Brands + tarjeta AVON
 
 ### Nueva funcionalidad — pendiente del Feature Mundos (20/08/2026), solicitado por Charly
