@@ -233,9 +233,18 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 /* ══════════════════════════════
    DASHBOARD CARDS
 ══════════════════════════════ */
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:22px;margin-bottom:44px}
+/* FIX (23/10/2026): auto-fit/auto-fill con grid dejaban la ultima fila
+   incompleta sin alinear (huecos en blanco, o una sola tarjeta estirada a
+   todo el ancho de 3 columnas - desproporcionado). Flexbox con wrap +
+   justify-content:center + max-width por tarjeta: filas completas se ven
+   identicas a antes (las tarjetas crecen igual via flex-grow), y una fila
+   incompleta queda centrada con tarjetas del mismo tamaño acotado, en vez
+   de estirada o con espacio vacio. */
+.cards-grid{display:flex;flex-wrap:wrap;gap:22px;margin-bottom:44px;justify-content:center}
 
 .dash-card{
+  flex:1 1 360px;
+  max-width:420px;
   background:var(--card);
   border-radius:16px;
   border:1px solid var(--border);
@@ -390,12 +399,15 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 
 .admin-actions{
   padding:18px 24px;
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
   gap:10px;
 }
 
 .admin-btn{
+  flex:1 1 210px;
+  max-width:260px;
   display:flex;align-items:center;gap:11px;
   padding:13px 15px;
   background:var(--bg);
@@ -459,12 +471,13 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
   .hero-inner{padding:28px 16px 24px;flex-direction:column;align-items:flex-start;gap:20px}
   .hero-title{font-size:1.35rem}
   .main{padding:24px 16px 48px}
-  .cards-grid{grid-template-columns:1fr}
+  .cards-grid{flex-direction:column}
+  .dash-card{max-width:none}
   .session-info{display:none}
-  .admin-actions{grid-template-columns:1fr 1fr}
+  .admin-btn{flex-basis:calc(50% - 5px);max-width:none}
 }
 @media(max-width:480px){
-  .admin-actions{grid-template-columns:1fr}
+  .admin-btn{flex-basis:100%}
   .hero-kpis{display:none}
   .hero-chips{gap:7px}
 }
