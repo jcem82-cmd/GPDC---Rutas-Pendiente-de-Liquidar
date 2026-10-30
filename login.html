@@ -401,7 +401,7 @@ body{
     <div class="field" style="margin-bottom:16px">
       <label class="field-label" for="fcpNew">Nueva contraseña</label>
       <div class="field-wrap">
-        <input class="field-input" id="fcpNew" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password"/>
+        <input class="field-input" id="fcpNew" type="password" placeholder="Mínimo 12 caracteres" autocomplete="new-password"/>
         <span class="field-icon">🔒</span>
       </div>
     </div>
@@ -744,8 +744,8 @@ document.addEventListener('DOMContentLoaded', function(){
     var fcpErrText = document.getElementById('fcpErrText');
     fcpErr.classList.remove('visible');
 
-    if(!newPass || newPass.length < 8){
-      fcpErrText.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+    if(!newPass || newPass.length < 12){
+      fcpErrText.textContent = 'La contraseña debe tener al menos 12 caracteres.';
       fcpErr.classList.add('visible');
       return;
     }

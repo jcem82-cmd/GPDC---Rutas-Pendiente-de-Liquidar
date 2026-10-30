@@ -1,3 +1,11 @@
+## [30/10/2026] — Seguridad · Política de contraseña mínima 12 (FASE 19 #5)
+
+### Corrección de seguridad (OWASP A07) — aprobado por Charly
+- `login.html`: el cambio obligatorio de clave exige mínimo 12 caracteres (antes 8): placeholder, validación y mensaje (3 líneas). Coherente con el ajuste en Supabase Auth (Minimum password length = 12). Las claves temporales del módulo de usuarios (14 caracteres) ya cumplen.
+- Verificación: sintaxis de los bloques `<script>` OK. MFA para admin: pendiente de decisión (Nueva funcionalidad).
+
+---
+
 ## [30/10/2026] — Seguridad · Chart.js vendorizado (sin CDN) — FASE 19 #3 parcial
 
 ### Mejora de seguridad (cadena de suministro, OWASP A03/A08) — aprobado por Charly
