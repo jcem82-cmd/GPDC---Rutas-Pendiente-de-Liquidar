@@ -17,7 +17,7 @@
 4. **SRI** en Chart.js 4.4.1 y SheetJS 0.20.0 con hashes calculados sobre los bytes reales servidos (o vendorizar como `js/supabase.min.js`).
 5. **CSP** por página (hay scripts inline en todos los HTML; requiere hashes/nonce) — empezar con `analytics.html`, que ya tiene una.
 6. **Exposición de datos (A01, arquitectónico):** mover los datos operativos fuera de HTML públicos hacia Supabase con RLS. Hasta entonces el repo debe seguir público.
-7. `supabase.auth.signOut()` en el botón "Salir" (hoy la sesión de Supabase persiste en `localStorage`); fijar GitHub Actions por SHA; política de contraseña (mín. 12 + MFA para admin); limpiar `console.log`; `try/catch` en el `JSON.parse` del puente de sesión de `index.html`.
+7. ~~`signOut` en Salir~~ ✅ hecho 30/10/2026; pendiente: fijar GitHub Actions por SHA; política de contraseña (mín. 12 + MFA para admin); limpiar `console.log`; `try/catch` en el `JSON.parse` del puente de sesión de `index.html`.
 
 ## 🔜 FASE 20 — Gestión de usuarios (PROPUESTA · Nueva funcionalidad · pendiente de aprobación de alcance)
 
