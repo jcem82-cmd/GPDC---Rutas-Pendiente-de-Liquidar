@@ -24,7 +24,7 @@
 Módulo de administración: alta de usuarios, asignación de rol/país/dashboards, inactivación y clave inicial generada por el sistema con cambio obligatorio en el primer ingreso. Requiere una Edge Function `admin-users` (con `service_role` solo server-side) que valide que quien llama es admin.
 
 **Decisiones (29/10/2026):** mismos 3 roles · solo correos @grupopdc.com · sin Honduras · contraseña temporal visible una vez para el admin.
-- [x] **Etapa 1 (30/10/2026):** Edge Function `admin-users` + `user_audit` — código y pruebas listos; **pendiente despliegue en Supabase**.
+- [x] **Etapa 1 (30/10/2026):** Edge Function `admin-users` + `user_audit` — código y pruebas listos; **desplegada en Supabase el 30/10/2026** (`user_audit` creada; Verify JWT legacy desactivado, la función valida por sí misma). Verificación: llamada sin sesión → `401 No autenticado.` ✔. Pendiente: prueba autenticada como admin.
 - [~] Etapa 2 (30/10/2026): maqueta `docs/mockups/etapa2_panel_usuarios.html` (Usuarios · Nuevo usuario · Roles y permisos · Auditoría) — **pendiente de aprobación**.
 - [ ] Etapa 3: conectar `analytics.html` → Administración a la función (prueba primero con cuenta de prueba).
 

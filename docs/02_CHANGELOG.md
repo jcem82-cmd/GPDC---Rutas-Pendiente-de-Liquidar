@@ -5,7 +5,7 @@
 - `supabase/functions/admin-users/` (`core.ts` reglas, `index.ts` conexión, `index.bundle.ts` archivo único para pegar en Supabase, `core.test.mjs`): acciones `create`, `update`, `set_active`, `reset_password`. Valida JWT y que el llamador sea **admin activo en BD**; correo solo `@grupopdc.com`; roles admin/supervisor/consulta; países regional/GT/ESV/PE (Honduras excluido); contraseña temporal de 14 caracteres (CSPRNG) devuelta **una sola vez** y `force_password_change=true`; inactivar = perfil `activo=false` + bloqueo en Auth (nunca se elimina); no puede auto-inactivarse ni auto-degradarse; reversa automática si falla un paso.
 - `docs/sql/2026-10-30_user_audit.sql`: bitácora inmutable (solo lectura para admin; nadie desde el navegador puede insertar/editar/borrar).
 - `docs/sql/README_admin-users.md`: pasos de despliegue.
-- **Verificación:** 53 pruebas de lógica con BD simulada (controles negativos: al quitar la validación de admin fallan 5 pruebas) + pruebas de la bitácora en Postgres (PGlite). Pendiente: despliegue por Charly y prueba en producción.
+- **Verificación:** 53 pruebas de lógica con BD simulada (controles negativos: al quitar la validación de admin fallan 5 pruebas) + pruebas de la bitácora en Postgres (PGlite). **Desplegada por Charly el 30/10/2026** (SQL `user_audit` + función `admin-users`); prueba en producción sin sesión → `401 No autenticado.` ✔. Observación (fuera de alcance): `pdc_data_bridge.js` lanza error CSP `unsafe-eval` en `analytics.html` (preexistente).
 
 ---
 
