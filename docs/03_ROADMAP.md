@@ -25,7 +25,7 @@ Módulo de administración: alta de usuarios, asignación de rol/país/dashboard
 
 **Decisiones (29/10/2026):** mismos 3 roles · solo correos @grupopdc.com · sin Honduras · contraseña temporal visible una vez para el admin.
 - [x] **Etapa 1 (30/10/2026):** Edge Function `admin-users` + `user_audit` — código y pruebas listos; **pendiente despliegue en Supabase**.
-- [ ] Etapa 2: maqueta del panel (Usuarios · Nuevo usuario · Roles y permisos · Auditoría) para aprobación.
+- [~] Etapa 2 (30/10/2026): maqueta `docs/mockups/etapa2_panel_usuarios.html` (Usuarios · Nuevo usuario · Roles y permisos · Auditoría) — **pendiente de aprobación**.
 - [ ] Etapa 3: conectar `analytics.html` → Administración a la función (prueba primero con cuenta de prueba).
 
 ---

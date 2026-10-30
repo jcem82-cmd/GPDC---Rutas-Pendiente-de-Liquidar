@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maqueta · Administración de usuarios</title>
+<style>
+:root{--navy:#00216f;--navy2:#003090;--navy-dark:#001440;--sky:#7dbfe6;--sky2:#e8f6ff;--bg:#F0F4F8;--card:#fff;--text:#0F1729;--text2:#5A6480;--border:#E2E8F0;--green:#DCF0C6;--green2:#2D9E2D;--yellow:#FFF4CC;--yellow2:#C48A00;--red:#FFBDBD;--red2:#CC0000;--radius:12px;--shadow:0 2px 16px rgba(0,32,96,.07);--shadow-lg:0 12px 48px rgba(0,32,96,.16)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,Segoe UI,Arial,sans-serif}
+.banner{background:var(--yellow);color:#7a5600;padding:8px 16px;font-size:.78rem;text-align:center;font-weight:600}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+.panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.hdr{background:linear-gradient(135deg,var(--navy-dark),var(--navy2));color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.hdr h1{margin:0;font:700 1.05rem Poppins,Inter,sans-serif}.hdr small{opacity:.75;display:block;font-size:.74rem;margin-top:2px}
+.kpis{display:flex;gap:10px;flex-wrap:wrap}.kpi{background:rgba(255,255,255,.1);border-radius:10px;padding:6px 14px;text-align:center;min-width:78px}.kpi b{display:block;font-size:1.15rem}.kpi span{font-size:.66rem;opacity:.8;text-transform:uppercase;letter-spacing:.04em}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);padding:0 14px;overflow-x:auto;background:#fff}
+.tab{padding:13px 16px;border:0;background:none;font:600 .82rem Inter,sans-serif;color:var(--text2);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.tab.on{color:var(--navy);border-color:var(--navy)}.tab:hover{color:var(--navy)}
+.body{padding:20px 22px}.pane{display:none}.pane.on{display:block}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+input,select{font:inherit;padding:8px 11px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text)}
+input:focus,select:focus{outline:2px solid var(--sky);border-color:var(--sky)}
+.btn{padding:8px 16px;border-radius:8px;border:0;font:600 .8rem Inter,sans-serif;cursor:pointer;background:var(--navy);color:#fff}.btn:hover{background:var(--navy2)}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--border)}.btn.ghost:hover{background:var(--sky2)}
+.btn.danger{background:var(--red2)}.btn.sm{padding:5px 10px;font-size:.72rem}
+.tw{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:.8rem}th{background:#f4f7fb;text-align:left;padding:10px 12px;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);white-space:nowrap}
+td{padding:10px 12px;border-top:1px solid var(--border);vertical-align:middle}tr.off td:not(.act){opacity:.5}
+.badge{display:inline-block;padding:3px 10px;border-radius:10px;font-size:.7rem;font-weight:700}
+.r-admin{background:#e3e9ff;color:var(--navy)}.r-supervisor{background:var(--yellow);color:var(--yellow2)}.r-consulta{background:#eef1f6;color:var(--text2)}
+.on-b{background:var(--green);color:var(--green2)}.off-b{background:var(--red);color:var(--red2)}
+.chip{display:inline-block;background:var(--sky2);color:var(--navy);border-radius:6px;padding:2px 7px;font-size:.68rem;margin:1px 2px 1px 0}
+.sub{color:var(--text2);font-size:.72rem}
+.grid{display:grid;grid-template-columns:1.3fr 1fr;gap:20px}@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.f{margin-bottom:14px}.f label{display:block;font-weight:600;font-size:.76rem;margin-bottom:5px;color:var(--navy)}.f input,.f select{width:100%}
+.dg{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.ck{display:flex;gap:8px;align-items:center;border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:.78rem}.ck:has(input:checked){background:var(--sky2);border-color:var(--sky)}.ck input{width:auto}
+.hint{font-size:.7rem;color:var(--text2);margin-top:4px}.err{color:var(--red2);font-size:.72rem;margin-top:4px;display:none}
+.side{background:#f8faff;border:1px solid var(--border);border-radius:10px;padding:16px;font-size:.78rem}.side h3{margin:0 0 10px;font-size:.85rem;color:var(--navy)}.side li{margin:6px 0}
+.mx td,.mx th{text-align:center}.mx td:first-child,.mx th:first-child{text-align:left}.yes{color:var(--green2);font-weight:700}.no{color:#b6bdcc}
+.modal{position:fixed;inset:0;background:rgba(0,20,64,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:9}.modal.on{display:flex}
+.mb{background:#fff;border-radius:14px;box-shadow:var(--shadow-lg);max-width:460px;width:100%;padding:24px}.mb h2{margin:0 0 6px;font:700 1.05rem Poppins,Inter,sans-serif;color:var(--navy)}
+.pw{display:flex;gap:8px;margin:14px 0}.pw code{flex:1;background:var(--navy-dark);color:#fff;padding:12px;border-radius:8px;font:700 1.05rem ui-monospace,Consolas,monospace;letter-spacing:.06em;text-align:center;user-select:all}
+.warn{background:var(--yellow);color:#7a5600;border-radius:8px;padding:9px 12px;font-size:.74rem;margin:10px 0}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+</style></head><body>
+<div class="banner">MAQUETA PARA APROBACIÓN · datos ficticios · aún no conectada a Supabase · los botones solo simulan el comportamiento</div>
+<div class="wrap"><div class="panel">
+ <div class="hdr"><div><h1>Administración de usuarios</h1><small>PDC Analytics Center · acceso exclusivo para administradores</small></div>
+  <div class="kpis"><div class="kpi"><b id="kT">0</b><span>Usuarios</span></div><div class="kpi"><b id="kA">0</b><span>Activos</span></div><div class="kpi"><b id="kI">0</b><span>Inactivos</span></div><div class="kpi"><b id="kP">0</b><span>Cambio pend.</span></div></div></div>
+ <div class="tabs" role="tablist">
+  <button class="tab on" data-t="u">👥 Usuarios</button><button class="tab" data-t="n">➕ Nuevo usuario</button><button class="tab" data-t="r">🛡️ Roles y permisos</button><button class="tab" data-t="a">📜 Auditoría</button></div>
+ <div class="body">
+  <!-- USUARIOS -->
+  <div class="pane on" id="p-u">
+   <div class="tools"><input id="q" placeholder="Buscar por nombre o correo…" style="min-width:240px"><select id="fr"><option value="">Todos los roles</option><option value="admin">Administrador</option><option value="supervisor">Supervisor</option><option value="consulta">Consulta</option></select><select id="fp"><option value="">Todos los países</option><option>regional</option><option>GT</option><option>ESV</option><option>PE</option></select><select id="fe"><option value="">Todos los estados</option><option value="1">Activos</option><option value="0">Inactivos</option></select><span style="flex:1"></span><button class="btn" onclick="go('n')">➕ Nuevo usuario</button></div>
+   <div class="tw"><table><thead><tr><th>Usuario</th><th>Rol</th><th>País / sedes</th><th>Dashboards</th><th>Último acceso</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tb"></tbody></table></div>
+   <p class="sub">Los usuarios nunca se eliminan: se inactivan (queda el historial y se bloquea su ingreso al instante).</p>
+  </div>
+  <!-- NUEVO -->
+  <div class="pane" id="p-n"><div class="grid"><div>
+   <div class="f"><label>Nombre completo</label><input id="nn" maxlength="80" placeholder="Ej. María López"><div class="err" id="e-nn">Ingrese un nombre (2 a 80 caracteres).</div></div>
+   <div class="f"><label>Correo corporativo</label><input id="ne" placeholder="usuario@grupopdc.com"><div class="err" id="e-ne">Debe ser un correo @grupopdc.com válido.</div><div class="hint">Solo se permiten correos @grupopdc.com.</div></div>
+   <div class="f" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><label>Rol</label><select id="nr"><option value="consulta">Consulta</option><option value="supervisor">Supervisor</option><option value="admin">Administrador</option></select></div><div><label>País</label><select id="np"><option value="GT">🇬🇹 Guatemala</option><option value="ESV">🇸🇻 El Salvador</option><option value="PE">🇵🇪 Perú</option><option value="regional">🌎 Regional</option></select></div></div>
+   <div class="f"><label>Sedes</label><div class="dg" id="sedes"></div></div>
+   <div class="f"><label>Dashboards autorizados</label><div class="dg" id="dash"></div><div class="hint">Se sugieren según el rol y el país; puede ajustarlos.</div></div>
+   <button class="btn" onclick="crear()">Crear usuario y generar contraseña</button>
+  </div><div class="side"><h3>¿Qué ocurre al crear?</h3><ol style="padding-left:18px;margin:0"><li>El sistema crea la cuenta y genera una <b>contraseña temporal</b> de 14 caracteres.</li><li>Se la muestra <b>una sola vez</b> con botón para copiar; usted se la envía por un canal privado.</li><li>En su primer ingreso, el usuario <b>debe cambiarla</b> antes de ver cualquier dashboard.</li><li>Queda registrado en Auditoría (sin la contraseña).</li></ol></div></div></div>
+  <!-- ROLES -->
+  <div class="pane" id="p-r">
+   <p class="sub" style="margin-top:0">Los tres roles se mantienen. Esta vista es de consulta: define qué puede hacer cada uno. <b>Los valores marcados como “por confirmar” debo validarlos con usted antes de la etapa 3.</b></p>
+   <div class="tw"><table class="mx"><thead><tr><th>Capacidad</th><th>Administrador</th><th>Supervisor</th><th>Consulta</th></tr></thead><tbody>
+   <tr><td>Ver dashboards autorizados</td><td class="yes">✔</td><td class="yes">✔</td><td class="yes">✔</td></tr>
+   <tr><td>Chat de soporte: enviar consultas</td><td class="yes">✔</td><td class="yes">✔</td><td class="yes">✔</td></tr>
+   <tr><td>Chat de soporte: ver y responder todas las conversaciones</td><td class="yes">✔</td><td class="no">—</td><td class="no">—</td></tr>
+   <tr><td>Gestionar usuarios (crear, editar, inactivar, restablecer clave)</td><td class="yes">✔</td><td class="no">—</td><td class="no">—</td></tr>
+   <tr><td>Ver auditoría de cambios</td><td class="yes">✔</td><td class="no">—</td><td class="no">—</td></tr>
+   <tr><td>Publicar datos de Rutas (self-service) <span class="sub">· por confirmar</span></td><td class="yes">✔</td><td class="yes">✔</td><td class="no">—</td></tr>
+   <tr><td>Dashboards sugeridos al crear <span class="sub">· por confirmar</span></td><td>Todos</td><td>Los de su país</td><td>Solo los asignados</td></tr>
+   </tbody></table></div>
+  </div>
+  <!-- AUDITORIA -->
+  <div class="pane" id="p-a"><div class="tw"><table><thead><tr><th>Fecha</th><th>Administrador</th><th>Acción</th><th>Usuario afectado</th><th>Detalle</th></tr></thead><tbody id="au"></tbody></table></div><p class="sub">Bitácora inmutable: nadie, ni siquiera un administrador, puede editarla o borrarla desde la aplicación.</p></div>
+ </div></div></div>
+
+<!-- Modal contraseña -->
+<div class="modal" id="mPw"><div class="mb"><h2 id="mPwT">Usuario creado</h2><div class="sub" id="mPwS"></div>
+ <div class="pw"><code id="pwv">—</code><button class="btn" onclick="cp()" id="cpb">Copiar</button></div>
+ <div class="warn">⚠️ Esta contraseña se muestra <b>una sola vez</b>. Cópiela ahora y envíela por un canal privado. El usuario deberá cambiarla en su primer ingreso.</div>
+ <div class="actions"><button class="btn" onclick="closeM('mPw')">Ya la copié, cerrar</button></div></div></div>
+<!-- Modal editar -->
+<div class="modal" id="mEd"><div class="mb"><h2>Editar usuario</h2><div class="sub" id="edS"></div><br>
+ <div class="f"><label>Rol</label><select id="er"><option value="consulta">Consulta</option><option value="supervisor">Supervisor</option><option value="admin">Administrador</option></select></div>
+ <div class="f"><label>País</label><select id="ep"><option value="GT">🇬🇹 Guatemala</option><option value="ESV">🇸🇻 El Salvador</option><option value="PE">🇵🇪 Perú</option><option value="regional">🌎 Regional</option></select></div>
+ <div class="f"><label>Dashboards</label><div class="dg" id="edd"></div></div>
+ <div class="actions"><button class="btn ghost" onclick="closeM('mEd')">Cancelar</button><button class="btn" onclick="saveEd()">Guardar cambios</button></div></div></div>
+<!-- Modal confirmar -->
+<div class="modal" id="mCf"><div class="mb"><h2 id="cfT"></h2><div class="sub" id="cfS" style="margin:6px 0"></div><div class="actions"><button class="btn ghost" onclick="closeM('mCf')">Cancelar</button><button class="btn" id="cfB">Confirmar</button></div></div></div>
+
+<script>
+const DASH={rutas:'🚚 Liquidación de Rutas',cashtoday:'💰 Cash Today',regional:'🌎 Regional',peru:'🇵🇪 Perú',elsalvador:'🇸🇻 El Salvador',cartas_salida:'✉️ Cartas de Salida',historico:'📈 Histórico'};
+const SEDES={GT:['CDA','XELA'],ESV:['Sta.Tecla','Sn.Miguel'],PE:['Peru'],regional:['CDA','XELA','Sta.Tecla','Sn.Miguel','Peru']};
+const PL={regional:'🌎 Regional',GT:'🇬🇹 GT',ESV:'🇸🇻 ESV',PE:'🇵🇪 PE'},RL={admin:'Administrador',supervisor:'Supervisor',consulta:'Consulta'};
+const SUG={GT:['rutas','cashtoday','cartas_salida'],ESV:['rutas','elsalvador'],PE:['peru'],regional:['rutas','cashtoday','regional','peru','elsalvador','cartas_salida','historico']};
+let U=[
+{n:'Ana Morales (ficticio)',e:'ana.morales@grupopdc.com',r:'admin',p:'regional',s:['CDA'],d:Object.keys(DASH),a:'28/10/2026 14:05',on:1,f:0},
+{n:'Luis Pérez (ficticio)',e:'luis.perez@grupopdc.com',r:'supervisor',p:'GT',s:['CDA','XELA'],d:['rutas','cashtoday'],a:'29/10/2026 08:41',on:1,f:0},
+{n:'Carla Ruiz (ficticio)',e:'carla.ruiz@grupopdc.com',r:'consulta',p:'ESV',s:['Sta.Tecla'],d:['rutas','elsalvador'],a:'—',on:1,f:1},
+{n:'Jorge Díaz (ficticio)',e:'jorge.diaz@grupopdc.com',r:'consulta',p:'PE',s:['Peru'],d:['peru'],a:'12/09/2026 10:20',on:0,f:0}];
+let AU=[['29/10/2026 22:58','Ana Morales','Restablecer contraseña','carla.ruiz@grupopdc.com','—'],['29/10/2026 22:40','Ana Morales','Inactivar','jorge.diaz@grupopdc.com','Cuenta bloqueada'],['29/10/2026 21:15','Ana Morales','Editar','luis.perez@grupopdc.com','rol: consulta → supervisor']];
+const $=i=>document.getElementById(i);
+function now(){return new Date().toLocaleString('es-GT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+function go(t){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+t))}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>go(b.dataset.t));
+function openM(i){$(i).classList.add('on')}function closeM(i){$(i).classList.remove('on')}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function render(){const q=$('q').value.toLowerCase(),fr=$('fr').value,fp=$('fp').value,fe=$('fe').value;
+ $('kT').textContent=U.length;$('kA').textContent=U.filter(u=>u.on).length;$('kI').textContent=U.filter(u=>!u.on).length;$('kP').textContent=U.filter(u=>u.f).length;
+ $('tb').innerHTML=U.map((u,i)=>({u,i})).filter(({u})=>(!q||(u.n+u.e).toLowerCase().includes(q))&&(!fr||u.r===fr)&&(!fp||u.p===fp)&&(!fe||String(u.on)===fe)).map(({u,i})=>
+ `<tr class="${u.on?'':'off'}"><td><b>${esc(u.n)}</b><div class="sub">${esc(u.e)}</div></td><td><span class="badge r-${u.r}">${RL[u.r]}</span></td><td>${PL[u.p]}<div class="sub">${u.s.join(', ')||'—'}</div></td><td>${u.d.map(d=>`<span class="chip">${DASH[d]}</span>`).join('')}</td><td class="sub">${u.a}${u.f?'<div style="color:var(--yellow2);font-weight:700">Debe cambiar clave</div>':''}</td><td><span class="badge ${u.on?'on-b':'off-b'}">${u.on?'Activo':'Inactivo'}</span></td>
+ <td class="act" style="white-space:nowrap"><button class="btn ghost sm" onclick="ed(${i})">Editar</button> <button class="btn ghost sm" onclick="rp(${i})">Restablecer clave</button> <button class="btn ${u.on?'danger':'ghost'} sm" onclick="tg(${i})">${u.on?'Inactivar':'Reactivar'}</button></td></tr>`).join('')||'<tr><td colspan="7" class="sub" style="text-align:center;padding:24px">Sin resultados</td></tr>';
+ $('au').innerHTML=AU.map(a=>`<tr><td class="sub">${a[0]}</td><td>${a[1]}</td><td><b>${a[2]}</b></td><td class="sub">${a[3]}</td><td class="sub">${a[4]}</td></tr>`).join('')}
+['q','fr','fp','fe'].forEach(i=>$(i).oninput=render);
+function checks(box,sel,name){$(box).innerHTML=Object.keys(DASH).map(k=>`<label class="ck"><input type="checkbox" name="${name}" value="${k}" ${sel.includes(k)?'checked':''}>${DASH[k]}</label>`).join('')}
+function sug(){const p=$('np').value;$('sedes').innerHTML=SEDES[p].map(s=>`<label class="ck"><input type="checkbox" name="sd" value="${s}" checked>${s}</label>`).join('');checks('dash',$('nr').value==='admin'?Object.keys(DASH):SUG[p],'dd')}
+$('np').onchange=sug;$('nr').onchange=sug;sug();
+function pwgen(){const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789#$%&*+-=?@';let s='';for(let i=0;i<14;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
+function crear(){let ok=true;const nn=$('nn').value.trim(),ne=$('ne').value.trim().toLowerCase();
+ $('e-nn').style.display=(nn.length<2)?'block':'none';const bad=!/^[a-z0-9._%+-]+@grupopdc\.com$/.test(ne)||U.some(u=>u.e===ne);$('e-ne').textContent=U.some(u=>u.e===ne)?'Ya existe un usuario con ese correo.':'Debe ser un correo @grupopdc.com válido.';$('e-ne').style.display=bad?'block':'none';if(nn.length<2||bad)return;
+ const d=[...document.querySelectorAll('[name=dd]:checked')].map(x=>x.value),s=[...document.querySelectorAll('[name=sd]:checked')].map(x=>x.value);
+ U.unshift({n:nn,e:ne,r:$('nr').value,p:$('np').value,s,d,a:'—',on:1,f:1});AU.unshift([now(),'Ana Morales','Crear',ne,RL[$('nr').value]+' · '+PL[$('np').value]]);
+ $('mPwT').textContent='Usuario creado';$('mPwS').textContent=nn+' · '+ne;$('pwv').textContent=pwgen();$('cpb').textContent='Copiar';openM('mPw');$('nn').value='';$('ne').value='';render();go('u')}
+function cp(){navigator.clipboard&&navigator.clipboard.writeText($('pwv').textContent).catch(()=>{});$('cpb').textContent='¡Copiada!'}
+let cur=-1;
+function ed(i){cur=i;const u=U[i];$('edS').textContent=u.n+' · '+u.e;$('er').value=u.r;$('ep').value=u.p;checks('edd',u.d,'ed');openM('mEd')}
+function saveEd(){const u=U[cur],r=$('er').value,p=$('ep').value;if(u.r==='admin'&&r!=='admin'&&U.filter(x=>x.r==='admin'&&x.on).length<=1){alert('Debe existir al menos un administrador activo.');return}
+ AU.unshift([now(),'Ana Morales','Editar',u.e,'rol: '+RL[u.r]+' → '+RL[r]]);u.r=r;u.p=p;u.d=[...document.querySelectorAll('[name=ed]:checked')].map(x=>x.value);closeM('mEd');render()}
+function rp(i){const u=U[i];$('cfT').textContent='Restablecer contraseña';$('cfS').textContent='Se generará una nueva contraseña temporal para '+u.e+'. La actual dejará de funcionar y deberá cambiarla al ingresar.';$('cfB').onclick=()=>{closeM('mCf');u.f=1;AU.unshift([now(),'Ana Morales','Restablecer contraseña',u.e,'—']);$('mPwT').textContent='Contraseña restablecida';$('mPwS').textContent=u.n+' · '+u.e;$('pwv').textContent=pwgen();$('cpb').textContent='Copiar';openM('mPw');render()};openM('mCf')}
+function tg(i){const u=U[i];if(u.on&&u.r==='admin'&&U.filter(x=>x.r==='admin'&&x.on).length<=1){alert('Debe existir al menos un administrador activo.');return}
+ $('cfT').textContent=u.on?'Inactivar usuario':'Reactivar usuario';$('cfS').textContent=u.on?u.e+' no podrá ingresar de inmediato. Podrá reactivarlo cuando lo necesite; su historial se conserva.':u.e+' podrá volver a ingresar con su contraseña actual.';
+ $('cfB').onclick=()=>{u.on=u.on?0:1;AU.unshift([now(),'Ana Morales',u.on?'Reactivar':'Inactivar',u.e,u.on?'Cuenta desbloqueada':'Cuenta bloqueada']);closeM('mCf');render()};openM('mCf')}
+render();
+</script></body></html>
