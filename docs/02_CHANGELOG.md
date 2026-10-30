@@ -4,7 +4,7 @@
 - **Causa raíz:** inactivar bloquea nuevos ingresos y la renovación del token en Supabase, pero la sesión ya abierta (sessionStorage `pdc_session`, 8 h) seguía navegando; el único chequeo de "usuario desactivado" en `analytics.html` leía `localStorage.pdc_user_states` (mecanismo obsoleto).
 - **`js/pdc_guard.js` (nuevo):** al abrir la página, cada 60 s y al volver a la pestaña consulta su propio perfil (`profiles.activo`, permitido por RLS) y la renovación del token. **Solo cierra sesión si Supabase confirma `activo === false` o `user_banned`**; red caída, errores, sin sesión o perfil no visible → no hace nada. Usuarios activos: sin efecto (siguen con su sesión de 8 h). Carga `supabase.min.js` por sí mismo si la página no lo trae.
 - **Páginas con 1 línea `<script src="…pdc_guard.js?v=20261030">` antes de `</body>`:** `analytics.html`, `index.html`, `cash_today.html`, `cartas_salida.html`, `historico.html`, `regional/`, `peru/`, `elsalvador/`, `honduras/`. Sin cambios de diseño, datos ni lógica.
-- **Verificación:** 17 pruebas jsdom (activo/inactivo/bloqueado/fallos de red/sin SDK/doble cierre). Pendiente: prueba en producción con la cuenta `prueba.pdc`.
+- **Verificación:** 17 pruebas jsdom (activo/inactivo/bloqueado/fallos de red/sin SDK/doble cierre). **Verificado en producción (30/10/2026):** una cuenta inactivada que seguía navegando fue enviada al login.
 
 ---
 
