@@ -163,7 +163,11 @@
       var act = users.filter(function(u){ return u.activo!==false; }).length;
       el('kT').textContent = users.length; el('kA').textContent = act; el('kI').textContent = users.length-act;
       el('kP').textContent = users.filter(function(u){ return u.force_password_change===true; }).length;
-      el('tb').innerHTML = list.length ? list.map(function(u){
+      el('tb').innerHTML = list.length ? list.map(function(u){ try{ return rowHtml(u); }catch(e){ return '<tr><td colspan="7" class="ua-sub">⚠️ No se pudo mostrar a '+esc(u && u.email)+' (datos con formato inesperado): '+esc(e && e.message)+'</td></tr>'; } }).join('') : '<tr><td colspan="7" class="ua-sub" style="text-align:center;padding:24px">Sin resultados</td></tr>';
+      if(opts.onCount) opts.onCount(users.length);
+    }
+    function rowHtml(u){
+      return (function(u){
         var on = u.activo!==false, me = String(u.email||'').toLowerCase()===selfEmail;
         var chips = toArr(u.dashboards).map(function(id){ var d = dashById[id]; return '<span class="dash-chip">'+esc(d?d.icono+' '+d.nombre:id)+'</span>'; }).join('');
         var last = u.ultimo_acceso ? esc(fmtDate(u.ultimo_acceso)) : '<span class="ua-sub">Sin registro</span>';
@@ -175,8 +179,7 @@
           '<td class="ua-act" style="white-space:nowrap"><button class="ua-btn ghost sm" data-act="edit" data-id="'+esc(u.id)+'" type="button">Editar</button> ' +
           '<button class="ua-btn ghost sm" data-act="reset" data-id="'+esc(u.id)+'" type="button">Restablecer clave</button> ' +
           (me ? '' : '<button class="ua-btn '+(on?'danger':'ghost')+' sm" data-act="toggle" data-id="'+esc(u.id)+'" type="button">'+(on?'Inactivar':'Reactivar')+'</button>')+'</td></tr>';
-      }).join('') : '<tr><td colspan="7" class="ua-sub" style="text-align:center;padding:24px">Sin resultados</td></tr>';
-      if(opts.onCount) opts.onCount(users.length);
+      })(u);
     }
     function renderAudit(){
       el('au').innerHTML = audit.length ? audit.map(function(a){
