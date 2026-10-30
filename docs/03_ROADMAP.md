@@ -8,10 +8,10 @@
 
 ## 🔄 FASE 19 — Hardening OWASP Top 10 (EN CURSO · abierta 29/10/2026)
 
-**Hecho (29/10/2026):** XSS almacenado en chat · retiro de `js/users.js` · `supabase-js` fijado al archivo local · **Fase A** candado `profiles_guard` (aplicado y verificado) · **Fase B** `cc_widget.js` con sesión de usuario (código desplegado; SQL de `chat_messages` pendiente de ejecución).
+**Hecho (29/10/2026):** XSS almacenado en chat · retiro de `js/users.js` · `supabase-js` fijado al archivo local · **Fase A** candado `profiles_guard` (aplicado y verificado) · **Fase B** `chat_messages` cerrado al público (código + SQL aplicados y verificados).
 
 **Pendiente (orden sugerido):**
-1. **Charly (Supabase):** (a) verificar el chat con la política vieja y luego ejecutar `docs/sql/2026-10-29_fase_b_chat_rls.sql` fuera de horario (reversa en `docs/sql/2026-10-29_fase_b_rollback.sql`); (b) tras unos días, confirmar con `ultimo_acceso` que las 5 cuentas reseteadas (29/10) ya cambiaron su clave.
+1. **Charly (Supabase):** tras unos días, confirmar con `ultimo_acceso` que las 5 cuentas reseteadas (29/10) ya cambiaron su clave (`force_password_change` debe pasar a `false`).
 2. **Versionar la Edge Function `github-publish` en el repo** y verificar que valida rol admin contra `profiles` (no solo JWT válido) además del allowlist de rutas.
 3. **`?pdc_token` en `index.html`:** identificar qué flujo lo genera y reemplazarlo por validación contra la sesión real de Supabase.
 4. **SRI** en Chart.js 4.4.1 y SheetJS 0.20.0 con hashes calculados sobre los bytes reales servidos (o vendorizar como `js/supabase.min.js`).
