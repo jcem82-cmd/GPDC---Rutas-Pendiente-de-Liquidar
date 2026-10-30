@@ -14,7 +14,7 @@
 1. **Charly (Supabase):** tras unos días, confirmar con `ultimo_acceso` que las 5 cuentas reseteadas (29/10) ya cambiaron su clave (`force_password_change` debe pasar a `false`).
 2. ~~Versionar `github-publish`~~ ✅ **Hecho 30/10/2026**: verificada (valida admin activo en `profiles` + allowlist) y versionada en `supabase/functions/github-publish/index.ts`.
 3. ~~`?pdc_token` en `index.html`~~ ✅ **Eliminado 30/10/2026** (ninguna página lo generaba).
-4. **SRI** en Chart.js 4.4.1 y SheetJS 0.20.0 con hashes calculados sobre los bytes reales servidos (o vendorizar como `js/supabase.min.js`).
+4. ~~Chart.js~~ ✅ vendorizado 30/10/2026 (`js/chart.umd.min.js`); **pendiente SheetJS 0.20.0** (requiere descargar `xlsx.full.min.js`). Original: **SRI** en Chart.js 4.4.1 y SheetJS 0.20.0 con hashes calculados sobre los bytes reales servidos (o vendorizar como `js/supabase.min.js`).
 5. **CSP** por página (hay scripts inline en todos los HTML; requiere hashes/nonce) — empezar con `analytics.html`, que ya tiene una.
 6. **Exposición de datos (A01, arquitectónico):** mover los datos operativos fuera de HTML públicos hacia Supabase con RLS. Hasta entonces el repo debe seguir público.
 7. ~~`signOut` en Salir~~ ✅ hecho 30/10/2026; pendiente: fijar GitHub Actions por SHA; política de contraseña (mín. 12 + MFA para admin); limpiar `console.log`; `try/catch` en el `JSON.parse` del puente de sesión de `index.html`.

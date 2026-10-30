@@ -1,3 +1,13 @@
+## [30/10/2026] — Seguridad · Chart.js vendorizado (sin CDN) — FASE 19 #3 parcial
+
+### Mejora de seguridad (cadena de suministro, OWASP A03/A08) — aprobado por Charly
+- **Qué cambió:** Chart.js 4.4.1 (misma versión que ya se usaba) se sirve ahora desde `js/chart.umd.min.js` en lugar de cdn.jsdelivr.net / cdnjs. Una CDN comprometida ya no puede inyectar código en los dashboards.
+- **Archivos modificados (solo la línea `<script src>` de Chart.js):** `index.html`, `cash_today.html`, `historico.html`, `cartas_salida.html`, `regional/`, `peru/`, `elsalvador/`, `honduras/` (`index.html`). Nuevo `js/chart.umd.min.js` (paquete oficial npm `chart.js@4.4.1`, `dist/chart.umd.js`, ya minificado).
+- **Pendiente:** SheetJS 0.20.0 (`cdn.sheetjs.com`) en `index.html`, `cash_today.html`, `cartas_salida.html` — no publicado en npm ni accesible desde el entorno; requiere que Charly descargue `xlsx.full.min.js`.
+- **Verificación:** sintaxis OK, `Chart.version === 4.4.1` al cargar en un contexto de navegador simulado, 8 etiquetas actualizadas, sin otras diferencias.
+
+---
+
 ## [30/10/2026] — Seguridad · `github-publish` verificada y versionada, `?pdc_token` eliminado, cierre de sesión completo
 
 ### Corrección de errores (seguridad) — aprobado por Charly (#1, #2 y #4 de FASE 19)
