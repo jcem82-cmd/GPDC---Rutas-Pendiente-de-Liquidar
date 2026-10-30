@@ -1,3 +1,28 @@
+## [29/10/2026] — Seguridad: auditoría OWASP Top 10 (2025) y primer bloque de correcciones de impacto funcional cero
+
+### Corrección de errores (seguridad) — `admin.html`, `cc_widget.js`, `index.html`, `js/users.js`
+
+**Alcance:** auditoría estática del repositorio contra las 10 categorías OWASP 2025. Este commit aplica únicamente el bloque autorizado por Charly (XSS en chat, retiro de `users.js`, fijación de `supabase-js`). Todo lo demás queda como recomendación (ver ROADMAP, FASE 19).
+
+**RCA — XSS almacenado en el chat de soporte (OWASP A05):** `sender_nombre`, `sender_email` y `message` los controla el usuario que escribe. El cuerpo de la burbuja ya se escapaba en `admin.html`/`cc_widget.js`, pero la **lista de conversaciones** (`nombre`, `email`, vista previa `lastMsg`, iniciales), el **encabezado del panel** (incl. el atributo `placeholder`), el **meta de cada mensaje** (`who`) y, en `index.html`, la **burbuja** del usuario se inyectaban en `innerHTML` sin escapar. Cadena de ataque: usuario con rol *consulta* envía un mensaje con script → el admin abre el panel → el script corre con la sesión del admin y puede invocar la Edge Function `github-publish`.
+
+**Corrección (mínima modificación, `assert count==1` en cada reemplazo):**
+- `admin.html`: helper `escHtml()` (escapa `& < > " '`) aplicado a nombre, email, iniciales, vista previa, encabezado, placeholder y `who`. El `onclick="openConv('${email}')"` (rompible con una comilla simple en el correo) pasó a `data-email` + `openConv(this.dataset.email)`; el selector que buscaba el nombre por ese atributo se reemplazó por una búsqueda sobre `dataset.email`.
+- `cc_widget.js`: helper `_esc()` con el mismo criterio sobre nombre, email, iniciales, vista previa, encabezado, placeholder y `who`; el selector `[data-email="..."]` se reemplazó por comparación directa.
+- `index.html`: helper `_pdcChatEsc()` aplicado al texto de la burbuja del chat. (`showAlert` ya usaba `textContent`.)
+
+**RCA — credenciales en texto plano (A04/A07):** `js/users.js` seguía publicado con 11 contraseñas iniciales aunque ningún HTML lo cargaba (el login usa Supabase Auth desde el 20/07/2026). **Corrección:** archivo eliminado. `js/auth.js` se conserva (huérfano, sin cambios). **Limitación:** los valores permanecen en el historial de git; la mitigación real es la rotación de claves.
+
+**Hallazgo en `profiles` (consulta del 24/10/2026):** `francisco.aguilar`, `liquidaciones.cda`, `transportes.peru` y `andre.reyes` con `force_password_change=true` y sin acceso nunca; `edy.lopez` con flag en `false` pero sin acceso registrado. Pendiente que Charly resetee esas claves en Supabase (Authentication → Users) y deje el flag en `true`.
+
+**Supply chain (A03):** `admin.html` e `index.html` cargaban `@supabase/supabase-js@2` desde jsDelivr sin versión fija ni SRI; ahora usan `js/supabase.min.js` (v2.110.7, el mismo archivo local que ya usan login, Hub, Cash Today y Cartas). **SRI de Chart.js y SheetJS: NO aplicado** — no se pudieron obtener los bytes reales de los CDN en la sesión y un hash incorrecto bloquearía los gráficos de todos los dashboards. Queda pendiente (FASE 19).
+
+**Validación:** `node --check` sobre los 7 bloques inline (`admin.html` 1, `index.html` 6) y `cc_widget.js`; simulación en DOM (jsdom) con payloads reales en nombre, correo y mensaje: 17/17 verificaciones OK; **control negativo** sobre el código original reproduce la inyección (8 verificaciones fallan). Sin referencias huérfanas a `users.js` ni a `supabase-js@2`.
+
+**No tocado (por diseño):** diseño/CSS/HTML visible, lógica de negocio, `processWorkbook()`, cualquier otro archivo.
+
+---
+
 ## [23/10/2026] — Rutas / Hub: corrección estética de grids con número variable de tarjetas (secuela directa de la tarjeta AVON)
 
 ### Corrección de errores (visual) — `index.html`, `historico.html`, `analytics.html` — solo CSS, sin cambios de HTML/JS

@@ -2,9 +2,26 @@
 ## PDC Analytics Center · Plan de Evolución
 
 **Estado actual: v2.17 ESTABLE (Rutas) / v2.18 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
-**Última actualización:** 02/10/2026 (publicación de Rutas: tokens server-side + soporte de index.html >1MB)
+**Última actualización:** 29/10/2026 (auditoría OWASP: FASE 19 abierta; gestión de usuarios propuesta como FASE 20)
 
 ---
+
+## 🔄 FASE 19 — Hardening OWASP Top 10 (EN CURSO · abierta 29/10/2026)
+
+**Hecho (29/10/2026):** XSS almacenado en chat · retiro de `js/users.js` · `supabase-js` fijado al archivo local.
+
+**Pendiente (orden sugerido):**
+1. **Charly (Supabase):** resetear claves de `francisco.aguilar`, `liquidaciones.cda`, `transportes.peru`, `andre.reyes`, `edy.lopez`; ejecutar `select tablename, policyname, cmd, roles, qual, with_check from pg_policies where schemaname='public'` y revisar RLS de `chat_messages` y `profiles`.
+2. **Versionar la Edge Function `github-publish` en el repo** y verificar que valida rol admin contra `profiles` (no solo JWT válido) además del allowlist de rutas.
+3. **`?pdc_token` en `index.html`:** identificar qué flujo lo genera y reemplazarlo por validación contra la sesión real de Supabase.
+4. **SRI** en Chart.js 4.4.1 y SheetJS 0.20.0 con hashes calculados sobre los bytes reales servidos (o vendorizar como `js/supabase.min.js`).
+5. **CSP** por página (hay scripts inline en todos los HTML; requiere hashes/nonce) — empezar con `analytics.html`, que ya tiene una.
+6. **Exposición de datos (A01, arquitectónico):** mover los datos operativos fuera de HTML públicos hacia Supabase con RLS. Hasta entonces el repo debe seguir público.
+7. Fijar GitHub Actions por SHA; política de contraseña (mín. 12 + MFA para admin); limpiar `console.log`; `try/catch` en el `JSON.parse` del puente de sesión de `index.html`.
+
+## 🔜 FASE 20 — Gestión de usuarios (PROPUESTA · Nueva funcionalidad · pendiente de aprobación de alcance)
+
+Módulo de administración: alta de usuarios, asignación de rol/país/dashboards, inactivación y clave inicial generada por el sistema con cambio obligatorio en el primer ingreso. Requiere una Edge Function `admin-users` (con `service_role` solo server-side) que valide que quien llama es admin.
 
 ---
 

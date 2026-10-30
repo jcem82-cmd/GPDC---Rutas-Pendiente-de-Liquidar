@@ -3505,7 +3505,7 @@ document.querySelectorAll('.panel').forEach((p,i)=>{if(i>0)p.style.display='none
 </div>
 
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.min.js"></script>
 <script>
 var SUPA_URL = 'https://pytsrgtcjytjztwdlvux.supabase.co';
 var SUPA_KEY = 'sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj';
@@ -3578,6 +3578,8 @@ window.PDCChat = (function() {
     renderMessages(msgs);
   }
 
+  /* SEC (OWASP A05): el texto del chat lo controla el usuario -> escapar antes de innerHTML */
+  function _pdcChatEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
   function renderMessages(msgs) {
     var c = document.getElementById('chatMsgs');
     if(!c) return;
@@ -3590,7 +3592,7 @@ window.PDCChat = (function() {
       var text = m.sender_role === 'admin' ? m.message.replace(/^\[To:[^\]]+\]\s*/, '') : m.message;
       var dt   = new Date(m.created_at);
       var t    = dt.toLocaleString('es-GT',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'});
-      return '<div class="cmsg '+(isMe?'me':'them')+'"><div class="cmsg-bubble">'+text+'</div>'
+      return '<div class="cmsg '+(isMe?'me':'them')+'"><div class="cmsg-bubble">'+_pdcChatEsc(text)+'</div>'
            + '<div class="cmsg-time">'+(isMe?'Tú':'Admin PDC')+' · '+t+'</div></div>';
     }).join('');
     var scrolled = c.scrollTop >= c.scrollHeight - c.clientHeight - 40;

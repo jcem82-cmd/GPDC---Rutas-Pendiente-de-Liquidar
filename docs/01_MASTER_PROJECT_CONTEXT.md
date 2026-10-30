@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.16 | **Última actualización:** 23/10/2026 (corrección estética de grids tras tarjeta AVON, Rutas + Hub — ver CHANGELOG 23/10/2026) | **Estado:** Producción ✅
+**Versión vigente:** v2.16 | **Última actualización:** 29/10/2026 (auditoría OWASP + parche XSS chat / retiro de users.js — ver CHANGELOG 29/10/2026) | **Estado:** Producción ✅
 
 ---
 
@@ -37,8 +37,7 @@ PDC Analytics Center
 │
 ├── js/
 │   ├── pdc_data_bridge.js  ← Fuente única de verdad — fetch + cálculo de KPIs Rutas
-│   ├── auth.js
-│   └── users.js
+│   └── auth.js   (huérfano desde 29/10/2026: users.js eliminado)
 │
 └── docs/
     ├── 01_MASTER_PROJECT_CONTEXT.md  ← este archivo
@@ -111,7 +110,7 @@ El workflow usa `concurrency: {group:"pages", cancel-in-progress:true}`. Publica
 | `cash_today.html` | `700951b6b79d` |
 | `js/pdc_data_bridge.js` | `174ac5c4cb3d` |
 | `js/auth.js` | `451f86c4c443` |
-| `js/users.js` | `2f35ca816e6b` |
+| `js/users.js` | _eliminado 29/10/2026_ |
 | `cash_summary.json` | `dbd36921d44a` |
 
 ### Sesión 10/07/2026
@@ -132,6 +131,11 @@ El workflow usa `concurrency: {group:"pages", cancel-in-progress:true}`. Publica
 - **Extensión misma sesión:** multi-select en filtros Canal, Responsable y Rango de `index.html` — a diferencia del anterior, SIN gate de rol/país (aplica a todos los usuarios). Función genérica reutilizable `pdcInitMultiFilter()` — única fuente de verdad para los 3 filtros, deduplica opciones repetidas del `<select>` origen solo en la vista.
 
 **Tokens de publicación (actualizado 20/07/2026):** `cash_today.html` migrado a Supabase Edge Function `github-publish` — ya NO tiene token embebido. **`index.html` (Rutas) SIGUE teniendo el token fine-grained fragmentado embebido en texto plano** (`_tR1`/`_t`) — pendiente de la misma migración, autorizado para próxima sesión. **[RESUELTO 28-29/09/2026 — ver §21]** No asumir que el token de `index.html` es seguro de dejar así por más tiempo del necesario.
+
+### Sesión 29/10/2026 — Auditoría OWASP Top 10 (2025)
+- **Hallazgos abiertos (ver ROADMAP FASE 19):** (1) los datos operativos viven embebidos en HTML públicos y el repo es público — el login protege la vista, no los datos (A01, arquitectónico); (2) `index.html?pdc_token=` acepta un JSON base64 sin verificar (A01/A07); (3) la Edge Function `github-publish` no está versionada en el repo, no se pudo verificar que exija rol admin (A06); (4) políticas RLS de `chat_messages`/`profiles` sin verificar; (5) SRI pendiente en Chart.js/SheetJS; (6) CSP solo en `analytics.html`.
+- **Resuelto:** XSS almacenado en chat (admin.html, cc_widget.js, index.html), `users.js` retirado, `supabase-js` fijado al archivo local.
+- **Restricción de arquitectura:** el repo NO puede pasar a privado sin romper la plataforma (GitHub Pages en repo privado + lecturas sin token a `raw.githubusercontent.com`/API de GitHub). La salida es sacar los datos del repo (Supabase + RLS), no ocultar el repo.
 
 ---
 

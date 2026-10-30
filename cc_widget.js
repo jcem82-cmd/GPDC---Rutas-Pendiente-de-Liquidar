@@ -12,6 +12,8 @@ window.__PDC_CC_V2__ = true;
 var SUPA_URL = 'https://pytsrgtcjytjztwdlvux.supabase.co';
 var SUPA_KEY = 'sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj';
 var HDRS     = {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'};
+/* SEC (OWASP A05): escapar datos controlados por el usuario antes de innerHTML */
+function _esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 
 /* ── Avatar — ruta relativa al repo (assistant_avatar.png) ── */
 var AVATAR_BASE = (function(){
@@ -379,11 +381,11 @@ function loadConversations(){
       var c = map[email];
       total += c.unread;
       var ini = (c.nombre||'?').split(' ').map(function(n){return n[0]||'';}).join('').substring(0,2).toUpperCase();
-      return '<div class="pcconv'+(_activeEmail===email?' on':'')+'" data-email="'+email+'">'
-        +'<div class="pcav">'+ini+'</div>'
+      return '<div class="pcconv'+(_activeEmail===email?' on':'')+'" data-email="'+_esc(email)+'">'
+        +'<div class="pcav">'+_esc(ini)+'</div>'
         +'<div class="pccn">'
-        +'<div class="pccn-nm">'+c.nombre+'</div>'
-        +'<div class="pccn-pv">'+c.lastMsg.replace(/^\[To:[^\]]+\]\s*/,'').substring(0,25)+'</div>'
+        +'<div class="pccn-nm">'+_esc(c.nombre)+'</div>'
+        +'<div class="pccn-pv">'+_esc(c.lastMsg.replace(/^\[To:[^\]]+\]\s*/,'').substring(0,25))+'</div>'
         +'</div>'
         +(c.unread>0?'<div class="pcdot"></div>':'')
         +'</div>';
@@ -403,7 +405,8 @@ function openConv(email){
   if(!_isAdmin) email = _user.email;
   var nombre = email;
   if(_isAdmin){
-    var el = document.querySelector('.pcconv[data-email="'+email+'"] .pccn-nm');
+    var el = null;
+    document.querySelectorAll('.pcconv').forEach(function(x){ if(x.getAttribute('data-email')===email) el = x.querySelector('.pccn-nm'); });
     if(el) nombre = el.textContent;
   } else {
     nombre = _user.nombre || _user.email;
@@ -423,9 +426,9 @@ function openConv(email){
   _hdrUnread = 0;
   document.getElementById('pdc-hdr-badge').style.display = 'none';
 
-  var displayName = _isAdmin ? nombre : 'Administración PDC';
-  var displaySub  = _isAdmin ? email  : 'Soporte · PDC Analytics Center';
-  var placeholder = _isAdmin ? 'Responder a '+nombre+'…' : 'Escribe tu mensaje…';
+  var displayName = _isAdmin ? _esc(nombre) : 'Administración PDC';
+  var displaySub  = _isAdmin ? _esc(email)  : 'Soporte · PDC Analytics Center';
+  var placeholder = _isAdmin ? 'Responder a '+_esc(nombre)+'…' : 'Escribe tu mensaje…';
 
   var pane = document.getElementById('pdc-chat-pane');
   pane.innerHTML =
@@ -478,7 +481,7 @@ function loadMessages(email){
       var who = isA ? (_isAdmin ? 'Tú (Admin)' : 'Administración PDC') : (m.sender_nombre||'Usuario');
       return '<div class="pcmsg '+(isA?'a':'u')+'">'
         +'<div class="pcmsg-bbl">'+text+'</div>'
-        +'<div class="pcmsg-meta">'+who+' · '+t+'</div>'
+        +'<div class="pcmsg-meta">'+_esc(who)+' · '+t+'</div>'
         +'</div>';
     }).join('');
 

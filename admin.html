@@ -6,7 +6,7 @@
 <title>Centro de Comunicación · PDC Analytics Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.min.js"></script>
 <style>
 /* ════════════════════════════════════════════════════════
    PDC Analytics Center — Centro de Comunicación v2.0
@@ -405,6 +405,9 @@ const sb = createClient(
   'sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj'
 );
 
+/* SEC (OWASP A05): los datos del chat los controla el usuario -> escapar antes de innerHTML */
+function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
 /* ── Estado global ── */
 let currentUser  = null;
 let activeEmail  = null;
@@ -568,11 +571,11 @@ async function loadConversations(){
       const c = map[email];
       totalUnread += c.unread;
       const ini = c.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-      return `<div class="pdc-cc-conv ${activeEmail===email?'active':''}" onclick="openConv('${email}')">
-        <div class="pdc-cc-avatar">${ini}</div>
+      return `<div class="pdc-cc-conv ${activeEmail===email?'active':''}" data-email="${escHtml(email)}" onclick="openConv(this.dataset.email)">
+        <div class="pdc-cc-avatar">${escHtml(ini)}</div>
         <div class="pdc-cc-conv-info">
-          <div class="pdc-cc-conv-name">${c.nombre}</div>
-          <div class="pdc-cc-conv-prev">${c.lastMsg.replace(/^\[To:[^\]]+\]\s*/,'')}</div>
+          <div class="pdc-cc-conv-name">${escHtml(c.nombre)}</div>
+          <div class="pdc-cc-conv-prev">${escHtml(c.lastMsg.replace(/^\[To:[^\]]+\]\s*/,''))}</div>
         </div>
         ${c.unread>0?'<div class="pdc-cc-conv-dot"></div>':''}
       </div>`;
@@ -597,7 +600,8 @@ async function openConv(email){
   /* Buscar nombre */
   let nombre = email;
   if(isAdmin){
-    const item = document.querySelector(`.pdc-cc-conv[onclick="openConv('${email}')"] .pdc-cc-conv-name`);
+    const _cv = Array.from(document.querySelectorAll('.pdc-cc-conv')).find(e=>e.dataset.email===email);
+    const item = _cv ? _cv.querySelector('.pdc-cc-conv-name') : null;
     if(item) nombre = item.textContent;
   } else {
     nombre = currentUser.nombre || currentUser.email;
@@ -626,14 +630,14 @@ async function openConv(email){
     <div class="pdc-cc-chat-hdr">
       <div class="pdc-cc-pane-dot"></div>
       <div>
-        <div class="pdc-cc-pane-name">${isAdmin ? nombre : 'Administración PDC'}</div>
-        <div class="pdc-cc-pane-email">${isAdmin ? email : 'Soporte · PDC Analytics Center'}</div>
+        <div class="pdc-cc-pane-name">${isAdmin ? escHtml(nombre) : 'Administración PDC'}</div>
+        <div class="pdc-cc-pane-email">${isAdmin ? escHtml(email) : 'Soporte · PDC Analytics Center'}</div>
       </div>
     </div>
     <div class="pdc-cc-msgs" id="pdcMsgArea"></div>
     <div class="pdc-cc-input-row">
       <textarea class="pdc-cc-inp" id="pdcInp"
-        placeholder="${isAdmin ? 'Responder a '+nombre+'...' : 'Escribe tu mensaje...'}"
+        placeholder="${isAdmin ? 'Responder a '+escHtml(nombre)+'...' : 'Escribe tu mensaje...'}"
         rows="1"
         onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
       <button class="pdc-cc-send" id="pdcSendBtn" onclick="sendMsg()">Enviar ↑</button>
@@ -668,7 +672,7 @@ async function loadMessages(email){
     const who = isAdminMsg ? (currentUser.rol==='admin' ? 'Tú (Admin)' : 'Administración PDC') : m.sender_nombre;
     return `<div class="pdc-msg ${isAdminMsg?'admin':'user'}">
       <div class="pdc-msg-bubble">${text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div>
-      <div class="pdc-msg-meta">${who} · ${t}</div>
+      <div class="pdc-msg-meta">${escHtml(who)} · ${t}</div>
     </div>`;
   }).join('');
 
