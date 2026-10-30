@@ -1,3 +1,10 @@
+## [30/10/2026] — Seguridad · SheetJS vendorizado — FASE 19 #3 completo
+
+- `js/xlsx.full.min.js` (SheetJS 0.20.0, descargado por Charly de cdn.sheetjs.com; verificado: carga como `XLSX` v0.20.0 con `read`/`writeFile`). Etiquetas actualizadas en `index.html`, `cash_today.html` y `cartas_salida.html` (solo la línea `<script src>`).
+- Resultado: **ningún HTML carga ya scripts de CDN externas** (Chart.js y SheetJS locales, `supabase-js` local desde antes). Sintaxis de todos los bloques inline OK.
+
+---
+
 ## [30/10/2026] — Seguridad · Política de contraseña mínima 12 (FASE 19 #5)
 
 ### Corrección de seguridad (OWASP A07) — aprobado por Charly
