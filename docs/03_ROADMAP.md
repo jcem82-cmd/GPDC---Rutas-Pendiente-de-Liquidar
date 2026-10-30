@@ -2,7 +2,7 @@
 ## PDC Analytics Center · Plan de Evolución
 
 **Estado actual: v2.17 ESTABLE (Rutas) / v2.18 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
-**Última actualización:** 29/10/2026 (auditoría OWASP: FASE 19 abierta; gestión de usuarios propuesta como FASE 20)
+**Última actualización:** 30/10/2026 (FASE 19 en curso; FASE 20 etapa 1 lista para desplegar)
 
 ---
 
@@ -22,6 +22,11 @@
 ## 🔜 FASE 20 — Gestión de usuarios (PROPUESTA · Nueva funcionalidad · pendiente de aprobación de alcance)
 
 Módulo de administración: alta de usuarios, asignación de rol/país/dashboards, inactivación y clave inicial generada por el sistema con cambio obligatorio en el primer ingreso. Requiere una Edge Function `admin-users` (con `service_role` solo server-side) que valide que quien llama es admin.
+
+**Decisiones (29/10/2026):** mismos 3 roles · solo correos @grupopdc.com · sin Honduras · contraseña temporal visible una vez para el admin.
+- [x] **Etapa 1 (30/10/2026):** Edge Function `admin-users` + `user_audit` — código y pruebas listos; **pendiente despliegue en Supabase**.
+- [ ] Etapa 2: maqueta del panel (Usuarios · Nuevo usuario · Roles y permisos · Auditoría) para aprobación.
+- [ ] Etapa 3: conectar `analytics.html` → Administración a la función (prueba primero con cuenta de prueba).
 
 ---
 
