@@ -8,16 +8,16 @@
 
 ## 🔄 FASE 19 — Hardening OWASP Top 10 (EN CURSO · abierta 29/10/2026)
 
-**Hecho (29/10/2026):** XSS almacenado en chat · retiro de `js/users.js` · `supabase-js` fijado al archivo local.
+**Hecho (29/10/2026):** XSS almacenado en chat · retiro de `js/users.js` · `supabase-js` fijado al archivo local · **Fase A** candado `profiles_guard` (aplicado y verificado) · **Fase B** `cc_widget.js` con sesión de usuario (código desplegado; SQL de `chat_messages` pendiente de ejecución).
 
 **Pendiente (orden sugerido):**
-1. **Charly (Supabase):** resetear claves de `francisco.aguilar`, `liquidaciones.cda`, `transportes.peru`, `andre.reyes`, `edy.lopez`; ejecutar `select tablename, policyname, cmd, roles, qual, with_check from pg_policies where schemaname='public'` y revisar RLS de `chat_messages` y `profiles`.
+1. **Charly (Supabase):** (a) verificar el chat con la política vieja y luego ejecutar `docs/sql/2026-10-29_fase_b_chat_rls.sql` fuera de horario (reversa en `docs/sql/2026-10-29_fase_b_rollback.sql`); (b) tras unos días, confirmar con `ultimo_acceso` que las 5 cuentas reseteadas (29/10) ya cambiaron su clave.
 2. **Versionar la Edge Function `github-publish` en el repo** y verificar que valida rol admin contra `profiles` (no solo JWT válido) además del allowlist de rutas.
 3. **`?pdc_token` en `index.html`:** identificar qué flujo lo genera y reemplazarlo por validación contra la sesión real de Supabase.
 4. **SRI** en Chart.js 4.4.1 y SheetJS 0.20.0 con hashes calculados sobre los bytes reales servidos (o vendorizar como `js/supabase.min.js`).
 5. **CSP** por página (hay scripts inline en todos los HTML; requiere hashes/nonce) — empezar con `analytics.html`, que ya tiene una.
 6. **Exposición de datos (A01, arquitectónico):** mover los datos operativos fuera de HTML públicos hacia Supabase con RLS. Hasta entonces el repo debe seguir público.
-7. Fijar GitHub Actions por SHA; política de contraseña (mín. 12 + MFA para admin); limpiar `console.log`; `try/catch` en el `JSON.parse` del puente de sesión de `index.html`.
+7. `supabase.auth.signOut()` en el botón "Salir" (hoy la sesión de Supabase persiste en `localStorage`); fijar GitHub Actions por SHA; política de contraseña (mín. 12 + MFA para admin); limpiar `console.log`; `try/catch` en el `JSON.parse` del puente de sesión de `index.html`.
 
 ## 🔜 FASE 20 — Gestión de usuarios (PROPUESTA · Nueva funcionalidad · pendiente de aprobación de alcance)
 

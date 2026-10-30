@@ -254,21 +254,49 @@ function initAuth(){
 /* ════════════════════
    REST FETCH — no depende del SDK
    ════════════════════ */
+/* SEC (OWASP A01, Fase B 29/10/2026): chat_messages ya no es público. Las llamadas REST deben
+   viajar con el access_token de la sesión de Supabase del usuario (la misma que crea login.html y
+   que el SDK guarda en localStorage). Sin sesión válida se usa la clave pública como antes: la
+   base de datos rechazará la operación y el chat simplemente queda vacío. */
+function _getToken(){
+  try{
+    var cc = (window.supabase && window.supabase.createClient) ||
+             (window.Supabase && window.Supabase.createClient);
+    if(!cc) return Promise.resolve(null);
+    if(!_sbClient) _sbClient = cc(SUPA_URL, SUPA_KEY);
+    return _sbClient.auth.getSession().then(function(r){
+      return (r && r.data && r.data.session && r.data.session.access_token) || null;
+    }).catch(function(){ return null; });
+  }catch(e){ return Promise.resolve(null); }
+}
+function _hdrs(extra){
+  return _getToken().then(function(tok){
+    var h = Object.assign({}, HDRS, extra || {});
+    if(tok) h['Authorization'] = 'Bearer '+tok;
+    return h;
+  });
+}
 function restGet(path, params){
   var qs = params ? ('?'+Object.keys(params).map(function(k){return k+'='+encodeURIComponent(params[k]);}).join('&')) : '';
-  return fetch(SUPA_URL+'/rest/v1/'+path+qs, {headers:HDRS}).then(function(r){return r.json();});
+  return _hdrs().then(function(h){
+    return fetch(SUPA_URL+'/rest/v1/'+path+qs, {headers:h});
+  }).then(function(r){return r.json();});
 }
 function restPost(path, body){
-  return fetch(SUPA_URL+'/rest/v1/'+path, {
-    method:'POST', headers:Object.assign({},HDRS,{'Prefer':'return=minimal'}),
-    body:JSON.stringify(body)
+  return _hdrs({'Prefer':'return=minimal'}).then(function(h){
+    return fetch(SUPA_URL+'/rest/v1/'+path, {
+      method:'POST', headers:h,
+      body:JSON.stringify(body)
+    });
   });
 }
 function restPatch(path, params, body){
   var qs = '?'+Object.keys(params).map(function(k){return k+'='+encodeURIComponent(params[k]);}).join('&');
-  return fetch(SUPA_URL+'/rest/v1/'+path+qs, {
-    method:'PATCH', headers:Object.assign({},HDRS,{'Prefer':'return=minimal'}),
-    body:JSON.stringify(body)
+  return _hdrs({'Prefer':'return=minimal'}).then(function(h){
+    return fetch(SUPA_URL+'/rest/v1/'+path+qs, {
+      method:'PATCH', headers:h,
+      body:JSON.stringify(body)
+    });
   });
 }
 

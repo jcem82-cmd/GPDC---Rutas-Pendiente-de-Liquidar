@@ -1,3 +1,24 @@
+## [29/10/2026] — Seguridad (continuación): candado en `profiles` (Fase A) y cierre del chat público (Fase B)
+
+### Corrección de errores (seguridad) — base de datos Supabase + `cc_widget.js`
+
+**Hallazgos (consulta de `pg_policies`, columnas y triggers ejecutada por Charly):**
+1. **`profiles` — escalación de privilegios (A01, confirmada):** la política "usuarios actualizan su propio flag" permite `UPDATE` de toda la fila propia y `authenticated` tenía `UPDATE` sobre todas las columnas, sin triggers. Cualquier usuario con rol *consulta* podía cambiarse `rol`/`pais`/`dashboards` desde la consola del navegador (y volverse admin para `is_admin()`).
+2. **`chat_messages` — acceso público total (A01, confirmada):** política `public_access` = `ALL` / `true` / rol público. Con la clave publishable (visible en el repo) cualquiera leía, escribía (incluso como "admin") y borraba el chat sin sesión.
+
+**Fase A — `profiles` (APLICADA y verificada el 29/10/2026):** trigger `profiles_guard` (BEFORE UPDATE): un no-admin solo puede cambiar `force_password_change`, `ultimo_acceso` y `last_login` de su propia fila; cualquier otro cambio lanza `42501`. SQL Editor/`service_role` (sin `auth.uid()`) y admin quedan permitidos. Además `REVOKE` de `INSERT/UPDATE/DELETE` a `anon` y de `INSERT/DELETE` a `authenticated`. Verificación en producción: prueba autocontenida (simula la sesión de un consulta intentando ascender a admin) → rechazada; `analytics.html` (tabla de usuarios) intacto. Script: `docs/sql/2026-10-29_fase_a_profiles_guard.sql`.
+
+**Fase B — `chat_messages`:**
+- **Código (este commit):** `cc_widget.js` era el único cliente que llamaba a la API con la clave pública como credencial (los demás usan el SDK, que ya envía la sesión). Nuevos `_getToken()`/`_hdrs()`: `restGet/restPost/restPatch` envían `Authorization: Bearer <access_token de la sesión>` reutilizando un único cliente Supabase (compartido con el realtime). Sin sesión/SDK usa la clave pública como antes (la BD decide; el chat queda vacío sin errores).
+- **SQL (PENDIENTE de ejecución por Charly, fuera de horario):** reemplaza `public_access` por políticas para `authenticated`: lectura = admin o conversación propia (`sender_email` = correo del JWT, case-insensitive); inserción = admin, o usuario con `sender_role='user'` y su propio correo, mensaje de 1–2000 caracteres; `UPDATE`/`DELETE` solo admin; `REVOKE ALL` a `anon`. Script: `docs/sql/2026-10-29_fase_b_chat_rls.sql`; reversa: `docs/sql/2026-10-29_fase_b_rollback.sql`.
+- **Orden de lanzamiento:** (1) este commit; (2) Ctrl+Shift+R y verificar el chat admin↔usuario con la política vieja; (3) ejecutar el SQL; (4) verificar de nuevo. Quien conserve `cc_widget.js` viejo en caché pierde el chat hasta recargar. Pre-chequeo previo al SQL: que los correos de `profiles` y `auth.users` coincidan.
+
+**Validación:** `node --check`; simulación jsdom del widget 12/12 (lecturas, marcar leído y envío con token de sesión; fallbacks sin sesión / `getSession` con error / sin SDK; un solo cliente compartido) con control negativo sobre el código anterior (4 fallas); pruebas XSS previas sin regresión. SQL probado en Postgres de laboratorio (PGlite) replicando esquema, políticas y grants de producción: Fase A 22/22, Fase B 24/24 (incluye idempotencia y reversa), con la vulnerabilidad reproducida antes del parche.
+
+**Fuera de alcance (recomendaciones, no implementadas):** (a) el botón "Salir" borra la sesión de la app pero no llama a `supabase.auth.signOut()` — la sesión de Supabase persiste en `localStorage`; (b) `sender_nombre` es libre (un usuario puede escribir un nombre engañoso; el admin ve el correo real en el encabezado) — se resolverá en el módulo de gestión de usuarios; (c) un usuario aún puede apagar su propio `force_password_change` (flujo actual).
+
+---
+
 ## [29/10/2026] — Seguridad: auditoría OWASP Top 10 (2025) y primer bloque de correcciones de impacto funcional cero
 
 ### Corrección de errores (seguridad) — `admin.html`, `cc_widget.js`, `index.html`, `js/users.js`
