@@ -121,17 +121,30 @@
       '<div class="ua-modal" data-modal="cf"><div class="ua-mb" role="dialog" aria-modal="true"><h2 data-el="cft"></h2><div class="ua-sub" data-el="cfs" style="margin:6px 0"></div><div class="ua-actions"><button class="ua-btn ghost" data-act="closecf" type="button">Cancelar</button><button class="ua-btn" data-act="okcf" type="button">Confirmar</button></div></div></div>' +
       '</div>';
 
-    function $(sel){ return host.querySelector(sel); }
-    function el(n){ return host.querySelector('[data-el="'+n+'"]'); }
+    /* Las ventanas emergentes viven en <body> (dentro del panel quedan recortadas por su overflow/animación) */
+    var mroot = doc.createElement('div'); mroot.className = 'ua'; mroot.setAttribute('data-ua-modals','1');
+    Array.prototype.slice.call(host.querySelectorAll('.ua-modal')).forEach(function(m){ mroot.appendChild(m); });
+    Array.prototype.slice.call(doc.querySelectorAll('[data-ua-modals]')).forEach(function(old){ old.remove(); });
+    doc.body.appendChild(mroot);
+    function Q(sel){ return host.querySelector(sel) || mroot.querySelector(sel); }
+    function QA(sel){ return Array.prototype.slice.call(host.querySelectorAll(sel)).concat(Array.prototype.slice.call(mroot.querySelectorAll(sel))); }
+    function toArr(v){
+      if(Array.isArray(v)) return v.map(String);
+      if(v == null || v === '') return [];
+      if(typeof v === 'string'){ try{ var j = JSON.parse(v); if(Array.isArray(j)) return j.map(String); }catch(e){} return v.replace(/^\{|\}$/g,'').split(',').map(function(x){ return x.replace(/^["'\s]+|["'\s]+$/g,''); }).filter(Boolean); }
+      return [];
+    }
+    function $(sel){ return Q(sel); }
+    function el(n){ return Q('[data-el="'+n+'"]'); }
     function showMsg(t){ var m = el('msg'); m.textContent = t || ''; m.style.display = t ? '' : 'none'; }
-    function openM(n){ host.querySelector('[data-modal="'+n+'"]').classList.add('on'); }
-    function closeM(n){ host.querySelector('[data-modal="'+n+'"]').classList.remove('on'); if(n==='pw'){ el('pwv').textContent=''; } }
+    function openM(n){ Q('[data-modal="'+n+'"]').classList.add('on'); }
+    function closeM(n){ Q('[data-modal="'+n+'"]').classList.remove('on'); if(n==='pw'){ el('pwv').textContent=''; } }
 
     function checks(box, name, items, selected){
       el(box).innerHTML = items.map(function(it){
         return '<label class="ua-ck'+(selected.indexOf(it.id)>-1?' sel':'')+'"><input type="checkbox" data-c="'+name+'" value="'+esc(it.id)+'"'+(selected.indexOf(it.id)>-1?' checked':'')+'>'+esc(it.label)+'</label>'; }).join('');
     }
-    function checked(name, root){ return Array.prototype.map.call((root||host).querySelectorAll('[data-c="'+name+'"]:checked'), function(i){ return i.value; }); }
+    function checked(name, root){ return QA('[data-c="'+name+'"]:checked').map(function(i){ return i.value; }); }
     function dashItems(){ return dashList.map(function(d){ return { id:d.id, label:d.icono+' '+d.nombre }; }); }
     function sedeItems(p){ return (SEDES[p]||[]).map(function(s){ return { id:s, label:s }; }); }
 
@@ -152,11 +165,11 @@
       el('kP').textContent = users.filter(function(u){ return u.force_password_change===true; }).length;
       el('tb').innerHTML = list.length ? list.map(function(u){
         var on = u.activo!==false, me = String(u.email||'').toLowerCase()===selfEmail;
-        var chips = (u.dashboards||[]).map(function(id){ var d = dashById[id]; return '<span class="dash-chip">'+esc(d?d.icono+' '+d.nombre:id)+'</span>'; }).join('');
+        var chips = toArr(u.dashboards).map(function(id){ var d = dashById[id]; return '<span class="dash-chip">'+esc(d?d.icono+' '+d.nombre:id)+'</span>'; }).join('');
         var last = u.ultimo_acceso ? esc(fmtDate(u.ultimo_acceso)) : '<span class="ua-sub">Sin registro</span>';
         return '<tr class="'+(on?'':'off')+'"><td><b>'+esc(u.nombre)+'</b>'+(me?' <span class="ua-sub">(usted)</span>':'')+'<div class="ua-sub">'+esc(u.email)+'</div></td>' +
           '<td><span class="role-badge role-'+esc(u.rol)+'">'+esc(ROLES[u.rol]||u.rol)+'</span></td>' +
-          '<td style="white-space:nowrap">'+esc(PAIS_LABELS[u.pais]||u.pais)+'<div class="ua-sub">'+esc((u.sedes||[]).join(', ')||'—')+'</div></td><td>'+chips+'</td>' +
+          '<td style="white-space:nowrap">'+esc(PAIS_LABELS[u.pais]||u.pais)+'<div class="ua-sub">'+esc(toArr(u.sedes).join(', ')||'—')+'</div></td><td>'+chips+'</td>' +
           '<td class="ua-sub">'+last+(u.force_password_change?'<div class="ua-warn">Debe cambiar clave</div>':'')+'</td>' +
           '<td><span class="ua-b '+(on?'ua-on':'ua-off')+'">'+(on?'Activo':'Inactivo')+'</span></td>' +
           '<td class="ua-act" style="white-space:nowrap"><button class="ua-btn ghost sm" data-act="edit" data-id="'+esc(u.id)+'" type="button">Editar</button> ' +
@@ -175,22 +188,28 @@
     }
 
     async function loadUsers(){
-      var r = await client.from('profiles').select('*').order('nombre');
-      if(r.error){ showMsg('No se pudieron cargar los usuarios.'); return; }
-      users = r.data || []; showMsg(''); renderUsers();
+      try{
+        var r = await client.from('profiles').select('*').order('nombre');
+        if(r.error){ showMsg('No se pudieron cargar los usuarios.'); return; }
+        users = r.data || []; showMsg(''); renderUsers();
+      }catch(e){ showMsg('No se pudo mostrar la lista de usuarios: '+(e && e.message || e)); }
     }
     async function loadAudit(){
-      var r = await client.from('user_audit').select('*').order('created_at',{ascending:false}).limit(100);
-      if(r.error){ audit = []; showMsg('La bitácora no está disponible todavía (¿se creó la tabla user_audit?).'); }
-      else { audit = r.data || []; showMsg(''); }
-      renderAudit();
+      try{
+        var r = await client.from('user_audit').select('*').order('created_at',{ascending:false}).limit(100);
+        if(r.error){ audit = []; showMsg('La bitácora no está disponible todavía (¿se creó la tabla user_audit?).'); }
+        else { audit = r.data || []; showMsg(''); }
+        renderAudit();
+      }catch(e){ showMsg('No se pudo mostrar la bitácora: '+(e && e.message || e)); }
     }
     async function call(body){
       var s = await client.auth.getSession();
       var tok = s && s.data && s.data.session && s.data.session.access_token;
       if(!tok) return { ok:false, error:'Su sesión expiró. Vuelva a iniciar sesión.' };
       try{
-        var res = await fetch(fnUrl, { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+tok }, body: JSON.stringify(body) });
+        var ctl = (typeof AbortController!=='undefined') ? new AbortController() : null; var tm = ctl && setTimeout(function(){ ctl.abort(); }, 30000);
+        var res = await fetch(fnUrl, { signal: ctl && ctl.signal, method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+tok }, body: JSON.stringify(body) });
+        if(tm) clearTimeout(tm);
         var j = await res.json().catch(function(){ return null; });
         if(res.ok && j && j.ok) return j;
         return { ok:false, error:(j && j.error) || 'Error inesperado ('+res.status+').' };
@@ -198,13 +217,18 @@
     }
     async function run(body, after){
       if(busy) return; busy = true;
-      var r = await call(body); busy = false;
+      var r;
+      try{ r = await call(body); }catch(e){ r = { ok:false, error:'Error inesperado: '+(e && e.message || e) }; }
+      finally{ busy = false; }
       if(!r.ok){ showMsg(r.error); toast('⚠️','No se pudo completar', r.error, 3500); return null; }
-      showMsg(''); await loadUsers(); if(after) after(r); return r;
+      showMsg('');
+      try{ if(after) after(r); }catch(e){ showMsg('La operación se realizó, pero la pantalla no pudo actualizarse: '+(e && e.message || e)); }
+      try{ await loadUsers(); }catch(e){ showMsg('La operación se realizó, pero no se pudo refrescar la lista: '+(e && e.message || e)); }
+      return r;
     }
     function showPassword(title, sub, pw){
       el('pwt').textContent = title; el('pws').textContent = sub; el('pwv').textContent = pw;
-      host.querySelector('[data-act="copy"]').textContent = 'Copiar'; openM('pw');
+      Q('[data-act="copy"]').textContent = 'Copiar'; openM('pw');
     }
     function byId(id){ for(var i=0;i<users.length;i++) if(String(users[i].id)===String(id)) return users[i]; return null; }
     function go(t){
@@ -214,8 +238,8 @@
     }
 
     /* ── Eventos (delegación; sin onclick inline → compatible con CSP) ── */
-    host.addEventListener('click', async function(ev){
-      var t = ev.target.closest('[data-tab],[data-go],[data-act]'); if(!t || !host.contains(t)) return;
+    async function onClick(ev){
+      var t = ev.target.closest('[data-tab],[data-go],[data-act]'); if(!t || !(host.contains(t) || mroot.contains(t))) return;
       if(t.hasAttribute('data-tab')) return go(t.getAttribute('data-tab'));
       if(t.hasAttribute('data-go')) return go(t.getAttribute('data-go'));
       var a = t.getAttribute('data-act'), u = byId(t.getAttribute('data-id'));
@@ -237,32 +261,32 @@
         var body = { action:'create', nombre:nombre, email:email, rol:$('[data-n="rol"]').value, pais:$('[data-n="pais"]').value, sedes:checked('sd'), dashboards:checked('dd') };
         t.disabled = true;
         var r2 = await run(body, function(res){
+          showPassword('Usuario creado', nombre+' · '+res.email, res.temp_password); /* primero: la contraseña no puede perderse */
           $('[data-n="nombre"]').value=''; $('[data-n="email"]').value=''; suggest(); go('users');
-          showPassword('Usuario creado', nombre+' · '+res.email, res.temp_password);
         });
         t.disabled = false;
       }
       else if(a==='edit' && u){
         editing = u; el('eds').textContent = u.nombre+' · '+u.email;
-        host.querySelector('[data-e2="rol"]').value = u.rol;
-        var pSel = host.querySelector('[data-e2="pais"]');
+        Q('[data-e2="rol"]').value = u.rol;
+        var pSel = Q('[data-e2="pais"]');
         Array.prototype.forEach.call(pSel.querySelectorAll('[data-legacy]'), function(o){ o.remove(); });
         if(!PAISES[u.pais]){ pSel.insertAdjacentHTML('afterbegin','<option value="'+esc(u.pais)+'" data-legacy="1">'+esc(PAIS_LABELS[u.pais]||u.pais)+' (actual)</option>'); }
         pSel.value = u.pais;
-        var sedeSet = (u.sedes||[]); checks('esedes','es', sedeItems('regional'), sedeSet);
-        checks('edash','ed', dashItems(), u.dashboards||[]);
+        var sedeSet = toArr(u.sedes); checks('esedes','es', sedeItems('regional'), sedeSet);
+        checks('edash','ed', dashItems(), toArr(u.dashboards));
         el('eder').textContent = (u.email||'').toLowerCase()===selfEmail ? 'Es su propia cuenta: no puede quitarse el rol de administrador.' : '';
         openM('ed');
       }
       else if(a==='saveed' && editing){
         var u2 = editing, patch = { action:'update', id:u2.id };
-        var rol = host.querySelector('[data-e2="rol"]').value, pais = host.querySelector('[data-e2="pais"]').value;
+        var rol = Q('[data-e2="rol"]').value, pais = Q('[data-e2="pais"]').value;
         var dsh = checked('ed'), sds = checked('es');
         function same(x,y){ return JSON.stringify((x||[]).slice().sort())===JSON.stringify((y||[]).slice().sort()); }
         if(rol!==u2.rol) patch.rol = rol;
         if(pais!==u2.pais) patch.pais = pais;
-        if(!same(dsh,u2.dashboards)) patch.dashboards = dsh;
-        if(!same(sds,u2.sedes)) patch.sedes = sds;
+        if(!same(dsh,toArr(u2.dashboards))) patch.dashboards = dsh;
+        if(!same(sds,toArr(u2.sedes))) patch.sedes = sds;
         if(Object.keys(patch).length===2){ el('eder').textContent = 'No hay cambios para guardar.'; return; }
         t.disabled = true; var ok = await run(patch, function(){ toast('✅','Usuario actualizado', u2.email, 2500); }); t.disabled = false;
         if(ok){ closeM('ed'); editing = null; }
@@ -281,17 +305,18 @@
         confirmCb = function(){ run({ action:'reset_password', id:u.id }, function(res){ showPassword('Contraseña restablecida', u.nombre+' · '+u.email, res.temp_password); }); };
         openM('cf');
       }
-    });
-    host.addEventListener('input', function(ev){
+    }
+    function onInput(ev){
       var f = ev.target.getAttribute && ev.target.getAttribute('data-f');
       if(f){ filters[f] = ev.target.value; renderUsers(); }
-    });
-    host.addEventListener('change', function(ev){
+    }
+    function onChange(ev){
       var tg = ev.target;
       if(tg.getAttribute('data-f')){ filters[tg.getAttribute('data-f')] = tg.value; renderUsers(); }
       else if(tg.getAttribute('data-n')==='pais' || tg.getAttribute('data-n')==='rol') suggest();
       else if(tg.type==='checkbox' && tg.parentNode) tg.parentNode.classList.toggle('sel', tg.checked);
-    });
+    }
+    [host, mroot].forEach(function(n){ n.addEventListener('click', onClick); n.addEventListener('input', onInput); n.addEventListener('change', onChange); });
     doc.addEventListener('keydown', function(ev){ if(ev.key==='Escape'){ ['ed','cf'].forEach(closeM); } });
 
     /* KPIs en el encabezado del panel (provistos por la página anfitriona) */
