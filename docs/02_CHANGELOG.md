@@ -1,3 +1,14 @@
+## [30/10/2026] — Seguridad · `github-publish` verificada y versionada, `?pdc_token` eliminado, cierre de sesión completo
+
+### Corrección de errores (seguridad) — aprobado por Charly (#1, #2 y #4 de FASE 19)
+- **#1 `github-publish` (Edge Function):** revisado su código real. **Ya valida correctamente:** JWT válido → perfil `rol='admin'` y `activo≠false` en `profiles` (403 si no) → ruta dentro de la lista permitida (`cash_today.html`, `cash_summary.json`, `cartas_salida.html`, `cartas_summary.json`, `index.html`) → token de GitHub solo como secret del servidor. **Sin cambios de código**; se versiona en `supabase/functions/github-publish/index.ts` (antes solo existía en Supabase). Mejoras opcionales (no aplicadas): límite de tamaño/longitud de `message`, no exponer `String(e)` en errores 500, registrar cada publicación en `user_audit`.
+- **#2 `?pdc_token` (OWASP A07):** `index.html` aceptaba un JSON en base64 (nombre, correo, rol) como sesión SIN verificarlo; ninguna página del proyecto lo genera. Eliminado el bloque; sin sesión real redirige a `analytics.html`. Verificado: el código anterior aceptaba un token fabricado como admin; el nuevo no.
+- **#4 Cierre de sesión completo:** "Salir" ahora también cierra la sesión de Supabase guardada en el navegador (`PDCGuard.signOut`, tope de 1.5 s para no bloquear la salida). Aplicado en `analytics.html`, `index.html` (además ahora borra `pdc_session`, antes solo `pdc_user`) y `cash_today.html`. Si `pdc_guard.js` no cargara, Salir funciona como antes.
+- **Archivos modificados:** `index.html`, `analytics.html`, `cash_today.html`, `js/pdc_guard.js`; nuevo `supabase/functions/github-publish/index.ts`.
+- **Verificación:** 12 pruebas jsdom (token fabricado, flujo normal con sesión, logout en 3 páginas, tiempo de espera) + 17 del guardián + revisión de sintaxis de todos los bloques `<script>`.
+
+---
+
 ## [30/10/2026] — Gestión de usuarios · Guardián de sesión para cuentas inactivas
 
 ### Mejora funcional aprobada por Charly (cierra el hueco de "inactivar")

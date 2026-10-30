@@ -74,7 +74,19 @@
     finally{ running = false; }
   }
 
-  window.PDCGuard = { check: check };
+  /* Cierre de sesión completo: borra la sesión de la app y la de Supabase (localStorage + refresh token).
+     Llama a cb() al terminar o, como máximo, a los 1.5 s (la salida nunca queda bloqueada por la red). */
+  function signOut(cb){
+    var fired = false, fin = function(){ if(fired) return; fired = true; if(typeof cb === 'function') cb(); };
+    try{ sessionStorage.removeItem('pdc_session'); sessionStorage.removeItem('pdc_user'); }catch(e){}
+    setTimeout(fin, 1500);
+    loadSdk().then(function(okSdk){
+      if(!okSdk) return;
+      return getClient().auth.signOut({ scope:'local' });
+    }).then(fin, fin);
+  }
+
+  window.PDCGuard = { check: check, signOut: signOut };
   check();
   setInterval(check, INTERVAL);
   document.addEventListener('visibilitychange', function(){ if(!document.hidden) check(); });

@@ -873,7 +873,9 @@ function pdcGetSession(){
 function pdcLogout(){
   sessionStorage.removeItem(PDC_SESSION_KEY);
   sessionStorage.removeItem('pdc_user');
-  window.location.href = PDC_LOGIN_PAGE;
+  /* SEC 30/10/2026: además cierra la sesión de Supabase guardada en el navegador (js/pdc_guard.js) */
+  var go = function(){ window.location.href = PDC_LOGIN_PAGE; };
+  if(window.PDCGuard && window.PDCGuard.signOut) window.PDCGuard.signOut(go); else go();
 }
 
 function pdcNavigate(archivo){

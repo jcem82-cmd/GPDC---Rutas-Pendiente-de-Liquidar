@@ -402,7 +402,7 @@ tbody tr:last-child td{border-bottom:none}
     <div class="hdr-date"><strong id="hdr-total">—</strong>Registros cargados</div>
     <div class="hdr-date" id="hdr-user-name" style="font-weight:600;color:var(--navy);padding:0 10px;border-left:1px solid var(--border,#e2e8f0)">—</div>
     <button id="btn-pdf-ct" class="btn-pdf" onclick="exportarPDF_CT()" title="Exportar PDF ejecutivo del Resumen">📄 PDF</button>
-    <button onclick="(function(){sessionStorage.removeItem('pdc_session');sessionStorage.removeItem('pdc_user');window.location.replace('analytics.html');})()" title="Cerrar sesión" style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px">⏏ Salir</button>
+    <button onclick="(function(){sessionStorage.removeItem('pdc_session');sessionStorage.removeItem('pdc_user');var go=function(){window.location.replace('analytics.html');};if(window.PDCGuard&&window.PDCGuard.signOut){window.PDCGuard.signOut(go);}else{go();}})()" title="Cerrar sesión" style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px">⏏ Salir</button>
     <button onclick="window.location.href='analytics.html'" title="Volver al Portal PDC Analytics" style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#374151,#1f2937);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px">⬅ Portal</button>
   </div>
 </div>

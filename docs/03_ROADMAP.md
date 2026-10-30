@@ -12,8 +12,8 @@
 
 **Pendiente (orden sugerido):**
 1. **Charly (Supabase):** tras unos días, confirmar con `ultimo_acceso` que las 5 cuentas reseteadas (29/10) ya cambiaron su clave (`force_password_change` debe pasar a `false`).
-2. **Versionar la Edge Function `github-publish` en el repo** y verificar que valida rol admin contra `profiles` (no solo JWT válido) además del allowlist de rutas.
-3. **`?pdc_token` en `index.html`:** identificar qué flujo lo genera y reemplazarlo por validación contra la sesión real de Supabase.
+2. ~~Versionar `github-publish`~~ ✅ **Hecho 30/10/2026**: verificada (valida admin activo en `profiles` + allowlist) y versionada en `supabase/functions/github-publish/index.ts`.
+3. ~~`?pdc_token` en `index.html`~~ ✅ **Eliminado 30/10/2026** (ninguna página lo generaba).
 4. **SRI** en Chart.js 4.4.1 y SheetJS 0.20.0 con hashes calculados sobre los bytes reales servidos (o vendorizar como `js/supabase.min.js`).
 5. **CSP** por página (hay scripts inline en todos los HTML; requiere hashes/nonce) — empezar con `analytics.html`, que ya tiene una.
 6. **Exposición de datos (A01, arquitectónico):** mover los datos operativos fuera de HTML públicos hacia Supabase con RLS. Hasta entonces el repo debe seguir público.
