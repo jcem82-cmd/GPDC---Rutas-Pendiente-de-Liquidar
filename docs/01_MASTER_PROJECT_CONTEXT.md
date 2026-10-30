@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.16 | **Última actualización:** 29/10/2026 (auditoría OWASP + parche XSS chat / retiro de users.js — ver CHANGELOG 29/10/2026) | **Estado:** Producción ✅
+**Versión vigente:** v2.16 | **Última actualización:** 30/10/2026 (gestión de usuarios etapa 3; antes: auditoría OWASP + parche XSS chat / retiro de users.js — ver CHANGELOG 29/10/2026) | **Estado:** Producción ✅
 
 ---
 
@@ -134,6 +134,7 @@ El workflow usa `concurrency: {group:"pages", cancel-in-progress:true}`. Publica
 
 ### Sesión 29/10/2026 — Auditoría OWASP Top 10 (2025)
 - **Hallazgos abiertos (ver ROADMAP FASE 19):** (1) los datos operativos viven embebidos en HTML públicos y el repo es público — el login protege la vista, no los datos (A01, arquitectónico); (2) `index.html?pdc_token=` acepta un JSON base64 sin verificar (A01/A07); (3) la Edge Function `github-publish` no está versionada en el repo, no se pudo verificar que exija rol admin (A06); (4) SRI pendiente en Chart.js/SheetJS; (5) CSP solo en `analytics.html`.
+- **Gestión de usuarios (30/10/2026, FASE 20):** escrituras de usuarios SOLO por la Edge Function `admin-users` (`supabase/functions/admin-users/`; `service_role` únicamente en servidor; valida admin activo en BD; solo @grupopdc.com; sin Honduras; contraseña temporal una sola vez + `force_password_change`; inactivar = `activo=false` + bloqueo en Auth, nunca borrar). Bitácora inmutable `user_audit` (solo lectura admin). UI: `js/user_admin.js` montado en `analytics.html` (panel anterior como respaldo). Despliegue: `docs/sql/README_admin-users.md`.
 - **Resuelto en BD (29/10/2026):** `chat_messages` ya NO es público (RLS para `authenticated`: usuario solo su conversación, admin todo; `cc_widget.js` envía la sesión del usuario); `profiles_guard` (trigger) impide que un no-admin cambie `rol`/`pais`/`sedes`/`dashboards`/`activo`/`email`/`nombre`; `anon` sin escritura en `profiles`. Modelo vigente de `profiles`: RLS con 4 políticas (admin lee/actualiza todo vía `is_admin()`; usuario lee su fila y actualiza solo flags). Scripts en `docs/sql/`.
 - **Resuelto:** XSS almacenado en chat (admin.html, cc_widget.js, index.html), `users.js` retirado, `supabase-js` fijado al archivo local, `cc_widget.js` autenticado con la sesión del usuario.
 - **Restricción de arquitectura:** el repo NO puede pasar a privado sin romper la plataforma (GitHub Pages en repo privado + lecturas sin token a `raw.githubusercontent.com`/API de GitHub). La salida es sacar los datos del repo (Supabase + RLS), no ocultar el repo.

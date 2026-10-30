@@ -635,7 +635,19 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
         <span class="sec-count" id="userCount"></span>
       </div>
     </div>
-    <div class="admin-panel">
+    <!-- Módulo de administración de usuarios (js/user_admin.js) — si no carga, se muestra el panel anterior -->
+    <div class="admin-panel" id="userAdminV2" style="display:none">
+      <div class="admin-hdr">
+        <div class="admin-hdr-icon">👥</div>
+        <div class="admin-hdr-texts">
+          <div class="admin-hdr-title">Administración de usuarios</div>
+          <div class="admin-hdr-sub">Crear, editar, inactivar y restablecer accesos · Requiere permisos de Administrador</div>
+        </div>
+        <div id="userAdminKpis" style="margin-left:auto"></div>
+      </div>
+      <div id="userAdminHost"></div>
+    </div>
+    <div class="admin-panel" id="userLegacyPanel">
       <div class="admin-hdr">
         <div class="admin-hdr-icon">👥</div>
         <div class="admin-hdr-texts">
@@ -677,6 +689,7 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 
 <script src="js/pdc_data_bridge.js"></script>
 <script src="js/supabase.min.js"></script>
+<script src="js/user_admin.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════════
    PDC Analytics Center — Portal Principal
@@ -1396,6 +1409,25 @@ function pdcRenewSession(){
           }).join('');
         };
         window.renderUserTable = renderUserTable; /* E3-FIX: exponer al scope global */
+
+        /* Módulo nuevo de administración (crear/editar/inactivar/restablecer vía Edge Function admin-users).
+           Si no está disponible o falla el montaje, permanece visible la tabla anterior (respaldo). */
+        try{
+          var v2 = document.getElementById('userAdminV2'), legacy = document.getElementById('userLegacyPanel');
+          var sess = pdcGetSession();
+          if(v2 && window.PDCUserAdmin && window.PDCUserAdmin.mount({
+              container: document.getElementById('userAdminHost'),
+              kpiHost: document.getElementById('userAdminKpis'),
+              client: supabaseClient,
+              functionUrl: PDC_SUPABASE_URL + '/functions/v1/admin-users',
+              selfEmail: sess && sess.email,
+              dashboards: PDC_DASHBOARDS.map(function(d){ return { id:d.id, nombre:d.nombre, icono:d.icono }; }),
+              toast: pdcShowToast,
+              onCount: function(n){ if(ucEl) ucEl.textContent = n + ' usuarios registrados'; }
+          })){
+            v2.style.display = ''; if(legacy) legacy.style.display = 'none';
+          }
+        }catch(e){ console.warn('PDCUserAdmin no disponible; se usa el panel anterior', e); }
 
         /* Cargar usuarios desde Supabase (una sola vez al abrir el panel admin) */
         (async function(){

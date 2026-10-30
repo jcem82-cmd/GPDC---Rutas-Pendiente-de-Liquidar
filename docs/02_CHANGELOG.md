@@ -1,3 +1,13 @@
+## [30/10/2026] — Gestión de usuarios · Etapa 3: panel de administración conectado a `admin-users`
+
+### Nueva funcionalidad (FASE 20)
+- **`js/user_admin.js` (nuevo, componente reutilizable `PDCUserAdmin.mount`)**: pestañas Usuarios (búsqueda/filtros, editar, restablecer clave, inactivar/reactivar), Nuevo usuario (valida @grupopdc.com, sugiere sedes/dashboards, contraseña temporal visible una vez con botón Copiar y borrada del DOM al cerrar), Roles y permisos (informativo) y Auditoría (`user_audit`). Sin `onclick` inline (compatible con la CSP); todo texto dinámico escapado; las escrituras pasan solo por la Edge Function.
+- **`analytics.html` (cambio mínimo)**: contenedor `#userAdminV2`, `<script src="js/user_admin.js">` y bloque de montaje dentro del flujo admin existente. El panel anterior (`#userLegacyPanel`) **se conserva como respaldo**: solo se oculta si el módulo monta correctamente.
+- **Verificación:** 34 pruebas de interfaz (jsdom) ejecutadas contra la lógica REAL del servidor (`core.ts`) + 9 pruebas cargando `analytics.html` completo (admin ve el módulo; consulta no ve la sección; sin módulo se ve el panel anterior) + revisión visual. Pendiente: prueba en producción con cuenta de prueba.
+- **Nota:** usuarios existentes con país HN o dashboards fuera del catálogo se muestran y no se alteran salvo que el admin edite ese campo (Honduras queda fuera de los selectores).
+
+---
+
 ## [30/10/2026] — Gestión de usuarios · Etapa 1: Edge Function `admin-users` + bitácora `user_audit` (código listo, SIN desplegar)
 
 ### Nueva funcionalidad (FASE 20) — solo archivos nuevos; ningún archivo existente modificado
