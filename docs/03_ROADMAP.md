@@ -26,6 +26,7 @@ Módulo de administración: alta de usuarios, asignación de rol/país/dashboard
 **Decisiones (29/10/2026):** mismos 3 roles · solo correos @grupopdc.com · sin Honduras · contraseña temporal visible una vez para el admin.
 - [x] **Etapa 1 (30/10/2026):** Edge Function `admin-users` + `user_audit` — código y pruebas listos; **desplegada en Supabase el 30/10/2026** (`user_audit` creada; Verify JWT legacy desactivado, la función valida por sí misma). Verificación: llamada sin sesión → `401 No autenticado.` ✔. Pendiente: prueba autenticada como admin.
 - [~] Etapa 2 (30/10/2026): maqueta `docs/mockups/etapa2_panel_usuarios.html` (Usuarios · Nuevo usuario · Roles y permisos · Auditoría) — **pendiente de aprobación**.
+- [x] **Guardián de sesión (30/10/2026):** `js/pdc_guard.js` en 9 páginas; cierra la sesión de cuentas inactivas en ≤60 s. Pendiente prueba en producción.
 - [~] Etapa 3 (30/10/2026): `js/user_admin.js` + montaje en `analytics.html` (respaldo: panel anterior). Código y pruebas listos; **pendiente prueba en producción con cuenta de prueba** y luego inactivarla.
 
 ---
