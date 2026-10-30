@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Maqueta · Administración de usuarios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--navy:#00216f;--navy2:#003090;--navy-dark:#001440;--sky:#7dbfe6;--sky2:#e8f6ff;--bg:#F0F4F8;--card:#fff;--text:#0F1729;--text2:#5A6480;--border:#E2E8F0;--green:#DCF0C6;--green2:#2D9E2D;--yellow:#FFF4CC;--yellow2:#C48A00;--red:#FFBDBD;--red2:#CC0000;--radius:12px;--shadow:0 2px 16px rgba(0,32,96,.07);--shadow-lg:0 12px 48px rgba(0,32,96,.16)}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,Segoe UI,Arial,sans-serif}
-.banner{background:var(--yellow);color:#7a5600;padding:8px 16px;font-size:.78rem;text-align:center;font-weight:600}
-.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+.banner{position:relative;z-index:300;background:var(--yellow);color:#7a5600;padding:8px 16px;font-size:.78rem;text-align:center;font-weight:600}
+.wrap{}
 .panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
 .hdr{background:linear-gradient(135deg,var(--navy-dark),var(--navy2));color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
 .hdr h1{margin:0;font:700 1.05rem Poppins,Inter,sans-serif}.hdr small{opacity:.75;display:block;font-size:.74rem;margin-top:2px}
@@ -24,7 +25,7 @@ input:focus,select:focus{outline:2px solid var(--sky);border-color:var(--sky)}
 table{width:100%;border-collapse:collapse;font-size:.8rem}th{background:#f4f7fb;text-align:left;padding:10px 12px;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);white-space:nowrap}
 td{padding:10px 12px;border-top:1px solid var(--border);vertical-align:middle}tr.off td:not(.act){opacity:.5}
 .badge{display:inline-block;padding:3px 10px;border-radius:10px;font-size:.7rem;font-weight:700}
-.r-admin{background:#e3e9ff;color:var(--navy)}.r-supervisor{background:var(--yellow);color:var(--yellow2)}.r-consulta{background:#eef1f6;color:var(--text2)}
+.r-admin{background:#fde8e8;color:#c00}.r-supervisor{background:#fff4cc;color:#c48a00}.r-consulta{background:var(--green);color:var(--green2)}
 .on-b{background:var(--green);color:var(--green2)}.off-b{background:var(--red);color:var(--red2)}
 .chip{display:inline-block;background:var(--sky2);color:var(--navy);border-radius:6px;padding:2px 7px;font-size:.68rem;margin:1px 2px 1px 0}
 .sub{color:var(--text2);font-size:.72rem}
@@ -41,10 +42,44 @@ td{padding:10px 12px;border-top:1px solid var(--border);vertical-align:middle}tr
 .warn{background:var(--yellow);color:#7a5600;border-radius:8px;padding:9px 12px;font-size:.74rem;margin:10px 0}
 .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+
+.header{background:var(--navy);position:sticky;top:0;z-index:200;box-shadow:0 2px 16px rgba(0,0,0,.25)}
+.header-inner{max-width:1320px;margin:0 auto;padding:0 32px;height:60px;display:flex;align-items:center;gap:16px}
+.logo-pill{display:flex;align-items:center;justify-content:center;background:#fff;border-radius:8px;padding:5px 13px;height:38px;flex-shrink:0}
+.h-divider{width:1px;height:24px;background:rgba(255,255,255,.15);flex-shrink:0}
+.header-brand{flex:1;min-width:0}
+.header-title{font-family:'Poppins',system-ui,sans-serif;font-size:.88rem;font-weight:700;color:#fff;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-subtitle{font-size:.67rem;color:rgba(207,238,252,.6);margin-top:1px}
+.header-nav{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.nav-item{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:7px;font-size:.77rem;font-weight:500;color:rgba(255,255,255,.65);cursor:pointer;white-space:nowrap;background:none;border:none;font-family:inherit}
+.nav-item:hover{background:rgba(255,255,255,.1);color:#fff}.nav-item.active{background:rgba(255,255,255,.15);color:#fff;font-weight:600}
+.header-session{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:8px}
+.session-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#CFEEFC,#3498db);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--navy);border:2px solid rgba(255,255,255,.2)}
+.session-info{text-align:right}.session-name{font-size:.78rem;font-weight:600;color:#fff}.session-role{font-size:.65rem;color:rgba(207,238,252,.55)}
+.btn-logout{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.75);border-radius:7px;padding:6px 12px;font-size:.75rem;font-weight:500;font-family:inherit;cursor:pointer}
+.main{max-width:1320px;margin:0 auto;padding:36px 32px 64px}
+.sec-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:22px}.sec-left{display:flex;align-items:baseline;gap:10px}
+.sec-title{font-size:.95rem;font-weight:700;color:var(--navy)}.sec-count{font-size:.72rem;font-weight:500;color:var(--text2);background:var(--bg);border-radius:20px;padding:2px 10px;border:1px solid var(--border)}
+.admin-panel{background:var(--card);border-radius:16px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
+.admin-hdr{padding:18px 24px;background:#f6f9ff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.admin-hdr-icon{width:38px;height:38px;background:var(--sky);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--navy);font-size:1rem;flex-shrink:0}
+.admin-hdr-title{font-size:.9rem;font-weight:700;color:var(--navy)}.admin-hdr-sub{font-size:.72rem;color:var(--text2);margin-top:1px}
+.kpis{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}.kpi{background:#fff;border:1px solid var(--border);border-radius:10px;padding:5px 14px;text-align:center;min-width:74px}.kpi b{display:block;font-size:1rem;color:var(--navy)}.kpi span{font-size:.62rem;color:var(--text2);text-transform:uppercase;letter-spacing:.04em}
+.page-footer{border-top:1px solid var(--border);text-align:center;padding:18px;font-size:.7rem;color:var(--text2)}
+@media(max-width:900px){.header-inner{padding:0 14px;gap:10px}.header-brand,.session-info,.h-divider{display:none}.main{padding:20px 14px 48px}}
+.role-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:12px;font-size:.7rem;font-weight:700}
+.dash-chip{display:inline-flex;align-items:center;gap:3px;background:var(--sky);color:var(--navy);border-radius:10px;padding:1px 7px;font-size:.68rem;font-weight:600;margin:1px 2px}
 </style></head><body>
 <div class="banner">MAQUETA PARA APROBACIÓN · datos ficticios · aún no conectada a Supabase · los botones solo simulan el comportamiento</div>
-<div class="wrap"><div class="panel">
- <div class="hdr"><div><h1>Administración de usuarios</h1><small>PDC Analytics Center · acceso exclusivo para administradores</small></div>
+<header class="header"><div class="header-inner">
+ <div class="logo-pill"><img src="data:image/png;base64,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" alt="PDC" style="height:26px;width:auto;display:block"></div><div class="h-divider"></div>
+ <div class="header-brand"><div class="header-title">PDC Analytics Center</div><div class="header-subtitle">Plataforma Corporativa de Business Intelligence</div></div>
+ <nav class="header-nav"><button class="nav-item" type="button">📊 Mis Dashboards</button><button class="nav-item active" type="button">⚙️ Administración</button></nav><div class="h-divider"></div>
+ <div class="header-session"><div class="session-info"><div class="session-name">Administrador (ficticio)</div><div class="session-role">Administrador</div></div><div class="session-avatar">A</div>
+ <button class="btn-logout" type="button">Salir</button></div></div></header>
+<main class="main"><div class="sec-row"><div class="sec-left"><span class="sec-title">Usuarios y Permisos</span><span class="sec-count">Gestión de accesos</span></div></div>
+<div class="panel admin-panel">
+ <div class="admin-hdr"><div class="admin-hdr-icon">👥</div><div><div class="admin-hdr-title">Administración de usuarios</div><div class="admin-hdr-sub">Crear, editar, inactivar y restablecer accesos · Requiere permisos de Administrador</div></div>
   <div class="kpis"><div class="kpi"><b id="kT">0</b><span>Usuarios</span></div><div class="kpi"><b id="kA">0</b><span>Activos</span></div><div class="kpi"><b id="kI">0</b><span>Inactivos</span></div><div class="kpi"><b id="kP">0</b><span>Cambio pend.</span></div></div></div>
  <div class="tabs" role="tablist">
   <button class="tab on" data-t="u">👥 Usuarios</button><button class="tab" data-t="n">➕ Nuevo usuario</button><button class="tab" data-t="r">🛡️ Roles y permisos</button><button class="tab" data-t="a">📜 Auditoría</button></div>
@@ -66,20 +101,20 @@ td{padding:10px 12px;border-top:1px solid var(--border);vertical-align:middle}tr
   </div><div class="side"><h3>¿Qué ocurre al crear?</h3><ol style="padding-left:18px;margin:0"><li>El sistema crea la cuenta y genera una <b>contraseña temporal</b> de 14 caracteres.</li><li>Se la muestra <b>una sola vez</b> con botón para copiar; usted se la envía por un canal privado.</li><li>En su primer ingreso, el usuario <b>debe cambiarla</b> antes de ver cualquier dashboard.</li><li>Queda registrado en Auditoría (sin la contraseña).</li></ol></div></div></div>
   <!-- ROLES -->
   <div class="pane" id="p-r">
-   <p class="sub" style="margin-top:0">Los tres roles se mantienen. Esta vista es de consulta: define qué puede hacer cada uno. <b>Los valores marcados como “por confirmar” debo validarlos con usted antes de la etapa 3.</b></p>
+   <p class="sub" style="margin-top:0">Los tres roles se mantienen. Esta vista es de consulta: define qué puede hacer cada uno. Valor aún por confirmar: los dashboards sugeridos al crear.</p>
    <div class="tw"><table class="mx"><thead><tr><th>Capacidad</th><th>Administrador</th><th>Supervisor</th><th>Consulta</th></tr></thead><tbody>
    <tr><td>Ver dashboards autorizados</td><td class="yes">✔</td><td class="yes">✔</td><td class="yes">✔</td></tr>
    <tr><td>Chat de soporte: enviar consultas</td><td class="yes">✔</td><td class="yes">✔</td><td class="yes">✔</td></tr>
    <tr><td>Chat de soporte: ver y responder todas las conversaciones</td><td class="yes">✔</td><td class="no">—</td><td class="no">—</td></tr>
    <tr><td>Gestionar usuarios (crear, editar, inactivar, restablecer clave)</td><td class="yes">✔</td><td class="no">—</td><td class="no">—</td></tr>
    <tr><td>Ver auditoría de cambios</td><td class="yes">✔</td><td class="no">—</td><td class="no">—</td></tr>
-   <tr><td>Publicar datos de Rutas (self-service) <span class="sub">· por confirmar</span></td><td class="yes">✔</td><td class="yes">✔</td><td class="no">—</td></tr>
+   <tr><td>Publicar datos de Rutas (self-service)</td><td class="yes">✔</td><td class="no">—</td><td class="no">—</td></tr>
    <tr><td>Dashboards sugeridos al crear <span class="sub">· por confirmar</span></td><td>Todos</td><td>Los de su país</td><td>Solo los asignados</td></tr>
    </tbody></table></div>
   </div>
   <!-- AUDITORIA -->
   <div class="pane" id="p-a"><div class="tw"><table><thead><tr><th>Fecha</th><th>Administrador</th><th>Acción</th><th>Usuario afectado</th><th>Detalle</th></tr></thead><tbody id="au"></tbody></table></div><p class="sub">Bitácora inmutable: nadie, ni siquiera un administrador, puede editarla o borrarla desde la aplicación.</p></div>
- </div></div></div>
+ </div></div></main><div class="page-footer">PDC Analytics Center · Grupo PDC</div>
 
 <!-- Modal contraseña -->
 <div class="modal" id="mPw"><div class="mb"><h2 id="mPwT">Usuario creado</h2><div class="sub" id="mPwS"></div>
@@ -115,7 +150,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 function render(){const q=$('q').value.toLowerCase(),fr=$('fr').value,fp=$('fp').value,fe=$('fe').value;
  $('kT').textContent=U.length;$('kA').textContent=U.filter(u=>u.on).length;$('kI').textContent=U.filter(u=>!u.on).length;$('kP').textContent=U.filter(u=>u.f).length;
  $('tb').innerHTML=U.map((u,i)=>({u,i})).filter(({u})=>(!q||(u.n+u.e).toLowerCase().includes(q))&&(!fr||u.r===fr)&&(!fp||u.p===fp)&&(!fe||String(u.on)===fe)).map(({u,i})=>
- `<tr class="${u.on?'':'off'}"><td><b>${esc(u.n)}</b><div class="sub">${esc(u.e)}</div></td><td><span class="badge r-${u.r}">${RL[u.r]}</span></td><td>${PL[u.p]}<div class="sub">${u.s.join(', ')||'—'}</div></td><td>${u.d.map(d=>`<span class="chip">${DASH[d]}</span>`).join('')}</td><td class="sub">${u.a}${u.f?'<div style="color:var(--yellow2);font-weight:700">Debe cambiar clave</div>':''}</td><td><span class="badge ${u.on?'on-b':'off-b'}">${u.on?'Activo':'Inactivo'}</span></td>
+ `<tr class="${u.on?'':'off'}"><td><b>${esc(u.n)}</b><div class="sub">${esc(u.e)}</div></td><td><span class="role-badge r-${u.r}">${RL[u.r]}</span></td><td>${PL[u.p]}<div class="sub">${u.s.join(', ')||'—'}</div></td><td>${u.d.map(d=>`<span class="dash-chip">${DASH[d]}</span>`).join('')}</td><td class="sub">${u.a}${u.f?'<div style="color:var(--yellow2);font-weight:700">Debe cambiar clave</div>':''}</td><td><span class="badge ${u.on?'on-b':'off-b'}">${u.on?'Activo':'Inactivo'}</span></td>
  <td class="act" style="white-space:nowrap"><button class="btn ghost sm" onclick="ed(${i})">Editar</button> <button class="btn ghost sm" onclick="rp(${i})">Restablecer clave</button> <button class="btn ${u.on?'danger':'ghost'} sm" onclick="tg(${i})">${u.on?'Inactivar':'Reactivar'}</button></td></tr>`).join('')||'<tr><td colspan="7" class="sub" style="text-align:center;padding:24px">Sin resultados</td></tr>';
  $('au').innerHTML=AU.map(a=>`<tr><td class="sub">${a[0]}</td><td>${a[1]}</td><td><b>${a[2]}</b></td><td class="sub">${a[3]}</td><td class="sub">${a[4]}</td></tr>`).join('')}
 ['q','fr','fp','fe'].forEach(i=>$(i).oninput=render);
