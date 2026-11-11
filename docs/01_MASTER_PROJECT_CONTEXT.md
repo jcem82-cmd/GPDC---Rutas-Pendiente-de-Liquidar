@@ -35,6 +35,8 @@ PDC Analytics Center
 ├── elsalvador/index.html   ← Dashboard El Salvador · KPIs EN VIVO vía PDCBridge (NUEVO 10/07)
 ├── honduras/index.html     ← Existe en el repo pero SIN tarjeta en portal (sin datos reales)
 │
+├── (externo) Sistema de Colas ← tarjeta `colas` en analytics.html; abre http://siscolas.grupopdc.com:3000/dashboard (red corporativa, login propio). Repo: jcem82-cmd/sistema-colas-pdc (privado)
+│
 ├── js/
 │   ├── pdc_data_bridge.js  ← Fuente única de verdad — fetch + cálculo de KPIs Rutas
 │   └── auth.js   (huérfano desde 29/10/2026: users.js eliminado)

@@ -1,3 +1,13 @@
+## [11/11/2026] — Hub · Nueva tarjeta "Sistema de Colas" (acceso `colas`) — aprobado por Charly
+
+- `analytics.html`: nueva entrada `colas` en `PDC_DASHBOARDS` (🎫 Sistema de Colas · Operativo · Créditos y Cobros · GT). Dashboard alojado FUERA de GitHub Pages, en el servidor local del sistema: `http://siscolas.grupopdc.com:3000/dashboard` (solo accesible desde la red corporativa). Campo nuevo `externo:true` → el botón "Acceder" llama a `pdcOpenExterno(url)`: valida la sesión del hub y abre en pestaña nueva (`noopener,noreferrer`). Acento CSS `.accent-colas`. KPIs de la tarjeta sin cifras inventadas (el hub no puede leer el servidor de colas): Tiempo real · Red corporativa · 4+2 ventanillas.
+- `supabase/functions/admin-users/core.ts` + `index.bundle.ts`: `'colas'` agregado a `DASHBOARDS` (lista blanca de accesos válidos). **Requiere re-despliegue de la Edge Function `admin-users`** (pegar `index.bundle.ts` en Supabase → Edge Functions → admin-users → Deploy) para poder asignar `colas` desde el panel de usuarios. 53/53 pruebas OK.
+- **No se asignó el acceso a ningún usuario**: Charly lo asigna desde el panel de usuarios (Editar → dashboards).
+- El dashboard de colas mantiene su propio inicio de sesión (sistema aislado, sin SSO con el hub).
+- Verificación: sintaxis OK; prueba en navegador simulado (la tarjeta solo aparece con `colas` en `dashboards`, el botón abre la URL en pestaña nueva, sin errores de consola).
+
+---
+
 ## [30/10/2026] — Seguridad · SheetJS vendorizado — FASE 19 #3 completo
 
 - `js/xlsx.full.min.js` (SheetJS 0.20.0, descargado por Charly de cdn.sheetjs.com; verificado: carga como `XLSX` v0.20.0 con `read`/`writeFile`). Etiquetas actualizadas en `index.html`, `cash_today.html` y `cartas_salida.html` (solo la línea `<script src>`).

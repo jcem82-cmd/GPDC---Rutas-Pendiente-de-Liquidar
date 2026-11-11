@@ -283,6 +283,7 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 .accent-elsalvador{background:linear-gradient(90deg,#0F47AF 0%,#E63946 100%)}
 .accent-cartas_salida{background:linear-gradient(90deg,#7C2D12 0%,#F59E0B 100%)}
 .accent-regional{background:linear-gradient(90deg,#002060 0%,#5B2D8E 60%,#E6501E 100%)}
+.accent-colas{background:linear-gradient(90deg,#002060 0%,#2D9E2D 100%)}
 
 /* Card body */
 .card-body{padding:22px 24px 16px;flex:1;display:flex;flex-direction:column;gap:14px}
@@ -822,6 +823,23 @@ var PDC_DASHBOARDS = [
     ],
     actualizacion: '31 jul 2026',
     activo: true
+  },
+  {
+    id: 'colas',
+    nombre: 'Sistema de Colas',
+    descripcion: 'Dashboard del Sistema de Colas de Créditos y Cobros: tiempos de espera y atención, volumen por ventanilla y hora, mapa de calor, pausas de atención y comparativos por periodo. Disponible solo desde la red corporativa.',
+    archivo: 'http://siscolas.grupopdc.com:3000/dashboard',
+    externo: true,
+    icono: '🎫',
+    categoria: 'Operativo · Créditos y Cobros',
+    paises: { GT:'🇬🇹 Guatemala' },
+    kpis: [
+      { val:'⚡',  lbl:'Tiempo real' },
+      { val:'🔒',  lbl:'Red corporativa' },
+      { val:'4+2', lbl:'Ventanillas' }
+    ],
+    actualizacion: 'en tiempo real',
+    activo: true
   }
 ];
 
@@ -887,6 +905,15 @@ function pdcNavigate(archivo){
     role: s.rol  /* preservar admin|supervisor|consulta */
   }));
   window.location.href = archivo;
+}
+
+/* Dashboards alojados fuera de GitHub Pages (p. ej. Sistema de Colas, solo red corporativa):
+   se valida la sesión del hub y se abre en pestaña nueva, sin compartir sesión ni datos con el destino. */
+function pdcOpenExterno(url){
+  var s = pdcGetSession();
+  if(!s){ pdcLogout(); return; }
+  if(!/^https?:\/\/[A-Za-z0-9.-]+(:\d+)?\//.test(url)) return;
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 function pdcBridgeToTab(archivo, tab){
@@ -1165,7 +1192,7 @@ function pdcRenewSession(){
         '</div>'+
         '<div class="card-footer">'+
           '<div class="card-update">🕐 Actualizado '+dash.actualizacion+'</div>'+
-          '<button class="btn-access" type="button" aria-label="Acceder al dashboard" onclick="pdcNavigate(\''+dash.archivo+'\')">Acceder →</button>'+
+          '<button class="btn-access" type="button" aria-label="Acceder al dashboard" onclick="'+(dash.externo ? 'pdcOpenExterno(\''+dash.archivo+'\')' : 'pdcNavigate(\''+dash.archivo+'\')')+'">Acceder →</button>'+
         '</div>';
       grid.appendChild(card);
     });
