@@ -1,3 +1,12 @@
+## [11/11/2026] — Hub · Ingreso sin contraseña al Sistema de Colas (pase firmado) y accesos por área — aprobado por Charly
+
+- Nueva Edge Function `supabase/functions/colas-token/index.ts` (emite pase HMAC de 60 s y un solo uso; valida JWT, perfil activo, país GT/regional y acceso). Detalle y despliegue: `docs/sql/README_colas-token.md`.
+- Accesos nuevos: `colas` (todas las áreas), `colas_liq` (Liquidaciones), `colas_transp` (Transportes) en `DASHBOARDS` de `admin-users` (`core.ts` + `index.bundle.ts`, **re-despliegue requerido**) y en `PDC_DASHBOARDS`. Una sola tarjeta "Sistema de Colas" (la de mayor alcance si el usuario tiene varios).
+- `analytics.html`: `pdcAbrirColas()` reemplaza a `pdcOpenExterno()`: abre pestaña, pide el pase y navega a `…/dashboard#pase=…` (el pase va en el fragmento). Errores se muestran en aviso.
+- Sin asignación automática de accesos. Pruebas: 13 de la función (interoperabilidad con `lib/sso.js` del servidor de colas) + render de la tarjeta y flujo del botón en navegador simulado; 53/53 de `admin-users`.
+
+---
+
 ## [11/11/2026] — Hub · Nueva tarjeta "Sistema de Colas" (acceso `colas`) — aprobado por Charly
 
 - `analytics.html`: nueva entrada `colas` en `PDC_DASHBOARDS` (🎫 Sistema de Colas · Operativo · Créditos y Cobros · GT). Dashboard alojado FUERA de GitHub Pages, en el servidor local del sistema: `http://siscolas.grupopdc.com:3000/dashboard` (solo accesible desde la red corporativa). Campo nuevo `externo:true` → el botón "Acceder" llama a `pdcOpenExterno(url)`: valida la sesión del hub y abre en pestaña nueva (`noopener,noreferrer`). Acento CSS `.accent-colas`. KPIs de la tarjeta sin cifras inventadas (el hub no puede leer el servidor de colas): Tiempo real · Red corporativa · 4+2 ventanillas.

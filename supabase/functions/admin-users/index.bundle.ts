@@ -6,7 +6,7 @@
 
 export const ROLES = ['admin', 'supervisor', 'consulta'];
 export const PAISES = ['regional', 'GT', 'ESV', 'PE'];            // Honduras excluido por decisión del negocio
-export const DASHBOARDS = ['rutas', 'cashtoday', 'regional', 'peru', 'elsalvador', 'cartas_salida', 'historico', 'colas'];
+export const DASHBOARDS = ['rutas', 'cashtoday', 'regional', 'peru', 'elsalvador', 'cartas_salida', 'historico', 'colas', 'colas_liq', 'colas_transp'];
 export const SEDES = ['CDA', 'XELA', 'Sta.Tecla', 'Sn.Miguel', 'Peru'];
 export const EMAIL_DOMAIN = '@grupopdc.com';
 

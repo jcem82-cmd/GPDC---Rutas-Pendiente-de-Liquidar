@@ -826,10 +826,12 @@ var PDC_DASHBOARDS = [
   },
   {
     id: 'colas',
-    nombre: 'Sistema de Colas',
-    descripcion: 'Dashboard del Sistema de Colas de Liquidaciones | Créditos y Cobros: tiempos de espera y atención, volumen por ventanilla y hora, mapa de calor, pausas de atención y comparativos por periodo. Disponible solo desde la red corporativa.',
+    nombre: 'Sistema de Colas — Todas las áreas',
+    tituloCard: 'Sistema de Colas',
+    grupoCard: 'colas',
+    descripcion: 'Dashboard del Sistema de Colas de Liquidaciones | Créditos y Cobros (todas las áreas). Tiempos de espera y atención, volumen por ventanilla y hora, mapa de calor, pausas de atención y comparativos por periodo. Disponible solo desde la red corporativa.',
     archivo: 'http://siscolas.grupopdc.com:3000/dashboard',
-    externo: true,
+    pase: true,
     icono: '🎫',
     categoria: 'Liquidaciones | Créditos y Cobros',
     paises: { GT:'🇬🇹 Guatemala' },
@@ -837,6 +839,44 @@ var PDC_DASHBOARDS = [
       { val:'⚡',  lbl:'Tiempo real' },
       { val:'🔒',  lbl:'Red corporativa' },
       { val:'4+2', lbl:'Ventanillas' }
+    ],
+    actualizacion: 'en tiempo real',
+    activo: true
+  },
+  {
+    id: 'colas_liq',
+    nombre: 'Sistema de Colas — Liquidaciones',
+    tituloCard: 'Sistema de Colas',
+    grupoCard: 'colas',
+    descripcion: 'Dashboard del Sistema de Colas, área Liquidaciones | Créditos y Cobros. Tiempos de espera y atención, volumen por ventanilla y hora, mapa de calor, pausas de atención y comparativos por periodo. Disponible solo desde la red corporativa.',
+    archivo: 'http://siscolas.grupopdc.com:3000/dashboard',
+    pase: true,
+    icono: '🎫',
+    categoria: 'Liquidaciones | Créditos y Cobros',
+    paises: { GT:'🇬🇹 Guatemala' },
+    kpis: [
+      { val:'⚡',  lbl:'Tiempo real' },
+      { val:'🔒',  lbl:'Red corporativa' },
+      { val:'4', lbl:'Ventanillas' }
+    ],
+    actualizacion: 'en tiempo real',
+    activo: true
+  },
+  {
+    id: 'colas_transp',
+    nombre: 'Sistema de Colas — Transportes',
+    tituloCard: 'Sistema de Colas',
+    grupoCard: 'colas',
+    descripcion: 'Dashboard del Sistema de Colas, área Transportes | Créditos y Cobros. Tiempos de espera y atención, volumen por ventanilla y hora, mapa de calor, pausas de atención y comparativos por periodo. Disponible solo desde la red corporativa.',
+    archivo: 'http://siscolas.grupopdc.com:3000/dashboard',
+    pase: true,
+    icono: '🎫',
+    categoria: 'Liquidaciones | Créditos y Cobros',
+    paises: { GT:'🇬🇹 Guatemala' },
+    kpis: [
+      { val:'⚡',  lbl:'Tiempo real' },
+      { val:'🔒',  lbl:'Red corporativa' },
+      { val:'2', lbl:'Ventanillas' }
     ],
     actualizacion: 'en tiempo real',
     activo: true
@@ -907,13 +947,31 @@ function pdcNavigate(archivo){
   window.location.href = archivo;
 }
 
-/* Dashboards alojados fuera de GitHub Pages (p. ej. Sistema de Colas, solo red corporativa):
-   se valida la sesión del hub y se abre en pestaña nueva, sin compartir sesión ni datos con el destino. */
-function pdcOpenExterno(url){
+/* Sistema de Colas (alojado en la red corporativa, fuera de GitHub Pages): ingreso sin contraseña.
+   Se pide a la Edge Function `colas-token` un pase firmado de 60 s y un solo uso, que viaja en el fragmento (#pase=)
+   de la URL — no llega a bitácoras ni al historial — y el servidor de colas lo canjea por una sesión de solo lectura. */
+async function pdcAbrirColas(btn, url){
   var s = pdcGetSession();
   if(!s){ pdcLogout(); return; }
-  if(!/^https?:\/\/[A-Za-z0-9.-]+(:\d+)?\//.test(url)) return;
-  window.open(url, '_blank', 'noopener,noreferrer');
+  if(!/^http:\/\/[A-Za-z0-9.-]+(:\d+)?\/dashboard$/.test(url)) return;
+  var orig = btn ? btn.textContent : '';
+  if(btn){ btn.disabled = true; btn.textContent = 'Abriendo…'; }
+  var w = window.open('about:blank', '_blank');   /* se abre de inmediato (acción del usuario) para que el navegador no la bloquee */
+  var fin = function(){ if(btn){ btn.disabled = false; btn.textContent = orig; } };
+  try{
+    var ses = await supabaseClient.auth.getSession();
+    var tok = ses && ses.data && ses.data.session && ses.data.session.access_token;
+    if(!tok) throw new Error('Su sesión expiró. Vuelva a iniciar sesión.');
+    var res = await fetch(PDC_SUPABASE_URL + '/functions/v1/colas-token', { method:'POST', headers:{ 'Authorization':'Bearer '+tok, 'apikey':PDC_SUPABASE_KEY, 'Content-Type':'application/json' }, body:'{}' });
+    var j = await res.json().catch(function(){ return null; });
+    if(!res.ok || !j || !j.ok || !j.pase) throw new Error((j && j.error) || 'No se pudo generar el acceso.');
+    var dest = url + '#pase=' + encodeURIComponent(j.pase);
+    if(w){ try{ w.opener = null; }catch(e){} w.location.href = dest; } else { window.location.href = dest; }
+  }catch(e){
+    if(w) try{ w.close(); }catch(x){}
+    pdcShowToast('⚠️', 'No se pudo abrir el Sistema de Colas', (e && e.message) || String(e), 5000);
+  }
+  fin();
 }
 
 function pdcBridgeToTab(archivo, tab){
@@ -1109,6 +1167,9 @@ function pdcRenewSession(){
   var dashs = PDC_DASHBOARDS.filter(function(d){
     return d.activo && session.dashboards.indexOf(d.id) > -1;
   });
+  /* Entradas que comparten tarjeta (p. ej. Sistema de Colas: todas / Liquidaciones / Transportes): una sola tarjeta, la de mayor alcance */
+  var _grp = {};
+  dashs = dashs.filter(function(d){ if(!d.grupoCard) return true; if(_grp[d.grupoCard]) return false; _grp[d.grupoCard] = 1; return true; });
 
   /* Hero chips */
   var chips = document.getElementById('hChips');
@@ -1178,7 +1239,7 @@ function pdcRenewSession(){
           '<div class="card-top">'+
             '<div class="card-icon">'+dash.icono+'</div>'+
             '<div class="card-title-block">'+
-              '<div class="card-name">'+dash.nombre+'</div>'+
+              '<div class="card-name">'+(dash.tituloCard||dash.nombre)+'</div>'+
               '<div class="card-category">'+dash.categoria+'</div>'+
             '</div>'+
             '<span class="badge badge-active"><span class="badge-dot"></span>Activo</span>'+
@@ -1192,7 +1253,7 @@ function pdcRenewSession(){
         '</div>'+
         '<div class="card-footer">'+
           '<div class="card-update">🕐 Actualizado '+dash.actualizacion+'</div>'+
-          '<button class="btn-access" type="button" aria-label="Acceder al dashboard" onclick="'+(dash.externo ? 'pdcOpenExterno(\''+dash.archivo+'\')' : 'pdcNavigate(\''+dash.archivo+'\')')+'">Acceder →</button>'+
+          '<button class="btn-access" type="button" aria-label="Acceder al dashboard" onclick="'+(dash.pase ? 'pdcAbrirColas(this,\''+dash.archivo+'\')' : 'pdcNavigate(\''+dash.archivo+'\')')+'">Acceder →</button>'+
         '</div>';
       grid.appendChild(card);
     });
