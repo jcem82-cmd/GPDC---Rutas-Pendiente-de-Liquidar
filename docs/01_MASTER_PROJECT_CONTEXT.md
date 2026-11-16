@@ -735,3 +735,14 @@ La migración omitió `index.html` en `ALLOWED_PATHS` de la función Edge → er
 - Validado: `node --check` en los 5 bloques `<script>`; archivo en `main` idéntico byte a byte al validado (1,173,385 → 1,173,544 bytes); workflows en `success`; publicación de Excel confirmada por Charly.
 - Pendiente (recomendación, no implementada): separar el dataset embebido (`RAW`, `KPI_HIST`, `EFECT`, `KPI_TOTALS`, `TOTAL_RUTAS_HIST`) a un JSON aparte; auditar `cartas_salida.html`/`cash_today.html` frente al límite de 1MB y la caché HTTP.
 - Detalle completo: `02_CHANGELOG.md`, entrada 02/10/2026.
+
+---
+
+# §22 — EXPORTAR A EXCEL EL DETALLE DE RUTAS PENDIENTES (sesión 16/11/2026 · nueva funcionalidad)
+
+- **Dónde:** `index.html`, pestaña Detalle ("Detalle Completo de Rutas Pendientes"). Botón `#btnXlsDet` (`.xls-btn`) junto al buscador `#srchM`.
+- **Permisos:** visible para admin, supervisor y **consulta** (decisión de Charly). No usa `admin-visible`; el PDF de Resumen sigue siendo solo admin/supervisor.
+- **Fuente de datos:** `RM()` publica `window._PDC_DET_EXPORT` (dataset filtrado + ordenado = el mismo que pinta la tabla). `exportarDetalleExcel()` lo consume — no duplica la lógica de filtros (REGLA de única fuente de verdad). Si se cambia el filtro de `RM()`, el Excel lo hereda solo.
+- **Salida:** `Detalle_Rutas_Pendientes_AAAA-MM-DD.xlsx` con hojas `Detalle Rutas` (21 columnas, valores numéricos y fechas reales, autofiltro) y `Filtros aplicados` (fecha de datos, Mundo, toggles, búsqueda, registros, total USD, TC).
+- **Librería:** SheetJS local `js/xlsx.full.min.js` v0.20.0 (sin dependencias nuevas). Sin estilos de celda (la edición comunitaria no los escribe).
+- Detalle: `02_CHANGELOG.md`, entrada 16/11/2026.

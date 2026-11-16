@@ -2,7 +2,16 @@
 ## PDC Analytics Center · Plan de Evolución
 
 **Estado actual: v2.17 ESTABLE (Rutas) / v2.18 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
-**Última actualización:** 30/10/2026 (FASE 19 en curso; FASE 20 etapa 1 lista para desplegar)
+**Última actualización:** 16/11/2026 (FASE 22 completada; FASE 19 en curso; FASE 20 etapa 1 lista para desplegar)
+
+---
+
+## ✅ FASE 22 — Exportar a Excel el Detalle de Rutas Pendientes (COMPLETADA · 16/11/2026)
+
+- [x] Nueva funcionalidad solicitada por Charly: botón `📊 Exportar Excel` en la pestaña Detalle de `index.html`, visible para **todos los roles incluido consulta**
+- [x] Respeta filtros activos (Mundo, toggles, búsqueda, orden) reutilizando el dataset que pinta la tabla; exporta todos los registros, con números/fechas reales y hoja de trazabilidad "Filtros aplicados"
+- [x] Validado: `node --check`, simulación con SheetJS real, verificación byte a byte contra `raw.githubusercontent.com`. Ver CHANGELOG 16/11/2026
+- [ ] Recomendación (no implementada): replicar la exportación en `historico.html` (hoy solo exporta PDF) si Charly lo requiere
 
 ---
 

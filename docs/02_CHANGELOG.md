@@ -1,3 +1,21 @@
+## [16/11/2026] — Rutas · Exportar a Excel el "Detalle Completo de Rutas Pendientes" (visible para todos los roles, incl. consulta) — solicitado por Charly
+
+**Clasificación:** Nueva funcionalidad. **Archivo:** únicamente `index.html` (+61 líneas, 1 modificada). Commit `b6c45e3`.
+
+**Solicitud:** exportar a Excel la tabla de la pestaña Detalle (validando el dashboard). Charly definió que el botón debe estar disponible también para usuarios de **consulta** (a diferencia de "Exportar PDF", limitado a admin/supervisor).
+
+**Implementación:**
+- Botón `📊 Exportar Excel` (`#btnXlsDet`, clase `.xls-btn`) junto al buscador de la tabla; sin clase `admin-visible` ni gate por rol. Verificado que ninguna regla de rol oculta el botón (solo se oculta la pestaña Tipos de Cambio a no admin).
+- `RM()` publica el dataset ya filtrado y ordenado en `window._PDC_DET_EXPORT` (una línea). `exportarDetalleExcel()` lo consume: **única fuente de verdad** con lo que pinta la tabla (Mundo, Solo Vencidas Despacho, Dedicado Terminal, búsqueda y orden). Exporta todos los registros, no solo la página visible.
+- Hoja `Detalle Rutas`: 20 columnas de la pantalla + `Moneda`; Valor Local/USD, Días, Target y Gap numéricos; fechas como fechas Excel (`yyyy-mm-dd`); Cliente sin truncar (sin código numérico, igual que en pantalla); Seguimiento completo; autofiltro. Hoja `Filtros aplicados`: fecha de datos, vista, Mundo, toggles, búsqueda, nº de registros, total USD y TC aplicados (trazabilidad, mismo criterio que el PDF de `historico.html`).
+- Reutiliza SheetJS ya cargado (`js/xlsx.full.min.js`); sin dependencias nuevas.
+
+**Validado:** `node --check` en los 6 bloques `<script>`; 4 reemplazos con `assert count==1`; simulación con la librería real y datos de muestra (fechas = serial Excel correcto, formatos numéricos, nulos, hoja de filtros); `index.html` en `main` idéntico byte a byte contra `raw.githubusercontent.com`. Pendiente: validación visual de Charly en producción tras Ctrl+Shift+R.
+
+**Alcance:** no se tocó `processWorkbook()`, `publishToGitHub()`, `RM()` salvo la línea de publicación del dataset, diseño existente ni otros módulos.
+
+---
+
 ## [11/11/2026] — Hub · Ingreso sin contraseña al Sistema de Colas (pase firmado) y accesos por área — aprobado por Charly
 
 - Nueva Edge Function `supabase/functions/colas-token/index.ts` (emite pase HMAC de 60 s y un solo uso; valida JWT, perfil activo, país GT/regional y acceso). Detalle y despliegue: `docs/sql/README_colas-token.md`.
