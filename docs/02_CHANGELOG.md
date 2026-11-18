@@ -1,3 +1,15 @@
+## [18/11/2026] — Cash Today · Config: la hoja "TC" del Excel no actualizaba el Tipo de Cambio mensual — solicitado por Charly
+
+**Clasificación:** Corrección de errores. **Archivo:** únicamente `cash_today.html` (bloque de lectura de la hoja `TC` dentro de `loadFile()`).
+
+**Causa raíz:** el lector usaba `raw:false` (valor *formateado* por Excel) y solo aceptaba texto `YYYY-MM` o `MM/YYYY` en la columna A. Si la columna A trae fechas reales (`ago-26`, `01/08/2026`, `1/8/2026`...) la fila caía en `continue` sin aviso, el mes nunca entraba a `_TC_MENSUAL` y la tabla de Config (y la conversión GTQ→USD) quedaba con los meses viejos + advertencia de TC base. Un TC con formato de celda de pocos decimales también se redondeaba.
+
+**Fix:** lectura con `raw:true`; normalizador de mes (Date/serial Excel, `YYYY-MM`, `YYYY-MM-DD`, `MM/YYYY`, `D/M/YYYY`, `ago-26`, `Agosto 2026`); TC numérico crudo con validación 5–10; las filas omitidas se reportan en consola (`[TC] ... filas omitidas`). Sin cambios de HTML/CSS ni de `updateConfigInfo()`.
+
+**Validado:** simulación Node + SheetJS con fechas `mmm-yy`, `dd/mm/yyyy`, texto mixto, sin encabezado y TC inválido; `node --check` OK. **Acción posterior:** recargar el Excel en Config y publicar para persistir Ago–Nov 2026 en `_TC_MENSUAL`.
+
+---
+
 ## [16/11/2026] — Rutas · Exportar a Excel el "Detalle Completo de Rutas Pendientes" (visible para todos los roles, incl. consulta) — solicitado por Charly
 
 **Clasificación:** Nueva funcionalidad. **Archivo:** únicamente `index.html` (+61 líneas, 1 modificada). Commit `b6c45e3`.

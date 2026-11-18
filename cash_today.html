@@ -3513,18 +3513,63 @@ function loadFile(file){
       // Reload TC sheet if present — extends _TC_MENSUAL at runtime
       if(wb.SheetNames.includes('TC')){
         try{
-          const tcRows=XLSX.utils.sheet_to_json(wb.Sheets['TC'],{header:1,raw:false,defval:''});
-          for(let i=1;i<tcRows.length;i++){
+          /* FIX RCA 18/11/2026: el lector anterior solo aceptaba texto "YYYY-MM" o
+             "MM/YYYY" y leia con raw:false (valor FORMATEADO por Excel). Si la columna
+             A trae fechas reales (1/8/2026, ago-26, 01/08/2026...) o el TC viene con
+             formato de celda que redondea, la fila se descartaba en silencio (continue)
+             y el mes nunca llegaba a _TC_MENSUAL ni a la tabla de Config. Ahora se lee
+             el valor crudo (raw:true) y se normaliza cualquier formato de mes. */
+          const tcRows=XLSX.utils.sheet_to_json(wb.Sheets['TC'],{header:1,raw:true,defval:''});
+          const _MES_TC={ene:1,jan:1,feb:2,mar:3,abr:4,apr:4,may:5,jun:6,jul:7,ago:8,aug:8,sep:9,set:9,oct:10,nov:11,dic:12,dec:12};
+          const _p2=n=>String(n).padStart(2,'0');
+          const _tcYM=v=>{
+            if(v===null||v===undefined||v==='') return null;
+            if(v instanceof Date){
+              if(isNaN(v)) return null;
+              const d=new Date(v.getTime()+12*3600*1000);   // +12h: inmune a desfase UTC/local de SheetJS
+              return d.getUTCFullYear()+'-'+_p2(d.getUTCMonth()+1);
+            }
+            if(typeof v==='number'){
+              if(v>20000 && v<80000){                        // serial de fecha Excel
+                const d=new Date(Math.round((v-25569)*86400000)+12*3600*1000);
+                return d.getUTCFullYear()+'-'+_p2(d.getUTCMonth()+1);
+              }
+              return null;
+            }
+            const t=v.toString().trim().toLowerCase().replace(/\s+/g,' ');
+            let m;
+            if((m=t.match(/^(\d{4})[-\/](\d{1,2})(?:[-\/]\d{1,2})?(?:[ t].*)?$/))) return (+m[2]>=1&&+m[2]<=12)?m[1]+'-'+_p2(m[2]):null;
+            if((m=t.match(/^(\d{1,2})\/(\d{4})$/))) return (+m[1]>=1&&+m[1]<=12)?m[2]+'-'+_p2(m[1]):null;
+            if((m=t.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})(?:[ t].*)?$/))){   // D/M/Y (formato regional GT/SV)
+              const y=m[3].length===2?2000+(+m[3]):+m[3];
+              return (+m[2]>=1&&+m[2]<=12)?y+'-'+_p2(m[2]):null;
+            }
+            if((m=t.match(/^([a-záéíóú]{3,})[a-z.]*[ \-\/.,]+(?:de )?(\d{2}|\d{4})$/))){   // "ago-26", "agosto 2026", "Aug 2026"
+              const mo=_MES_TC[m[1].slice(0,3)]; if(!mo) return null;
+              const y=m[2].length===2?2000+(+m[2]):+m[2];
+              return y+'-'+_p2(mo);
+            }
+            return null;
+          };
+          const _tcNum=v=>{
+            if(typeof v==='number') return v;
+            let s=(v===null||v===undefined?'':v).toString().replace(/[^0-9.,\-]/g,'');
+            if(!s) return NaN;
+            if(s.indexOf(',')>-1 && s.indexOf('.')>-1) s=s.replace(/,/g,'');
+            else if(s.indexOf(',')>-1) s=s.replace(',','.');
+            return parseFloat(s);
+          };
+          let _tcOk=0; const _tcSkip=[];
+          for(let i=0;i<tcRows.length;i++){
             const tr=tcRows[i];
-            const ymStr=(tr[0]||'').toString().trim();   // e.g. "2024-01" or "01/2024"
-            const tcVal=parseFloat((tr[1]||'0').toString().replace(',','.'));
-            if(!ymStr||!tcVal) continue;
-            // Normalizar formato → YYYY-MM
-            let ym=ymStr;
-            const slashM=ymStr.match(/^(\d{2})\/(\d{4})$/);
-            if(slashM) ym=slashM[2]+'-'+slashM[1];
-            if(/^\d{4}-\d{2}$/.test(ym)) _TC_MENSUAL[ym]=tcVal;
+            const ym=_tcYM(tr[0]);
+            const tcVal=_tcNum(tr[1]);
+            if(!ym){ if(i>0 && (tr[0]!==''||tr[1]!=='')) _tcSkip.push('fila '+(i+1)+': '+JSON.stringify(tr.slice(0,2))); continue; }
+            if(!(tcVal>5 && tcVal<10)){ _tcSkip.push('fila '+(i+1)+': TC invalido '+JSON.stringify(tr[1])); continue; }
+            _TC_MENSUAL[ym]=tcVal; _tcOk++;
           }
+          console.info('[TC] '+_tcOk+' meses cargados desde hoja TC'+(_tcSkip.length?(' · '+_tcSkip.length+' filas omitidas'):''));
+          if(_tcSkip.length) console.warn('[TC] filas omitidas:',_tcSkip);
         }catch(tce){console.warn('TC sheet parse error:',tce);}
       }
       // Reload Costo sheet if present
