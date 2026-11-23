@@ -2,7 +2,18 @@
 ## PDC Analytics Center · Plan de Evolución
 
 **Estado actual: v2.17 ESTABLE (Rutas) / v2.18 ESTABLE (Cash Today)** · Próxima versión objetivo: definir
-**Última actualización:** 16/11/2026 (FASE 22 completada; FASE 19 en curso; FASE 20 etapa 1 lista para desplegar)
+**Última actualización:** 23/11/2026 (FASE 23 completada; antes 16/11/2026: FASE 22 completada; FASE 19 en curso; FASE 20 etapa 1 lista para desplegar)
+
+---
+
+## ✅ FASE 23 — Tableros: % Vigente por canal y país (COMPLETADA · 23/11/2026)
+
+- [x] Mejora funcional solicitada por Charly: `% Vigente = (Universo − Vencidas) / Universo` en las fichas de Tableros (reemplaza el badge tautológico de 100%), universo mensual real desde `Total Rutas (Gral)` por país (Moneda), canal y Territorio (GLT/Tradicional)
+- [x] RCA: numerador y denominador del badge salían del mismo conjunto de pendientes; el 1,660 de Detalle era la suma de 3 países (GT = 925 → 97.62%)
+- [x] Corrección: las fichas con 0 pendientes (ESV Detalle) ahora se muestran con 100% vigente
+- [x] Validado con el Excel real 19/11/2026 (parser vs seed 0 diferencias), `node --check`, verificación en `raw.githubusercontent.com`. Ver CHANGELOG 23/11/2026, §23 y REGLA #22
+- [ ] Recomendación (no implementada): ficha de Distribuidores para ESV (universo 1 ruta) y sección de país cuando no hay pendientes en ningún canal
+- [ ] Recomendación: confirmar con Charly los umbrales del semáforo (≤2% / ≤5% de vencidas sobre universo)
 
 ---
 

@@ -1,7 +1,7 @@
 # 01 — MASTER PROJECT CONTEXT
 ## PDC Analytics Center · Estado Técnico Completo
 
-**Versión vigente:** v2.16 | **Última actualización:** 30/10/2026 (gestión de usuarios etapa 3; antes: auditoría OWASP + parche XSS chat / retiro de users.js — ver CHANGELOG 29/10/2026) | **Estado:** Producción ✅
+**Versión vigente:** v2.16 | **Última actualización:** 23/11/2026 (Rutas · Tableros: % Vigente por canal/país — ver §23 y CHANGELOG 23/11/2026; antes 30/10/2026: gestión de usuarios etapa 3; antes: auditoría OWASP + parche XSS chat / retiro de users.js — ver CHANGELOG 29/10/2026) | **Estado:** Producción ✅
 
 ---
 
@@ -290,6 +290,7 @@ Generado dentro de `publishToGitHub()` en `cash_today.html`, en cada publicació
 | **REGLA #19 — Tableros: canal_totals.pend/all** (07/08/2026) | Se calculan desde `routes` ("General (seguimiento)") + criterio `notLiq`, NUNCA desde la hoja "Total Rutas (Gral)" + `Estatus Real`. Antes numerador y denominador venían de hojas distintas del Excel que podían desincronizarse, produciendo % >100% en el módulo Tableros (ver §18). Con esta regla, `tot_pend` es por construcción ≥ numerador — el % nunca puede superar 100% |
 | **REGLA #20 — KPI_HIST es acumulativo, nunca se reconstruye** (07/08/2026) | `KPI_HIST` (Tendencias KPI) se parte del arreglo YA embebido en la página; solo se actualiza/agrega la entrada del mes vigente con cálculo en vivo (`Estado Real==='Vencidas'`). Un mes se congela (`closed:true`) permanentemente SOLO cuando el nombre del archivo subido contiene "Cierre" (`/cierre/i` sobre `filename`). Nunca reconstruir el arreglo completo desde `Efectividad` ni desde la hoja "KPI" — esa hoja es un paleativo de referencia de Charly, no la fuente de datos. Ver §19 |
 | **REGLA #21 — Toda variable nueva en `processWorkbook()` debe declararse Y usarse en el mismo commit** (10/08/2026) | RCA: el refactor del Comparador (`80cbf94`, 08/08) dejó `wsKPI` y `efData` referenciadas sin declarar (`ReferenceError`), y `showParseError()` referenciada sin definir — el resultado combinado dejaba la UI congelada en "Procesando..." con **cualquier** Excel, sin mostrar error. Antes de publicar un cambio a `processWorkbook()`, verificar con `node --check` Y con una simulación real (no solo sintaxis) que cubra el `return` completo de la función — la sintaxis válida no garantiza que todas las variables referenciadas existan en tiempo de ejecución. Ver CHANGELOG 10/08/2026 |
+| **REGLA #22 — Tableros: % Vigente y universo por país** (23/11/2026) | `% Vigente = (Universo − Vencidas) / Universo`, con `Vencidas` = Vencidas Fact. de la ficha y `Universo` = `canal_totals[mon][canal].univ` (+ `univ_glt`/`univ_trad` en Mayoristas por columna `Territorio`), calculado en `processWorkbook()` desde `Total Rutas (Gral)` (mes vigente, columnas `Canal`/`Territorio`, filtrado por `Moneda`). Campo ADITIVO: `all`/`pend` siguen bajo REGLA #19. **Nunca** usar un universo sumado entre países en la ficha de un país (el 1,660 de Detalle = GT 925 + SV 582 + PE 153; GT Detalle = 97.62%). Una ficha debe mostrarse aunque el canal tenga 0 pendientes si tiene universo (ESV Detalle = 100%). Helper único: `pdcVigente()`. Ver §23 |
 
 ---
 
@@ -746,3 +747,36 @@ La migración omitió `index.html` en `ALLOWED_PATHS` de la función Edge → er
 - **Salida:** `Detalle_Rutas_Pendientes_AAAA-MM-DD.xlsx` con hojas `Detalle Rutas` (21 columnas, valores numéricos y fechas reales, autofiltro) y `Filtros aplicados` (fecha de datos, Mundo, toggles, búsqueda, registros, total USD, TC).
 - **Librería:** SheetJS local `js/xlsx.full.min.js` v0.20.0 (sin dependencias nuevas). Sin estilos de celda (la edición comunitaria no los escribe).
 - Detalle: `02_CHANGELOG.md`, entrada 16/11/2026.
+
+---
+
+# §23 — TABLEROS: % VIGENTE POR CANAL Y PAÍS (sesión 23/11/2026 · mejora funcional)
+
+## 23.1 Solicitud y RCA
+
+Charly pidió reflejar en las fichas de Tableros el % de rutas liquidadas/vigentes sobre el universo real del mes (hoja `Total Rutas (Gral)`, col. M Mes, N Canal, O Territorio). RCA: el badge "pend/total canal" era tautológico (24 de 24 = 100%): numerador y denominador salían del mismo conjunto de pendientes; el 92% de vencidas era sobre pendientes, no sobre el universo. `canal_totals.all` (hoja "General (seguimiento)") tampoco es el universo mensual.
+
+## 23.2 Definición acordada
+
+`% Vigente = (Universo − Vencidas) / Universo` (misma lógica de Efectividad). Decisión de Charly: reemplazar el badge de 100% por el % Vigente (también en la barra de progreso). Semáforo (decisión de Claude, ajustable): vencidas ≤2% del universo verde, ≤5% amarillo, >5% rojo.
+
+## 23.3 Hallazgo de datos
+
+El 1,660 citado para Detalle es el universo de **los 3 países** (GT 925 + SV 582 + PE 153); las 24 pendientes / 22 vencidas son solo de GT. Universo por país (Moneda) → GT Detalle = (925 − 22)/925 = **97.62%**. Validado contra el Excel real del 19/11/2026.
+
+## 23.4 Implementación (solo `index.html`)
+
+- `processWorkbook()`: tras `canalTotals`, campos aditivos `univ`, `univ_glt`, `univ_trad` desde `currRows` (Total Rutas Gral, mes vigente). Se propagan solos a `KPI_TOTALS` en cada publicación. `KPI_TOTALS` embebido sembrado con los mismos valores para efecto inmediato.
+- `pdcVigente(nVenc, univ)` (única fuente de verdad; `null` sin universo → la ficha conserva el comportamiento previo; si vencidas > universo, tope 0% + `console.warn`).
+- `buildCard()` / `buildCardMay()` reciben `univ` (Perú suma Mayoristas + Distribuidores). GLT y Tradicional muestran su % vigente por Territorio.
+- Corrección posterior (mismo día): `buildCountrySection()` omitía la ficha si el canal tenía 0 pendientes (ESV Detalle). Las 4 condiciones ahora incluyen el universo → ESV Detalle = "0 pend. de 582 · 100.00%".
+
+## 23.5 Validación
+
+Parser vs seed embebido: 0 diferencias; render GT Detalle = 24 pend. de 925 · 97.62% · 22 venc. (92%); `node --check` en todos los `<script>`; `assert count==1` en cada reemplazo; verificado en `raw.githubusercontent.com`. Commits `2f9e906` y `0ca2292`.
+
+## 23.6 Fuera de alcance (recomendaciones, no implementadas)
+
+- Distribuidores de ESV nunca ha tenido ficha (diseño: solo GT); su universo es 1 ruta.
+- Un país sin pendientes en ningún canal no muestra su sección (`renderTableros()` exige `p_rows.length`); hoy no ocurre.
+- Encabezado del país y KPI globales ya calculaban contra `Total Rutas (Gral)` por Moneda; no se tocaron.
