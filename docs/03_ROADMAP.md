@@ -13,7 +13,7 @@
 - [x] Corrección: las fichas con 0 pendientes (ESV Detalle) ahora se muestran con 100% vigente
 - [x] Validado con el Excel real 19/11/2026 (parser vs seed 0 diferencias), `node --check`, verificación en `raw.githubusercontent.com`. Ver CHANGELOG 23/11/2026, §23 y REGLA #22
 - [ ] Recomendación (no implementada): ficha de Distribuidores para ESV (universo 1 ruta) y sección de país cuando no hay pendientes en ningún canal
-- [ ] Recomendación: confirmar con Charly los umbrales del semáforo (≤2% / ≤5% de vencidas sobre universo)
+- [x] Umbrales del semáforo confirmados por Charly (23/11/2026): verde ≤2% de vencidas sobre universo (% Vigente ≥98%), amarillo ≤5% (≥95%), rojo >5% (<95%)
 
 ---
 
