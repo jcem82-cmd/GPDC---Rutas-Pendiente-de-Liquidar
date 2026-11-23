@@ -1,3 +1,17 @@
+## [23/11/2026] — Rutas · Tableros: % Vigente por canal y país (universo real del mes) — solicitado por Charly
+
+**Clasificación:** Mejora funcional. **Archivo:** únicamente `index.html` (`processWorkbook()` bloque `canalTotals`, `buildCard()`, `buildCardMay()`, llamadas en `buildCountrySection()`, helper `pdcVigente()`, seed de `KPI_TOTALS`).
+
+**Causa raíz:** el badge "pend/total canal" era tautológico (24 de 24 = 100%): numerador y denominador salían del mismo conjunto de pendientes, y el 92% de vencidas era sobre pendientes, no sobre las rutas del mes. El universo real no estaba en la ficha (`canal_totals.all` viene de "General (seguimiento)", no del universo mensual).
+
+**Cambio:** nuevo campo aditivo `canal_totals[mon][canal].univ` (+ `univ_glt`/`univ_trad` en Mayoristas por columna `Territorio`) desde "Total Rutas (Gral)", mes vigente, cols Canal/Territorio. Fichas muestran `N pend. de {universo} rutas del mes` y **% Vigente = (Universo − Vencidas) / Universo** (misma lógica de Efectividad) en el badge y la barra; GLT y Tradicional muestran su % vigente. Semáforo: vencidas ≤2% del universo verde, ≤5% amarillo, >5% rojo. Sin universo (Excel antiguo) la ficha conserva el comportamiento previo. REGLA #19 intacta (`all`/`pend` no se tocan).
+
+**Hallazgo de datos:** el 1,660 citado para Detalle es el universo de los 3 países (GT 925 + SV 582 + PE 153). El universo por país es el correcto: GT Detalle = (925 − 22)/925 = **97.62%**.
+
+**Validado:** Excel real (19/11/2026): parser vs seed embebido 0 diferencias; render de ficha GT Detalle = 24 pend. de 925 · 97.62% · 22 venc. (92%); `node --check` en todos los `<script>`; `assert count==1` en cada reemplazo.
+
+---
+
 ## [18/11/2026] — Cash Today · Config: la hoja "TC" del Excel no actualizaba el Tipo de Cambio mensual — solicitado por Charly
 
 **Clasificación:** Corrección de errores. **Archivo:** únicamente `cash_today.html` (bloque de lectura de la hoja `TC` dentro de `loadFile()`).
