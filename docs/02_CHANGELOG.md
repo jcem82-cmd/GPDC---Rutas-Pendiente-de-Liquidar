@@ -1,3 +1,11 @@
+## [23/11/2026] — Rutas · Tableros: la ficha se ocultaba cuando el canal no tenía pendientes (ESV Detalle) — solicitado por Charly
+
+**Clasificación:** Corrección de errores. **Archivo:** únicamente `index.html` (4 condiciones en `buildCountrySection()`).
+
+**Causa raíz:** la ficha se construía solo si `pendientes || tot_pend`; con 0 pendientes (ESV Detalle, universo 582) no se creaba, aunque su % Vigente es 100%. **Fix:** las condiciones incluyen también el universo del canal (`univ`), en Detalle, Mayoristas, Distribuidores GT y Mayoristas+Distribuidores PE. **Validado:** simulación con Excel real 19/11 (ESV Detalle = 0 pend. de 582 · 100.00%); `node --check` OK.
+
+---
+
 ## [23/11/2026] — Rutas · Tableros: % Vigente por canal y país (universo real del mes) — solicitado por Charly
 
 **Clasificación:** Mejora funcional. **Archivo:** únicamente `index.html` (`processWorkbook()` bloque `canalTotals`, `buildCard()`, `buildCardMay()`, llamadas en `buildCountrySection()`, helper `pdcVigente()`, seed de `KPI_TOTALS`).

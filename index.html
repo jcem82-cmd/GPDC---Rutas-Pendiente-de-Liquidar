@@ -2854,7 +2854,7 @@ function buildCountrySection(p_rows, v_rows, p, total_mes) {
   const det_p = fCanal(p_rows,'190040'); const det_v = fCanal(v_rows,'190040');
   const det_tot_pend = getCanalTotal(p.mon,'190040 DETALLE','pend');
   const det_tot_all  = getCanalTotal(p.mon,'190040 DETALLE','all');
-  if (det_p.length || det_tot_pend) {
+  if (det_p.length || det_tot_pend || getCanalTotal(p.mon,'190040 DETALLE','univ')) {
     cards += buildCard(det_p, det_v, det_tot_pend, det_tot_all, p, '190040 DETALLE','detalle','🛒', getCanalTotal(p.mon,'190040 DETALLE','univ'));
   }
 
@@ -2865,13 +2865,13 @@ function buildCountrySection(p_rows, v_rows, p, total_mes) {
     const all_p = [...may_p,...dst_p];     const all_v = [...may_v,...dst_v];
     const tot_pend = getCanalTotal(p.mon,'190030 MAYORISTAS','pend') + getCanalTotal(p.mon,'190070 DISTRIBUIDORES','pend');
     const tot_all  = getCanalTotal(p.mon,'190030 MAYORISTAS','all')  + getCanalTotal(p.mon,'190070 DISTRIBUIDORES','all');
-    if (all_p.length) cards += buildCard(all_p, all_v, tot_pend, tot_all, p, 'MAYORISTAS + DISTRIBUIDORES','distribuidores','🚛', getCanalTotal(p.mon,'190030 MAYORISTAS','univ') + getCanalTotal(p.mon,'190070 DISTRIBUIDORES','univ'));
+    if (all_p.length || getCanalTotal(p.mon,'190030 MAYORISTAS','univ') || getCanalTotal(p.mon,'190070 DISTRIBUIDORES','univ')) cards += buildCard(all_p, all_v, tot_pend, tot_all, p, 'MAYORISTAS + DISTRIBUIDORES','distribuidores','🚛', getCanalTotal(p.mon,'190030 MAYORISTAS','univ') + getCanalTotal(p.mon,'190070 DISTRIBUIDORES','univ'));
   } else {
     // GT + ESV: 190030 MAYORISTAS split por Canal 3
     const may_p = fCanal(p_rows,'190030'); const may_v = fCanal(v_rows,'190030');
     const may_tot_pend = getCanalTotal(p.mon,'190030 MAYORISTAS','pend');
     const may_tot_all  = getCanalTotal(p.mon,'190030 MAYORISTAS','all');
-    if (may_p.length || may_tot_pend) {
+    if (may_p.length || may_tot_pend || getCanalTotal(p.mon,'190030 MAYORISTAS','univ')) {
       const glt_p  = fGLT(may_p);  const glt_v  = fGLT(may_v);
       const trad_p = fTrad(may_p); const trad_v = fTrad(may_v);
       const oth_p  = may_p.filter(r=>!fGLT([r]).length&&!fTrad([r]).length);
@@ -2883,7 +2883,7 @@ function buildCountrySection(p_rows, v_rows, p, total_mes) {
       const dst_p = fCanal(p_rows,'190070'); const dst_v = fCanal(v_rows,'190070');
       const dst_tot_pend = getCanalTotal(p.mon,'190070 DISTRIBUIDORES','pend');
       const dst_tot_all  = getCanalTotal(p.mon,'190070 DISTRIBUIDORES','all');
-      if (dst_p.length) cards += buildCard(dst_p,dst_v,dst_tot_pend,dst_tot_all,p,'190070 DISTRIBUIDORES','distribuidores','🚛', getCanalTotal(p.mon,'190070 DISTRIBUIDORES','univ'));
+      if (dst_p.length || getCanalTotal(p.mon,'190070 DISTRIBUIDORES','univ')) cards += buildCard(dst_p,dst_v,dst_tot_pend,dst_tot_all,p,'190070 DISTRIBUIDORES','distribuidores','🚛', getCanalTotal(p.mon,'190070 DISTRIBUIDORES','univ'));
     }
   }
 
