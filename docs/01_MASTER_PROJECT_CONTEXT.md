@@ -26,6 +26,7 @@ PDC Analytics Center
 ├── index.html              ← Dashboard Liquidación de Rutas (fuente única de verdad) · filtro Mundos (Vikingo/PDC Brands) · AVON (Bodega=35030) clasificado en Brands + tarjeta propia (22/10/2026)
 ├── historico.html          ← Histórico de Rutas · solo lectura · filtro Mundos (Vikingo/PDC Brands) y clasificación AVON replicados
 ├── historico_index.json    ← Manifiesto de snapshots publicados (auto-regenerado por Action, NUEVO 10/08, automatizado 21/08)
+├── vacaciones_gt.html      ← Vacaciones Equipo GT · calendario de vacaciones y cobertura · solo lectura salvo admin (NUEVO 24/11/2026, ver §24)
 ├── cash_today.html         ← Dashboard Cash Today · dataset propio (no conectado a PDCBridge)
 ├── admin.html              ← Panel administrativo · chat Supabase
 ├── wrangler.jsonc          ← Config del espejo Cloudflare Workers (assets estáticos, NUEVO 06/08)
@@ -780,3 +781,30 @@ Parser vs seed embebido: 0 diferencias; render GT Detalle = 24 pend. de 925 · 9
 - Distribuidores de ESV nunca ha tenido ficha (diseño: solo GT); su universo es 1 ruta.
 - Un país sin pendientes en ningún canal no muestra su sección (`renderTableros()` exige `p_rows.length`); hoy no ocurre.
 - Encabezado del país y KPI globales ya calculaban contra `Total Rutas (Gral)` por Moneda; no se tocaron.
+
+---
+
+# 24. Vacaciones Equipo GT — calendario de vacaciones y cobertura (24/11/2026)
+
+## 24.1 Qué es
+`vacaciones_gt.html` (dashboard id `vacaciones_gt`, tarjeta 🌴 en `analytics.html`). Calendario de vacaciones del equipo de Liquidación de Rutas GT, periodo 23/11/2026–04/01/2027. Vistas: Calendario y Tabla por persona; KPIs (días de vacaciones, próxima ausencia, cobertura); detalle por día con cobertura cada 30 min; exportar CSV/JSON; imprimir. Solo HTML + JS vanilla (sin librerías); diseño según `07_DESIGN_SYSTEM.md` (logo oficial, Poppins/Inter).
+
+## 24.2 Reglas de negocio (confirmadas por Charly)
+- Equipo y turnos: T1 Yazmin Marroquin 06–13 · T2 Betzy Estrada 13–20 · T3 Oscar Benavente 08–17 (**no labora sábados**) · T4 Marlon Cuco 17–00.
+- Vacaciones: 24/12 y 31/12 cuentan **1 día** para el equipo y **½ día para Oscar**. Total del periodo: 12,5 días (Yazmin 3 · Betzy 4 · Oscar 4,5 · Marlon 1).
+- 25/12 y 01/01: feriado, sin operación.
+- Ventanas operativas especiales: **24/12 y 31/12: 06:00–13:00**; sábados **28/11, 26/12 y 02/01: cierre 22:00**. La atención fuera de ventana se computa como **hora extra**.
+- Horarios especiales por fecha: 28/11 y 26/12 (Yazmin 06–15, Marlon 15–22) · 02/01 (Betzy 06–15, Marlon 15–22) · 31/12 (Betzy y Marlon 06–13) · 04/01 (Oscar 06–13, Betzy 13–20, Marlon 17–00).
+- Resultado con estas reglas: **0 días con brechas de cobertura**.
+
+## 24.3 Control de acceso (Auth Bridge v2.0)
+- Sin sesión → `login.html`. Se exige `vacaciones_gt` en `dashboards` del perfil **y** (rol `admin`, o rol `supervisor`/`consulta` con país `GT`); si no → `analytics.html`. Aprobado por Charly: administradores, supervisores GT y consulta GT. Edición (botón «Editar este día»): solo `admin`; el resto, solo lectura. Los ajustes manuales del admin viven en `localStorage` de su navegador (no se comparten).
+- La sesión se lee al iniciar sesión: un cambio de accesos en el panel de usuarios se refleja **en el siguiente inicio de sesión**.
+- **Limitación:** el control es del lado del cliente y los datos están en el HTML del repo público; protege la navegación, no la lectura directa del archivo. Recomendación (no implementada): mover la programación a una tabla de Supabase con RLS si los datos deben ser privados.
+
+## 24.4 Incidencia y lección: «Lista de dashboards inválida»
+Al asignar el acceso desde el panel de usuarios, la Edge Function `admin-users` rechazó `vacaciones_gt` porque valida contra una lista fija (`DASHBOARDS` en `supabase/functions/admin-users/core.ts` e `index.bundle.ts`). Corregido agregando el ID y **re-desplegando la función** en Supabase (Edge Functions → `admin-users` → pegar `index.bundle.ts` → Deploy).
+**Regla para todo dashboard nuevo del hub:** (1) entrada en `PDC_DASHBOARDS` de `analytics.html`, (2) ID en `DASHBOARDS` de `admin-users` (`core.ts` + `index.bundle.ts`) y re-despliegue, (3) asignación por usuario en el panel, (4) los usuarios cierran e inician sesión.
+
+## 24.5 Actualizar la programación
+Los datos están en el bloque `DATOS FUENTE` del script (`VAC_RAW`, `LAB_RAW`, `HORARIO_ESP`, `VENTANA_ESP`, `NOTAS_DIA`, `FERIADOS`). Cambiar fechas ahí y publicar; actualizar también los KPIs de la tarjeta en `analytics.html` (hoy 12,5 días · 4 colaboradores · 0 días sin cobertura).

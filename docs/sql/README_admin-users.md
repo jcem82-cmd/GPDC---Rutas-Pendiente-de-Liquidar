@@ -11,6 +11,7 @@
 4. Verificación rápida (sin sesión debe rechazar): la función responde `401 No autenticado.`
 
 ## Mantenimiento
+- **Dashboard nuevo en el hub:** además de `PDC_DASHBOARDS` en `analytics.html`, agregar su ID a `DASHBOARDS` en `core.ts` **e** `index.bundle.ts` y re-desplegar la función; si no, el panel responde «Lista de dashboards inválida» al asignarlo (caso `vacaciones_gt`, 24/11/2026).
 - Código fuente: `core.ts` (reglas) + `index.ts` (conexión a Supabase). `index.bundle.ts` es la concatenación para pegar.
 - Pruebas: `cd supabase/functions/admin-users && node --experimental-strip-types core.test.mjs` (53 pruebas con BD simulada).
 - Nota: la regla "debe quedar un admin activo" es defensa en profundidad; con la regla "no auto-inactivarse" no es alcanzable por un solo admin, pero protege ante condiciones de carrera.
