@@ -1,3 +1,17 @@
+## [24/11/2026] — Nuevo dashboard: Vacaciones Equipo GT (calendario de vacaciones y cobertura) — solicitado por Charly
+
+**Clasificación:** Nueva funcionalidad. **Archivos:** `vacaciones_gt.html` (nuevo) y `analytics.html` (una entrada nueva, aditiva, al final de `PDC_DASHBOARDS`).
+
+**Qué es:** calendario de vacaciones del equipo de Liquidación de Rutas GT (23/11/2026–04/01/2027): vista calendario y tabla por persona, KPIs, detalle por día con cobertura cada 30 min, horarios especiales y ventanas operativas (24/12 y 31/12 de 06:00 a 13:00; sábados 28/11, 26/12 y 02/01 con cierre 22:00; horas adicionales = hora extra), regla ½ día para Oscar Benavente el 24/12 y 31/12.
+
+**Control de acceso (Auth Bridge v2.0):** sin sesión → `login.html`. Se exige que el dashboard `vacaciones_gt` esté asignado al perfil **y** (rol `admin`, o rol `supervisor`/`consulta` con país `GT`). Cualquier otro caso → `analytics.html`. Edición solo para rol `admin`; el resto, solo lectura. Por defecto **nadie lo ve** hasta que un administrador marque «Vacaciones Equipo GT» en el panel de usuarios. Se incluye `js/pdc_guard.js`.
+
+**Limitación documentada:** el control es del lado del cliente (igual que el resto de la plataforma) y los datos de la programación viven en el propio HTML del repositorio público; protege la navegación, no impide leer el archivo si se conoce la URL.
+
+**Validado:** `node --check` en ambos `<script>`; pruebas en navegador de 8 escenarios de sesión (sin sesión, admin, supervisor GT, consulta GT, consulta ESV, supervisor PE, GT sin dashboard asignado, sesión vencida) con el resultado esperado en cada uno.
+
+---
+
 ## [23/11/2026] — Rutas · Tableros: la ficha se ocultaba cuando el canal no tenía pendientes (ESV Detalle) — solicitado por Charly
 
 **Clasificación:** Corrección de errores. **Archivo:** únicamente `index.html` (4 condiciones en `buildCountrySection()`).
