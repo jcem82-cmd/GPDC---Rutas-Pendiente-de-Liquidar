@@ -1,3 +1,13 @@
+## [24/11/2026] — Fix: no se podía asignar «Vacaciones Equipo GT» a un usuario («Lista de dashboards inválida») — solicitado por Charly
+
+**Clasificación:** Corrección de errores. **Archivos:** `supabase/functions/admin-users/core.ts` e `index.bundle.ts` (una línea: `DASHBOARDS`).
+
+**Causa raíz:** la Edge Function `admin-users` valida los accesos contra una lista fija (`DASHBOARDS`) y el ID nuevo `vacaciones_gt` no estaba en ella, por lo que el servidor rechazaba el guardado desde el panel de usuarios. **Fix:** se agrega `'vacaciones_gt'` a la lista. **Requiere re-despliegue de la función en Supabase** (pegar `index.bundle.ts` en Edge Functions → `admin-users` → Deploy), igual que con los accesos de Colas.
+
+**Validado:** `core.test.mjs` TODO OK.
+
+---
+
 ## [24/11/2026] — Nuevo dashboard: Vacaciones Equipo GT (calendario de vacaciones y cobertura) — solicitado por Charly
 
 **Clasificación:** Nueva funcionalidad. **Archivos:** `vacaciones_gt.html` (nuevo) y `analytics.html` (una entrada nueva, aditiva, al final de `PDC_DASHBOARDS`).
