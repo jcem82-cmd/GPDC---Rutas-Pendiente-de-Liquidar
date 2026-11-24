@@ -15,3 +15,4 @@
 - Código fuente: `core.ts` (reglas) + `index.ts` (conexión a Supabase). `index.bundle.ts` es la concatenación para pegar.
 - Pruebas: `cd supabase/functions/admin-users && node --experimental-strip-types core.test.mjs` (53 pruebas con BD simulada).
 - Nota: la regla "debe quedar un admin activo" es defensa en profundidad; con la regla "no auto-inactivarse" no es alcanzable por un solo admin, pero protege ante condiciones de carrera.
+- **Vacaciones multipaís:** el ID `vacaciones` ya está en `DASHBOARDS`; las tablas `vac_*` se crean con `docs/sql/2026-11-24_vacaciones_multipais.sql` (idempotente; reversa en su encabezado). Requiere `public.is_admin()` y `profiles.dashboards`.

@@ -1,3 +1,21 @@
+## [24/11/2026] — Nuevo dashboard: Vacaciones del Equipo (multipaís, trimestre automático, historial y edición desde pantalla) — solicitado por Charly
+
+**Clasificación:** Nueva funcionalidad. **Archivos:** `vacaciones.html` (nuevo), `docs/sql/2026-11-24_vacaciones_multipais.sql` (nuevo), `analytics.html` (una entrada aditiva), `supabase/functions/admin-users/core.ts` e `index.bundle.ts` (ID `vacaciones` en `DASHBOARDS`).
+
+**Qué cambia respecto a `vacaciones_gt.html`:** los datos dejan de vivir en el HTML del repositorio público y pasan a tablas de Supabase (`vac_paises`, `vac_personas`, `vac_horarios`, `vac_dias`, `vac_reglas`, `vac_historial`). El administrador actualiza desde la propia pantalla (día a día, por rango de fechas o pegando desde Excel) sin publicar nada en GitHub. Muestra el **trimestre en curso** (hoy Q4-2026; en enero Q1-2027) con navegación a trimestres anteriores y futuros; pestañas Calendario, Tabla, Análisis (4 gráficas) e Historial (resumen por trimestre + bitácora de cambios con «Revertir»). Cubre GT, ESV y PE; cada país ve solo su equipo (RLS en la base de datos, no solo en pantalla); edita únicamente `admin`.
+
+**Reglas por país cargadas:** GT igual que `vacaciones_gt`. ESV: turnos 10–18 y 13–20 que **rotan mes a mes**; **sábados alternos** (28/11 Juan Carlos Ortiz, 05/12 Daniel Barrera, y así sucesivamente); la ventana del sábado es el turno de quien corresponde. PE: José Mallqui 07–16 y Joel Ccasas 14–22, lunes a sábado.
+
+**Supuestos a validar por el administrador (marcados en la sección 25.5 del contexto maestro):** feriados ESV/PE cargados solo 25/12, 01/01 y 08/12 (PE); ventana operativa ESV 10–20 y PE 07–22 (unión de turnos); sin vacaciones programadas para ESV/PE; turnos PE numerados 1 y 2.
+
+**Seguridad:** lectura por `vac_puede_ver(pais)` (admin, o supervisor/consulta con el dashboard `vacaciones` asignado y su país; `regional` ve los tres); escritura solo `is_admin()`; bitácora inmutable (nadie puede insertar/editar/borrar desde el navegador). `vacaciones_gt.html` sigue operativo hasta que Charly confirme la migración.
+
+**Validado:** SQL ejecutado dos veces en un Postgres de prueba (idempotente) y 8 pruebas de RLS por rol; paridad celda por celda con `vacaciones_gt.html` (172 celdas y 43 columnas de cobertura, 0 diferencias); 31 pruebas en navegador (accesos por rol, edición, carga masiva, bitácora, gráficas); `node --check` y `core.test.mjs` TODO OK.
+
+**Para activarlo (una sola vez):** (1) Supabase → SQL Editor → pegar y ejecutar `docs/sql/2026-11-24_vacaciones_multipais.sql`; (2) Edge Functions → `admin-users` → pegar `index.bundle.ts` → Deploy; (3) panel de usuarios: asignar el dashboard «Vacaciones del Equipo»; (4) cada usuario cierra e inicia sesión.
+
+---
+
 ## [24/11/2026] — Fix: no se podía asignar «Vacaciones Equipo GT» a un usuario («Lista de dashboards inválida») — solicitado por Charly
 
 **Clasificación:** Corrección de errores. **Archivos:** `supabase/functions/admin-users/core.ts` e `index.bundle.ts` (una línea: `DASHBOARDS`).

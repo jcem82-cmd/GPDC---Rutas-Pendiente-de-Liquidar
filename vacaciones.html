@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vacaciones · PDC Analytics Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --navy:#00216f;--navy2:#003090;--navy-dark:#001440;--sky:#7dbfe6;--sky2:#e8f6ff;
+  --white:#FFFFFF;--bg:#F0F4F8;--card:#FFFFFF;--text:#0F1729;--text2:#5A6480;--border:#E2E8F0;--silver:#DBDBDB;
+  --green:#DCF0C6;--green2:#2D9E2D;--yellow:#FFF4CC;--yellow2:#C48A00;--red:#FFBDBD;--red2:#CC0000;
+  --radius:12px;--shadow:0 2px 16px rgba(0,32,96,.07);--shadow-md:0 6px 28px rgba(0,32,96,.13);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.5;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;min-height:100dvh}
+button,select{font-family:inherit;font-size:inherit}
+:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+button:focus:not(:focus-visible){outline:none}
+.skip-link{position:absolute;left:-9999px;top:8px;z-index:9999;background:var(--navy);color:#fff;padding:6px 12px;border-radius:6px}
+.skip-link:focus{left:16px}
+/* Header */
+.hdr{background:linear-gradient(135deg,#001848 0%,var(--navy2) 100%);position:sticky;top:0;z-index:200;box-shadow:0 2px 16px rgba(0,0,0,.25)}
+.hdr-in{max-width:1320px;margin:0 auto;padding:0 24px;min-height:60px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo-pill{background:#fff;border-radius:8px;padding:5px 14px;display:flex;align-items:center}
+.logo-pill img{height:28px;width:auto;display:block}
+.hdr-title{font-family:'Poppins',system-ui,sans-serif;font-size:1rem;font-weight:800;color:var(--sky);letter-spacing:.04em;line-height:1.2}
+.hdr-sub{font-size:.66rem;color:rgba(207,238,252,.65)}
+.hdr-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.hbtn{background:none;border:1px solid rgba(207,238,252,.35);color:var(--sky);border-radius:6px;padding:6px 12px;font-size:.72rem;font-weight:700;cursor:pointer}
+.hbtn:hover{background:rgba(207,238,252,.12)}
+.hbadge{background:rgba(207,238,252,.1);border:1px solid rgba(207,238,252,.18);border-radius:6px;padding:5px 11px;font-size:.7rem;font-weight:600;color:rgba(207,238,252,.85);display:inline-flex;align-items:center}
+.wrap{max-width:1320px;margin:0 auto;padding:20px 24px 60px}
+/* Banner semáforo */
+.banner{border-radius:var(--radius);padding:14px 18px;margin-bottom:16px;display:flex;gap:14px;align-items:flex-start;border-left:5px solid var(--green2);background:var(--green);color:#1f5a1f;font-weight:600}
+.banner.r{border-left-color:var(--red2);background:var(--red);color:#7a0a0a}
+.banner .bi{font-size:1.3rem;line-height:1.2}
+.banner .bt{flex:1}
+.banner small{display:block;font-weight:500;margin-top:2px}
+.banner .links{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.banner .lk{background:#fff;border:1px solid var(--red2);color:var(--red2);border-radius:20px;padding:2px 10px;font-size:.74rem;font-weight:700;cursor:pointer}
+.banner .rs{background:#fff;border:1px solid var(--silver);color:var(--navy);border-radius:6px;padding:5px 10px;font-size:.74rem;font-weight:700;cursor:pointer;margin-left:auto}
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border-radius:10px;border:1px solid var(--border);padding:14px 18px;box-shadow:var(--shadow)}
+.kpi.y{background:var(--yellow);border-left:4px solid var(--yellow2)}
+.kpi.g{background:var(--green);border-left:4px solid var(--green2)}
+.kpi.r{background:var(--red);border-left:4px solid var(--red2)}
+.kpi.n{border-left:4px solid var(--sky)}
+.kpi-lbl{font-size:.72rem;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+.kpi-val{font-size:1.6rem;font-weight:800;color:var(--navy);line-height:1.2;margin-top:2px}
+.kpi-sub{font-size:.76rem;color:var(--text2)}
+/* Personas */
+.sec-t{font-family:'Poppins',system-ui,sans-serif;font-size:.8rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.04em;margin:4px 0 10px;display:flex;align-items:center;gap:10px}
+.sec-t small{font-family:'Inter',sans-serif;text-transform:none;letter-spacing:0;color:var(--text2);font-weight:500;font-size:.76rem}
+.pers{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.pc{background:var(--card);border:2px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;cursor:pointer;text-align:left;width:100%;transition:box-shadow .15s,border-color .15s}
+.pc:hover{box-shadow:var(--shadow-md)}
+.pc.on{border-color:var(--navy);box-shadow:var(--shadow-md);background:var(--sky2)}
+.pc-top{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.av{width:38px;height:38px;border-radius:50%;background:var(--pc);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;font-family:'Poppins',sans-serif}
+.av.dk{color:var(--navy)}
+.pc-n{font-weight:700;color:var(--navy);line-height:1.2}
+.pc-h{font-size:.74rem;color:var(--text2)}
+.pc-d{display:flex;align-items:baseline;gap:6px;margin-bottom:6px}
+.pc-d b{font-size:1.7rem;font-weight:800;color:var(--navy);line-height:1}
+.pc-d span{font-size:.76rem;color:var(--text2)}
+.tags{display:flex;gap:4px;flex-wrap:wrap}
+.tag{background:var(--sky);color:var(--navy);border-radius:20px;padding:1px 9px;font-size:.7rem;font-weight:700}
+.tag.none{background:var(--bg);color:var(--text2);font-weight:500}
+/* Panel */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px}
+.toolbar{display:flex;gap:14px 24px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.ntabs{display:flex;gap:4px;flex-wrap:wrap}
+.ntab{padding:7px 14px;border-radius:7px;cursor:pointer;font-size:.82rem;font-weight:500;color:var(--text2);border:none;background:none}
+.ntab:hover{background:var(--sky);color:var(--navy)}
+.ntab.on{background:var(--navy);color:var(--white);font-weight:600}
+.legend{margin-left:auto;display:flex;gap:14px;flex-wrap:wrap;font-size:.74rem;color:var(--text2)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend b{width:12px;height:12px;border-radius:3px;display:inline-block}
+.filtro{font-size:.78rem;color:var(--text2)}
+.filtro button{background:var(--sky);border:none;color:var(--navy);font-weight:700;border-radius:20px;padding:2px 10px;margin-left:6px;cursor:pointer;font-size:.72rem}
+/* Calendario */
+.mes{margin-bottom:20px}
+.mes h3{font-family:'Poppins',sans-serif;font-size:1rem;font-weight:700;color:var(--navy);text-transform:capitalize;margin-bottom:8px}
+.cal-head,.cal-row{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal-head div{font-size:.7rem;font-weight:700;color:var(--text2);text-transform:uppercase;text-align:center;padding:2px 0}
+.cal-row{margin-bottom:6px}
+.cell{background:var(--bg);border:1px solid var(--border);border-radius:10px;min-height:96px;padding:6px 7px;cursor:pointer;display:flex;flex-direction:column;gap:3px;text-align:left;transition:box-shadow .15s}
+.cell:hover{box-shadow:var(--shadow-md)}
+.cell.empty{background:transparent;border:none;cursor:default;box-shadow:none}
+.cell.out{opacity:.4;cursor:default;box-shadow:none}
+.cell.dom{background:#E7ECF2}
+.cell.fer{background:var(--yellow);border-color:var(--yellow2)}
+.cell.hoy{outline:2px solid var(--navy);outline-offset:1px}
+.cell.gap{border-color:var(--red2);background:#FFF1F1}
+.cell.mio{box-shadow:inset 0 0 0 2px var(--navy)}
+.cell .top{display:flex;justify-content:space-between;align-items:center}
+.cell .dn{font-weight:800;color:var(--navy);font-size:.9rem}
+.cell .fn{font-size:.62rem;color:var(--yellow2);font-weight:700}
+.esp{font-size:.6rem;background:var(--navy);color:#fff;border-radius:20px;padding:0 7px;font-weight:700}
+.chip{font-size:.68rem;border-radius:6px;padding:2px 6px;font-weight:700;display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--sky);color:var(--navy)}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--pc);flex:none;box-shadow:0 0 0 1.5px #fff}
+.pie{margin-top:auto;display:flex;align-items:center;gap:5px;font-size:.66rem;color:var(--text2);font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green2);flex:none}
+.dot.r{background:var(--red2)}
+.dot.n{background:var(--silver)}
+/* Tabla */
+.scroll{overflow-x:auto}
+table.mx{border-collapse:separate;border-spacing:0;font-size:.78rem;min-width:100%}
+.mx th,.mx td{border-bottom:1px solid var(--border);border-right:1px solid var(--border);text-align:center;padding:0}
+.mx thead th{background:var(--navy);color:#fff;font-weight:600;padding:5px 2px;min-width:34px}
+.mx thead th small{display:block;font-size:.58rem;font-weight:500;opacity:.75}
+.mx thead th.mh{background:var(--navy2);text-transform:capitalize;padding:6px}
+.mx thead th.dom{background:#3a4a7a}
+.mx .nom{position:sticky;left:0;z-index:2;background:#fff;text-align:left;padding:7px 10px;min-width:180px;border-right:2px solid var(--navy)}
+.mx thead .nom{background:var(--navy);z-index:3}
+.mx .nom b{display:block;color:var(--navy)}
+.mx .nom span{font-size:.68rem;color:var(--text2);font-weight:400}
+.mx td.c{height:36px;cursor:pointer;font-weight:800}
+.mx td.c:hover{filter:brightness(.94)}
+.mx td.N{background:#F7FAFC;color:var(--silver)}
+.mx td.L{background:var(--green);color:var(--green2)}
+.mx td.V{background:var(--sky);color:var(--navy)}
+.mx td.D{background:#E7ECF2;color:var(--text2)}
+.mx td.F{background:var(--yellow);color:var(--yellow2)}
+.mx td.es{box-shadow:inset 0 0 0 2px var(--navy)}
+.mx tfoot th,.mx tfoot td{background:#DCE8FE;color:var(--navy);font-weight:700;padding:6px 2px}
+.mx tfoot td.bad{background:var(--red2);color:#fff}
+/* Modal */
+.ov{position:fixed;inset:0;background:rgba(15,23,41,.55);display:none;align-items:center;justify-content:center;z-index:300;padding:16px}
+.ov.on{display:flex}
+.modal{background:#fff;border-radius:16px;max-width:620px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 12px 48px rgba(0,32,96,.3)}
+.mh{background:var(--navy);color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-radius:16px 16px 0 0;position:sticky;top:0}
+.mh h3{font-family:'Poppins',sans-serif;font-size:1rem;font-weight:700}
+.mh button{background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;line-height:1}
+.mb{padding:16px 18px}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+.badge.g{background:var(--green);color:var(--green2)}
+.badge.r{background:var(--red);color:var(--red2)}
+.badge.n{background:var(--sky);color:var(--navy)}
+.grp{margin-top:14px}
+.grp h4{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text2);margin-bottom:6px}
+.who{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.who .av{width:30px;height:30px;font-size:.78rem}
+.who .wn{font-weight:600;color:var(--navy);flex:1;line-height:1.25}
+.who .wn small{display:block;font-weight:400;color:var(--text2);font-size:.72rem}
+.who select{padding:6px 8px;border:1.5px solid var(--silver);border-radius:8px;background:#fff;font-weight:600}
+.vacio{color:var(--text2);font-size:.82rem;padding:4px 0}
+.tl{display:grid;grid-template-columns:repeat(36,1fr);height:20px;border-radius:6px;overflow:hidden;margin:6px 0 2px}
+.tl .s0{background:var(--red2)}.tl .s1{background:var(--yellow2)}.tl .s2{background:var(--green2)}.tl .s3{background:var(--green2);opacity:.75}.tl .sx{background:var(--silver)}
+.tl-l{display:flex;justify-content:space-between;font-size:.62rem;color:var(--text2)}
+.nota{background:var(--yellow);border-radius:8px;padding:8px 12px;font-size:.78rem;color:#7a5800;margin-top:12px}
+.btn{font-family:inherit;font-size:.78rem;font-weight:700;padding:8px 16px;border:none;border-radius:8px;background:var(--navy);color:#fff;cursor:pointer}
+.btn:hover{background:var(--navy2)}
+.btn.sec{background:var(--bg);color:var(--navy);border:1px solid var(--silver)}
+.mf{margin-top:16px;display:flex;gap:8px;justify-content:flex-end}
+.foot{font-size:.72rem;color:var(--text2);text-align:center;margin-top:16px}
+@media(max-width:1000px){.pers{grid-template-columns:repeat(2,1fr)}.kpis{grid-template-columns:1fr}}
+@media(max-width:600px){.pers{grid-template-columns:1fr}.cell{min-height:74px}.chip{font-size:.58rem}.wrap{padding:12px}.legend{margin-left:0}}
+@media print{.hdr-actions,.toolbar,.ov,.banner .rs{display:none!important}body{background:#fff}.panel,.kpi,.pc{box-shadow:none;break-inside:avoid}.hdr{position:static}}
+
+/* ===== Vacaciones multipaís: barra de trimestre, análisis, formularios ===== */
+.qbar{display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:10px 16px;margin-bottom:16px}
+.fl{font-size:.74rem;color:var(--text2);font-weight:600;display:flex;align-items:center;gap:6px}
+.qbar select,.frm select,.frm input,.frm textarea,.erow select,.erow input,textarea.mono{font-family:inherit;font-size:.82rem;padding:6px 8px;border:1.5px solid var(--silver);border-radius:8px;background:#fff;color:var(--text)}
+.qnav{display:flex;gap:4px;align-items:center}
+.qnav select{font-weight:700;color:var(--navy);min-width:110px}
+.qb{background:var(--sky2);border:1px solid var(--sky);color:var(--navy);border-radius:8px;padding:6px 11px;font-weight:700;cursor:pointer;font-size:.8rem}
+.qb:hover{background:var(--sky)}
+.qb.t{background:var(--navy);color:#fff;border-color:var(--navy)}
+.qinfo{font-size:.72rem;color:var(--text2);flex:1;min-width:180px}
+.qadm{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.aviso{background:var(--yellow);border-left:4px solid var(--yellow2);color:#7a5800;border-radius:8px;padding:8px 12px;font-size:.78rem;margin:-6px 0 14px}
+.gr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.gc{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+.gc h4{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--navy);margin-bottom:8px;font-family:'Poppins',sans-serif}
+.gh{position:relative;height:260px}
+table.hx{min-width:0;width:100%}
+.hx th,.hx td{padding:7px 10px;text-align:center}
+.hx thead th{background:var(--navy);color:#fff;font-weight:600;font-size:.74rem}
+.hx tbody tr[data-action]{cursor:pointer}
+.hx tbody tr[data-action]:hover td,.hx tbody tr[data-action]:hover th{background:var(--sky2)}
+.hx tr.sel td,.hx tr.sel th{background:var(--sky2)}
+.hx td.bad{background:var(--red);color:var(--red2);font-weight:700}
+.hx .nom{text-align:left;min-width:120px}
+.bt td{font-size:.74rem;text-align:left}
+.lk2{background:var(--bg);border:1px solid var(--silver);color:var(--navy);border-radius:6px;padding:2px 9px;font-size:.7rem;font-weight:700;cursor:pointer}
+.lk2:hover{background:var(--sky)}
+.frm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px}
+.frm label,.erow label{display:flex;flex-direction:column;gap:3px;font-size:.72rem;font-weight:600;color:var(--text2)}
+.frm label.w2{grid-column:1/-1}
+.frm label.ck{flex-direction:row;align-items:center;gap:8px}
+.frm .par{display:flex;gap:6px;align-items:center;font-weight:500}
+.frm textarea{width:100%;resize:vertical}
+textarea.mono{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem}
+.hint{font-size:.74rem;color:var(--text2);margin:6px 0}
+.hint code{background:var(--bg);padding:1px 5px;border-radius:4px}
+.erow{display:grid;grid-template-columns:minmax(150px,1.2fr) minmax(120px,1fr) minmax(110px,.9fr) minmax(270px,1.9fr);gap:8px 10px;align-items:end;padding:8px 0;border-bottom:1px solid var(--border)}
+.erow .par{display:flex;gap:6px;align-items:center;font-weight:500}
+.erow .hid{visibility:hidden}
+.erow input[type=time]{min-width:0;width:100%}
+.prow{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:12px;background:var(--bg)}
+.prow table{background:#fff}
+.hadd{margin-top:8px;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:10px 18px;border-radius:10px;font-size:.82rem;font-weight:600;opacity:0;pointer-events:none;transition:all .25s;z-index:500;max-width:90vw;box-shadow:var(--shadow-md)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:var(--red2)}
+.modal{max-width:760px}
+@media(max-width:1000px){.kpis{grid-template-columns:repeat(2,1fr)}.gr{grid-template-columns:1fr}}
+@media(max-width:700px){.kpis{grid-template-columns:1fr}.frm{grid-template-columns:1fr}.erow{grid-template-columns:1fr}.hadd{grid-template-columns:1fr}}
+@media print{.qbar,.toast{display:none!important}}
+</style>
+<style>html:not([data-auth="ok"]) body{display:none}</style>
+<script>
+/* Auth Bridge v2.0 — Vacaciones multipaís. Sin sesión válida -> login; sin permiso -> portal.
+   Acceso: dashboard 'vacaciones' asignado al perfil Y (rol admin, o supervisor/consulta de GT/ESV/PE/regional).
+   Edición: solo rol admin (la base de datos lo exige además con RLS: este chequeo es solo de interfaz). */
+(function(){
+  var s=null;
+  try{var raw=sessionStorage.getItem('pdc_session');if(raw){s=JSON.parse(raw);if(!s||Date.now()-s.ts>8*60*60*1000)s=null;}}catch(e){s=null;}
+  if(!s){window.location.replace('login.html');return;}
+  var dash=Array.isArray(s.dashboards)?s.dashboards:[];
+  var rol=String(s.rol||'').toLowerCase(),pais=String(s.pais||'').toUpperCase();
+  var todos=['GT','ESV','PE'];
+  var ok=dash.indexOf('vacaciones')>-1&&(rol==='admin'||((rol==='supervisor'||rol==='consulta')&&(pais==='REGIONAL'||todos.indexOf(pais)>-1)));
+  if(!ok){window.location.replace('analytics.html');return;}
+  var verTodos=(rol==='admin'||pais==='REGIONAL');
+  window.PDC_VAC={nombre:String(s.nombre||''),email:String(s.email||''),rol:rol,pais:pais,editar:rol==='admin',paises:verTodos?todos:[pais]};
+  document.documentElement.setAttribute('data-auth','ok');
+})();
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Saltar al contenido</a>
+<header class="hdr" role="banner"><div class="hdr-in">
+  <div class="logo-pill"><img src="data:image/png;base64,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" alt="Grupo pdc"></div>
+  <div><div class="hdr-title" id="ttl">VACACIONES · EQUIPO</div><div class="hdr-sub">Dashboard Ejecutivo · Liquidación de Rutas · Grupo PDC</div></div>
+  <div class="hdr-actions">
+    <span class="hbadge" id="usr"></span>
+    <a class="hbtn" href="analytics.html" style="text-decoration:none">← Portal</a>
+    <button type="button" class="hbtn" data-action="reload">Actualizar</button>
+    <button type="button" class="hbtn" data-action="csv">Exportar CSV</button>
+    <button type="button" class="hbtn" data-action="json">Exportar JSON</button>
+    <button type="button" class="hbtn" data-action="print">Imprimir</button>
+  </div>
+</div></header>
+
+<main class="wrap" id="main" role="main">
+  <div class="qbar" id="qbar"></div>
+  <div id="banner"></div>
+  <section class="kpis" id="kpis" aria-label="Indicadores"></section>
+  <div class="sec-t">Equipo <small>Clic en una persona para ver solo sus vacaciones</small></div>
+  <section class="pers" id="pers"></section>
+  <section class="panel">
+    <div class="toolbar">
+      <div class="ntabs" id="tVista"></div>
+      <div class="ntabs" id="tMes"></div>
+      <div class="filtro" id="filtro"></div>
+      <div class="legend" id="legend">
+        <span><b style="background:var(--sky)"></b>Vacaciones</span>
+        <span><b style="background:var(--navy)"></b>Horario especial</span>
+        <span><b style="background:var(--green2)"></b>Cobertura completa</span>
+        <span><b style="background:var(--red2)"></b>Sin cobertura</span>
+      </div>
+    </div>
+    <div id="vista"></div>
+  </section>
+  <p class="foot" id="foot"></p>
+</main>
+
+<div class="ov" id="ov" role="dialog" aria-modal="true" aria-label="Detalle"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/supabase.min.js"></script>
+<script src="js/chart.umd.min.js"></script>
+<script>
+(function(){
+'use strict';
+var S=window.PDC_VAC;
+if(!S){return;}
+var EDIT=!!S.editar;
+var SB_URL='https://pytsrgtcjytjztwdlvux.supabase.co';
+var SB_KEY='sb_publishable_mW5PeN4eRbl56zLlTP-vVg_NzCJTTfj';
+var PAISES={GT:{n:'Guatemala',f:'🇬🇹'},ESV:{n:'El Salvador',f:'🇸🇻'},PE:{n:'Perú',f:'🇵🇪'}};
+var ROL_LBL={admin:'Administrador',supervisor:'Supervisor',consulta:'Consulta'};
+var MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+var DSEM=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+var DS3=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+var ESTADOS={N:'Turno regular',L:'Labora / cubre',V:'Vacaciones',D:'Descanso / libre',F:'Feriado'};
+var PALETA=['#00216f','#5db9a3','#7dbfe6','#5A6480'];
+var sb=null;
+
+/* ============ UTILIDADES ============ */
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function $(id){return document.getElementById(id);}
+function pad(n){return (n<10?'0':'')+n;}
+function parseISO(s){var p=s.split('-');return Date.UTC(+p[0],+p[1]-1,+p[2]);}
+function toISO(ms){var d=new Date(ms);return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());}
+function dow(s){return new Date(parseISO(s)).getUTCDay();}
+function fmt(s){var p=s.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
+function fmtC(s){return fmt(s).slice(0,5);}
+function toMin(h){var p=String(h).split(':');return (+p[0])*60+(+p[1]);}
+function endMin(f,i){var e=toMin(f);if(e<=toMin(i))e+=1440;return e;}
+function hhmm(m){var h=Math.floor(m/60);return pad(h===24?0:h)+':'+pad(m%60);}
+function fmtN(n){return (Math.round(n*10)/10).toString().replace('.',',');}
+function fmtH(min){return fmtN(min/60)+' h';}
+function hoyISO(){var t=new Date();return t.getFullYear()+'-'+pad(t.getMonth()+1)+'-'+pad(t.getDate());}
+function colorOk(c){return /^#[0-9a-fA-F]{6}$/.test(c||'')?c:'#00216f';}
+function inicial(p){return p.nombre.charAt(0);}
+function persona(id){for(var i=0;i<M.P.length;i++){if(M.P[i].id===id)return M.P[i];}return null;}
+function fechaLarga(iso){return new Date(iso).toLocaleString('es-GT',{timeZone:'America/Guatemala',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});}
+function toast(msg,err){var t=$('toast');t.textContent=msg;t.className='toast on'+(err?' err':'');clearTimeout(toast._t);toast._t=setTimeout(function(){t.className='toast';},err?7000:3000);}
+function msgErr(e){return (e&&e.message)?e.message:String(e);}
+
+/* ---- trimestres ---- */
+function qDe(d){return {y:+d.slice(0,4),q:Math.floor((+d.slice(5,7)-1)/3)+1};}
+function qKey(q){return q.y*4+(q.q-1);}
+function qDeKey(k){return {y:Math.floor(k/4),q:(k%4)+1};}
+function qLbl(q){return 'Q'+q.q+' '+q.y;}
+function qMeses(q){var a=(q.q-1)*3;return [a,a+1,a+2];}
+function qDias(q){var ms=qMeses(q),ini=Date.UTC(q.y,ms[0],1),fin=Date.UTC(q.y,ms[2]+1,0),o=[],t;for(t=ini;t<=fin;t+=86400000)o.push(toISO(t));return o;}
+
+/* ============ MODELO (datos desde Supabase) ============ */
+var M={pais:null,cfg:null,P:[],HOR:{},DIA:{},FER:{},VEN:{},NOT:{},ESP:{},vRows:[],minF:null,maxF:null,ok:false,sinSesion:false,error:null};
+var UI={vista:'cal',mes:'all',pers:'all',q:qDe(hoyISO()),modal:null,editar:false,bit:null,bitCargando:false};
+var CH={};
+
+function horBase(p,d){var hs=M.HOR[p.id]||[],best=null,i,h;for(i=0;i<hs.length;i++){h=hs[i];if(h.desde<=d&&(!h.hasta||h.hasta>=d)&&(!best||h.desde>best.desde))best=h;}return best;}
+function horario(p,d){
+  var r=M.DIA[p.id+'|'+d],hb=horBase(p,d);
+  if(r&&r.ini&&r.fin&&r.tipo!=='V')return {ini:r.ini,fin:r.fin,esp:true,turno:hb?hb.turno:null};
+  if(hb)return {ini:hb.ini,fin:hb.fin,esp:false,turno:hb.turno};
+  return null;
+}
+function basePat(p,d){
+  var w=dow(d);
+  if(w===0)return 'D';
+  if(M.FER[d])return 'F';
+  if(w===6){
+    if(p.sab==='no')return 'D';
+    if(p.sab==='alterno'&&p.sab_ancla){var k=Math.round((parseISO(d)-parseISO(p.sab_ancla))/604800000);if(((k%2)+2)%2!==0)return 'D';}
+  }
+  return 'N';
+}
+function status(d,p){var r=M.DIA[p.id+'|'+d];return r?r.tipo:basePat(p,d);}
+function vacW(p,d){var r=M.DIA[p.id+'|'+d];return (r&&r.tipo==='V')?Number(r.valor):1;}
+function intervalo(p,d){
+  var st=status(d,p),r=M.DIA[p.id+'|'+d];
+  if(st==='V'){if(r&&Number(r.valor)===0.5&&r.ini&&r.fin)return [toMin(r.ini),endMin(r.fin,r.ini)];return null;}
+  if(st==='N'||st==='L'){var h=horario(p,d);if(!h)return null;return [toMin(h.ini),endMin(h.fin,h.ini)];}
+  return null;
+}
+function ventana(d){
+  var v=M.VEN[d];
+  if(v)return [v.desde_min,v.hasta_min];
+  if(M.cfg.sab_auto&&dow(d)===6){
+    var a=1e9,b=-1;
+    M.P.forEach(function(p){if(basePat(p,d)==='N'){var h=horBase(p,d);if(h){a=Math.min(a,toMin(h.ini));b=Math.max(b,endMin(h.fin,h.ini));}}});
+    if(b>0)return [a,b];
+  }
+  return [M.cfg.oper_ini,M.cfg.oper_fin];
+}
+function grid(){return {ini:Math.min(360,Math.floor(M.cfg.oper_ini/30)*30),fin:1440};}
+function operativo(d){
+  if(dow(d)!==0&&!M.FER[d])return true;
+  return M.P.some(function(p){return intervalo(p,d)!==null;});
+}
+function cobertura(d){
+  var g=grid(),conteo=[],s,i,iv,w=ventana(d);
+  for(s=g.ini;s<g.fin;s+=30){
+    var c=0;
+    for(i=0;i<M.P.length;i++){iv=intervalo(M.P[i],d);if(iv&&iv[0]<s+30&&iv[1]>s)c++;}
+    conteo.push(c);
+  }
+  var gaps=[],ini=null,total=0;
+  if(operativo(d)){
+    conteo.forEach(function(c,k){
+      var m=g.ini+k*30,z=(c===0&&m>=w[0]&&m<w[1]);
+      if(z){if(ini===null)ini=m;}
+      else if(ini!==null){gaps.push({a:ini,b:m});total+=m-ini;ini=null;}
+    });
+    if(ini!==null){gaps.push({a:ini,b:w[1]});total+=w[1]-ini;}
+  }
+  return {conteo:conteo,gaps:gaps,min:total,win:w,g:g};
+}
+function trabajando(d){var n=0;M.P.forEach(function(p){if(intervalo(p,d))n++;});return n;}
+
+function stats(q){
+  var ds=qDias(q),r={por:{},total:0,conVac:0,gapDias:[],gapMin:0,ds:ds};
+  M.P.forEach(function(p){r.por[p.id]={v:0,fechas:[]};});
+  ds.forEach(function(d){
+    M.P.forEach(function(p){if(status(d,p)==='V'){var w=vacW(p,d);r.por[p.id].v+=w;r.por[p.id].fechas.push(d);r.total+=w;}});
+    var c=cobertura(d);if(c.min>0){r.gapDias.push({d:d,min:c.min});r.gapMin+=c.min;}
+  });
+  M.P.forEach(function(p){if(r.por[p.id].v>0)r.conVac++;});
+  return r;
+}
+function proxima(){
+  var hoy=hoyISO(),best=null;
+  M.vRows.forEach(function(r){if(r.fecha>=hoy&&(!best||r.fecha<best))best=r.fecha;});
+  if(!best)return null;
+  var quien=[];M.P.forEach(function(p){if(status(best,p)==='V')quien.push(p.corto);});
+  return quien.length?{d:best,quien:quien}:null;
+}
+
+/* ============ CARGA ============ */
+async function fetchAll(tabla,filtro,orden){
+  var out=[],from=0,paso=1000,q,r;
+  for(;;){
+    q=sb.from(tabla).select('*');
+    if(filtro)q=filtro(q);
+    q=q.order(orden).order('id').range(from,from+paso-1);
+    r=await q;
+    if(r.error)throw r.error;
+    out=out.concat(r.data||[]);
+    if(!r.data||r.data.length<paso)break;
+    from+=paso;
+  }
+  return out;
+}
+async function cargar(pais,silencioso){
+  M.error=null;M.sinSesion=false;
+  try{
+    var ses=await sb.auth.getSession();
+    if(!ses||!ses.data||!ses.data.session){M.sinSesion=true;M.ok=false;return false;}
+    var r=await Promise.all([
+      sb.from('vac_paises').select('*').eq('pais',pais).maybeSingle(),
+      sb.from('vac_personas').select('*').eq('pais',pais).eq('activo',true).order('orden').order('nombre'),
+      sb.from('vac_reglas').select('*').eq('pais',pais).order('fecha')
+    ]);
+    r.forEach(function(x){if(x.error)throw x.error;});
+    if(!r[0].data)throw new Error('No hay configuración cargada para este país, o no tiene permiso para verla.');
+    var P=r[1].data||[],ids=P.map(function(p){return p.id;}),hs=[],ds=[];
+    if(ids.length){
+      var f=function(q){return q.in('persona_id',ids);};
+      var rr=await Promise.all([fetchAll('vac_horarios',f,'desde'),fetchAll('vac_dias',f,'fecha')]);
+      hs=rr[0];ds=rr[1];
+    }
+    M.pais=pais;M.cfg=r[0].data;
+    M.P=P.map(function(p){p.color=colorOk(p.color);return p;});
+    M.HOR={};hs.forEach(function(h){(M.HOR[h.persona_id]=M.HOR[h.persona_id]||[]).push(h);});
+    M.DIA={};M.vRows=[];M.ESP={};M.minF=null;M.maxF=null;
+    ds.forEach(function(x){
+      M.DIA[x.persona_id+'|'+x.fecha]=x;
+      if(x.tipo==='V')M.vRows.push(x);
+      if(x.tipo==='L'&&x.ini)M.ESP[x.fecha]=1;
+      if(!M.minF||x.fecha<M.minF)M.minF=x.fecha;
+      if(!M.maxF||x.fecha>M.maxF)M.maxF=x.fecha;
+    });
+    M.FER={};M.VEN={};M.NOT={};
+    (r[2].data||[]).forEach(function(x){
+      if(x.tipo==='feriado')M.FER[x.fecha]=x.texto||'Feriado';
+      else if(x.tipo==='ventana'&&x.desde_min!=null&&x.hasta_min!=null){M.VEN[x.fecha]={desde_min:x.desde_min,hasta_min:x.hasta_min};M.ESP[x.fecha]=1;}
+      else if(x.tipo==='nota')M.NOT[x.fecha]=x.texto||'';
+      if(!M.minF||x.fecha<M.minF)M.minF=x.fecha;
+      if(!M.maxF||x.fecha>M.maxF)M.maxF=x.fecha;
+    });
+    if(UI.pers!=='all'&&!persona(UI.pers))UI.pers='all';
+    M.ok=true;return true;
+  }catch(e){
+    M.ok=false;M.error=msgErr(e);
+    if(!silencioso)toast('No se pudieron cargar los datos: '+M.error,true);
+    return false;
+  }
+}
+async function recargar(silencioso){
+  var ok=await cargar(M.pais,silencioso);
+  renderTodo();
+  return ok;
+}
+
+/* ============ RENDER ============ */
+function quarters(){
+  var hq=qDe(hoyISO()),a=qKey(hq),b=qKey(hq)+4;
+  if(M.minF)a=Math.min(a,qKey(qDe(M.minF)));
+  if(M.maxF)b=Math.max(b,qKey(qDe(M.maxF)));
+  var o=[],k;for(k=a;k<=b;k++)o.push(qDeKey(k));
+  return o;
+}
+function renderBarra(){
+  var qs=quarters(),h='',ks=PAISES,keys=S.paises;
+  if(keys.length>1){
+    h+='<label class="fl">País <select id="selPais" data-action="pais" aria-label="País">'+keys.map(function(k){return '<option value="'+k+'"'+(k===M.pais?' selected':'')+'>'+ks[k].f+' '+ks[k].n+'</option>';}).join('')+'</select></label>';
+  }
+  h+='<div class="qnav"><button type="button" class="qb" data-action="qprev" aria-label="Trimestre anterior">◀</button>'+
+     '<select id="selQ" data-action="qsel" aria-label="Trimestre">'+qs.map(function(q){return '<option value="'+qKey(q)+'"'+(qKey(q)===qKey(UI.q)?' selected':'')+'>'+qLbl(q)+'</option>';}).join('')+'</select>'+
+     '<button type="button" class="qb" data-action="qnext" aria-label="Trimestre siguiente">▶</button>'+
+     '<button type="button" class="qb t" data-action="qhoy">Hoy</button></div>';
+  h+='<span class="qinfo">Se muestra el trimestre en curso; use las flechas para ver trimestres anteriores o futuros.</span>';
+  if(EDIT)h+='<div class="qadm"><button type="button" class="btn" data-action="m-bulk">＋ Cargar vacaciones</button><button type="button" class="btn sec" data-action="m-equipo">Equipo y horarios</button></div>';
+  $('qbar').innerHTML=h;
+}
+function renderBanner(){
+  var h='';
+  if(M.sinSesion){
+    $('banner').innerHTML='<div class="banner r" role="alert"><div class="bi">⚠</div><div class="bt">Su sesión de datos expiró<small>Cierre sesión y vuelva a ingresar desde el portal para ver la programación.</small><div class="links"><a class="lk" href="login.html" style="text-decoration:none">Ir a iniciar sesión</a></div></div></div>';return;
+  }
+  if(!M.ok){
+    $('banner').innerHTML='<div class="banner r" role="alert"><div class="bi">⚠</div><div class="bt">No se pudo cargar la programación<small>'+esc(M.error||'Error desconocido')+'</small><div class="links"><button type="button" class="lk" data-action="reload">Reintentar</button></div></div></div>';return;
+  }
+  var e=stats(UI.q);
+  if(!e.gapDias.length){
+    h='<div class="banner" role="status"><div class="bi" aria-hidden="true">✔</div><div class="bt">Cobertura completa en '+qLbl(UI.q)+'<small>Todos los días tienen atención dentro de su ventana operativa, considerando las vacaciones programadas.</small></div>';
+  }else{
+    h='<div class="banner r" role="alert"><div class="bi" aria-hidden="true">⚠</div><div class="bt">'+e.gapDias.length+' día(s) con horas sin cobertura en '+qLbl(UI.q)+' ('+fmtH(e.gapMin)+' en total)<small>Revise estos días y ajuste turnos o autorice horas extra:</small><div class="links">'+
+      e.gapDias.map(function(g){return '<button type="button" class="lk" data-action="dia" data-d="'+g.d+'">'+fmtC(g.d)+' · '+fmtH(g.min)+'</button>';}).join('')+'</div></div>';
+  }
+  h+='</div>';
+  if(EDIT){
+    var nf=0;e.ds.forEach(function(d){if(M.FER[d])nf++;});
+    if(!nf)h+='<div class="aviso">Aún no hay feriados cargados para '+qLbl(UI.q)+' en '+esc(PAISES[M.pais].n)+'. Ábralos desde el día correspondiente (Editar este día → Feriado) para que la cobertura sea exacta.</div>';
+  }
+  $('banner').innerHTML=h;
+}
+function renderKPIs(){
+  if(!M.ok){$('kpis').innerHTML='';return;}
+  var e=stats(UI.q),prev=stats(qDeKey(qKey(UI.q)-1)),pr=proxima(),h='',dif=e.total-prev.total;
+  h+='<div class="kpi y"><div class="kpi-lbl">Días de vacaciones · '+qLbl(UI.q)+'</div><div class="kpi-val">'+fmtN(e.total)+'</div><div class="kpi-sub">'+e.conVac+' de '+M.P.length+' colaboradores</div></div>';
+  var hayPrev=M.minF&&qKey(qDeKey(qKey(UI.q)-1))>=qKey(qDe(M.minF));
+  if(hayPrev)h+='<div class="kpi n"><div class="kpi-lbl">Vs. trimestre anterior</div><div class="kpi-val">'+(dif>0?'+':'')+fmtN(dif)+'</div><div class="kpi-sub">'+qLbl(qDeKey(qKey(UI.q)-1))+': '+fmtN(prev.total)+' día(s)</div></div>';
+  else h+='<div class="kpi n"><div class="kpi-lbl">Vs. trimestre anterior</div><div class="kpi-val">—</div><div class="kpi-sub">Aún no hay un trimestre anterior cargado</div></div>';
+  if(pr){var hoy=pr.d===hoyISO();h+='<div class="kpi n"><div class="kpi-lbl">Próxima ausencia</div><div class="kpi-val">'+(hoy?'Hoy':fmtC(pr.d))+'</div><div class="kpi-sub">'+esc(pr.quien.join(', '))+' · '+DSEM[dow(pr.d)]+'</div></div>';}
+  else h+='<div class="kpi n"><div class="kpi-lbl">Próxima ausencia</div><div class="kpi-val">—</div><div class="kpi-sub">Sin ausencias programadas</div></div>';
+  h+='<div class="kpi '+(e.gapDias.length?'r':'g')+'"><div class="kpi-lbl">Cobertura de atención</div><div class="kpi-val">'+(e.gapDias.length?e.gapDias.length+' día(s) con brecha':'Completa')+'</div><div class="kpi-sub">'+(e.gapDias.length?fmtH(e.gapMin)+' sin cobertura en el trimestre':'Sin horas descubiertas')+'</div></div>';
+  $('kpis').innerHTML=h;
+}
+function horTxt(p){
+  var d=hoyISO(),qd=qDias(UI.q);if(qd.indexOf(d)<0)d=qd[0];
+  var h=horBase(p,d);
+  return h?('Turno '+h.turno+' · '+h.ini+' a '+h.fin):'Sin horario';
+}
+function renderPers(){
+  if(!M.ok){$('pers').innerHTML='';return;}
+  var e=stats(UI.q),h='';
+  $('pers').style.gridTemplateColumns='repeat('+Math.max(1,Math.min(4,M.P.length))+',1fr)';
+  M.P.forEach(function(p){
+    var r=e.por[p.id];
+    h+='<button type="button" class="pc'+(UI.pers===p.id?' on':'')+'" data-action="pers" data-p="'+p.id+'" aria-pressed="'+(UI.pers===p.id)+'" style="--pc:'+p.color+'">'+
+      '<div class="pc-top"><div class="av'+(p.oscuro?' dk':'')+'" aria-hidden="true">'+esc(inicial(p))+'</div><div><div class="pc-n">'+esc(p.nombre)+'</div><div class="pc-h">'+esc(horTxt(p))+(p.sab==='no'?' · sin sábados':(p.sab==='alterno'?' · sábados alternos':''))+'</div></div></div>'+
+      '<div class="pc-d"><b>'+fmtN(r.v)+'</b><span>día(s) de vacaciones en '+qLbl(UI.q)+'</span></div>'+
+      '<div class="tags">'+(r.fechas.length?r.fechas.map(function(d){return '<span class="tag">'+fmtC(d)+(vacW(p,d)===0.5?' (½)':'')+'</span>';}).join(''):'<span class="tag none">Sin vacaciones</span>')+'</div></button>';
+  });
+  $('pers').innerHTML=h;
+}
+function renderTabs(){
+  var v=[['cal','Calendario'],['tab','Tabla por persona'],['ana','Análisis'],['his','Historial']],ms=qMeses(UI.q);
+  var m=[['all','Todo el trimestre']].concat(ms.map(function(x){return [UI.q.y+'-'+pad(x+1),MESES[x].charAt(0).toUpperCase()+MESES[x].slice(1)];}));
+  $('tVista').innerHTML=v.map(function(x){return '<button type="button" class="ntab'+(UI.vista===x[0]?' on':'')+'" data-action="vista" data-v="'+x[0]+'">'+x[1]+'</button>';}).join('');
+  var conMes=(UI.vista==='cal'||UI.vista==='tab');
+  $('tMes').innerHTML=conMes?m.map(function(x){return '<button type="button" class="ntab'+(UI.mes===x[0]?' on':'')+'" data-action="mes" data-m="'+x[0]+'">'+x[1]+'</button>';}).join(''):'';
+  var f=$('filtro'),pp=UI.pers==='all'?null:persona(UI.pers);
+  f.innerHTML=(!pp||!conMes)?'':'Mostrando a <b>'+esc(pp.corto)+'</b><button type="button" data-action="pers" data-p="all">Ver a todos</button>';
+  $('legend').style.display=conMes?'':'none';
+}
+function visibles(){return M.P.filter(function(p){return UI.pers==='all'||UI.pers===p.id;});}
+function chip(p,d){return '<div class="chip" style="--pc:'+p.color+'" title="'+esc(p.nombre+' · '+(vacW(p,d)===0.5?'½ día de vacaciones':'Vacaciones'))+'"><i></i>'+esc(p.corto)+(vacW(p,d)===0.5?' ½':'')+'</div>';}
+function celda(d){
+  var dn=+d.slice(8),cls='cell',c=cobertura(d),dw=dow(d),inner='',mio=false;
+  if(dw===0)cls+=' dom';
+  if(M.FER[d])cls+=' fer';
+  if(c.min>0)cls+=' gap';
+  if(d===hoyISO())cls+=' hoy';
+  visibles().forEach(function(p){if(status(d,p)==='V'){inner+=chip(p,d);if(UI.pers!=='all')mio=true;}});
+  if(mio)cls+=' mio';
+  var pie;
+  if(!operativo(d))pie='<span class="dot n"></span>Sin operación';
+  else pie='<span class="dot'+(c.min>0?' r':'')+'"></span>'+trabajando(d)+' de '+M.P.length+' trabajan'+(c.min>0?' · '+fmtH(c.min)+' sin cobertura':'');
+  return '<button type="button" class="'+cls+'" data-action="dia" data-d="'+d+'" aria-label="'+esc(DSEM[dw]+' '+fmt(d))+'"><div class="top"><span class="dn">'+dn+'</span>'+(M.FER[d]?'<span class="fn">'+esc(M.FER[d])+'</span>':(M.ESP[d]?'<span class="esp">Especial</span>':''))+'</div>'+inner+'<div class="pie">'+pie+'</div></button>';
+}
+function mesHTML(y,m){
+  var first=Date.UTC(y,m,1),sd=(new Date(first).getUTCDay()+6)%7,dim=new Date(Date.UTC(y,m+1,0)).getUTCDate(),cel=[],i,d;
+  for(i=0;i<sd;i++)cel.push(null);
+  for(d=1;d<=dim;d++)cel.push(y+'-'+pad(m+1)+'-'+pad(d));
+  while(cel.length%7)cel.push(null);
+  var filas='';
+  for(i=0;i<cel.length;i+=7)filas+='<div class="cal-row">'+cel.slice(i,i+7).map(function(x){return x?celda(x):'<div class="cell empty"></div>';}).join('')+'</div>';
+  var cab='<div class="cal-head">'+['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map(function(x){return '<div>'+x+'</div>';}).join('')+'</div>';
+  return '<div class="mes"><h3>'+MESES[m]+' '+y+'</h3>'+cab+filas+'</div>';
+}
+function vistaCal(){
+  var ms=qMeses(UI.q).filter(function(m){return UI.mes==='all'||UI.mes===UI.q.y+'-'+pad(m+1);});
+  return ms.map(function(m){return mesHTML(UI.q.y,m);}).join('');
+}
+function diasActivos(){var ds=qDias(UI.q);return UI.mes==='all'?ds:ds.filter(function(d){return d.slice(0,7)===UI.mes;});}
+function vistaTab(){
+  var ds=diasActivos(),vis=visibles(),grupos=[],h='<div class="scroll"><table class="mx"><thead><tr><th class="nom" rowspan="2">Colaborador</th>';
+  ds.forEach(function(d){var k=d.slice(0,7);if(grupos.length&&grupos[grupos.length-1].k===k)grupos[grupos.length-1].n++;else grupos.push({k:k,n:1});});
+  grupos.forEach(function(g){h+='<th class="mh" colspan="'+g.n+'">'+MESES[+g.k.slice(5)-1]+' '+g.k.slice(0,4)+'</th>';});
+  h+='</tr><tr>';
+  ds.forEach(function(d){h+='<th class="'+(dow(d)===0?'dom':'')+'">'+(+d.slice(8))+'<small>'+DS3[dow(d)]+'</small></th>';});
+  h+='</tr></thead><tbody>';
+  vis.forEach(function(p){
+    h+='<tr><th class="nom"><b>'+esc(p.nombre)+'</b><span>'+esc(horTxt(p))+'</span></th>';
+    ds.forEach(function(d){
+      var st=status(d,p),z=horario(p,d),code={N:'·',L:'●',V:(vacW(p,d)===0.5?'½':'V'),D:'–',F:'F'}[st];
+      h+='<td class="c '+st+(z&&z.esp&&(st==='L'||st==='N')?' es':'')+'" data-action="dia" data-d="'+d+'" title="'+esc(p.corto+' · '+fmt(d)+' · '+ESTADOS[st]+(z&&z.esp?' · '+z.ini+'–'+z.fin:''))+'">'+code+'</td>';
+    });
+    h+='</tr>';
+  });
+  h+='</tbody><tfoot><tr><th class="nom">Personas trabajando</th>';
+  ds.forEach(function(d){h+='<td>'+(operativo(d)?trabajando(d):'–')+'</td>';});
+  h+='</tr><tr><th class="nom">Horas sin cobertura</th>';
+  ds.forEach(function(d){var c=cobertura(d);h+='<td class="'+(c.min>0?'bad':'')+'">'+(c.min>0?fmtN(c.min/60):'')+'</td>';});
+  h+='</tr></tfoot></table></div><p class="foot" style="text-align:left;margin-top:10px">V = vacaciones · ½ = media jornada · ● = labora / cubre · · = turno regular · – = descanso · F = feriado · borde azul = horario especial. Clic en una celda para ver el detalle.</p>';
+  return h;
+}
+
+/* ---- Análisis (gráficas) ---- */
+function vistaAna(){
+  return '<div class="gr">'+
+    '<div class="gc"><h4>Vacaciones por colaborador · '+qLbl(UI.q)+'</h4><div class="gh"><canvas id="ch1"></canvas></div></div>'+
+    '<div class="gc"><h4>Evolución de vacaciones por trimestre</h4><div class="gh"><canvas id="ch2"></canvas></div></div>'+
+    '<div class="gc"><h4>Horas sin cobertura por semana · '+qLbl(UI.q)+'</h4><div class="gh"><canvas id="ch3"></canvas></div></div>'+
+    '<div class="gc"><h4>Personas simultáneas por franja (promedio de días operativos) · '+qLbl(UI.q)+'</h4><div class="gh"><canvas id="ch4"></canvas></div></div></div>';
+}
+function destruirCharts(){Object.keys(CH).forEach(function(k){try{CH[k].destroy();}catch(e){}});CH={};}
+function dibujarCharts(){
+  destruirCharts();
+  if(!window.Chart||!M.ok)return;
+  window.Chart.defaults.font.family="'Inter',system-ui,sans-serif";window.Chart.defaults.font.size=11;
+  var ms=qMeses(UI.q),colM=['#00216f','#7dbfe6','#DBDBDB'],e=stats(UI.q),i;
+  /* 1: por colaborador, apilado por mes */
+  var ds1=ms.map(function(m,k){return {label:MESES[m].charAt(0).toUpperCase()+MESES[m].slice(1),backgroundColor:colM[k],data:M.P.map(function(p){var s=0;e.por[p.id].fechas.forEach(function(d){if(+d.slice(5,7)-1===m)s+=vacW(p,d);});return s;})};});
+  CH.c1=new window.Chart($('ch1'),{type:'bar',data:{labels:M.P.map(function(p){return p.corto;}),datasets:ds1},options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,ticks:{precision:1},title:{display:true,text:'Días'}}},plugins:{legend:{position:'bottom'}}}});
+  /* 2: por trimestre, apilado por colaborador */
+  var qs=quarters().filter(function(q){return qKey(q)<=qKey(qDe(hoyISO()))+1&&qKey(q)>=(M.minF?qKey(qDe(M.minF)):qKey(UI.q));});
+  if(!qs.length)qs=[UI.q];
+  var st2=qs.map(function(q){return stats(q);});
+  CH.c2=new window.Chart($('ch2'),{type:'bar',data:{labels:qs.map(qLbl),datasets:M.P.map(function(p){return {label:p.corto,backgroundColor:p.color,data:st2.map(function(s){return s.por[p.id].v;})};})},options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,title:{display:true,text:'Días'}}},plugins:{legend:{position:'bottom'}}}});
+  /* 3: horas sin cobertura por semana */
+  var sem=[],cur=null;
+  e.ds.forEach(function(d){var k=Math.floor((parseISO(d)-parseISO('2024-01-01'))/604800000);if(!cur||cur.k!==k){cur={k:k,ini:d,min:0};sem.push(cur);}cur.min+=cobertura(d).min;});
+  var totSem=0;sem.forEach(function(x){totSem+=x.min;});
+  if(!totSem){var h3=$('ch3').closest('.gc').querySelector('h4');if(h3)h3.textContent+=' · sin horas descubiertas ✔';}
+  CH.c3=new window.Chart($('ch3'),{type:'bar',data:{labels:sem.map(function(s){return 'Sem. '+fmtC(s.ini);}),datasets:[{label:'Horas sin cobertura',backgroundColor:'#CC0000',data:sem.map(function(s){return Math.round(s.min/6)/10;})}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,suggestedMax:4,title:{display:true,text:'Horas'}},x:{ticks:{maxRotation:60,autoRotate:true}}},plugins:{legend:{display:false}}}});
+  /* 4: personas simultáneas por franja */
+  var g=grid(),acum=[],nop=0,labs=[];
+  for(i=0;i<(g.fin-g.ini)/30;i++){acum.push(0);labs.push(hhmm(g.ini+i*30));}
+  e.ds.forEach(function(d){if(!operativo(d)||dow(d)===0||M.FER[d])return;var c=cobertura(d);nop++;c.conteo.forEach(function(n,k){acum[k]+=n;});});
+  CH.c4=new window.Chart($('ch4'),{type:'line',data:{labels:labs,datasets:[{label:'Personas (promedio)',borderColor:'#00216f',backgroundColor:'rgba(125,191,230,.35)',fill:true,tension:.25,pointRadius:0,data:acum.map(function(a){return nop?Math.round(a/nop*10)/10:0;})}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,suggestedMax:M.P.length,title:{display:true,text:'Personas'}},x:{ticks:{maxTicksLimit:12}}},plugins:{legend:{display:false}}}});
+}
+
+/* ---- Historial ---- */
+function vistaHis(){
+  var qs=quarters().filter(function(q){return M.minF?qKey(q)>=qKey(qDe(M.minF)):true;}).filter(function(q){return qKey(q)<=Math.max(qKey(qDe(hoyISO())),M.maxF?qKey(qDe(M.maxF)):0);});
+  if(!qs.length)qs=[UI.q];
+  var h='<div class="sec-t">Historial de vacaciones por trimestre <small>Los trimestres anteriores se conservan; haga clic para abrirlos en el calendario</small></div><div class="scroll"><table class="mx hx"><thead><tr><th class="nom">Trimestre</th>'+M.P.map(function(p){return '<th>'+esc(p.corto)+'</th>';}).join('')+'<th>Total días</th><th>Días con brecha</th><th>Horas sin cobertura</th></tr></thead><tbody>';
+  qs.slice().reverse().forEach(function(q){
+    var s=stats(q);
+    h+='<tr class="'+(qKey(q)===qKey(UI.q)?'sel':'')+'" data-action="qir" data-k="'+qKey(q)+'"><th class="nom"><b>'+qLbl(q)+'</b><span>'+(qKey(q)===qKey(qDe(hoyISO()))?'En curso':(qKey(q)<qKey(qDe(hoyISO()))?'Cerrado':'Próximo'))+'</span></th>'+
+      M.P.map(function(p){return '<td>'+(s.por[p.id].v?fmtN(s.por[p.id].v):'–')+'</td>';}).join('')+'<td><b>'+fmtN(s.total)+'</b></td><td class="'+(s.gapDias.length?'bad':'')+'">'+s.gapDias.length+'</td><td class="'+(s.gapDias.length?'bad':'')+'">'+(s.gapMin?fmtN(s.gapMin/60):'0')+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  if(EDIT){
+    h+='<div class="sec-t" style="margin-top:22px">Bitácora de cambios <small>Quién modificó la programación y cuándo (solo administradores)</small></div><div id="bit">'+bitHTML()+'</div>';
+  }
+  return h;
+}
+function bitHTML(){
+  if(UI.bitCargando)return '<p class="vacio">Cargando bitácora…</p>';
+  if(!UI.bit)return '<p class="vacio">Sin datos.</p>';
+  if(!UI.bit.length)return '<p class="vacio">Aún no hay cambios registrados.</p>';
+  var tb={vac_dias:'Día',vac_horarios:'Horario',vac_personas:'Persona',vac_reglas:'Regla',vac_paises:'País'},ac={INSERT:'Alta',UPDATE:'Cambio',DELETE:'Baja'};
+  return '<div class="scroll"><table class="mx hx bt"><thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Qué</th><th>Persona</th><th>Fecha</th><th>Detalle</th><th></th></tr></thead><tbody>'+UI.bit.map(function(b){
+    var a=b.antes||{},d=b.despues||{},det='';
+    if(b.tabla==='vac_dias'){det=(a.tipo?ESTADOS[a.tipo]+(a.valor==0.5?' ½':''):'—')+' → '+(d.tipo?ESTADOS[d.tipo]+(d.valor==0.5?' ½':''):'—');}
+    else if(b.tabla==='vac_reglas'){det=((a.tipo||d.tipo)||'')+': '+(b.accion==='DELETE'?'(quitado) '+(a.texto||''):(d.texto||(d.desde_min!=null?hhmm(d.desde_min)+'–'+hhmm(d.hasta_min):'')));}
+    else if(b.tabla==='vac_horarios'){det='Turno '+(d.turno||a.turno)+' '+(d.ini||a.ini)+'–'+(d.fin||a.fin);}
+    var rev=(b.tabla==='vac_dias')?'<button type="button" class="lk2" data-action="rev" data-id="'+b.id+'">Revertir</button>':'';
+    return '<tr><td>'+esc(fechaLarga(b.creado))+'</td><td>'+esc(b.actor_email||'—')+'</td><td>'+(ac[b.accion]||esc(b.accion))+'</td><td>'+(tb[b.tabla]||esc(b.tabla))+'</td><td>'+esc(b.persona||'')+'</td><td>'+(b.fecha_ref?fmt(b.fecha_ref):'')+'</td><td>'+esc(det)+'</td><td>'+rev+'</td></tr>';
+  }).join('')+'</tbody></table></div>';
+}
+async function cargarBit(){
+  if(!EDIT)return;
+  UI.bitCargando=true;var el=$('bit');if(el)el.innerHTML=bitHTML();
+  try{
+    var r=await sb.from('vac_historial').select('*').eq('pais',M.pais).order('id',{ascending:false}).limit(200);
+    if(r.error)throw r.error;
+    UI.bit=r.data||[];
+  }catch(e){UI.bit=null;toast('No se pudo cargar la bitácora: '+msgErr(e),true);}
+  UI.bitCargando=false;el=$('bit');if(el)el.innerHTML=bitHTML();
+}
+
+function renderVista(){
+  if(!M.ok){$('vista').innerHTML='';destruirCharts();return;}
+  var v=UI.vista;
+  if(v!=='ana')destruirCharts();
+  $('vista').innerHTML=v==='cal'?vistaCal():(v==='tab'?vistaTab():(v==='ana'?vistaAna():vistaHis()));
+  if(v==='ana')dibujarCharts();
+  if(v==='his'&&EDIT&&UI.bit===null&&!UI.bitCargando)cargarBit();
+}
+function renderTodo(){
+  var t=PAISES[M.pais]||PAISES.GT;
+  $('ttl').textContent='VACACIONES · EQUIPO '+t.n.toUpperCase();
+  document.title='Vacaciones Equipo '+t.n+' · PDC Analytics Center';
+  renderBarra();renderBanner();renderKPIs();renderPers();renderTabs();renderVista();
+  $('foot').textContent='PDC Analytics Center · Programación de vacaciones '+t.n+' · '+qLbl(UI.q)+'. '+(EDIT?'Los cambios se guardan en la base de datos y quedan en la bitácora.':'Vista de solo lectura.');
+  if(UI.modal)renderModal();
+}
+
+/* ============ MODALES ============ */
+function whoRow(p,extra){
+  return '<div class="who" style="--pc:'+p.color+'"><div class="av'+(p.oscuro?' dk':'')+'" aria-hidden="true">'+esc(inicial(p))+'</div><div class="wn">'+esc(p.nombre)+'<small>'+extra+'</small></div></div>';
+}
+function modalDia(d,ed){
+  var c=cobertura(d),vac=[],trab=[],lib=[],h;
+  M.P.forEach(function(p){
+    var st=status(d,p),z=horario(p,d),iv=intervalo(p,d),r=M.DIA[p.id+'|'+d];
+    if(st==='V'){
+      var w=vacW(p,d);
+      vac.push(whoRow(p,w===0.5?'½ día de vacaciones'+(r&&r.ini?' (labora '+esc(r.ini)+'–'+esc(r.fin)+')':''):'Día completo de vacaciones'));
+      if(iv)trab.push(whoRow(p,hhmm(iv[0])+' a '+hhmm(iv[1])+' (media jornada)'));
+    }else if(st==='N'||st==='L'){
+      trab.push(whoRow(p,z?(z.ini+' a '+z.fin+(z.esp?' · horario especial':'')):'Sin horario definido'));
+    }else{
+      lib.push(whoRow(p,M.FER[d]?'Feriado':(dow(d)===0?'Domingo':(p.sab==='no'&&dow(d)===6?'No labora sábados':(p.sab==='alterno'&&dow(d)===6?'Sábado que no le corresponde':'Descanso / libre')))));
+    }
+  });
+  h='<div class="mh"><h3>'+DSEM[dow(d)]+' '+fmt(d)+(M.FER[d]?' · '+esc(M.FER[d]):'')+'</h3><button type="button" data-action="cerrar" aria-label="Cerrar">×</button></div><div class="mb">';
+  if(!operativo(d))h+='<span class="badge n">Sin operación</span>';
+  else if(c.min>0)h+='<span class="badge r">⚠ Sin cobertura: '+c.gaps.map(function(g){return hhmm(g.a)+'–'+hhmm(g.b);}).join(', ')+' ('+fmtH(c.min)+')</span>';
+  else h+='<span class="badge g">✔ Cobertura completa</span>';
+  if(operativo(d))h+=' <span class="badge n">Ventana operativa '+hhmm(c.win[0])+'–'+hhmm(c.win[1])+'</span>';
+  if(!ed){
+    h+='<div class="grp"><h4>De vacaciones</h4>'+(vac.length?vac.join(''):'<div class="vacio">Nadie de vacaciones este día.</div>')+'</div>';
+    h+='<div class="grp"><h4>Trabajan</h4>'+(trab.length?trab.join(''):'<div class="vacio">Nadie programado.</div>')+'</div>';
+    if(lib.length)h+='<div class="grp"><h4>Descanso</h4>'+lib.join('')+'</div>';
+    h+='<div class="grp"><h4>Cobertura durante el día (cada 30 min)</h4><div class="tl" style="grid-template-columns:repeat('+c.conteo.length+',1fr)">';
+    c.conteo.forEach(function(n,k){var m=c.g.ini+k*30,fuera=(m<c.win[0]||m>=c.win[1]);h+='<div class="'+(fuera?'sx':'s'+(n>3?3:n))+'" title="'+(fuera?'Fuera de la ventana · ':'')+hhmm(m)+' · '+n+' persona(s)"></div>';});
+    h+='</div><div class="tl-l"><span>'+hhmm(c.g.ini)+'</span><span>'+hhmm(c.g.ini+(c.g.fin-c.g.ini)/3)+'</span><span>'+hhmm(c.g.ini+(c.g.fin-c.g.ini)*2/3)+'</span><span>00:00</span></div></div>';
+    if(M.NOT[d])h+='<div class="nota"><b>Nota:</b> '+esc(M.NOT[d])+'</div>';
+    h+='<div class="mf">'+(EDIT?'<button type="button" class="btn sec" data-action="editar">Editar este día</button>':'')+'<button type="button" class="btn" data-action="cerrar">Cerrar</button></div></div>';
+    return h;
+  }
+  /* edición (solo admin) */
+  h+='<div class="grp"><h4>Estado de cada persona</h4>';
+  M.P.forEach(function(p){
+    var st=status(d,p),r=M.DIA[p.id+'|'+d]||{},base=basePat(p,d);
+    var opts=['N','L','V','D'].concat(base==='F'?['F']:[]).map(function(k){return '<option value="'+k+'"'+(k===st?' selected':'')+'>'+ESTADOS[k]+'</option>';}).join('');
+    h+='<div class="erow" data-p="'+p.id+'" style="--pc:'+p.color+'"><div class="who" style="border:none;padding:0"><div class="av'+(p.oscuro?' dk':'')+'" aria-hidden="true">'+esc(inicial(p))+'</div><div class="wn">'+esc(p.nombre)+'</div></div>'+
+      '<select class="e-est" aria-label="Estado de '+esc(p.corto)+'">'+opts+'</select>'+
+      '<label class="lv'+(st==='V'?'':' hid')+'">Vacaciones<select class="e-val"><option value="1"'+(Number(r.valor)!==0.5?' selected':'')+'>Día completo</option><option value="0.5"'+(Number(r.valor)===0.5&&r.tipo==='V'?' selected':'')+'>Medio día</option></select></label>'+
+      '<label class="lh">Horario especial (opcional)<span class="par"><input type="time" class="e-ini" value="'+esc(r.ini||'')+'"> a <input type="time" class="e-fin" value="'+esc(r.fin||'')+'"></span></label></div>';
+  });
+  h+='<p class="hint">Medio día de vacaciones: indique en «Horario especial» las horas que sí labora. Para turno regular modificado (p. ej. cierre anticipado), elija «Labora / cubre» y escriba el horario.</p></div>';
+  var v=M.VEN[d];
+  h+='<div class="grp"><h4>Reglas del día</h4><div class="frm">'+
+    '<label>Feriado (vacío = no es feriado)<input type="text" id="e-fer" maxlength="60" value="'+esc(M.FER[d]||'')+'"></label>'+
+    '<label>Ventana operativa especial<span class="par"><input type="time" id="e-vi" value="'+(v?hhmm(v.desde_min):'')+'"> a <input type="time" id="e-vf" value="'+(v?hhmm(v.hasta_min):'')+'"></span></label>'+
+    '<label class="w2">Nota del día<textarea id="e-nota" rows="2" maxlength="300">'+esc(M.NOT[d]||'')+'</textarea></label></div></div>';
+  h+='<div class="mf"><button type="button" class="btn sec" data-action="editar">Cancelar</button><button type="button" class="btn" data-action="guardar-dia">Guardar cambios</button></div></div>';
+  return h;
+}
+function optsPers(){return M.P.map(function(p){return '<option value="'+p.id+'">'+esc(p.nombre)+'</option>';}).join('');}
+function modalBulk(){
+  var hoy=hoyISO();
+  return '<div class="mh"><h3>Cargar vacaciones y ajustes</h3><button type="button" data-action="cerrar" aria-label="Cerrar">×</button></div><div class="mb">'+
+    '<div class="grp" style="margin-top:0"><h4>Opción A · Por rango de fechas</h4><div class="frm">'+
+    '<label>Colaborador<select id="b-p">'+optsPers()+'</select></label>'+
+    '<label>Acción<select id="b-t"><option value="V">Vacaciones</option><option value="L">Labora / cubre</option><option value="D">Descanso</option><option value="Q">Quitar excepciones (volver al patrón)</option></select></label>'+
+    '<label>Desde<input type="date" id="b-d" value="'+hoy+'"></label><label>Hasta<input type="date" id="b-h" value="'+hoy+'"></label>'+
+    '<label>Valor (vacaciones)<select id="b-v"><option value="1">Día completo</option><option value="0.5">Medio día</option></select></label>'+
+    '<label>Horario especial<span class="par"><input type="time" id="b-i"> a <input type="time" id="b-f"></span></label>'+
+    '<label class="w2 ck"><input type="checkbox" id="b-o" checked> Omitir domingos y feriados</label></div>'+
+    '<div class="mf"><button type="button" class="btn" data-action="bulk-rango">Aplicar rango</button></div></div>'+
+    '<div class="grp"><h4>Opción B · Pegar desde Excel</h4>'+
+    '<p class="hint">Una fila por línea: <b>fecha ; colaborador ; tipo ; valor ; inicio ; fin</b>. Fecha dd/mm/aaaa; tipo V, L, D o Q (quitar); valor 1 o 0.5; inicio/fin opcionales (HH:MM). Colaborador por nombre corto o completo. Ejemplo: <code>24/12/2026;'+esc(M.P.length?M.P[0].corto:'Nombre')+';V;1</code></p>'+
+    '<textarea id="b-csv" rows="6" class="mono" placeholder="24/12/2026;'+esc(M.P.length?M.P[0].corto:'Nombre')+';V;1"></textarea>'+
+    '<div class="mf"><button type="button" class="btn" data-action="bulk-csv">Validar y aplicar</button></div></div>'+
+    '<div class="mf"><button type="button" class="btn sec" data-action="cerrar">Cerrar</button></div></div>';
+}
+function mm2time(m){return hhmm(m);}
+function modalEquipo(){
+  var c=M.cfg,h='<div class="mh"><h3>Equipo y horarios · '+esc(PAISES[M.pais].n)+'</h3><button type="button" data-action="cerrar" aria-label="Cerrar">×</button></div><div class="mb">';
+  h+='<div class="grp" style="margin-top:0"><h4>Ventana operativa del país</h4><div class="frm"><label>Atención de<span class="par"><input type="time" id="c-i" value="'+mm2time(c.oper_ini)+'"> a <input type="time" id="c-f" value="'+(c.oper_fin>=1440?'23:59':mm2time(c.oper_fin))+'"></span></label>'+
+    '<label class="ck"><input type="checkbox" id="c-s"'+(c.sab_auto?' checked':'')+'> Sábados alternos: la ventana del sábado es el turno de quien corresponde</label></div>'+
+    '<div class="mf"><button type="button" class="btn" data-action="cfg-save">Guardar ventana</button></div></div>';
+  h+='<div class="grp"><h4>Colaboradores y turnos</h4>';
+  var hoy=hoyISO(),lim=toISO(parseISO(hoy)-30*86400000);
+  M.P.forEach(function(p){
+    var hs=(M.HOR[p.id]||[]).filter(function(x){return !x.hasta||x.hasta>=lim;}).sort(function(a,b){return a.desde<b.desde?-1:1;}).slice(0,16);
+    h+='<div class="prow" data-p="'+p.id+'"><div class="frm"><label>Nombre<input type="text" class="p-n" maxlength="60" value="'+esc(p.nombre)+'"></label><label>Nombre corto<input type="text" class="p-k" maxlength="20" value="'+esc(p.corto)+'"></label>'+
+      '<label>Sábados<select class="p-s"><option value="todos"'+(p.sab==='todos'?' selected':'')+'>Labora todos</option><option value="no"'+(p.sab==='no'?' selected':'')+'>No labora</option><option value="alterno"'+(p.sab==='alterno'?' selected':'')+'>Alternos</option></select></label>'+
+      '<label>Un sábado que sí labora<input type="date" class="p-a" value="'+esc(p.sab_ancla||'')+'"></label>'+
+      '<label>Color<select class="p-c">'+PALETA.map(function(c2){return '<option value="'+c2+'"'+(c2.toLowerCase()===p.color.toLowerCase()?' selected':'')+'>'+c2+'</option>';}).join('')+'</select></label></div>'+
+      '<div class="mf" style="margin:6px 0"><button type="button" class="btn sec" data-action="per-save">Guardar datos</button><button type="button" class="btn sec" data-action="per-baja">Dar de baja</button></div>'+
+      '<table class="mx hx"><thead><tr><th>Turno</th><th>Horario</th><th>Desde</th><th>Hasta</th><th></th></tr></thead><tbody>'+
+      (hs.length?hs.map(function(x){return '<tr><td>'+x.turno+'</td><td>'+x.ini+' a '+x.fin+'</td><td>'+(x.desde==='2000-01-01'?'siempre':fmt(x.desde))+'</td><td>'+(x.hasta?fmt(x.hasta):'abierto')+'</td><td><button type="button" class="lk2" data-action="hor-del" data-h="'+x.id+'">Quitar</button></td></tr>';}).join(''):'<tr><td colspan="5" class="vacio">Sin horarios vigentes.</td></tr>')+
+      '</tbody></table>'+
+      '<div class="frm hadd"><label>Turno<input type="number" class="h-t" min="1" max="9" value="1"></label><label>Horario<span class="par"><input type="time" class="h-i"> a <input type="time" class="h-f"></span></label><label>Desde<input type="date" class="h-d" value="'+hoy+'"></label><label>Hasta (opcional)<input type="date" class="h-h"></label><button type="button" class="btn" data-action="hor-add">Agregar horario</button></div></div>';
+  });
+  h+='</div><div class="grp"><h4>Agregar colaborador</h4><div class="frm"><label>Nombre completo<input type="text" id="n-n" maxlength="60"></label><label>Nombre corto<input type="text" id="n-k" maxlength="20"></label><label>Turno<input type="number" id="n-t" min="1" max="9" value="1"></label><label>Horario<span class="par"><input type="time" id="n-i"> a <input type="time" id="n-f"></span></label></div><div class="mf"><button type="button" class="btn" data-action="per-add">Agregar</button></div></div>';
+  h+='<div class="mf"><button type="button" class="btn" data-action="cerrar">Cerrar</button></div></div>';
+  return h;
+}
+function renderModal(){
+  var m=UI.modal;if(!m){$('ov').classList.remove('on');return;}
+  var h='';
+  if(m.t==='dia')h=modalDia(m.d,UI.editar&&EDIT);
+  else if(m.t==='bulk')h=modalBulk();
+  else if(m.t==='equipo')h=modalEquipo();
+  var sc=$('modal').scrollTop;
+  $('modal').innerHTML=h;$('modal').scrollTop=sc;
+  $('ov').classList.add('on');
+}
+function cerrar(){UI.modal=null;UI.editar=false;$('ov').classList.remove('on');}
+
+/* ============ ESCRITURA (solo admin; RLS lo exige también en la base) ============ */
+function exigirAdmin(){if(!EDIT)throw new Error('Solo un administrador puede modificar la programación.');}
+function val(id){var e=$(id);return e?String(e.value||'').trim():'';}
+function parDeHoras(i,f){if((i&&!f)||(!i&&f))throw new Error('Complete la hora de inicio y la de fin.');return i?[i,f]:null;}
+async function chk(p){var r=await p;if(r&&r.error)throw r.error;return r;}
+
+async function guardarDia(){
+  exigirAdmin();
+  var d=UI.modal.d,rows=[],dels=[],er=document.querySelectorAll('#modal .erow'),i;
+  for(i=0;i<er.length;i++){
+    var el=er[i],p=persona(el.getAttribute('data-p')),est=el.querySelector('.e-est').value,vv=el.querySelector('.e-val').value;
+    var hh=parDeHoras(el.querySelector('.e-ini').value,el.querySelector('.e-fin').value),base=basePat(p,d),cur=M.DIA[p.id+'|'+d],tipo=null;
+    if(est==='V'){if(vv==='0.5'&&!hh)throw new Error(p.corto+': para medio día indique el horario que sí labora.');tipo='V';}
+    else if(est==='N'||est==='L'){if(base==='N'){if(hh)tipo='L';}else tipo='L';}
+    else if(est==='D'){if(base==='N')tipo='D';}
+    if(tipo){
+      var half=(tipo==='V'&&vv==='0.5');
+      rows.push({persona_id:p.id,fecha:d,tipo:tipo,valor:half?0.5:1,ini:(tipo==='D'||(tipo==='V'&&!half))?null:(hh?hh[0]:null),fin:(tipo==='D'||(tipo==='V'&&!half))?null:(hh?hh[1]:null),actualizado:new Date().toISOString()});
+    }else if(cur)dels.push(p.id);
+  }
+  if(rows.length)await chk(sb.from('vac_dias').upsert(rows,{onConflict:'persona_id,fecha'}));
+  if(dels.length)await chk(sb.from('vac_dias').delete().eq('fecha',d).in('persona_id',dels));
+  var fer=val('e-fer'),vi=val('e-vi'),vf=val('e-vf'),nota=val('e-nota'),vp=parDeHoras(vi,vf);
+  if(fer)await chk(sb.from('vac_reglas').upsert({pais:M.pais,fecha:d,tipo:'feriado',texto:fer},{onConflict:'pais,fecha,tipo'}));
+  else if(M.FER[d])await chk(sb.from('vac_reglas').delete().eq('pais',M.pais).eq('fecha',d).eq('tipo','feriado'));
+  if(vp){
+    var a=toMin(vp[0]),b=endMin(vp[1],vp[0]);if(b>1440)b=1440;
+    await chk(sb.from('vac_reglas').upsert({pais:M.pais,fecha:d,tipo:'ventana',desde_min:a,hasta_min:b},{onConflict:'pais,fecha,tipo'}));
+  }else if(M.VEN[d])await chk(sb.from('vac_reglas').delete().eq('pais',M.pais).eq('fecha',d).eq('tipo','ventana'));
+  if(nota)await chk(sb.from('vac_reglas').upsert({pais:M.pais,fecha:d,tipo:'nota',texto:nota},{onConflict:'pais,fecha,tipo'}));
+  else if(M.NOT[d]!==undefined)await chk(sb.from('vac_reglas').delete().eq('pais',M.pais).eq('fecha',d).eq('tipo','nota'));
+  UI.editar=false;UI.bit=null;
+  await recargar(true);
+  toast('Cambios guardados.');
+}
+function filaDia(pid,fecha,tipo,valor,ini,fin){return {persona_id:pid,fecha:fecha,tipo:tipo,valor:Number(valor)===0.5?0.5:1,ini:ini||null,fin:fin||null,actualizado:new Date().toISOString()};}
+async function aplicarFilas(rows,dels){
+  var k;
+  for(k=0;k<rows.length;k+=400)await chk(sb.from('vac_dias').upsert(rows.slice(k,k+400),{onConflict:'persona_id,fecha'}));
+  for(k=0;k<dels.length;k+=1)await chk(sb.from('vac_dias').delete().eq('persona_id',dels[k].pid).eq('fecha',dels[k].fecha));
+}
+async function bulkRango(){
+  exigirAdmin();
+  var pid=val('b-p'),t=val('b-t'),d1=val('b-d'),d2=val('b-h'),vv=val('b-v'),hh=parDeHoras(val('b-i'),val('b-f')),omit=$('b-o').checked;
+  if(!d1||!d2||d2<d1)throw new Error('Revise el rango de fechas.');
+  var n=Math.round((parseISO(d2)-parseISO(d1))/86400000)+1;
+  if(n>400)throw new Error('El rango máximo es de 400 días por carga.');
+  if(vv==='0.5'&&t==='V'&&!hh)throw new Error('Para medio día indique el horario que sí labora.');
+  var p=persona(pid),rows=[],dels=[],ds=[],k;
+  for(k=0;k<n;k++)ds.push(toISO(parseISO(d1)+k*86400000));
+  ds.forEach(function(d){
+    if(t==='Q'){if(M.DIA[pid+'|'+d])dels.push({pid:pid,fecha:d});return;}
+    if(omit&&(dow(d)===0||M.FER[d]))return;
+    if(t==='D'&&basePat(p,d)!=='N')return;
+    rows.push(filaDia(pid,d,t,t==='V'?vv:1,t==='D'?null:(hh?hh[0]:null),t==='D'?null:(hh?hh[1]:null)));
+  });
+  if(!rows.length&&!dels.length)throw new Error('No hay días para cambiar con esa selección.');
+  if(!window.confirm('Se aplicarán '+(rows.length||dels.length)+' día(s) a '+p.nombre+'. ¿Continuar?'))return;
+  await aplicarFilas(rows,dels);
+  UI.bit=null;await recargar(true);toast('Cargados '+(rows.length||dels.length)+' día(s).');
+}
+function normTxt(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();}
+function parseFecha(s){
+  s=String(s||'').trim();var m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m)return m[3]+'-'+pad(+m[2])+'-'+pad(+m[1]);
+  m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?s:null;
+}
+async function bulkCsv(){
+  exigirAdmin();
+  var txt=val('b-csv'),lines=txt.split(/\r?\n/).map(function(x){return x.trim();}).filter(Boolean),errs=[],rows=[],dels=[];
+  if(!lines.length)throw new Error('Pegue al menos una línea.');
+  lines.forEach(function(ln,i){
+    var c=ln.split(/[;\t]/).map(function(x){return x.trim();});
+    if(c.length<3){errs.push('Línea '+(i+1)+': faltan columnas.');return;}
+    var f=parseFecha(c[0]),p=M.P.filter(function(x){return normTxt(x.corto)===normTxt(c[1])||normTxt(x.nombre)===normTxt(c[1])||normTxt(x.codigo)===normTxt(c[1]);})[0],t=String(c[2]).toUpperCase();
+    if(!f||isNaN(parseISO(f))){errs.push('Línea '+(i+1)+': fecha inválida.');return;}
+    if(!p){errs.push('Línea '+(i+1)+': colaborador «'+c[1]+'» no existe.');return;}
+    if(['V','L','D','N','Q'].indexOf(t)<0){errs.push('Línea '+(i+1)+': tipo inválido (use V, L, D o Q).');return;}
+    if(t==='N'||t==='Q'){dels.push({pid:p.id,fecha:f});return;}
+    var v=(c[3]||'1').replace(',','.'),ini=c[4]||'',fin=c[5]||'';
+    if(v!=='1'&&v!=='0.5'){errs.push('Línea '+(i+1)+': valor debe ser 1 o 0.5.');return;}
+    if((ini&&!/^\d{1,2}:\d{2}$/.test(ini))||(fin&&!/^\d{1,2}:\d{2}$/.test(fin))||(!!ini!==!!fin)){errs.push('Línea '+(i+1)+': horario inválido.');return;}
+    if(t==='V'&&v==='0.5'&&!ini){errs.push('Línea '+(i+1)+': medio día requiere horario que sí labora.');return;}
+    rows.push(filaDia(p.id,f,t,t==='V'?v:1,t==='D'?null:(ini?pad(+ini.split(':')[0])+':'+ini.split(':')[1]:null),t==='D'?null:(fin?pad(+fin.split(':')[0])+':'+fin.split(':')[1]:null)));
+  });
+  if(errs.length)throw new Error(errs.slice(0,5).join(' ')+(errs.length>5?' (+'+(errs.length-5)+' más)':''));
+  if(!window.confirm('Se aplicarán '+lines.length+' línea(s). ¿Continuar?'))return;
+  await aplicarFilas(rows,dels);
+  UI.bit=null;await recargar(true);toast('Aplicadas '+lines.length+' línea(s).');
+}
+async function cfgSave(){
+  exigirAdmin();
+  var i=val('c-i'),f=val('c-f');if(!i||!f)throw new Error('Indique la ventana de atención.');
+  var a=toMin(i),b=toMin(f);if(b>=1439)b=1440;if(b<=a)throw new Error('La hora final debe ser posterior a la inicial.');
+  await chk(sb.from('vac_paises').update({oper_ini:a,oper_fin:b,sab_auto:$('c-s').checked,actualizado:new Date().toISOString()}).eq('pais',M.pais));
+  UI.bit=null;await recargar(true);toast('Ventana guardada.');
+}
+function pEl(btn){return btn.closest('.prow');}
+async function perSave(btn){
+  exigirAdmin();var el=pEl(btn),pid=el.getAttribute('data-p');
+  var n=el.querySelector('.p-n').value.trim(),k=el.querySelector('.p-k').value.trim(),s=el.querySelector('.p-s').value,a=el.querySelector('.p-a').value||null;
+  if(!n||!k)throw new Error('Nombre y nombre corto son obligatorios.');
+  if(s==='alterno'&&!a)throw new Error('Para sábados alternos indique un sábado en que sí labora.');
+  if(a&&dow(a)!==6)throw new Error('La fecha de referencia debe ser sábado.');
+  await chk(sb.from('vac_personas').update({nombre:n,corto:k,sab:s,sab_ancla:s==='alterno'?a:null,color:el.querySelector('.p-c').value}).eq('id',pid));
+  UI.bit=null;await recargar(true);toast('Colaborador actualizado.');
+}
+async function perBaja(btn){
+  exigirAdmin();var el=pEl(btn),p=persona(el.getAttribute('data-p'));
+  if(!window.confirm('¿Dar de baja a '+p.nombre+'? Se conserva su historial pero deja de aparecer en el calendario.'))return;
+  await chk(sb.from('vac_personas').update({activo:false}).eq('id',p.id));
+  UI.bit=null;await recargar(true);toast('Colaborador dado de baja.');
+}
+async function horAdd(btn){
+  exigirAdmin();var el=pEl(btn),pid=el.getAttribute('data-p'),t=+el.querySelector('.h-t').value,hh=parDeHoras(el.querySelector('.h-i').value,el.querySelector('.h-f').value),d=el.querySelector('.h-d').value,h2=el.querySelector('.h-h').value||null;
+  if(!hh||!d||!t)throw new Error('Indique turno, horario y fecha de inicio.');
+  if(h2&&h2<d)throw new Error('La fecha final no puede ser anterior a la inicial.');
+  var ya=(M.HOR[pid]||[]).filter(function(x){return x.desde<=(h2||'9999-12-31')&&(!x.hasta||x.hasta>=d);});
+  if(ya.length&&!window.confirm('Ya existe un horario vigente en esas fechas; se usará el que empiece más tarde. ¿Continuar?'))return;
+  await chk(sb.from('vac_horarios').insert({persona_id:pid,desde:d,hasta:h2,turno:t,ini:hh[0],fin:hh[1]}));
+  UI.bit=null;await recargar(true);toast('Horario agregado.');
+}
+async function horDel(btn){
+  exigirAdmin();await chk(sb.from('vac_horarios').delete().eq('id',btn.getAttribute('data-h')));
+  UI.bit=null;await recargar(true);toast('Horario quitado.');
+}
+async function perAdd(){
+  exigirAdmin();var n=val('n-n'),k=val('n-k'),t=+val('n-t'),hh=parDeHoras(val('n-i'),val('n-f'));
+  if(!n||!k||!hh)throw new Error('Complete nombre, nombre corto y horario.');
+  var cod=normTxt(n).replace(/[^a-z0-9]+/g,'');if(!cod)throw new Error('Nombre inválido.');
+  var r=await chk(sb.from('vac_personas').insert({pais:M.pais,codigo:cod,nombre:n,corto:k,color:PALETA[M.P.length%PALETA.length],orden:M.P.length+1}).select().single());
+  await chk(sb.from('vac_horarios').insert({persona_id:r.data.id,desde:'2000-01-01',turno:t||1,ini:hh[0],fin:hh[1]}));
+  UI.bit=null;await recargar(true);toast('Colaborador agregado.');
+}
+async function revertir(id){
+  exigirAdmin();
+  var b=(UI.bit||[]).filter(function(x){return String(x.id)===String(id);})[0];if(!b||b.tabla!=='vac_dias')return;
+  if(!window.confirm('¿Revertir este cambio ('+(b.persona||'')+(b.fecha_ref?' · '+fmt(b.fecha_ref):'')+')?'))return;
+  var a=b.antes,d=b.despues;
+  if(b.accion==='INSERT')await chk(sb.from('vac_dias').delete().eq('id',d.id));
+  else{var o={id:a.id,persona_id:a.persona_id,fecha:a.fecha,tipo:a.tipo,valor:a.valor,ini:a.ini,fin:a.fin,actualizado:new Date().toISOString()};await chk(sb.from('vac_dias').upsert(o,{onConflict:'persona_id,fecha'}));}
+  UI.bit=null;await recargar(true);if(UI.vista==='his')cargarBit();toast('Cambio revertido.');
+}
+
+/* ============ EXPORTACIÓN ============ */
+function descargar(nombre,tipo,txt){
+  try{var b=new Blob([txt],{type:tipo}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=nombre;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);}catch(e){}
+}
+function exportCSV(){
+  var rows=['fecha;dia;turno;colaborador;horario;estado;dias_vacaciones'];
+  qDias(UI.q).forEach(function(d){M.P.forEach(function(p){var st=status(d,p),z=horario(p,d);rows.push([fmt(d),DS3[dow(d)],z&&z.turno?z.turno:'',p.nombre,z?z.ini+'-'+z.fin:'',ESTADOS[st],st==='V'?vacW(p,d):0].join(';'));});});
+  descargar('vacaciones_'+M.pais+'_'+UI.q.y+'_Q'+UI.q.q+'.csv','text/csv;charset=utf-8','﻿'+rows.join('\r\n'));
+}
+function exportJSON(){
+  var out={pais:M.pais,trimestre:qLbl(UI.q),dias:[]};
+  qDias(UI.q).forEach(function(d){var o={fecha:d,estados:{}};M.P.forEach(function(p){o.estados[p.codigo]=status(d,p);});out.dias.push(o);});
+  descargar('vacaciones_'+M.pais+'_'+UI.q.y+'_Q'+UI.q.q+'.json','application/json',JSON.stringify(out,null,2));
+}
+
+/* ============ EVENTOS (delegación) ============ */
+function irQ(k){UI.q=qDeKey(k);UI.mes='all';renderTodo();}
+async function accion(a,el){
+  if(a==='vista'){UI.vista=el.getAttribute('data-v');renderTodo();}
+  else if(a==='mes'){UI.mes=el.getAttribute('data-m');renderTodo();}
+  else if(a==='pers'){var p=el.getAttribute('data-p');UI.pers=(UI.pers===p)?'all':p;renderTodo();}
+  else if(a==='dia'){UI.modal={t:'dia',d:el.getAttribute('data-d')};UI.editar=false;renderModal();}
+  else if(a==='editar'){if(EDIT){UI.editar=!UI.editar;renderModal();}}
+  else if(a==='cerrar'){cerrar();}
+  else if(a==='qprev'){irQ(qKey(UI.q)-1);}
+  else if(a==='qnext'){irQ(qKey(UI.q)+1);}
+  else if(a==='qhoy'){irQ(qKey(qDe(hoyISO())));}
+  else if(a==='qir'){UI.vista='cal';irQ(+el.getAttribute('data-k'));}
+  else if(a==='reload'){await recargar();}
+  else if(a==='csv'){exportCSV();}
+  else if(a==='json'){exportJSON();}
+  else if(a==='print'){window.print();}
+  else if(a==='m-bulk'){UI.modal={t:'bulk'};renderModal();}
+  else if(a==='m-equipo'){UI.modal={t:'equipo'};renderModal();}
+  else if(a==='guardar-dia'){await guardarDia();}
+  else if(a==='bulk-rango'){await bulkRango();}
+  else if(a==='bulk-csv'){await bulkCsv();}
+  else if(a==='cfg-save'){await cfgSave();}
+  else if(a==='per-save'){await perSave(el);}
+  else if(a==='per-baja'){await perBaja(el);}
+  else if(a==='hor-add'){await horAdd(el);}
+  else if(a==='hor-del'){await horDel(el);}
+  else if(a==='per-add'){await perAdd();}
+  else if(a==='rev'){await revertir(el.getAttribute('data-id'));}
+}
+document.addEventListener('click',function(ev){
+  var el=ev.target;
+  while(el&&el!==document&&!(el.getAttribute&&el.getAttribute('data-action')))el=el.parentNode;
+  if(!el||el===document){if(ev.target.id==='ov')cerrar();return;}
+  var a=el.getAttribute('data-action');
+  if(a==='pais'||a==='qsel')return;
+  accion(a,el).catch(function(e){toast(msgErr(e),true);});
+});
+document.addEventListener('change',function(ev){
+  var el=ev.target,a=el&&el.getAttribute&&el.getAttribute('data-action');
+  if(el&&el.classList&&el.classList.contains('e-est')){var lv=el.closest('.erow').querySelector('.lv');if(lv)lv.classList.toggle('hid',el.value!=='V');return;}
+  if(a==='qsel'){irQ(+el.value);}
+  else if(a==='pais'){
+    try{sessionStorage.setItem('pdc_vac_pais',el.value);}catch(e){}
+    UI.pers='all';UI.bit=null;
+    cargar(el.value).then(function(){renderTodo();});
+  }
+});
+document.addEventListener('keydown',function(ev){if(ev.key==='Escape')cerrar();});
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&M.pais&&!UI.modal)recargar(true);});
+setInterval(function(){if(!document.hidden&&M.pais&&!UI.modal)recargar(true);},300000);
+
+/* ============ ARRANQUE ============ */
+$('usr').textContent=(S.nombre?S.nombre.split(' ').slice(0,2).join(' ')+' · ':'')+(ROL_LBL[S.rol]||S.rol)+(EDIT?'':' · solo lectura');
+if(!EDIT){var bs=document.querySelectorAll('[data-admin]');for(var bi=0;bi<bs.length;bi++)bs[bi].style.display='none';}
+(async function(){
+  if(!window.supabase||!window.supabase.createClient){M.error='No se pudo cargar el componente de datos. Recargue la página.';renderTodo();return;}
+  sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+  var pi=null;try{pi=sessionStorage.getItem('pdc_vac_pais');}catch(e){}
+  var pais=(pi&&S.paises.indexOf(pi)>=0)?pi:(S.paises.indexOf(S.pais)>=0?S.pais:S.paises[0]);
+  M.pais=pais;
+  await cargar(pais);
+  if(!M.cfg)M.cfg={oper_ini:360,oper_fin:1440,sab_auto:false};
+  renderTodo();
+})();
+})();
+
+</script>
+<script src="js/pdc_guard.js?v=20261030"></script>
+</body>
+</html>

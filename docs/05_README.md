@@ -50,6 +50,7 @@ GET /repos/{owner}/{repo}/git/blobs/{sha}  (Accept: application/vnd.github.raw) 
 | `elsalvador/index.html` | Dashboard El Salvador · USD | v1.0 |
 | `cartas_salida.html` | Cartas de Salida · GT+ESV+PE | v1.2 |
 | `vacaciones_gt.html` | Vacaciones Equipo GT · calendario y cobertura · solo lectura salvo admin | v1.0 |
+| `vacaciones.html` | Vacaciones del Equipo GT/ESV/PE · trimestre automático · historial · datos en Supabase (RLS) · edita solo admin | v1.0 |
 | `admin.html` | Panel admin · chat Supabase | — |
 
 ---

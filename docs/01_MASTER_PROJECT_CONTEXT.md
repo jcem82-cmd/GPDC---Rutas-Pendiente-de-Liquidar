@@ -26,6 +26,7 @@ PDC Analytics Center
 ├── index.html              ← Dashboard Liquidación de Rutas (fuente única de verdad) · filtro Mundos (Vikingo/PDC Brands) · AVON (Bodega=35030) clasificado en Brands + tarjeta propia (22/10/2026)
 ├── historico.html          ← Histórico de Rutas · solo lectura · filtro Mundos (Vikingo/PDC Brands) y clasificación AVON replicados
 ├── historico_index.json    ← Manifiesto de snapshots publicados (auto-regenerado por Action, NUEVO 10/08, automatizado 21/08)
+├── vacaciones.html         ← Vacaciones del Equipo · multipaís GT/ESV/PE · datos en Supabase · trimestre automático · historial (NUEVO 24/11/2026, ver §25)
 ├── vacaciones_gt.html      ← Vacaciones Equipo GT · calendario de vacaciones y cobertura · solo lectura salvo admin (NUEVO 24/11/2026, ver §24)
 ├── cash_today.html         ← Dashboard Cash Today · dataset propio (no conectado a PDCBridge)
 ├── admin.html              ← Panel administrativo · chat Supabase
@@ -808,3 +809,27 @@ Al asignar el acceso desde el panel de usuarios, la Edge Function `admin-users` 
 
 ## 24.5 Actualizar la programación
 Los datos están en el bloque `DATOS FUENTE` del script (`VAC_RAW`, `LAB_RAW`, `HORARIO_ESP`, `VENTANA_ESP`, `NOTAS_DIA`, `FERIADOS`). Cambiar fechas ahí y publicar; actualizar también los KPIs de la tarjeta en `analytics.html` (hoy 12,5 días · 4 colaboradores · 0 días sin cobertura).
+
+---
+
+# 25. Vacaciones del Equipo — multipaís, trimestre automático e historial (24/11/2026)
+
+## 25.1 Qué es
+`vacaciones.html` (dashboard id `vacaciones`, tarjeta 🌴 «Vacaciones del Equipo»). Sucesor de `vacaciones_gt.html` (§24): mismo motor de cobertura y diseño, pero **los datos viven en Supabase**. Muestra el trimestre en curso y permite navegar a otros; pestañas Calendario · Tabla · Análisis (4 gráficas Chart.js) · Historial (resumen por trimestre y, solo admin, bitácora con «Revertir»). El admin ve un selector de país; supervisores/consulta ven solo su país (`regional` ve los tres).
+
+## 25.2 Modelo de datos (`docs/sql/2026-11-24_vacaciones_multipais.sql`)
+- `vac_paises` (ventana operativa en minutos, `sab_auto`) · `vac_personas` (turno base, `sab`: todos/no/alterno + `sab_ancla`) · `vac_horarios` (turno y horas por rango de fechas: así rota ESV mes a mes) · `vac_dias` (**solo excepciones** al patrón: V vacaciones, valor 1 ó 0.5, L labora/cubre, D descanso; con horario opcional) · `vac_reglas` (feriado, ventana especial por fecha, nota) · `vac_historial` (bitácora por trigger).
+- Patrón: lunes–sábado turno regular; domingo y feriado descanso; sábado según `sab`. Todo lo demás es una fila en `vac_dias`.
+- **RLS:** lectura `vac_puede_ver(pais)`; escritura solo `is_admin()`; `vac_historial` solo lectura para admin. La seguridad es de base de datos: aunque alguien manipule el HTML, no puede leer otro país ni escribir.
+
+## 25.3 Cómo actualizar (sin GitHub)
+Admin → abrir el dashboard → «Cargar vacaciones» (por rango o pegando filas de Excel: `fecha;colaborador;tipo;valor;inicio;fin`), clic en un día → «Editar este día» (estado, medio día, horario especial, feriado, ventana, nota), «Equipo y horarios» (turnos, sábados alternos, altas/bajas). Cada cambio queda en la bitácora. Al avanzar el calendario, el trimestre en curso cambia solo.
+
+## 25.4 Dependencia de GitHub
+Ya no se necesita para actualizar vacaciones. GitHub solo se usa para cambios de **código** (nuevas funciones); si la sesión de Claude no tiene permiso de escritura, se entrega el archivo y se sube por la web de GitHub.
+
+## 25.5 Supuestos pendientes de validar (editables desde la pantalla)
+Feriados de ESV/PE: solo 25/12, 01/01 y 08/12 (PE). Ventana operativa ESV 10:00–20:00 y PE 07:00–22:00 (unión de turnos). Sin vacaciones cargadas para ESV/PE. PE: turnos numerados 1 y 2. Rotación ESV extendida hacia atrás desde 01/2026 con el mismo patrón. Feriados de GT posteriores a 01/01/2027 por cargar.
+
+## 25.6 Alta de un dashboard nuevo — regla vigente
+(1) `PDC_DASHBOARDS` en `analytics.html`; (2) ID en `DASHBOARDS` de `admin-users` (`core.ts` + `index.bundle.ts`) y re-despliegue; (3) asignación por usuario; (4) reinicio de sesión del usuario; (5) si usa tablas nuevas: ejecutar su SQL con RLS antes de publicar.
