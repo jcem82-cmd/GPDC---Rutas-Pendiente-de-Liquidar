@@ -16,6 +16,11 @@
 
 ---
 
+## 2026-11-26 — Vacaciones del Equipo: medio día sin labor (24 y 31/12)
+- El medio día de vacaciones ya no exige «horario que sí labora». Sin horario, la persona no labora el resto del día (feriado desde el mediodía el 24 y 31/12). Con horario, se conserva el comportamiento anterior.
+- Modal del día: «½ día de vacaciones · el resto del día es feriado» y Oscar deja de aparecer en «Trabajan».
+- Datos: parche `docs/sql/2026-11-26_vacaciones_medio_dia_oscar.sql` (quita 08:00–12:30 a Oscar el 31/12) y semilla corregida en `2026-11-24_vacaciones_multipais.sql`.
+
 ## [24/11/2026] — Fix: no se podía asignar «Vacaciones Equipo GT» a un usuario («Lista de dashboards inválida») — solicitado por Charly
 
 **Clasificación:** Corrección de errores. **Archivos:** `supabase/functions/admin-users/core.ts` e `index.bundle.ts` (una línea: `DASHBOARDS`).

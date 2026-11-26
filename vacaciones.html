@@ -712,7 +712,7 @@ function modalDia(d,ed){
     var st=status(d,p),z=horario(p,d),iv=intervalo(p,d),r=M.DIA[p.id+'|'+d];
     if(st==='V'){
       var w=vacW(p,d);
-      vac.push(whoRow(p,w===0.5?'½ día de vacaciones'+(r&&r.ini?' (labora '+esc(r.ini)+'–'+esc(r.fin)+')':''):'Día completo de vacaciones'));
+      vac.push(whoRow(p,w===0.5?'½ día de vacaciones'+(r&&r.ini?' (labora '+esc(r.ini)+'–'+esc(r.fin)+')':(M.FER[d]?' · el resto del día es feriado':' · no labora el resto del día')):'Día completo de vacaciones'));
       if(iv)trab.push(whoRow(p,hhmm(iv[0])+' a '+hhmm(iv[1])+' (media jornada)'));
     }else if(st==='N'||st==='L'){
       trab.push(whoRow(p,z?(z.ini+' a '+z.fin+(z.esp?' · horario especial':'')):'Sin horario definido'));
@@ -746,7 +746,7 @@ function modalDia(d,ed){
       '<label class="lv'+(st==='V'?'':' hid')+'">Vacaciones<select class="e-val"><option value="1"'+(Number(r.valor)!==0.5?' selected':'')+'>Día completo</option><option value="0.5"'+(Number(r.valor)===0.5&&r.tipo==='V'?' selected':'')+'>Medio día</option></select></label>'+
       '<label class="lh">Horario especial (opcional)<span class="par"><input type="time" class="e-ini" value="'+esc(r.ini||'')+'"> a <input type="time" class="e-fin" value="'+esc(r.fin||'')+'"></span></label></div>';
   });
-  h+='<p class="hint">Medio día de vacaciones: indique en «Horario especial» las horas que sí labora. Para turno regular modificado (p. ej. cierre anticipado), elija «Labora / cubre» y escriba el horario.</p></div>';
+  h+='<p class="hint">Medio día de vacaciones: déjelo sin «Horario especial» si el resto del día es feriado o no se labora (p. ej. 24 y 31/12); si sí labora parte del día, indique esas horas. Para turno regular modificado (p. ej. cierre anticipado), elija «Labora / cubre» y escriba el horario.</p></div>';
   var v=M.VEN[d];
   h+='<div class="grp"><h4>Reglas del día</h4><div class="frm">'+
     '<label>Feriado (vacío = no es feriado)<input type="text" id="e-fer" maxlength="60" value="'+esc(M.FER[d]||'')+'"></label>'+
@@ -768,7 +768,7 @@ function modalBulk(){
     '<label class="w2 ck"><input type="checkbox" id="b-o" checked> Omitir domingos y feriados</label></div>'+
     '<div class="mf"><button type="button" class="btn" data-action="bulk-rango">Aplicar rango</button></div></div>'+
     '<div class="grp"><h4>Opción B · Pegar desde Excel</h4>'+
-    '<p class="hint">Una fila por línea: <b>fecha ; colaborador ; tipo ; valor ; inicio ; fin</b>. Fecha dd/mm/aaaa; tipo V, L, D o Q (quitar); valor 1 o 0.5; inicio/fin opcionales (HH:MM). Colaborador por nombre corto o completo. Ejemplo: <code>24/12/2026;'+esc(M.P.length?M.P[0].corto:'Nombre')+';V;1</code></p>'+
+    '<p class="hint">Una fila por línea: <b>fecha ; colaborador ; tipo ; valor ; inicio ; fin</b>. Fecha dd/mm/aaaa; tipo V, L, D o Q (quitar); valor 1 o 0.5; inicio/fin opcionales (HH:MM); en medio día déjelos vacíos si no labora el resto. Colaborador por nombre corto o completo. Ejemplo: <code>24/12/2026;'+esc(M.P.length?M.P[0].corto:'Nombre')+';V;1</code></p>'+
     '<textarea id="b-csv" rows="6" class="mono" placeholder="24/12/2026;'+esc(M.P.length?M.P[0].corto:'Nombre')+';V;1"></textarea>'+
     '<div class="mf"><button type="button" class="btn" data-action="bulk-csv">Validar y aplicar</button></div></div>'+
     '<div class="mf"><button type="button" class="btn sec" data-action="cerrar">Cerrar</button></div></div>';
@@ -821,7 +821,7 @@ async function guardarDia(){
   for(i=0;i<er.length;i++){
     var el=er[i],p=persona(el.getAttribute('data-p')),est=el.querySelector('.e-est').value,vv=el.querySelector('.e-val').value;
     var hh=parDeHoras(el.querySelector('.e-ini').value,el.querySelector('.e-fin').value),base=basePat(p,d),cur=M.DIA[p.id+'|'+d],tipo=null;
-    if(est==='V'){if(vv==='0.5'&&!hh)throw new Error(p.corto+': para medio día indique el horario que sí labora.');tipo='V';}
+    if(est==='V'){tipo='V';}
     else if(est==='N'||est==='L'){if(base==='N'){if(hh)tipo='L';}else tipo='L';}
     else if(est==='D'){if(base==='N')tipo='D';}
     if(tipo){
@@ -856,7 +856,6 @@ async function bulkRango(){
   if(!d1||!d2||d2<d1)throw new Error('Revise el rango de fechas.');
   var n=Math.round((parseISO(d2)-parseISO(d1))/86400000)+1;
   if(n>400)throw new Error('El rango máximo es de 400 días por carga.');
-  if(vv==='0.5'&&t==='V'&&!hh)throw new Error('Para medio día indique el horario que sí labora.');
   var p=persona(pid),rows=[],dels=[],ds=[],k;
   for(k=0;k<n;k++)ds.push(toISO(parseISO(d1)+k*86400000));
   ds.forEach(function(d){
@@ -891,7 +890,6 @@ async function bulkCsv(){
     var v=(c[3]||'1').replace(',','.'),ini=c[4]||'',fin=c[5]||'';
     if(v!=='1'&&v!=='0.5'){errs.push('Línea '+(i+1)+': valor debe ser 1 o 0.5.');return;}
     if((ini&&!/^\d{1,2}:\d{2}$/.test(ini))||(fin&&!/^\d{1,2}:\d{2}$/.test(fin))||(!!ini!==!!fin)){errs.push('Línea '+(i+1)+': horario inválido.');return;}
-    if(t==='V'&&v==='0.5'&&!ini){errs.push('Línea '+(i+1)+': medio día requiere horario que sí labora.');return;}
     rows.push(filaDia(p.id,f,t,t==='V'?v:1,t==='D'?null:(ini?pad(+ini.split(':')[0])+':'+ini.split(':')[1]:null),t==='D'?null:(fin?pad(+fin.split(':')[0])+':'+fin.split(':')[1]:null)));
   });
   if(errs.length)throw new Error(errs.slice(0,5).join(' ')+(errs.length>5?' (+'+(errs.length-5)+' más)':''));
